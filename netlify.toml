@@ -1,0 +1,156 @@
+# Pegasus — Netlify config (STABLE / loop-fix) · 2026-05-24T16:37:29Z
+# Routing/domain infrastructure only. No UI/homepage/billing/deal-room/showcase.
+#
+# ── WHY THIS VERSION EXISTS ────────────────────────────────────────────────
+# Symptom: ERR_TOO_MANY_REDIRECTS on pegasuscapitalnetwork.com (apex<->www loop).
+# Cause: TWO authorities pointing opposite directions between apex and www —
+#   (1) Netlify's Primary-domain auto-redirect (dashboard), and
+#   (2) a "www -> apex" rule that lived in netlify.toml.
+# If the Netlify Primary domain is the WWW host, Netlify sends apex->www while
+# the toml rule sends www->apex => infinite loop.
+#
+# FIX: remove ALL apex/www redirect rules from this file and let Netlify's
+# dashboard be the SINGLE authority for apex/www canonicalization. With one
+# authority the chain always terminates. (toml keeps only cross-domain legacy
+# consolidation + path rewrites — none of which touch the canonical apex/www.)
+#
+# REQUIRED DASHBOARD SETTING (Netlify → Domain management):
+#   • Primary domain  = pegasuscapitalnetwork.com   (the apex — matches the
+#     site's <link rel="canonical"> and CANONICAL_ORIGIN)
+#   • Add www.pegasuscapitalnetwork.com as a domain  → Netlify auto-redirects
+#     www -> apex (no toml rule needed).
+#   • pegasuslendersgroup.com (+ www): see legacy block below.
+# ───────────────────────────────────────────────────────────────────────────
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  PEGASUS_STABLE_BUILD = "2026-05-24T16:37:29Z"
+
+[functions]
+  node_bundler = "esbuild"
+
+# ════════════════════════════════════════════════════════════════════════════
+# LEGACY CROSS-DOMAIN CONSOLIDATION (different domain → canonical; cannot loop
+# with apex/www as long as the canonical apex is the Primary domain).
+#
+# IMPORTANT: keep these ONLY if pegasuslendersgroup.com is NOT added as an alias
+# on this same Netlify site. If it IS an alias, DELETE this block and let the
+# dashboard redirect it to the primary — otherwise a legacy-primary misconfig
+# could re-create a cross-domain loop. When unsure, the dashboard alias route is
+# the safer single-authority choice.
+# ════════════════════════════════════════════════════════════════════════════
+[[redirects]]
+  from = "https://pegasuslendersgroup.com/*"
+  to = "https://pegasuscapitalnetwork.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.pegasuslendersgroup.com/*"
+  to = "https://pegasuscapitalnetwork.com/:splat"
+  status = 301
+  force = true
+
+# NOTE: deliberately NO apex<->www redirect here. Netlify's Primary-domain
+# setting owns that. Adding one back is what caused the loop.
+
+# ════════════════════════════════════════════════════════════════════════════
+# PATH REWRITES (status 200 internal rewrites; none touch "/", apex, or www)
+# ════════════════════════════════════════════════════════════════════════════
+[[redirects]]
+  from = "/u/:slug"
+  to = "/public-profile.html?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/membership"
+  to = "/membership.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/signup.html"
+  status = 200
+
+[[redirects]]
+  from = "/signin"
+  to = "/signin.html"
+  status = 200
+
+[[redirects]]
+  from = "/members"
+  to = "/members.html"
+  status = 200
+
+# No "/* -> /index.html" catch-all: multi-page static site, not an SPA.
+
+# ════════════════════════════════════════════════════════════════════════════
+# HEADERS
+# ════════════════════════════════════════════════════════════════════════════
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=()"
+    # NOTE: a Content-Security-Policy is intentionally omitted for now — the site
+    # uses inline event handlers (onclick=) and inline styles throughout, so an
+    # enforcing CSP would require 'unsafe-inline' (which negates its XSS value)
+    # until those are refactored. Add a Report-Only CSP first when ready.
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/build-info.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# NOTE: /js and /css are NOT marked immutable because page <script>/<link>
+# includes are inconsistently versioned (some use ?v=BUILD, some don't). A long
+# immutable TTL would serve stale JS to pages with un-versioned includes after a
+# deploy. Keep a short TTL until ALL includes carry a ?v=BUILD query, then bump
+# these to "public, max-age=31536000, immutable" safely.
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# Brand assets (images, fonts, favicons) are stable and safe to cache long.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SCHEDULED FUNCTIONS (unchanged)
+# ════════════════════════════════════════════════════════════════════════════
+[functions."scheduled-health-check"]
+  schedule = "0 15 * * 1"

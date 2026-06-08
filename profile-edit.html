@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Edit Profile — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/profile-edit.html"><meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<style>
+.ep-wrap{max-width:780px;margin:0 auto;padding:24px 20px 60px}
+.ep-section{margin-bottom:16px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+.ep-section-head{padding:13px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ep-section-title{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
+.ep-section-body{padding:20px 22px}
+.ep-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.ep-banner-zone{position:relative;height:148px;cursor:pointer;background:linear-gradient(135deg,#1B3150 0%,#235FA6 60%,#1B5A8A 100%);overflow:hidden;border-radius:0;border-bottom:1px solid var(--border)}
+.ep-banner-img{width:100%;height:100%;object-fit:cover;display:block}
+.ep-banner-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.18s;display:flex;align-items:center;justify-content:center}
+.ep-banner-zone:hover .ep-banner-overlay{background:rgba(0,0,0,0.3)}
+.ep-banner-prompt{opacity:0;transition:opacity 0.18s;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.55);color:#fff;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:500;border:1px solid rgba(255,255,255,0.25);font-family:var(--sans)}
+.ep-banner-zone:hover .ep-banner-prompt{opacity:1}
+.ep-avatar-zone{position:absolute;bottom:-28px;left:22px;width:72px;height:72px;border-radius:50%;border:3px solid var(--bg);cursor:pointer;background:linear-gradient(135deg,#1a3260,#235FA6);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;color:rgba(255,255,255,0.9);transition:filter 0.18s}
+.ep-avatar-zone:hover{filter:brightness(0.75)}
+.ep-avatar-zone img{width:100%;height:100%;object-fit:cover}
+.ep-media-body{padding:40px 22px 16px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--border)}
+.ep-media-hint{font-size:11.5px;color:var(--text3);font-family:var(--sans)}
+.ep-media-btns{display:flex;gap:8px}
+.ep-comp{margin-bottom:16px}
+.ep-comp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ep-comp-label{font-size:11.5px;color:var(--text2)}
+.ep-comp-pct{font-size:13px;font-weight:600;color:var(--green)}
+.ep-comp-track{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.ep-comp-fill{height:100%;background:var(--green);border-radius:2px;transition:width 0.5s ease}
+.ep-update{border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px}
+.ep-update:last-child{margin-bottom:0}
+.ep-update-head{padding:12px 16px;background:var(--bg2);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background 0.12s}
+.ep-update-head:hover{background:var(--bg3)}
+.ep-update-left{display:flex;align-items:center;gap:10px}
+.ep-update-type-icon{font-size:14px}
+.ep-update-title-preview{font-size:12.5px;font-weight:500;color:var(--text)}
+.ep-update-title-preview.empty{color:var(--text4);font-weight:400;font-style:italic}
+.ep-update-right{display:flex;align-items:center;gap:8px}
+.ep-update-del{font-size:11px;color:var(--red);cursor:pointer;padding:3px 8px;border-radius:3px;border:1px solid var(--red-dim);background:var(--red-dim);font-family:var(--sans);transition:all 0.12s}
+.ep-update-del:hover{background:var(--red);color:#fff}
+.ep-update-chevron{font-size:12px;color:var(--text3);transition:transform 0.18s}
+.ep-update-chevron.open{transform:rotate(180deg)}
+.ep-update-body{padding:16px;border-top:1px solid var(--border);background:var(--bg1);display:none}
+.ep-update-body.open{display:block}
+.ep-update-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ep-type-pill{padding:4px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:var(--bg2);font-family:var(--sans);transition:all 0.12s}
+.ep-type-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ep-add-update-btn{width:100%;padding:11px;border:1.5px dashed var(--border2);border-radius:var(--r2);background:transparent;color:var(--text3);font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all 0.15s;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}
+.ep-add-update-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.ep-save-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:18px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ep-save-bar .btn-pri{flex:1;min-width:140px;justify-content:center;font-size:13px;padding:11px}
+.ep-save-bar .btn-ghost{padding:11px 16px;font-size:12.5px}
+.ep-save-status{font-size:12px;color:var(--green);font-weight:500;display:none}
+.ep-save-error{font-size:12px;color:var(--red);font-weight:500;display:none}
+.ep-slug-preview{font-family:var(--mono);font-size:11.5px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r1);padding:8px 12px;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ep-slug-domain{color:var(--text4)}
+@media(max-width:640px){.ep-grid2{grid-template-columns:1fr}.ep-media-btns{flex-direction:column}}
+</style>
+</head>
+<body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/profile/profile-system.js"></script>
+<script src="/js/profile/profile-media.js"></script>
+<script>
+Pegasus.boot(async function(st){
+  'use strict';
+  var p=(st&&st.profile)?st.profile:{};
+
+  /* ── Admin editing another member ──────────────────────────────────────────
+     If an admin opens /profile-edit.html?id=<targetId> (or ?slug=<slug>), load
+     that member's profile and save back to THEIR id. Normal members never hit
+     this branch — the target only loads when the viewer is an admin. */
+  var ADMIN_EDIT=null; // holds {id, full_name} of the target when admin-editing
+  (function detectAdminTarget(){
+    try{
+      var qs=new URLSearchParams(location.search);
+      var tId=qs.get('id'), tSlug=qs.get('slug');
+      if(!tId && !tSlug) return;
+      var viewerIsAdmin=!!(st && st.profile && (st.profile.is_admin===true || st.profile.role==='admin'));
+      if(!viewerIsAdmin) return;       // non-admins: ignore the param, edit own
+      var ownId=(st&&st.profile&&st.profile.id)||null;
+      if(tId && ownId && tId===ownId) return; // admin editing self → normal flow
+      ADMIN_EDIT={id:tId||null, slug:tSlug||null};
+    }catch(e){/* no-op */}
+  })();
+
+  if(ADMIN_EDIT){
+    var loaded=await window.PegProfile.loadProfile(ADMIN_EDIT.id?{id:ADMIN_EDIT.id}:{slug:ADMIN_EDIT.slug});
+    if(loaded){ p=loaded; ADMIN_EDIT.id=loaded.id; ADMIN_EDIT.full_name=loaded.full_name||'member'; }
+    else { ADMIN_EDIT=null; } // target not found → fall back to own profile
+  }
+
+  var view=Pegasus.mountApp(ADMIN_EDIT
+    ? {active:'Settings',title:'Edit Member Profile',sub:'Admin · editing '+(ADMIN_EDIT.full_name||'member')}
+    : {active:'Settings',title:'Edit Profile',sub:'Your presence in the Pegasus network'});
+
+  /* Create file inputs AFTER mountApp (mountApp replaces body, wiping any pre-existing inputs) */
+  function mkInput(id,accept){
+    var inp=document.createElement('input');
+    inp.type='file'; inp.id=id; inp.accept=accept; inp.style.display='none';
+    document.body.appendChild(inp); return inp;
+  }
+  var avFileEl=mkInput('ep-av-file','image/*');
+  var bnFileEl=mkInput('ep-bn-file','image/*');
+
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function el(id){return document.getElementById(id);}
+  function val(id){return((el(id)||{value:''}).value||'').trim();}
+  function toggleEco(){var r=(val('f_role')||'').toLowerCase();var s=el('ep-eco');if(s)s.style.display=(r==='ecosystem_member')?'block':'none';}
+  window.toggleEco=toggleEco;
+  function slugify(n){return(n||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'-');}
+  function initials(n){var w=(n||'').trim().split(/\s+/);return(w[0]?w[0][0]:'')+(w[1]?w[1][0]:'');}
+
+  function calcComp(d){
+    var pts=20,f=d||{};
+    if((f.full_name||'').trim())pts+=15;
+    if(f.role)pts+=5;
+    if((f.headline||'').trim())pts+=10;
+    if((f.bio||'').trim())pts+=15;
+    if((f.markets||[]).length)pts+=10;
+    if((f.specialties||[]).length)pts+=5;
+    if((f.avatar_url||'').trim())pts+=10;
+    if((f.banner_url||'').trim())pts+=5;
+    if((f.professional_title||'').trim())pts+=5;
+    return Math.min(100,pts);
+  }
+
+  var UPDATE_TYPES=[
+    {id:'program',label:'🚀 New Program'},
+    {id:'milestone',label:'🏆 Milestone'},
+    {id:'opportunity',label:'💼 Opportunity'},
+    {id:'announcement',label:'📢 Announcement'},
+    {id:'seeking',label:'🔍 Seeking'},
+    {id:'partnership',label:'🤝 Partnership'},
+  ];
+
+  var updates=[];
+  try{
+    var mods=p.featured_modules;
+    if(typeof mods==='string')mods=JSON.parse(mods);
+    if(Array.isArray(mods))updates=mods.filter(function(m){return m&&m.kind==='update';});
+  }catch(e){updates=[];}
+
+  function updateHtml(u,idx){
+    var t=u.title||'';
+    var typeLabel='📢 Announcement';
+    UPDATE_TYPES.forEach(function(x){if(x.id===u.type)typeLabel=x.label;});
+    var icon=typeLabel.split(' ')[0];
+    return '<div class="ep-update" id="upd-'+idx+'">'+
+      '<div class="ep-update-head" onclick="toggleUpd('+idx+')">'+
+        '<div class="ep-update-left">'+
+          '<span class="ep-update-type-icon">'+icon+'</span>'+
+          '<span class="ep-update-title-preview'+(t?'':' empty')+'" id="upd-prev-'+idx+'">'+
+            (t?esc(t.length>54?t.slice(0,54)+'…':t):'New update — click to edit')+
+          '</span>'+
+        '</div>'+
+        '<div class="ep-update-right">'+
+          '<button class="ep-update-del" onclick="event.stopPropagation();removeUpd('+idx+')">Remove</button>'+
+          '<span class="ep-update-chevron" id="upd-chev-'+idx+'">▾</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="ep-update-body" id="upd-body-'+idx+'">'+
+        '<div style="margin-bottom:12px"><div class="label">Update Type</div>'+
+          '<div class="ep-update-type-row">'+
+            UPDATE_TYPES.map(function(x){
+              return '<button class="ep-type-pill'+(u.type===x.id?' active':'')+'" onclick="setUpdType('+idx+',\''+x.id+'\')" data-type="'+x.id+'">'+x.label+'</button>';
+            }).join('')+
+          '</div>'+
+        '</div>'+
+        '<div class="field"><label class="label">Headline</label>'+
+          '<input class="input" id="upd-title-'+idx+'" placeholder="e.g. Now offering bridge consulting" value="'+esc(u.title||'')+'" oninput="syncUpdPrev('+idx+')"></div>'+
+        '<div class="field"><label class="label">Body</label>'+
+          '<textarea class="input" id="upd-ta-'+idx+'" rows="3" placeholder="2-3 sentences describing the update.">'+esc(u.body||'')+'</textarea></div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">Button Label (optional)</label>'+
+            '<input class="input" id="upd-cta-'+idx+'" placeholder="e.g. Request Consult" value="'+esc(u.cta_label||'')+'"></div>'+
+          '<div class="field"><label class="label">Button URL (optional)</label>'+
+            '<input class="input" id="upd-url-'+idx+'" placeholder="https://…" value="'+esc(u.cta_url||'')+'"></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  function renderUpdates(){
+    var wrap=el('ep-updates-wrap');
+    if(!wrap)return;
+    var html='';
+    updates.forEach(function(u,i){html+=updateHtml(u,i);});
+    if(updates.length<3){
+      html+='<button class="ep-add-update-btn" onclick="addUpd()">+ Post a Member Update</button>';
+    }
+    wrap.innerHTML=html;
+  }
+
+  var comp=calcComp(p);
+  var sl=p.profile_slug||slugify(p.full_name||'');
+  var avHtml=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" style="width:100%;height:100%;object-fit:cover">':'<span>'+esc(initials(p.full_name||'')||'?')+'</span>';
+  var bnHtml=p.banner_url?'<img class="ep-banner-img" id="ep-bn-img" src="'+esc(p.banner_url)+'">':'<img class="ep-banner-img" id="ep-bn-img" style="display:none">';
+  var roles=['borrower','lender','broker','agent','insurance','investor','developer','rwa_partner','business_funding_provider','ecosystem_member'];
+
+  view.innerHTML=
+    '<div class="ep-wrap">'+
+    /* Completion */
+    '<div class="ep-comp">'+
+      '<div class="ep-comp-row"><span class="ep-comp-label">Profile completion</span><span class="ep-comp-pct" id="ep-comp-pct" style="color:'+(comp===100?'var(--green)':comp>=70?'var(--blue)':'var(--amber)')+'">'+comp+'%</span></div>'+
+      '<div class="ep-comp-track"><div class="ep-comp-fill" id="ep-comp-fill" style="width:'+comp+'%"></div></div>'+
+    '</div>'+
+
+    /* Media */
+    '<div class="ep-section">'+
+      '<div class="ep-section-head"><span class="ep-section-title">Profile Photo &amp; Cover Banner</span><span style="font-size:11px;color:var(--text3)">Click the photo or banner to upload</span></div>'+
+      '<div class="ep-banner-zone" id="ep-bn-zone" onclick="el(\'ep-bn-file\').click()">'+
+        bnHtml+
+        '<div class="ep-banner-overlay"><div class="ep-banner-prompt">📷 Upload Cover Banner</div></div>'+
+        '<div class="ep-avatar-zone" id="ep-av-zone" onclick="event.stopPropagation();el(\'ep-av-file\').click()">'+avHtml+'</div>'+
+      '</div>'+
+      '<div class="ep-media-body">'+
+        '<span class="ep-media-hint" id="ep-media-status">'+(p.avatar_url?'✓ Profile photo set':'No photo yet')+'</span>'+
+        '<div class="ep-media-btns">'+
+          '<button class="btn btn-ghost btn-sm" onclick="el(\'ep-av-file\').click()">Upload Photo</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="el(\'ep-bn-file\').click()">Upload Banner</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    /* Identity */
+    '<div class="ep-section">'+
+      '<div class="ep-section-head"><span class="ep-section-title">Identity</span></div>'+
+      '<div class="ep-section-body">'+
+        '<div class="field"><label class="label">Display Name *</label><input class="input" id="f_name" maxlength="80" placeholder="Your full name" value="'+esc(p.full_name||'')+'" oninput="onChg()"></div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">Role in Network *</label><select class="input" id="f_role" onchange="onChg();toggleEco()">'+
+            roles.map(function(r){var lbl=({borrower:'Growth Partner',insurance:'Insurance Professional',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',ecosystem_member:'Ecosystem Member (Advisory / Support)'}[r])||r.replace(/_/g,' ');return '<option value="'+r+'"'+(p.role===r?' selected':'')+'>'+lbl+'</option>';}).join('')+
+          '</select></div>'+
+          '<div class="field"><label class="label">Headline</label><input class="input" id="f_head" maxlength="120" data-count placeholder="One line on who you are and what you do." value="'+esc(p.headline||'')+'" oninput="onChg()"></div>'+
+        '</div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">Professional Title</label><input class="input" id="f_title" maxlength="80" placeholder="e.g. Mortgage Broker" value="'+esc(p.professional_title||'')+'"></div>'+
+          '<div class="field"><label class="label">Company / Firm</label><input class="input" id="f_company" maxlength="80" placeholder="Your company name" value="'+esc(p.company_name||'')+'"></div>'+
+        '</div>'+
+        '<div class="field"><label class="label">Current Focus</label><input class="input" id="f_focus" maxlength="140" data-count placeholder="What you\'re actively working on right now" value="'+esc(p.current_focus||'')+'"></div>'+
+        '<div class="field"><label class="label">Your Pegasus Network URL</label>'+
+          '<div class="ep-slug-preview"><span class="ep-slug-domain">pegasuscapitalnetwork.com/u/</span><span id="ep-slug">'+esc(sl||'(set your name above)')+'</span></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    /* Ecosystem Identity (only for Ecosystem Members) */
+    '<div class="ep-section" id="ep-eco" style="display:none">'+
+      '<div class="ep-section-head"><span class="ep-section-title">Ecosystem Identity</span><span style="font-size:11px;color:var(--text3)">How you contribute to the Pegasus ecosystem</span></div>'+
+      '<div class="ep-section-body">'+
+        '<div class="field"><label class="label">Your role in the ecosystem</label>'+
+          '<input class="input" id="f_eco_role" list="eco-roles" maxlength="60" placeholder="e.g. Marketing Strategist, Psychologist, Advisor" value="'+esc(p.ecosystem_role||'')+'" oninput="onChg()">'+
+          '<datalist id="eco-roles"><option>Marketing Strategist</option><option>Psychologist</option><option>Advisor</option><option>Creative Director</option><option>AI Builder</option><option>Community Connector</option><option>Business Coach</option><option>Media Partner</option><option>Educator</option><option>Technology Partner</option><option>Wellness Professional</option><option>Strategic Advisor</option></datalist>'+
+        '</div>'+
+        '<div class="field"><label class="label">What do you contribute?</label><textarea class="input" id="f_eco_contrib" rows="3" maxlength="300" data-count placeholder="In a sentence or two \u2014 what you bring to the ecosystem." oninput="onChg()">'+esc(p.ecosystem_contribution||'')+'</textarea></div>'+
+        '<div class="field"><label class="label">Who do you want to connect with? What opportunities are you open to?</label><textarea class="input" id="f_eco_goals" rows="3" maxlength="300" data-count placeholder="The kinds of people and opportunities you are seeking." oninput="onChg()">'+esc(p.ecosystem_goals||'')+'</textarea></div>'+
+        '<div class="field"><label class="label">Areas of expertise (comma-separated)</label><input class="input" id="f_eco_expertise" maxlength="120" placeholder="Branding, Content, Wellness, Strategy" value="'+esc((p.expertise_areas||[]).join(", "))+'" oninput="onChg()"></div>'+
+      '</div>'+
+    '</div>'+
+
+    /* About */
+    '<div class="ep-section">'+
+      '<div class="ep-section-head"><span class="ep-section-title">About &amp; Presence</span></div>'+
+      '<div class="ep-section-body">'+
+        '<div class="field"><label class="label">Bio</label><textarea class="input" id="f_bio" rows="5" maxlength="2000" data-count placeholder="Your professional story — who you are, what you do, what you bring to the network." oninput="onChg()">'+esc(p.bio||'')+'</textarea></div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">Markets (comma-separated)</label><input class="input" id="f_mkt" maxlength="200" placeholder="California, Florida, Washington" value="'+esc((p.markets||[]).join(', '))+'" oninput="onChg()"></div>'+
+          '<div class="field"><label class="label">Specialties (comma-separated)</label><input class="input" id="f_spec" maxlength="200" placeholder="Single Family, Bridge, DSCR" value="'+esc((p.specialties||[]).join(', '))+'" oninput="onChg()"></div>'+
+        '</div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">Location</label><input class="input" id="f_loc" maxlength="80" placeholder="City, State" value="'+esc(p.location||'')+'"></div>'+
+          '<div class="field"><label class="label">Website</label><input class="input" id="f_web" maxlength="200" placeholder="https://yoursite.com" value="'+esc(p.website||'')+'"></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    /* Member Updates */
+    '<div class="ep-section">'+
+      '<div class="ep-section-head">'+
+        '<span class="ep-section-title">Member Updates</span>'+
+        '<span style="font-size:11px;color:var(--text3)">Pinned announcements on your profile — up to 3</span>'+
+      '</div>'+
+      '<div class="ep-section-body" style="padding-bottom:10px"><div id="ep-updates-wrap"></div></div>'+
+    '</div>'+
+
+    /* Save bar */
+    '<div class="ep-save-bar">'+
+      '<button class="btn btn-pri" id="ep-save-btn" onclick="doSave()">Save Profile →</button>'+
+      '<a class="btn btn-ghost" href="/profile.html">My Profile</a>'+
+      '<a class="btn btn-ghost" href="/apply-review.html">'+(p.reviewed_by_pegasus?'\u2713 Reviewed by Pegasus':(p.review_status==='pending'?'Review pending\u2026':'Apply for Reviewed Status'))+'</a>'+
+      '<a class="btn btn-ghost" id="ep-pub-link" href="'+(p.profile_slug?'/u/'+p.profile_slug:(p.id?'/public-profile.html?id='+p.id:'/public-profile.html'))+'">Public Profile</a>'+
+      '<span class="ep-save-status" id="ep-ok">✓ Saved</span>'+
+      '<span class="ep-save-error" id="ep-err"></span>'+
+    '</div>'+
+    '</div>';
+
+  renderUpdates();
+  toggleEco();
+
+  /* ── Global handlers ── */
+  window.el=el;
+  window.onChg=function(){
+    var name=val('f_name');
+    var s=p.profile_slug||slugify(name);
+    var slEl=el('ep-slug'); if(slEl)slEl.textContent=s||(name?'':'(set your name above)');
+    var cur={full_name:name,role:val('f_role'),headline:val('f_head'),bio:val('f_bio'),
+      markets:val('f_mkt').split(',').filter(Boolean),specialties:val('f_spec').split(',').filter(Boolean),
+      avatar_url:p.avatar_url,banner_url:p.banner_url,professional_title:val('f_title')};
+    var pct=calcComp(cur);
+    var pctEl=el('ep-comp-pct'),fillEl=el('ep-comp-fill');
+    if(pctEl){pctEl.textContent=pct+'%';pctEl.style.color=pct===100?'var(--green)':pct>=70?'var(--blue)':'var(--amber)';}
+    if(fillEl)fillEl.style.width=pct+'%';
+  };
+  window.toggleUpd=function(idx){
+    var b=el('upd-body-'+idx),c=el('upd-chev-'+idx);
+    if(b){var o=b.classList.toggle('open');if(c)c.classList.toggle('open',o);}
+  };
+  window.removeUpd=function(idx){updates.splice(idx,1);renderUpdates();};
+  window.addUpd=function(){
+    if(updates.length>=3)return;
+    updates.push({kind:'update',type:'announcement',title:'',body:'',cta_label:'',cta_url:'',date:new Date().toISOString().slice(0,10)});
+    renderUpdates();
+    setTimeout(function(){window.toggleUpd(updates.length-1);},40);
+  };
+  window.setUpdType=function(idx,type){
+    updates[idx].type=type;
+    var row=el('upd-body-'+idx); if(!row)return;
+    row.querySelectorAll('.ep-type-pill').forEach(function(pill){pill.classList.toggle('active',pill.getAttribute('data-type')===type);});
+    var label='📢 Announcement'; UPDATE_TYPES.forEach(function(x){if(x.id===type)label=x.label;});
+    var iconEl=document.querySelector('#upd-'+idx+' .ep-update-type-icon'); if(iconEl)iconEl.textContent=label.split(' ')[0];
+  };
+  window.syncUpdPrev=function(idx){
+    var t=el('upd-title-'+idx); if(!t)return;
+    var v2=t.value.trim();
+    var prev=el('upd-prev-'+idx);
+    if(prev){prev.textContent=v2?(v2.length>54?v2.slice(0,54)+'…':v2):'New update — click to edit';prev.classList.toggle('empty',!v2);}
+    updates[idx].title=v2;
+  };
+
+  /* ── Upload handlers ── */
+  function handleUpload(kind,file){
+    if(!file)return;
+    var st=el('ep-media-status');
+    if(ADMIN_EDIT){
+      // uploadAndSave writes to the uploader's OWN profile/storage folder, so it
+      // can't target another member. Block it cleanly in admin-edit mode.
+      if(st){st.textContent='Photo upload is disabled when editing another member. Ask the member to upload their own photo.';st.style.color='var(--amber)';}
+      return;
+    }
+    if(st){st.textContent='Uploading '+kind+'…';st.style.color='var(--blue)';}
+    window.PegProfileMedia.uploadAndSave(kind,file).then(function(url){
+      if(kind==='avatar'){
+        p.avatar_url=url;
+        var z=el('ep-av-zone'); if(z){z.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';}
+        if(st){st.textContent='✓ Profile photo saved';st.style.color='var(--green)';}
+      } else {
+        p.banner_url=url;
+        var bi=el('ep-bn-img'); if(bi){bi.src=url;bi.style.display='';}
+        if(st){st.textContent='✓ Cover banner saved';st.style.color='var(--green)';}
+      }
+      window.onChg();
+    }).catch(function(err){
+      if(st){st.textContent='Upload failed: '+(err&&err.message||err);st.style.color='var(--red)';}
+    });
+  }
+  avFileEl.addEventListener('change',function(){handleUpload('avatar',this.files[0]);this.value='';});
+  bnFileEl.addEventListener('change',function(){handleUpload('banner',this.files[0]);this.value='';});
+
+  /* ── Save ── */
+  window.doSave=async function(){
+    var btn=el('ep-save-btn'),okEl=el('ep-ok'),errEl=el('ep-err');
+    if(okEl)okEl.style.display='none'; if(errEl)errEl.style.display='none';
+    var name=val('f_name');
+    if(!name){Pegasus.toast('⚠','var(--amber-dim)','Name required','Please enter your display name.');el('f_name').focus();return;}
+    if(btn){btn.disabled=true;btn.textContent='Saving…';}
+    /* collect updates from DOM */
+    updates.forEach(function(u,i){
+      u.title=(el('upd-title-'+i)||{value:''}).value.trim();
+      var ta=el('upd-ta-'+i); u.body=ta?ta.value.trim():u.body;
+      u.cta_label=(el('upd-cta-'+i)||{value:''}).value.trim();
+      u.cta_url=(el('upd-url-'+i)||{value:''}).value.trim();
+      u.kind='update';
+    });
+    var patch={
+      full_name:name,
+      role:val('f_role')||'broker',
+      headline:val('f_head'),
+      professional_title:val('f_title'),
+      current_focus:val('f_focus'),
+      company_name:val('f_company'),
+      bio:val('f_bio'),
+      markets:val('f_mkt').split(',').map(function(x){return x.trim();}).filter(Boolean),
+      specialties:val('f_spec').split(',').map(function(x){return x.trim();}).filter(Boolean),
+      location:val('f_loc'),
+      website:val('f_web'),
+      avatar_url:p.avatar_url||null,
+      banner_url:p.banner_url||null,
+      ecosystem_role:val('f_eco_role'),
+      ecosystem_contribution:val('f_eco_contrib'),
+      ecosystem_goals:val('f_eco_goals'),
+      expertise_areas:val('f_eco_expertise').split(',').map(function(x){return x.trim();}).filter(Boolean),
+      featured_modules:updates.slice(),
+    };
+    try{
+      var saved;
+      if(ADMIN_EDIT && ADMIN_EDIT.id){
+        // Admin editing another member — write directly to the target row.
+        // RLS policy prof_admin_u (migration 039) permits this for admins.
+        saved=await window.PegProfile.saveProfileForId(ADMIN_EDIT.id, patch);
+      } else {
+        saved=await window.PegProfile.saveProfile(patch);
+      }
+      p=Object.assign(p,saved||patch);
+      var sl2=(saved&&saved.profile_slug)||slugify(name);
+      var slEl=el('ep-slug'); if(slEl)slEl.textContent=sl2;
+      var pl=el('ep-pub-link'); if(pl)pl.href=(saved&&saved.profile_slug)?'/u/'+saved.profile_slug:((saved&&saved.id)?'/public-profile.html?id='+saved.id:'/public-profile.html');
+      window.onChg();
+      Pegasus.toast('✓','var(--green-dim)','Saved','Profile updated successfully.');
+      if(okEl){okEl.style.display='inline';setTimeout(function(){okEl.style.display='none';},3000);}
+    }catch(err){
+      var msg=(err&&err.message)||String(err);
+      if(errEl){errEl.textContent=msg.slice(0,90);errEl.style.display='inline';}
+      Pegasus.toast('✕','var(--red-dim)','Save failed',msg.slice(0,80));
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='Save Profile →';}
+    }
+  };
+
+});
+</script>
+</body>
+</html>

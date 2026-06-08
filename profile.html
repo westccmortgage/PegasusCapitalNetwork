@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>My Profile — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/profile.html"><meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529">
+<link rel="stylesheet" href="/css/profile-ecosystem.css?v=dealroom-entitlements-20260524-1529">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<style>
+*{box-sizing:border-box}
+.pp-hero{position:relative;overflow:hidden;min-height:220px;background:linear-gradient(135deg,#08111C 0%,#0F1E38 40%,#162645 65%,#0A1830 100%)}
+.pp-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
+.pp-hero-wm{position:absolute;right:-60px;top:-60px;font-family:'Cormorant Garamond',serif;font-size:260px;font-weight:300;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;user-select:none}
+.pp-horizon{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(154,123,34,.5),transparent)}
+.pp-hero-c{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:32px 40px 36px;display:grid;grid-template-columns:auto 1fr auto;gap:0 22px;align-items:end}
+.pp-av{width:76px;height:76px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.15);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:rgba(255,255,255,.9);overflow:hidden}
+.pp-av img{width:100%;height:100%;object-fit:cover}
+.pp-name{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:400;color:#fff;line-height:1.1;animation:fup .6s ease both}
+.pp-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;animation:fup .6s .08s ease both}
+.pp-sub strong{color:rgba(255,255,255,.82)}
+.pp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;animation:fup .6s .15s ease both}
+.pp-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:500;letter-spacing:.03em}
+.tv{background:rgba(14,154,102,.22);color:#7FCBA2;border:1px solid rgba(14,154,102,.28)}
+.ta{background:rgba(154,123,34,.22);color:#E8C46A;border:1px solid rgba(154,123,34,.28)}
+.tr{background:rgba(35,95,166,.22);color:#92B8F0;border:1px solid rgba(35,95,166,.3)}
+.tm{background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.1)}
+.pp-tagline{display:flex;align-items:center;gap:10px;margin-top:12px;animation:fup .6s .2s ease both}
+.pp-tagline-bar{width:2px;height:28px;background:linear-gradient(180deg,rgba(154,123,34,.9),rgba(154,123,34,.15));border-radius:1px;flex-shrink:0}
+.pp-tagline-text{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;font-style:italic;color:rgba(255,255,255,.7);line-height:1.35}
+.pp-stats{display:flex;gap:12px;margin-top:9px;animation:fup .6s .27s ease both}
+.pp-stat{display:flex;align-items:center;gap:5px}
+.pp-stat-v{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.55)}
+.pp-stat-l{font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.04em}
+.pp-stat-sep{width:1px;height:10px;background:rgba(255,255,255,.1);align-self:center}
+.pp-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;animation:fup .6s .32s ease both}
+.pp-actions .btn{font-size:11.5px;padding:7px 14px}
+@keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.pp-strip{background:rgba(11,22,40,.96);border-bottom:1px solid rgba(255,255,255,.06)}
+.pp-strip-inner{max-width:1160px;margin:0 auto;padding:0 40px;display:flex;overflow-x:auto;scrollbar-width:none;gap:0}
+.pp-strip-inner::-webkit-scrollbar{display:none}
+.pp-strip-item{display:flex;align-items:center;gap:8px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.06);white-space:nowrap;flex-shrink:0;font-size:11.5px;color:rgba(255,255,255,.6)}
+.pp-strip-item strong{color:rgba(255,255,255,.88)}
+.pp-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.pp-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,.4);animation:blink 2s infinite}
+.pp-dot.gold{background:#9A7B22}
+.pp-dot.blue{background:#6B9FE8}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pp-content{max-width:1160px;margin:0 auto;padding:24px 40px 60px}
+.pp-comp-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px}
+.pp-comp-track{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.pp-comp-fill{height:100%;border-radius:3px;background:var(--green);transition:width .5s ease}
+.pp-grid{display:grid;grid-template-columns:230px 1fr 210px;gap:18px;align-items:start}
+@media(max-width:1020px){.pp-grid{grid-template-columns:1fr}}
+.pp-col{display:flex;flex-direction:column;gap:14px}
+.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+.pp-head{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pp-lbl{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3)}
+.pp-lbl-s{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--text)}
+.pp-act{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none;cursor:pointer}
+.pp-cbody{padding:14px 16px}
+.pp-field{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.pp-field:last-child{border-bottom:none;padding-bottom:0}
+.pp-fi{width:21px;height:21px;border-radius:4px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:10.5px;flex-shrink:0;margin-top:1px}
+.pp-fl{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.pp-fv{font-size:12px;color:var(--text);margin-top:2px}
+.pp-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+
+/* ── Capital Identity Card (cid-) ────────────────────── */
+.cid-role{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--text);letter-spacing:-0.01em;padding:18px 18px 4px;line-height:1.2}
+.cid-company{font-size:12.5px;color:var(--text2);padding:0 18px 16px;font-family:var(--sans)}
+.cid-divider{height:1px;background:var(--border);margin:0 18px}
+.cid-section{padding:14px 18px 0}
+.cid-section:last-of-type{padding-bottom:4px}
+.cid-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3);margin-bottom:8px;font-family:var(--mono)}
+.cid-chips{display:flex;flex-wrap:wrap;gap:5px}
+.cid-chip{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:4px 11px;font-size:11.5px;color:var(--text);font-family:var(--sans);white-space:nowrap;line-height:1.3}
+.cid-footer{display:flex;flex-wrap:wrap;gap:12px 20px;padding:14px 18px 16px;border-top:1px solid var(--border);margin-top:14px}
+.cid-meta-item{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px}
+.cid-link{color:var(--blue);text-decoration:none}
+.cid-link:hover{text-decoration:underline}
+.cid-foot-pad{height:16px}
+.cid-empty{padding:16px 18px 18px;font-size:12px;color:var(--text3);font-style:italic}
+/* ──────────────────────────────────────────────────── */
+.pp-chip{padding:2px 7px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:'IBM Plex Mono',monospace}
+.pp-badge{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
+.pp-badge:last-child{margin-bottom:0}
+.pp-badge-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.pp-badge-name{font-size:11.5px;font-weight:500;color:var(--text)}
+.pp-badge-desc{font-size:10px;color:var(--text3);margin-top:1px}
+.pp-badge.gold{background:#FBF6EB;border-color:rgba(154,123,34,.2)}
+.pp-badge.green{background:#E8F5EE;border-color:rgba(14,154,102,.15)}
+.pp-badge.blue{background:#EEF3FB;border-color:rgba(35,95,166,.12)}
+.pp-metric{padding:10px 16px;border-bottom:1px solid var(--border)}
+.pp-metric:last-child{border-bottom:none}
+.pp-metric-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.pp-metric-label{font-size:11.5px;color:var(--text2)}
+.pp-metric-val{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text)}
+.pp-metric-bar{height:2px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.pp-metric-fill{height:100%;border-radius:2px}
+.pp-update{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;transition:box-shadow .15s}
+.pp-update:hover{box-shadow:var(--sh-card)}
+.pp-update:nth-child(odd){margin-left:0;margin-right:40px}
+.pp-update:nth-child(even){margin-left:32px;margin-right:8px}
+.pp-update-bar{border-radius:0}
+.pp-update-content{padding:13px 16px;background:var(--bg1)}
+.pp-update-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.pp-update-type{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.pp-update-num{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:rgba(28,30,26,.1);line-height:1}
+.pp-update-head{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--text);line-height:1.35;margin-bottom:6px}
+.pp-update-body{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px}
+.pp-update-foot{display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid var(--border)}
+.pp-update-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3)}
+.pp-update-cta{font-size:11px;font-weight:500;text-decoration:none;padding:3px 10px;border:1px solid var(--border2);border-radius:var(--r1);color:var(--text)}
+.pp-update-cta:hover{border-color:var(--blue);color:var(--blue)}
+.pp-band{background:#0B1628;padding:22px 40px}
+.pp-band-inner{max-width:1160px;margin:0 auto}
+.pp-band-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:600}
+.pp-band-items{display:flex;flex-wrap:wrap;gap:8px}
+.pp-band-item{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.pp-band-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px}
+.pp-band-name{font-size:11px;font-weight:500;color:rgba(255,255,255,.8)}
+.pp-band-tag{font-size:9px;color:rgba(154,123,34,.8);font-weight:500;margin-top:1px}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFILE PAGE — Mobile Responsive Polish
+   Desktop (> 768px): unchanged.
+   Tablet (769–1020px): already handled by .pp-grid collapse.
+   Mobile (≤ 768px): hero stacks, paddings tighten, actions go full-width.
+   Small phone (≤ 480px): further tightening.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* ── Prevent any horizontal overflow ── */
+  body { overflow-x: hidden; }
+  .pp-hero { overflow: hidden; }
+
+  /* ── Hero grid: 3-col → 2-col (avatar|info) + full-width actions row ── */
+  .pp-hero-c {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    padding: 24px 20px 20px;
+    gap: 0 14px;
+    align-items: start;
+  }
+
+  /* ── Actions: span both columns, become horizontal button row ── */
+  .pp-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 16px;
+  }
+  .pp-actions .btn {
+    flex: 1 1 100px;
+    text-align: center;
+    justify-content: center;
+    font-size: 11.5px;
+    padding: 9px 10px;
+    min-height: 38px; /* minimum tappable height */
+  }
+
+  /* ── Profile name: scale down ── */
+  .pp-name { font-size: 26px; }
+
+  /* ── Tagline: slightly smaller ── */
+  .pp-tagline { margin-top: 8px; }
+  .pp-tagline-text { font-size: 13px; }
+
+  /* ── Stats: allow wrap ── */
+  .pp-stats { flex-wrap: wrap; gap: 8px; }
+
+  /* ── Signal strip: tighter padding ── */
+  .pp-strip-inner { padding: 0 16px; }
+
+  /* ── Main content: full-width, extra bottom for mobile tabbar ── */
+  .pp-content { padding: 14px 12px 80px; }
+
+  /* ── Completion bar ── */
+  .pp-comp-bar { padding: 10px 14px; gap: 10px; }
+  .pp-comp-bar > span:first-child { font-size: 11.5px; }
+
+  /* ── Network Standing band ── */
+  .pp-band { padding: 16px 16px 20px; }
+
+  /* ── Updates: remove indent offset on mobile ── */
+  .pp-update:nth-child(odd)  { margin-right: 0; }
+  .pp-update:nth-child(even) { margin-left: 0; margin-right: 0; }
+}
+
+/* ── Small phones: ≤ 480px (iPhone SE, small Android) ── */
+@media (max-width: 480px) {
+  .pp-hero-c { padding: 20px 14px 16px; gap: 0 12px; }
+  .pp-av { width: 60px; height: 60px; font-size: 20px; }
+  .pp-name { font-size: 22px; }
+  .pp-tags { gap: 4px; }
+  .pp-tag { font-size: 10px; padding: 2px 7px; }
+  .pp-stat-sep { display: none; }
+  .pp-content { padding: 12px 10px 80px; }
+}
+</style>
+</head>
+<body>
+<!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
+
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-billing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-system.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-routing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-signals.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-widgets.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-media.js?v=dealroom-entitlements-20260524-1529"></script>
+<script>
+Pegasus.boot(async function () {
+  var P=window.PegProfile, SIG=window.PegSignals;
+  var view=Pegasus.mountApp({active:'Dashboard',title:'My Profile',sub:'Your presence in the Pegasus network'});
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function cap(s){return(s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+  var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Agent',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
+  function roleLabel(r){r=(r||'').toLowerCase();return ROLE_LABELS[r]||cap(r||'member');}
+  function webHref(u){u=(u||'').trim();if(!u)return '#';return /^[a-z][a-z0-9+.-]*:\/\//i.test(u)?u:('https://'+u.replace(/^\/+/,''));}
+  function trustBadges(p){var o='';
+    if(p&&p.reviewed_by_pegasus)o+='<span class="trust-badge" title="Reviewed by Pegasus — ecosystem review of professional presence and participation. Not a financial, legal, or investment endorsement."><span class="tb-dot"></span>Reviewed by Pegasus</span> ';
+    if(p&&p.institutional_visibility)o+='<span class="trust-badge inst"><span class="tb-dot"></span>Institutional</span> ';
+    if(p&&p.verified_identity)o+='<span class="trust-badge verified"><span class="tb-dot"></span>Verified Identity</span> ';
+    return o;}
+  function ini(n){var w=(n||'').trim().split(/\s+/);return((w[0]?w[0][0]:'')+(w[1]?w[1][0]:'')).toUpperCase();}
+
+  var route=await window.PegProfileRoute.resolve('own');
+  var sb = null; try { sb = await window.PegSB.ready; } catch(_) {}
+
+  /* Not signed in */
+  if(!route.signedIn){
+    view.innerHTML='<div style="text-align:center;padding:60px 20px"><p style="font-family:serif;font-size:22px;font-weight:300;color:var(--text)">Sign in to view your profile</p><a class="btn btn-pri" href="/signin.html" style="margin-top:20px;display:inline-block">Sign In →</a></div>';
+    return;
+  }
+
+  var p=route.profile||{};
+  var name=p.full_name||'Member';
+  var comp=p.profile_completion||20;
+  var sl=p.profile_slug||(name.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'-'));
+  var pubUrl=p.profile_slug?('/u/'+p.profile_slug):(p.id?('/public-profile.html?id='+p.id):'/public-profile.html');
+
+  /* ── Make hero full-bleed ── */
+  var viewWrap=view.parentElement; /* .view div */
+  viewWrap.style.padding='0';
+  view.style.cssText='max-width:unset;margin:0;width:100%';
+
+  /* ── Tags ── */
+  var tags='';
+  if(p.verification_status==='verified') tags+='<span class="pp-tag tv">✓ Verified</span>';
+  if(p.ambassador_status) tags+='<span class="pp-tag ta">⬡ Ambassador</span>';
+  if(p.role) tags+='<span class="pp-tag tr">'+esc(roleLabel(p.role))+'</span>';
+  (p.markets||[]).slice(0,3).forEach(function(m){tags+='<span class="pp-tag tm">'+esc(m)+'</span>';});
+
+  /* ── Stats bar ── */
+  var statsHtml=
+    '<div class="pp-stat"><span class="pp-stat-v">'+comp+'%</span><span class="pp-stat-l">complete</span></div>'+
+    (p.markets&&p.markets.length?'<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+p.markets.length+'</span><span class="pp-stat-l">markets</span></div>':'')+
+    '<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+new Date(p.created_at||Date.now()).getFullYear()+'</span><span class="pp-stat-l">member since</span></div>';
+
+  /* ── Avatar ── */
+  var avHtml=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="'+esc(name)+'">':(ini(name)||'?');
+  var bnExtra=p.banner_url?'<img src="'+esc(p.banner_url)+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35">':'';
+
+  /* ── Signal strip ── */
+  var stripItems=[];
+  if(p.markets&&p.markets.length) stripItems.push('<div class="pp-strip-item"><div class="pp-dot green"></div>Active in <strong>'+esc(p.markets.join(', '))+'</strong></div>');
+  if(p.specialties&&p.specialties.length) stripItems.push('<div class="pp-strip-item"><div class="pp-dot gold"></div>Specialties: <strong>'+esc(p.specialties.join(' · '))+'</strong></div>');
+  if(p.current_focus) stripItems.push('<div class="pp-strip-item"><div class="pp-dot green"></div>Focus: <strong>'+esc(p.current_focus)+'</strong></div>');
+  if(p.company_name) stripItems.push('<div class="pp-strip-item"><div class="pp-dot blue"></div>'+esc(p.company_name)+'</div>');
+
+  /* ── Member Updates ── */
+  var updateTypeMap={program:{icon:'🚀',label:'New Program',bg:'rgba(154,123,34,.10)',col:'#6B4A0A',bar:'#9A7B22'},milestone:{icon:'🏆',label:'Milestone',bg:'rgba(35,95,166,.08)',col:'#0F3A7A',bar:'#235FA6'},opportunity:{icon:'💼',label:'Opportunity',bg:'rgba(12,126,150,.08)',col:'#064A5C',bar:'#0C7E96'},announcement:{icon:'📢',label:'Announcement',bg:'rgba(86,96,107,.08)',col:'#2E353D',bar:'#56606B'},seeking:{icon:'🔍',label:'Seeking',bg:'rgba(14,154,102,.08)',col:'#0A5C3D',bar:'#0E9A66'},partnership:{icon:'🤝',label:'Partnership',bg:'rgba(181,118,15,.08)',col:'#5A3E0A',bar:'#B5760F'}};
+  var rawUpd=(p.featured_modules||[]).filter(function(m){return m&&m.kind==='update'&&m.title;});
+  var updHtml=rawUpd.map(function(u,i){
+    var t=updateTypeMap[u.type]||updateTypeMap.announcement;
+    var d=u.date?new Date(u.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+    return '<div class="pp-update">'+
+      '<div class="pp-update-bar" style="background:'+t.bar+'"></div>'+
+      '<div class="pp-update-content">'+
+        '<div class="pp-update-meta"><span class="pp-update-type" style="background:'+t.bg+';color:'+t.col+';border:1px solid '+t.bg+'">'+t.icon+' '+t.label+'</span><span class="pp-update-num">0'+(i+1)+'</span></div>'+
+        '<div class="pp-update-head">'+esc(u.title)+'</div>'+
+        (u.body?'<div class="pp-update-body">'+esc(u.body)+'</div>':'')+
+        '<div class="pp-update-foot"><span class="pp-update-date">'+d+'</span>'+(u.cta_label&&u.cta_url?'<a href="'+esc(u.cta_url)+'" class="pp-update-cta">'+esc(u.cta_label)+'</a>':'')+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  /* ── Identity — Premium cid- component ── */
+  var idF='';
+  (function buildIdentity(){
+    var out = '';
+    /* Hero: Role */
+    if(p.role) out+='<div class="cid-role">'+esc(roleLabel(p.role))+'</div>';
+    /* Subtitle: Company */
+    if(p.company_name) out+='<div class="cid-company">'+esc(p.company_name)+'</div>';
+    /* Divider after hero block */
+    if(p.role||p.company_name) out+='<div class="cid-divider"></div>';
+    /* Markets */
+    if(p.markets&&p.markets.length){
+      out+='<div class="cid-section"><div class="cid-label">Active Markets</div><div class="cid-chips">'+
+        p.markets.map(function(m){return'<span class="cid-chip">'+esc(m)+'</span>';}).join('')+
+      '</div></div>';
+    }
+    /* Specialties */
+    if(p.specialties&&p.specialties.length){
+      out+='<div class="cid-section"><div class="cid-label">Specialties</div><div class="cid-chips">'+
+        p.specialties.map(function(sp){return'<span class="cid-chip">'+esc(sp)+'</span>';}).join('')+
+      '</div></div>';
+    }
+    /* Footer: location + website */
+    var foot = [];
+    if(p.location) foot.push('<span class="cid-meta-item">📍 '+esc(p.location)+'</span>');
+    if(p.website)  foot.push('<span class="cid-meta-item">🌐 <a href="'+esc(webHref(p.website))+'" target="_blank" rel="noopener" class="cid-link">'+esc(p.website.replace(/^https?:\/\//,''))+'</a></span>');
+    if(foot.length) out+='<div class="cid-footer">'+foot.join('')+'</div>';
+    else if(out) out+='<div class="cid-foot-pad"></div>';
+    /* Empty state */
+    if(!out) out='<div class="cid-empty">Complete your profile to populate your Capital Identity.</div>';
+    idF = out;
+  })();
+
+  /* ── Badges ── */
+  var bdg='';
+  if(p.ambassador_status) bdg+='<div class="pp-badge gold"><div class="pp-badge-icon" style="background:rgba(154,123,34,.12)">⭐</div><div><div class="pp-badge-name">Pegasus Ambassador</div><div class="pp-badge-desc">Network builder</div></div></div>';
+  if(p.verification_status==='verified') bdg+='<div class="pp-badge green"><div class="pp-badge-icon" style="background:rgba(14,154,102,.1)">✓</div><div><div class="pp-badge-name">Verified Member</div><div class="pp-badge-desc">Identity confirmed</div></div></div>';
+  if(comp>=80) bdg+='<div class="pp-badge blue"><div class="pp-badge-icon" style="background:rgba(35,95,166,.1)">🏛</div><div><div class="pp-badge-name">Capital Partner</div><div class="pp-badge-desc">Active deal flow</div></div></div>';
+
+  /* ── Metrics ── */
+  var mets=
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Profile Completion</span><span class="pp-metric-val">'+comp+'%</span></div><div class="pp-metric-bar"><div class="pp-metric-fill" style="width:'+comp+'%;background:var(--blue)"></div></div></div>'+
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Verified</span><span class="pp-metric-val">'+(p.verification_status==='verified'?'✓ Yes':'Pending')+'</span></div></div>'+
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Ambassador</span><span class="pp-metric-val">'+(p.ambassador_status?'⭐ Yes':'—')+'</span></div></div>'+
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Visibility</span><span class="pp-metric-val">'+(comp>=80?'High':comp>=50?'Medium':'Growing')+'</span></div><div class="pp-metric-bar"><div class="pp-metric-fill" style="width:'+(Math.min(100,comp+10))+'%;background:var(--green)"></div></div></div>';
+
+  /* ── Network graph SVG ── */
+  /* Capital Network — Market Activity Bars (Option C) */
+  var BAR_COLORS = ['#235FA6','#0E9A66','#9A7B22','#56606B','#0C7E96'];
+  var mkts = (p.markets||[]).slice(0,5);
+  var reach = mkts.length * 5 + 0 + (p.profile_completion||20)/10|0;
+  var conns = Math.max(1, mkts.length * 3 + (p.ambassador_status?4:0));
+
+  /* Query lender counts per market async, then update bars */
+  var barWidths = mkts.map(function(_,i){ return Math.round(100 - i*16); });
+
+  function mkBars(widths) {
+    if (!mkts.length) return '<div style="padding:12px;text-align:center;font-size:11.5px;color:var(--text3)">Add markets in Edit Profile to see activity.</div>';
+    var rows = mkts.map(function(m, i) {
+      var w = widths[i]||40;
+      var color = BAR_COLORS[i]||'#56606B';
+      return '<div style="margin-bottom:9px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+          '<span style="font-size:11.5px;color:var(--text)">'+esc(m)+'</span>'+
+          '<span style="font-family:var(--mono);font-size:11px;color:'+color+';font-weight:500" id="mkt-cnt-'+i+'">—</span>'+
+        '</div>'+
+        '<div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">'+
+          '<div id="mkt-bar-'+i+'" style="height:100%;width:'+w+'%;background:'+color+';border-radius:3px;transition:width .5s ease"></div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    return rows +
+      '<div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between">'+
+        '<div style="text-align:center">'+
+          '<div style="font-size:18px;font-weight:500;color:var(--blue)">'+reach+'</div>'+
+          '<div style="font-size:10px;color:var(--text3)">network reach</div>'+
+        '</div>'+
+        '<div style="width:1px;background:var(--border)"></div>'+
+        '<div style="text-align:center">'+
+          '<div style="font-size:18px;font-weight:500;color:var(--green)">'+conns+'</div>'+
+          '<div style="font-size:10px;color:var(--text3)">connections</div>'+
+        '</div>'+
+        '<div style="width:1px;background:var(--border)"></div>'+
+        '<div style="text-align:center">'+
+          '<div style="font-size:18px;font-weight:500;color:var(--amber)">'+mkts.length+'</div>'+
+          '<div style="font-size:10px;color:var(--text3)">markets</div>'+
+        '</div>'+
+      '</div>';
+  }
+
+  var svgNet = mkBars(barWidths);
+
+  /* Async: fetch real lender counts per market and update bars */
+  if (sb && mkts.length) {
+    sb.from('lender_appetite_profiles').select('markets,states').eq('active',true).limit(50)
+      .then(function(res) {
+        var lenders = res.data||[];
+        var max = 1;
+        var counts = mkts.map(function(m) {
+          var cnt = lenders.filter(function(l) {
+            var ms = [].concat(l.markets||[]).concat(l.states||[]);
+            return ms.some(function(lm){ return (lm||'').toLowerCase().includes(m.toLowerCase())||m.toLowerCase().includes((lm||'').toLowerCase()); });
+          }).length;
+          if (cnt > max) max = cnt;
+          return cnt;
+        });
+        mkts.forEach(function(_,i) {
+          var pct = counts[i] ? Math.round(20 + 80*(counts[i]/max)) : 20;
+          var bar = document.getElementById('mkt-bar-'+i);
+          var cnt = document.getElementById('mkt-cnt-'+i);
+          if (bar) bar.style.width = pct+'%';
+          if (cnt) cnt.textContent = counts[i] ? counts[i]+' lender'+(counts[i]>1?'s':'') : '—';
+        });
+      }).catch(function(){});
+  }
+
+  /* ── Status band ── */
+  var bandItems='';
+  if(p.ambassador_status) bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(154,123,34,.18)">⭐</div><div><div class="pp-band-name">Ambassador</div><div class="pp-band-tag">Active</div></div></div>';
+  if(p.verification_status==='verified') bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(14,154,102,.15)">✓</div><div><div class="pp-band-name">Verified</div><div class="pp-band-tag">Confirmed</div></div></div>';
+  if(p.role) bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(255,255,255,.08)">⬡</div><div><div class="pp-band-name">'+esc(roleLabel(p.role))+'</div><div class="pp-band-tag">Pegasus Network</div></div></div>';
+  (p.markets||[]).forEach(function(m){bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(255,255,255,.05)">📍</div><div><div class="pp-band-name">'+esc(m)+'</div><div class="pp-band-tag">Active market</div></div></div>';});
+
+  /* ── Signals panel: buildStream is ASYNC — use placeholder + populate after render ── */
+  var sigHtml = '<div id="pp-sig-inner" style="padding:16px;text-align:center;color:var(--text3);font-size:12px">Loading signals…</div>';
+
+  /* ── Dynamic canonical + title ── */
+  document.title = name + ' — Pegasus Network';
+  var canonEl = document.querySelector('link[rel="canonical"]');
+  if(canonEl) canonEl.href = 'https://pegasuscapitalnetwork.com' + pubUrl;
+
+  /* ── Assemble ── */
+  view.innerHTML=
+
+    /* BACK LINK */
+    '<div style="padding:10px 20px 0"><a href="/members.html" style="font-size:12.5px;color:var(--text3);text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color .2s" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text3)\'">'+'← Member Network'+'</a></div>'+
+
+    /* HERO */
+    '<section class="pp-hero">'+
+      '<div class="pp-hero-grid"></div>'+
+      bnExtra+
+      '<div class="pp-hero-wm" aria-hidden="true">P</div>'+
+      '<div class="pp-hero-c">'+
+        '<div class="pp-av">'+avHtml+'</div>'+
+        '<div>'+
+          '<h1 class="pp-name" style="margin:0">'+esc(name)+'</h1>'+ (trustBadges(p)?('<div class="pp-trust" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+trustBadges(p)+'</div>'):'')+
+          '<div class="pp-sub"><strong>'+esc(p.professional_title||roleLabel(p.role))+'</strong>'+(p.company_name?' · '+esc(p.company_name):'')+'</div>'+
+          (tags?'<div class="pp-tags">'+tags+'</div>':'')+
+          ((p.headline||p.current_focus)?'<div class="pp-tagline"><div class="pp-tagline-bar"></div><div class="pp-tagline-text">\u201c'+esc(p.headline||p.current_focus)+'\u201d</div></div>':'')+
+          '<div class="pp-stats">'+statsHtml+'</div>'+
+        '</div>'+
+        '<div class="pp-actions">'+
+          '<a class="btn btn-ghost" href="/profile-edit.html" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.2)">Edit Profile</a>'+
+          '<button class="btn btn-ghost" onclick="Pegasus.copyProfileLink()" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)">Copy Link</button>'+
+          '<a class="btn btn-ghost" href="'+pubUrl+'" target="_blank" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)">View Public</a>'+
+        '</div>'+
+        '<div id="trustStatus"></div>'+
+      '</div>'+
+      '<div class="pp-horizon"></div>'+
+    '</section>'+
+
+    /* SIGNAL STRIP */
+    (stripItems.length?'<div class="pp-strip"><div class="pp-strip-inner">'+stripItems.join('')+'</div></div>':'')+
+
+    '<div class="pp-content">'+
+
+    /* COMPLETION PROMPT */
+    (comp<100?
+      '<div class="pp-comp-bar">'+
+        '<span style="font-size:12px;color:var(--text2)">Profile <strong>'+comp+'%</strong> complete. <a href="/profile-edit.html" style="color:var(--blue)">Finish your profile</a> to increase your capital visibility.</span>'+
+        '<div class="pp-comp-track" style="max-width:200px"><div class="pp-comp-fill" style="width:'+comp+'%"></div></div>'+
+        '<span style="font-size:11px;font-weight:600;color:var(--green)">'+comp+'%</span>'+
+      '</div>'
+    :'')+
+
+    /* MEMBER UPDATES */
+    (rawUpd.length?
+      '<div style="margin-bottom:20px">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+          '<span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:400;color:var(--text)">Member Updates</span>'+
+          '<a href="/profile-edit.html" style="font-size:11px;color:var(--blue);font-weight:500;text-decoration:none">Edit Updates →</a>'+
+        '</div>'+
+        updHtml+
+      '</div>'
+    :
+      '<div style="margin-bottom:20px;padding:14px 18px;border:1.5px dashed var(--border2);border-radius:var(--r2);display:flex;align-items:center;justify-content:space-between">'+
+        '<span style="font-size:12.5px;color:var(--text3)">No member updates yet. Share a new program, milestone, or opportunity with the network.</span>'+
+        '<a href="/profile-edit.html" class="btn btn-ghost btn-sm">+ Post Update</a>'+
+      '</div>'
+    )+
+
+    /* 3-COL GRID */
+    '<div class="pp-grid">'+
+
+      /* LEFT: Identity + Status */
+      '<div class="pp-col">'+
+        '<div class="pp-card">'+
+          '<div class="pp-head"><span class="pp-lbl">Capital Identity</span><a class="pp-act" href="/profile-edit.html">Edit</a></div>'+
+          '<div style="padding:4px 0 0">'+idF+'</div>'+
+        '</div>'+
+        (bdg?'<div class="pp-card"><div class="pp-head"><span class="pp-lbl">Status</span></div><div class="pp-cbody">'+bdg+'</div></div>':'')+
+      '</div>'+
+
+      /* CENTER: Signals */
+      '<div class="pp-col">'+
+        '<div class="pp-card">'+
+          '<div class="pp-head">'+
+            '<div style="display:flex;align-items:center;gap:7px"><div class="pp-dot green"></div><span class="pp-lbl-s">Pegasus Signals</span></div>'+
+            '<a class="pp-act" href="/intelligence.html">Full Stream →</a>'+
+          '</div>'+
+          sigHtml+
+        '</div>'+
+      '</div>'+
+
+      /* RIGHT: Metrics + Map */
+      '<div class="pp-col">'+
+        '<div class="pp-card">'+
+          '<div class="pp-head"><span class="pp-lbl">Network Presence</span></div>'+
+          mets+
+        '</div>'+
+        '<div class="pp-card">'+
+          '<div class="pp-head"><span class="pp-lbl">Capital Network</span></div>'+
+          '<div style="padding:14px 16px">'+svgNet+'</div>'+
+        '</div>'+
+      '</div>'+
+
+    '</div></div>'+ /* /pp-grid /pp-content */
+
+    /* STATUS BAND */
+    (bandItems?'<div class="pp-band"><div class="pp-band-inner"><div class="pp-band-label">Network Standing</div><div class="pp-band-items">'+bandItems+'</div></div></div>':'');
+
+  /* ── Trust status strip (own profile) ── */
+  (async function(){
+    var el=document.getElementById('trustStatus'); if(!el) return;
+    try{
+      var sb=await window.PegSB.ready;
+      var rv=await sb.rpc('get_my_review'); var p2=await sb.rpc('is_review_eligible');
+      var st=(rv.data&&rv.data.status)||'none'; var elig=(!p2.error&&!!p2.data);
+      var badge='', action='';
+      if(st==='approved'){ badge='<span class="trust-badge"><span class="tb-dot"></span>Reviewed by Pegasus</span>'; }
+      else if(st==='pending'){ badge='<span style="font-size:12px;color:#d8a657">\u25cf Review pending\u2026</span>'; action='<a href="/apply-review.html" style="font-size:11px;color:rgba(255,255,255,.5);margin-left:8px">View status \u2192</a>'; }
+      else if(st==='more_info'){ badge='<span style="font-size:12px;color:#d8a657">\u25cf More information requested</span>'; action='<a href="/apply-review.html" style="font-size:11px;color:#4d8fd6;margin-left:8px">Respond \u2192</a>'; }
+      else if(elig){ action='<a href="/apply-review.html" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:10px;display:inline-block">Apply for Reviewed Status \u2192</a>'; }
+      if(badge||action) el.innerHTML='<div style="margin-top:10px">'+badge+action+'</div>';
+    }catch(e){}
+  })();
+
+  /* ── Async populate Signals section (buildStream is async, needs p.role not p) ── */
+  if (SIG && SIG.buildStream) {
+    SIG.buildStream(p.role || 'broker').then(function(html) {
+      var sigEl = document.getElementById('pp-sig-inner');
+      if (sigEl && html) sigEl.outerHTML = html;
+    }).catch(function() { /* signals unavailable — placeholder stays */ });
+  }
+});
+</script>
+</body>
+</html>

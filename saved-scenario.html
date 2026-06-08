@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"><head><title>Saved Scenario — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/saved-scenario.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Saved Scenario — Pegasus Network"><meta property="og:description" content="Create a new hypothetical educational scenario using the Capital Strategy Simulator."><meta property="og:url" content="https://pegasuscapitalnetwork.com/saved-scenario.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Saved Scenario — Pegasus Network"><meta name="twitter:description" content="Create a new hypothetical educational scenario using the Capital Strategy Simulator."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Create a new hypothetical educational scenario using the Capital Strategy Simulator."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+const v=Pegasus.mountApp({active:'Dashboard',title:'Saved Scenarios',sub:'Your modeled deals'});
+var sc=[];  // loads from Supabase capital_scenarios table
+(async function(){
+    try{
+      var c=await window.PegSB.ready;
+      if(c){var {data}=await c.from('capital_scenarios').select('*').eq('user_id',(Pegasus.store.get().user||{}).id).order('created_at',{ascending:false}); if(data&&data.length){sc=data.map(function(d){return [d.name||'Saved Scenario',d.property_type||'Capital Request','DSCR '+(d.dscr||'—'),'Scenario','tag-b'];});}}
+    }catch(e){}
+    if(sc.length){
+      v.insertAdjacentHTML('beforeend','<div class="grid g4" style="margin-bottom:16px"><div class="stat" style="--accent:var(--blue)"><div class="stat-v">'+sc.length+'</div><div class="stat-l">Saved Scenarios</div></div></div>'+
+        '<div class="card"><div class="card-body">'+sc.map(function(d){return '<div class="kv"><span class="kv-k">'+d[0]+'</span><span class="kv-v">'+d[3]+'</span></div>';}).join('')+'</div></div>');
+    } else {
+      v.insertAdjacentHTML('beforeend','<div class="card" style="padding:48px;text-align:center"><div style="font-size:28px;margin-bottom:14px">◈</div><div style="font-family:var(--serif);font-weight:300;font-size:20px;margin-bottom:10px">No saved scenarios yet</div><div style="font-size:13px;color:var(--text2);margin-bottom:22px">Use the Capital Strategy Simulator to explore financing scenarios and save them here.</div><a class="btn btn-pri" href="/capital-strategy-simulator.html">Open Simulator →</a></div>');
+    }
+  })();
+</script></body></html>

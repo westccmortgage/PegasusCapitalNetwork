@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><title>My Requests — Pegasus</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/profile/profile-system.js"></script>
+<script>
+var TYPE={property:'Property',business:'Business',rwa:'Real-world asset',other:'General'};
+var ROLE={agent:'Real estate',lender:'Financing',insurance:'Insurance',business_funding_provider:'Business funding',rwa_partner:'Real-world assets'};
+var STATUS={new:'Received',routed:'Routing to the right people',active:'Your team is forming',connected:'Your team is in place',closed:'Closed',dismissed:'Closed'};
+var SLOT={open:'Searching',claimed:'Joined',engaged:'Working with you',closed:'Complete'};
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function money(a,b){function f(n){n=Number(n);if(!n)return null;if(n>=1e6)return '$'+(n/1e6).toFixed(n%1e6?1:0)+'M';if(n>=1e3)return '$'+Math.round(n/1e3)+'K';return '$'+n;}var lo=f(a),hi=f(b);if(lo&&hi)return lo+'–'+hi;return lo||hi||null;}
+function meta(r){return [r.location?esc(r.location):null, money(r.amount_min,r.amount_max), r.timeline?esc(r.timeline):null].filter(Boolean).join(' · ');}
+function render(list){
+  var host=document.getElementById('mrList'); if(!host)return;
+  if(!list.length){ host.innerHTML='<div class="nr-empty">You haven’t started any requests yet.</div>'; return; }
+  host.innerHTML=list.map(function(r){
+    var slots=(r.slots||[]).map(function(s){var on=(s.status!=='open');return '<li><span class="rd'+(on?' on':'')+'"></span>'+esc(ROLE[s.role]||s.role)+'<span class="rs">'+esc(SLOT[s.status]||s.status)+'</span></li>';}).join('');
+    return '<div class="nr-card">'+
+      '<div class="nr-top"><span class="nr-badge">'+esc(TYPE[r.type]||r.type)+'</span>'+
+        '<span class="nr-pill '+esc(r.status)+'">'+esc(STATUS[r.status]||r.status)+'</span></div>'+
+      (meta(r)?'<div class="nr-meta">'+meta(r)+'</div>':'')+
+      (r.note?'<div class="nr-note">“'+esc(r.note)+'”</div>':'')+
+      '<ul class="nr-team">'+(slots||'<li class="rs">Assembling…</li>')+'</ul>'+
+    '</div>';
+  }).join('');
+}
+Pegasus.boot(async function(st){
+  var v=Pegasus.mountApp({active:'Network Requests',title:'My Requests',sub:'The needs you’ve brought to the ecosystem'});
+  v.innerHTML='<div id="mrList"><div class="nr-empty">Loading…</div></div>';
+  try{ var sb=await window.PegSB.ready; var r=await sb.rpc('get_my_requests'); render(r.error?[]:(r.data||[])); }catch(e){ render([]); }
+});
+</script>
+</body></html>

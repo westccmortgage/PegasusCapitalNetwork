@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Pegasus Member Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/members.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Pegasus Member Network"><meta property="og:description" content="Members on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a private,…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/members.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Pegasus Member Network"><meta name="twitter:description" content="Members on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a private,…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="Browse verified capital market participants — brokers, lenders, investors, Growth Partners, and more on the Pegasus Network.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<style>
+/* ── Member Directory ── */
+.dir-hero{background:linear-gradient(160deg,#0A1622 0%,#13314e 55%,#0A1A2C 100%);padding:13px 40px 12px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.dir-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%}
+.dir-hero-wm{position:absolute;right:-40px;top:-40px;width:320px;opacity:0.04;font-family:var(--serif);font-size:160px;font-weight:300;color:#fff;line-height:1;pointer-events:none;user-select:none}
+.dir-hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:2;width:100%}
+.dir-hero h1{font-family:var(--serif);font-weight:300;font-size:clamp(18px,2vw,24px);color:#fff;letter-spacing:-0.02em;margin-bottom:3px}
+.dir-hero p{font-size:12px;color:rgba(255,255,255,0.5);max-width:560px;line-height:1.45;margin-bottom:0}
+.dir-hero-stats{display:flex;gap:18px;margin-top:9px}
+.dir-hero-stat{text-align:center}
+.dir-hero-stat-val{font-family:var(--mono);font-size:14px;color:rgba(255,255,255,0.85)}
+.dir-hero-stat-lbl{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:2px}
+
+/* Filters */
+.dir-filters{background:rgba(250,249,246,.78);backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);border-bottom:1px solid var(--border);padding:12px 40px;position:sticky;top:0;z-index:50}
+.dir-filters-inner{max-width:1200px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dir-search{flex:1;min-width:200px;max-width:320px;position:relative}
+.dir-search input{width:100%;background:rgba(255,255,255,.6);border:1px solid var(--border2);border-radius:22px;padding:9px 16px 9px 36px;font-size:13px;color:var(--text);font-family:var(--sans);outline:none;transition:box-shadow .2s,border-color .2s,background .2s}
+.dir-search input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px var(--blue-dim),0 4px 18px rgba(24,95,165,.08)}
+.dir-search input::placeholder{color:var(--text3)}
+.dir-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);pointer-events:none}
+.dir-filter-pill{padding:6px 15px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:rgba(255,255,255,.4);font-family:var(--sans);transition:background .2s,border-color .2s,color .2s,box-shadow .2s;white-space:nowrap}
+.dir-filter-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 3px 12px rgba(24,95,165,.22)}
+.dir-filter-pill:hover:not(.active){background:var(--bg2);border-color:var(--blue);color:var(--blue)}
+.dir-count{margin-left:auto;font-size:11.5px;color:var(--text3);font-family:var(--mono);white-space:nowrap}
+
+/* Grid */
+.dir-body{max-width:1400px;margin:0 auto;padding:22px 40px 40px;position:relative;z-index:1}
+.dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px}
+.dir-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.dir-empty-icon{font-size:32px;margin-bottom:12px}
+.dir-empty-msg{font-size:14px;color:var(--text2)}
+.dir-loading{text-align:center;padding:60px;color:var(--text3);font-family:var(--mono);font-size:12px}
+
+/* Member card */
+.mcard{
+  background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);
+  overflow:hidden;transition:all .18s;cursor:pointer;text-decoration:none;display:block;
+}
+.mcard:hover{border-color:var(--blue);box-shadow:var(--sh-card);transform:translateY(-2px)}
+.mcard-banner{height:60px;background:linear-gradient(135deg,#0F1E38,#235FA6);position:relative;flex-shrink:0}
+.mcard-banner img{width:100%;height:100%;object-fit:cover}
+.mcard-head{padding:0 16px 14px;position:relative}
+.mcard-av{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,#1a3260,#235FA6);
+  border:3px solid var(--bg1);margin-top:-26px;position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:18px;color:rgba(255,255,255,0.9);
+  overflow:hidden;flex-shrink:0;
+}
+.mcard-av img{width:100%;height:100%;object-fit:cover}
+.mcard-badges{position:absolute;top:10px;right:12px;display:flex;gap:5px}
+.mcard-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:3px;font-size:9.5px;font-weight:600;
+  letter-spacing:0.04em;
+}
+.mcard-badge.amb{background:rgba(205,167,72,0.15);color:#8A6520;border:1px solid rgba(205,167,72,0.25)}
+.mcard-badge.ver{background:rgba(14,154,102,0.12);color:#0E6B47;border:1px solid rgba(14,154,102,0.2)}
+.mcard-name{font-size:15px;font-weight:500;color:var(--text);margin-top:8px;line-height:1.2}
+.mcard-role{display:inline-block;margin-top:5px;padding:2px 8px;border-radius:3px;font-size:10.5px;font-weight:500;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);text-transform:capitalize}
+.mcard-title{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.45}
+.mcard-body{padding:0 16px 14px}
+.mcard-headline{font-size:12.5px;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
+.mcard-markets{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.mcard-mkt{padding:2px 7px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);font-family:var(--mono)}
+.mcard-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.mcard-comp{font-size:10px;color:var(--text4);font-family:var(--mono)}
+.mcard-cta{font-size:12px;color:var(--blue);font-weight:500}
+
+/* Load more */
+.dir-load-more{text-align:center;margin-top:32px}
+.dir-load-more button{padding:10px 28px;border-radius:var(--r2);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-family:var(--sans);cursor:pointer;transition:all .15s}
+.dir-load-more button:hover{background:var(--bg2);border-color:var(--blue);color:var(--blue)}
+
+/* Ambassador featured row */
+.dir-amb-row{margin-bottom:18px}
+.dir-amb-head{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dir-amb-head::after{content:'';flex:1;height:1px;background:var(--border)}
+.dir-amb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:12px}
+
+/* Featured ambassador card (bigger) */
+.mcard-featured{background:linear-gradient(135deg,#0F1E38 0%,#1B3A62 100%)}
+.mcard-featured .mcard-banner{background:rgba(255,255,255,0.05);height:70px}
+.mcard-featured .mcard-head{background:transparent}
+.mcard-featured .mcard-av{border-color:rgba(205,167,72,0.5)}
+.mcard-featured .mcard-name{color:#fff}
+.mcard-featured .mcard-role{background:rgba(205,167,72,0.15);color:rgba(205,167,72,0.9);border-color:rgba(205,167,72,0.25)}
+.mcard-featured .mcard-title{color:rgba(255,255,255,0.55)}
+.mcard-featured .mcard-body{border-top:1px solid rgba(255,255,255,0.07)}
+.mcard-featured .mcard-headline{color:rgba(255,255,255,0.7)}
+.mcard-featured .mcard-mkt{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)}
+.mcard-featured .mcard-footer{border-top-color:rgba(255,255,255,0.07)}
+.mcard-featured .mcard-comp{color:rgba(255,255,255,0.25)}
+.mcard-featured .mcard-cta{color:#CDA748}
+
+@media(max-width:768px){
+  .dir-hero{padding:11px 20px 10px}
+  .dir-filters{padding:12px 20px}
+  .dir-body{padding:14px 16px 28px}
+  .dir-hero-stats{gap:16px}
+}
+</style>
+<style>
+/* ============ DIRECTORY LIFE PASS — alive, dense, interconnected ============ */
+
+/* faint breathing ecosystem field behind the whole directory body */
+.dir-ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.dir-ambient::before{content:"";position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:120vw;height:70vh;
+  background:radial-gradient(60% 60% at 50% 0%,rgba(24,95,165,.05),rgba(24,95,165,0) 70%);
+  animation:ambBreath 14s ease-in-out infinite}
+@keyframes ambBreath{0%,100%{opacity:.55;transform:translateX(-50%) scale(1)}50%{opacity:.9;transform:translateX(-50%) scale(1.04)}}
+
+/* member card — flat, dense, uniform + alive */
+.mcard{display:flex;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;text-decoration:none;position:relative;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1),border-color .25s ease,box-shadow .3s ease}
+.mcard.in{opacity:1;transform:none}
+.mcard::before{content:"";display:block;height:3px;background:linear-gradient(90deg,#235FA6,#1B3A62);flex-shrink:0;transition:filter .25s ease,opacity .25s ease;opacity:.85}
+.mcard::after{content:"";position:absolute;inset:0;border-radius:var(--r3);pointer-events:none;opacity:0;transition:opacity .3s ease;
+  box-shadow:inset 0 0 0 1px rgba(24,95,165,.18),0 0 26px rgba(24,95,165,.08)}
+.mcard.in:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 16px 42px rgba(18,38,66,.10)}
+.mcard.in:hover::before{filter:brightness(1.35) saturate(1.15);opacity:1}
+.mcard.in:hover::after{opacity:1}
+.mcard-av{width:50px;height:50px;min-width:50px;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:18px;color:var(--text3);margin:0;transition:border-color .25s ease,transform .3s cubic-bezier(.2,.7,.2,1)}
+.mcard.in:hover .mcard-av{transform:scale(1.04)}
+.mcard-av img{width:100%;height:100%;object-fit:cover}
+.mcard-top{display:flex;gap:12px;align-items:center;padding:15px 15px 0}
+.mcard-id{min-width:0;flex:1}
+.mcard-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcard-meta{font-size:12px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcard-headline{padding:11px 15px 0;font-size:12.5px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:0}
+.mcard-sig{display:flex;align-items:center;gap:7px;padding:10px 15px 0;font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.01em}
+.mcard-sig .sig-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;flex-shrink:0;box-shadow:0 0 0 0 rgba(29,158,117,.5);animation:sigPulse 2.8s ease-out infinite}
+@keyframes sigPulse{0%{box-shadow:0 0 0 0 rgba(29,158,117,.45)}70%{box-shadow:0 0 0 6px rgba(29,158,117,0)}100%{box-shadow:0 0 0 0 rgba(29,158,117,0)}}
+.mcard-tags{display:flex;flex-wrap:wrap;gap:5px;padding:9px 15px 0;align-items:center}
+.mcard-mkt{padding:2px 7px;border-radius:4px;font-size:10px;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);font-family:var(--mono)}
+.mcard-foot{margin-top:auto;padding:11px 15px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border)}
+.mcard-loc{font-size:11px;color:var(--text4);font-family:var(--mono)}
+.mcard-cta{font-size:12px;color:var(--blue);font-weight:600;transition:transform .25s ease}
+.mcard.in:hover .mcard-cta{transform:translateX(3px)}
+.mcard-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600}
+.mcard-badge.amb{background:rgba(205,167,72,.14);color:#8A6520;border:1px solid rgba(205,167,72,.3)}
+.mcard-badge.ver{background:rgba(14,154,102,.12);color:#0E6B47;border:1px solid rgba(14,154,102,.22)}
+.mcard-featured{background:var(--bg1);border-color:rgba(205,167,72,.32)}
+.mcard-featured::before{background:linear-gradient(90deg,#cda748,#8a6520)}
+.mcard-featured .mcard-av{border-color:rgba(205,167,72,.5)}
+.mcard-featured .mcard-name{color:var(--text)}
+.mcard-featured .mcard-meta{color:var(--text3)}
+.mcard-featured .mcard-headline{color:var(--text2)}
+.mcard-featured .mcard-mkt{background:var(--bg2);color:var(--text3);border-color:var(--border2)}
+.mcard-featured .mcard-loc{color:var(--text4)}
+.mcard-featured .mcard-cta{color:var(--blue)}
+.mcard-featured .mcard-sig{color:var(--text3)}
+.mcard-featured.in:hover::after{box-shadow:inset 0 0 0 1px rgba(205,167,72,.28),0 0 26px rgba(205,167,72,.10)}
+
+/* the ecosystem notices interaction — neighbours recede when one card is focused */
+@media(hover:hover){
+  .dir-grid:hover .mcard.in:not(:hover),
+  .dir-amb-grid:hover .mcard.in:not(:hover){opacity:.62}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mcard{opacity:1;transform:none;transition:border-color .2s,box-shadow .2s}
+  .dir-ambient::before,.mcard-sig .sig-dot{animation:none}
+  .dir-grid:hover .mcard.in:not(:hover),.dir-amb-grid:hover .mcard.in:not(:hover){opacity:1}
+}
+</style>
+<style>
+/* early-network line, All Members header, category placeholders, CTA banner */
+.dir-hero-note{display:inline-flex;align-items:center;gap:8px;margin-top:11px;font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:rgba(255,255,255,.7)}
+.dir-hero-dot{width:6px;height:6px;border-radius:50%;background:#16C486;box-shadow:0 0 0 0 rgba(22,196,134,.5);animation:sigPulse 2.8s ease-out infinite}
+.dir-allhead{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;margin:4px 0 12px;display:flex;align-items:center;gap:8px}
+.dir-allhead::after{content:"";flex:1;height:1px;background:var(--border)}
+.mcard-cat{justify-content:center;text-align:center;background:var(--bg2);border-style:dashed;border-color:var(--border2)}
+.mcard-cat::before{display:none}
+.mcard-cat.in:hover{transform:translateY(-2px);box-shadow:none;border-color:var(--border3)}
+.mcard-cat.in:hover::after{opacity:0}
+.mcard-cat-in{padding:30px 18px}
+.mcard-cat-ic{font-size:15px;color:var(--text4);margin-bottom:10px}
+.mcard-cat-name{font-size:14px;font-weight:600;color:var(--text2);letter-spacing:-.01em}
+.mcard-cat-note{font-size:11.5px;color:var(--text4);margin-top:6px;font-family:var(--mono)}
+.dir-cta{max-width:1120px;margin:72px auto 0;padding:12px 40px 64px;position:relative;z-index:1}
+.dir-cta-in{background:linear-gradient(160deg,#0A1622,#13314e 60%,#0A1A2C);border-radius:var(--r4);padding:46px 32px;text-align:center}
+.dir-cta-in h2{font-family:var(--serif);font-weight:300;font-size:clamp(22px,2.6vw,30px);color:#fff;letter-spacing:-.02em;margin:0 0 12px}
+.dir-cta-in p{font-size:14px;color:rgba(255,255,255,.62);max-width:520px;margin:0 auto 22px;line-height:1.6}
+@media(max-width:760px){.dir-cta{padding:12px 16px 40px}.dir-cta-in{padding:32px 20px}}
+</style>
+<style>
+/* Founder / early-network banner (full-width horizontal) */
+.dir-founder{background:linear-gradient(160deg,#0A1622,#13314e 60%,#0A1A2C);border:1px solid var(--border2);border-radius:var(--r4);padding:26px 30px;margin-bottom:22px;position:relative;overflow:hidden}
+.dir-founder-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(205,167,72,.85);margin-bottom:16px}
+.dir-founder-grid{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:28px;align-items:center}
+.dir-founder-id{display:flex;gap:16px;align-items:center}
+.dir-founder-av{width:72px;height:72px;min-width:72px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:24px;color:#fff;border:2px solid rgba(205,167,72,.5)}
+.dir-founder-av img{width:100%;height:100%;object-fit:cover}
+.dir-founder-name{font-size:18px;font-weight:600;color:#fff;line-height:1.2}
+.dir-founder-title{font-size:13px;color:rgba(205,167,72,.92);margin-top:4px}
+.dir-founder-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px}
+.dir-founder-msg{border-left:1px solid rgba(255,255,255,.12);padding-left:28px}
+.dir-founder-msg h3{font-family:var(--serif);font-weight:300;font-size:clamp(18px,2vw,23px);color:#fff;letter-spacing:-.01em;margin:0 0 10px;line-height:1.25}
+.dir-founder-msg p{font-size:13px;color:rgba(255,255,255,.62);line-height:1.6;margin:0 0 18px;max-width:560px}
+.dir-founder-cta{display:flex;gap:10px;flex-wrap:wrap}
+.dir-founder-cta .btn-ghost{color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
+.dir-founder-cta .btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12)}
+@media(max-width:760px){.dir-founder-grid{grid-template-columns:1fr;gap:18px}.dir-founder-msg{border-left:none;border-top:1px solid rgba(255,255,255,.12);padding-left:0;padding-top:18px}.dir-founder{padding:22px 20px}}
+</style>
+<style>
+/* Two-column master-detail network interface */
+.net-intro{width:86%;max-width:1640px;margin:0 auto;padding:24px 0 0;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;position:relative;z-index:1}
+.net-intro p{font-size:15px;font-weight:500;color:var(--text);margin:0}
+.net-layout{display:grid;grid-template-columns:2fr 3fr;gap:24px;width:86%;max-width:1640px;margin:0 auto;padding:16px 0 48px;align-items:start;position:relative;z-index:1}
+.net-left{display:flex;flex-direction:column;gap:11px}
+.net-search{position:relative}
+.net-search input{width:100%;background:rgba(255,255,255,.7);border:1px solid var(--border2);border-radius:22px;padding:10px 16px 10px 36px;font-size:13px;color:var(--text);font-family:var(--sans);outline:none;transition:box-shadow .2s,border-color .2s,background .2s}
+.net-search input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px var(--blue-dim)}
+.net-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
+.net-filters{display:flex;gap:6px;flex-wrap:wrap}
+.net-pill{padding:5px 12px;border-radius:16px;font-size:11.5px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:rgba(255,255,255,.5);font-family:var(--sans);transition:background .2s,border-color .2s,color .2s;white-space:nowrap}
+.net-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.net-pill:hover:not(.active){border-color:var(--blue);color:var(--blue)}
+.net-list{display:flex;flex-direction:column;gap:8px;max-height:64vh;overflow-y:auto;padding:2px 6px 2px 2px;margin-top:3px}
+.net-list::-webkit-scrollbar{width:6px}.net-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.net-loading,.net-empty{text-align:center;padding:40px 16px;color:var(--text3);font-family:var(--mono);font-size:12px}
+.net-item{display:flex;align-items:center;gap:11px;padding:12px 13px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);cursor:pointer;text-align:left;transition:border-color .18s,box-shadow .18s,background .18s,transform .18s}
+.net-item:hover{border-color:var(--border2);box-shadow:0 8px 20px rgba(20,40,70,.08);transform:translateY(-1px)}
+.net-item.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue),0 10px 26px rgba(24,95,165,.16)}
+.net-item.active .net-item-act{background:var(--blue);color:#fff}
+.net-item-av{width:42px;height:42px;min-width:42px;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:15px;color:var(--text3)}
+.net-item-av img{width:100%;height:100%;object-fit:cover}
+.net-item-av.cat{background:transparent;border-style:dashed;color:var(--text4);font-size:13px}
+.net-item-body{min-width:0;flex:1}
+.net-item-name{font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.net-item-meta{font-size:11.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.net-item-loc{font-size:10.5px;color:var(--text4);font-family:var(--mono);margin-top:2px}
+.net-item-sig{font-size:10.5px;color:var(--text3);font-family:var(--mono);margin-top:3px;display:flex;align-items:center;gap:5px}
+.net-item-cat{background:var(--bg2);border-style:dashed}
+.net-item-act{font-size:10.5px;color:var(--blue);font-weight:600;flex-shrink:0;background:var(--blue-dim);padding:5px 12px;border-radius:13px;transition:background .18s,color .18s}
+.net-item:hover .net-item-act{background:var(--blue);color:#fff}
+.net-soon{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text4);font-family:var(--mono);border:1px solid var(--border2);border-radius:13px;padding:4px 10px;flex-shrink:0;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.net-soon svg{width:10px;height:10px;opacity:.7}
+.net-item-cat{background:var(--bg2);border-style:dashed;opacity:.94}
+.net-item-cat:hover{opacity:1;border-color:var(--border3);transform:none;box-shadow:none}
+.net-item-av.cat svg{width:14px;height:14px}
+.sig-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;flex-shrink:0}
+.net-right{position:sticky;top:78px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r4);padding:34px;min-height:400px}
+.net-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(205,167,72,.9);margin-bottom:18px}
+.net-founder{display:flex;gap:14px;align-items:center;margin-bottom:32px;padding-bottom:26px;border-bottom:1px solid var(--border)}
+.net-founder-av{width:60px;height:60px;min-width:60px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;color:#fff;border:2px solid rgba(205,167,72,.5)}
+.net-founder-av img{width:100%;height:100%;object-fit:cover}
+.net-founder-name{font-size:16px;font-weight:600;color:var(--text)}
+.net-founder-title{font-size:12.5px;color:#8A6520;margin-top:3px}
+.net-founder-sub{font-size:11.5px;color:var(--text3);margin-top:2px}
+.net-h{font-family:var(--serif);font-weight:300;font-size:clamp(20px,2.2vw,26px);color:var(--text);letter-spacing:-.01em;line-height:1.25;margin:0 0 12px}
+.net-p{font-size:13.5px;color:var(--text2);line-height:1.7;margin:0 0 22px;max-width:600px}
+.net-show{margin:0 0 26px;padding:15px 18px;border:1px solid var(--border2);border-radius:14px;background:rgba(255,255,255,.45);max-width:600px}
+.net-show-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text4);font-family:var(--mono);margin-bottom:8px}
+.net-show-items{font-family:var(--serif);font-size:15px;color:var(--text);font-weight:500;margin-bottom:9px;letter-spacing:-.01em}
+.net-show-sub{font-size:12.5px;color:var(--text2);line-height:1.55}
+.net-bio{font-size:13.5px;color:var(--text2);line-height:1.7;margin:0 0 22px;max-width:600px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.net-cta{display:flex;gap:10px;flex-wrap:wrap}
+.net-prof-head{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+.net-prof-av{width:72px;height:72px;min-width:72px;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:24px;color:var(--text3)}
+.net-prof-av img{width:100%;height:100%;object-fit:cover}
+.net-prof-name{font-size:20px;font-weight:600;color:var(--text)}
+.net-prof-meta{font-size:13px;color:var(--text2);margin-top:3px}
+.net-prof-loc{font-size:12px;color:var(--text4);font-family:var(--mono);margin-top:3px}
+.net-sig{font-size:12px;color:var(--text3);font-family:var(--mono);margin:0 0 16px;display:flex;align-items:center;gap:7px}
+.net-tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px}
+.net-tag{padding:3px 9px;border-radius:5px;font-size:11px;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);font-family:var(--mono)}
+@media(max-width:860px){
+  .net-intro{width:auto;padding:18px 16px 0;flex-direction:column;align-items:flex-start;gap:12px}
+  .net-intro p{font-size:15px;line-height:1.45}
+  .net-layout{grid-template-columns:minmax(0,1fr);width:auto;gap:16px;padding:14px 14px 32px}
+  .net-left{min-width:0}
+  .net-right{position:static;min-height:0;min-width:0;padding:22px 18px}
+  .net-list{max-height:none}
+  .net-show{padding:14px 16px}
+  .dir-cta{margin-top:36px}
+}
+</style>
+</head>
+<body>
+<div class=\"dir-ambient\" aria-hidden=\"true\"></div>
+<div id="nav"></div>
+
+<div class="dir-hero">
+  <canvas id="cinCanvas" class="dir-canvas"></canvas>
+  <div class="cin-signals" id="cinSignals" aria-hidden="true"></div>
+  <div class="dir-hero-inner">
+    <div class="eyebrow" style="color:rgba(205,167,72,0.8);margin-bottom:10px">Capital Network</div>
+    <h1 id="dir-h1">Pegasus Member Network</h1>
+    <p id="dir-sub">Discover real estate, lending, investment, and capital professionals inside the Pegasus ecosystem.</p>
+    <div class="dir-hero-note"><span class="dir-hero-dot"></span>Early member network now forming</div>
+  </div>
+</div>
+
+<div class="net-intro">
+  <p>Create your profile to become discoverable inside the Pegasus Member Network.</p>
+  <a class="btn btn-pri" href="/signup.html">Create My Profile</a>
+</div>
+<div class="net-layout">
+  <aside class="net-left">
+    <div class="net-search">
+      <span class="net-search-icon">⌕</span>
+      <input type="text" id="net-search" placeholder="Discover members, markets, or expertise…" oninput="netFilter()">
+    </div>
+    <div class="net-filters" id="net-filters">
+      <button class="net-pill active" data-role="" onclick="netRole('',this)">All Roles</button>
+      <button class="net-pill" data-role="broker" onclick="netRole('broker',this)">Brokers</button>
+      <button class="net-pill" data-role="lender" onclick="netRole('lender',this)">Lenders</button>
+      <button class="net-pill" data-role="investor" onclick="netRole('investor',this)">Capital Partners</button>
+      <button class="net-pill" data-role="borrower" onclick="netRole('borrower',this)">Growth Partners</button>
+      <button class="net-pill" data-role="developer" onclick="netRole('developer',this)">Developers</button>
+      <button class="net-pill" data-role="ecosystem_member" onclick="netRole('ecosystem_member',this)">Ecosystem</button>
+    </div>
+    <div class="net-list" id="net-list"><div class="net-loading">Loading network…</div></div>
+  </aside>
+  <section class="net-right" id="net-detail"></section>
+</div>
+<section class="dir-cta">
+  <div class="dir-cta-in">
+    <h2>Want to be visible inside the Pegasus Network?</h2>
+    <p>Create your profile and let other members discover your role, market, and business goals.</p>
+    <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create My Profile</a>
+  </div>
+</section>
+<div id="footer"></div>
+
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.mountPublic('Members');
+document.getElementById('footer').outerHTML = Pegasus.footer();
+
+var ALL = [], FILTERED = [], PAGE_SIZE = 18, page = 0, activeRole = '';
+
+function initials(n){ var w=(n||'').trim().split(/\s+/); return (w[0]?w[0][0]:'')+(w[1]?w[1][0]:''); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cap(s){ return (s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+
+var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Real Estate Professional',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
+function roleLabel(r){r=(r||'').toLowerCase();return ROLE_LABELS[r]||cap(r||'member');}
+
+/* Role-aware directory environments (curated hero per ecosystem role) */
+var ROLE_META={
+  '':{h1:'Pegasus Member Network',sub:'Discover real estate, lending, investment, and capital professionals inside the Pegasus ecosystem.'},
+  lender:{h1:'Private Lenders Network',sub:'Connect with private lenders, bridge capital providers, DSCR specialists, and institutional funding relationships inside the Pegasus ecosystem.'},
+  broker:{h1:'Mortgage Broker Network',sub:'Brokers and origination partners building deal flow and lender relationships across the network.'},
+  investor:{h1:'Capital Partners',sub:'Investors and capital partners evaluating real estate and private-credit opportunities across the ecosystem.'},
+  borrower:{h1:'Growth Partners',sub:'Operators, sponsors, and growth-minded participants bringing real opportunities to the network.'},
+  developer:{h1:'Developers & Sponsors',sub:'Developers and project sponsors seeking aligned capital and execution partners.'},
+  ecosystem_member:{h1:'Ecosystem Members',sub:'Advisors, strategists, builders, and contributors who make the Pegasus ecosystem work.'},
+  agent:{h1:'Real Estate Professionals',sub:'Agents and real estate professionals active across markets in the network.'}
+};
+
+function ecoSignal(m){
+  if(m.institutional_visibility) return 'Institutional visibility';
+  if(m.markets && m.markets.length) return 'Active in '+m.markets[0];
+  if(m.role==='business_funding_provider'||m.role==='ecosystem_member') return 'In the founder network';
+  return 'Pegasus member';
+}
+function avHTML(m){ return m.avatar_url ? '<img src="'+esc(m.avatar_url)+'" alt="'+esc(m.full_name||'')+'" loading="lazy">' : esc(initials(m.full_name)||'?'); }
+
+var FOUNDER=null, founderLink='/members.html';
+var CATS=['Capital Partners','Developers','Mortgage Brokers','Real Estate Agents','Private Investors','Lenders','Construction Partners','Ecosystem Members'];
+var CAT_DESC={
+ 'Capital Partners':'Capital partners inside Pegasus may include private lenders, funds, investors, and financing relationships interested in real estate, lending, business capital, and structured opportunities.',
+ 'Developers':'Developers inside Pegasus may include real estate developers and sponsors seeking capital, lending relationships, and execution partners for ground-up, value-add, and repositioning projects.',
+ 'Mortgage Brokers':'Mortgage brokers inside Pegasus may include residential and commercial brokers building lender relationships and connecting clients with aligned financing.',
+ 'Real Estate Agents':'Real estate agents inside Pegasus may include licensed agents showcasing listings and connecting their clients with financing partners across the network.',
+ 'Private Investors':'Private investors inside Pegasus may include individuals and groups deploying capital into real estate, lending, and business opportunities.',
+ 'Lenders':'Lenders inside Pegasus may include private lenders, bridge and DSCR specialists, and institutional funding relationships across real estate and business capital.',
+ 'Construction Partners':'Construction partners inside Pegasus may include builders, general contractors, and project partners supporting development and value-add execution.',
+ 'Ecosystem Members':'Ecosystem members inside Pegasus may include the broader network of professionals \u2014 advisors, service providers, and partners who support capital and real estate activity.'
+};
+
+var NET_SHOW = '<div class="net-show">'+
+  '<div class="net-show-label">What your profile can show</div>'+
+  '<div class="net-show-items">Role \u00b7 Market \u00b7 Expertise \u00b7 Business Goals</div>'+
+  '<div class="net-show-sub">Members can discover you by category, location, and relationship goals.</div>'+
+'</div>';
+
+function netItem(m,i){
+  var meta=[roleLabel(m.role)]; var sub=m.company_name||m.professional_title; if(sub) meta.push(sub);
+  return '<div class="net-item" data-i="'+i+'" onclick="selectMember('+i+')">'+
+    '<div class="net-item-av">'+avHTML(m)+'</div>'+
+    '<div class="net-item-body">'+
+      '<div class="net-item-name">'+esc(m.full_name||'Member')+'</div>'+
+      '<div class="net-item-meta">'+esc(meta.filter(Boolean).join(' \u00b7 '))+'</div>'+
+      '<div class="net-item-sig"><span class="sig-dot"></span>'+esc(ecoSignal(m))+'</div>'+
+    '</div>'+
+    '<span class="net-item-act">View</span>'+
+  '</div>';
+}
+function catItem(name){
+  return '<div class="net-item net-item-cat" data-cat="'+esc(name)+'" onclick="selectCat(\''+name+'\')">'+
+    '<div class="net-item-av cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>'+
+    '<div class="net-item-body"><div class="net-item-name">'+name+'</div><div class="net-item-meta">Profiles visible as members join</div></div>'+
+    '<span class="net-soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Category forming</span>'+
+  '</div>';
+}
+function buildList(){
+  var list=document.getElementById('net-list'); if(!list) return;
+  var html = FILTERED.map(function(m){ return netItem(m, ALL.indexOf(m)); }).join('');
+  if(!activeRole) html += CATS.map(catItem).join('');
+  else if(FILTERED.length===0) html += CATS.map(catItem).join('');
+  if(!html) html='<div class="net-empty">No members match your search.</div>';
+  list.innerHTML=html;
+}
+function netFilter(){
+  var q=((document.getElementById('net-search')||{}).value||'').toLowerCase();
+  FILTERED = ALL.filter(function(m){
+    if(activeRole){ if(m.role!==activeRole) return false; }
+    if(!q) return true;
+    var hay=[m.full_name,m.headline,m.bio,m.professional_title,m.company_name].concat(m.markets||[]).join(' ').toLowerCase();
+    return hay.indexOf(q)!==-1;
+  });
+  buildList();
+}
+function setActive(el){
+  var l=document.getElementById('net-list'); if(!l) return;
+  l.querySelectorAll('.net-item').forEach(function(x){x.classList.remove('active');});
+  if(el) el.classList.add('active');
+}
+function scrollDetailMobile(){
+  if(window.innerWidth<=860){ var d=document.getElementById('net-detail'); if(d) d.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
+function renderDefault(){
+  setActive(null);
+  var av = FOUNDER ? avHTML(FOUNDER) : 'AK';
+  var d=document.getElementById('net-detail'); if(!d) return;
+  d.innerHTML =
+    '<div class="net-eyebrow">Founder &amp; Early Network Member</div>'+
+    '<div class="net-founder">'+
+      '<div class="net-founder-av">'+av+'</div>'+
+      '<div><div class="net-founder-name">Anatoliy Kanevsky</div>'+
+        '<div class="net-founder-title">Founder of Pegasus Capital Network</div>'+
+        '<div class="net-founder-sub">Founder &amp; CEO of West Coast Capital Mortgage</div></div>'+
+    '</div>'+
+    '<h2 class="net-h">Pegasus is currently forming its early professional network.</h2>'+
+    '<p class="net-p">Create your profile to become visible as the ecosystem grows. Members can showcase their role, market, expertise, and business goals inside the Pegasus Member Network.</p>'+
+    NET_SHOW+
+    '<div class="net-cta"><a class="btn btn-ghost" href="'+founderLink+'">View Founder Profile</a><a class="btn btn-pri" href="/signup.html">Create My Profile</a></div>';
+}
+window.selectMember=function(i){
+  var m=ALL[i]; if(!m) return;
+  setActive(document.querySelector('.net-item[data-i="'+i+'"]'));
+  var href = m.profile_slug ? '/u/'+m.profile_slug : '/public-profile.html?id='+m.id;
+  var tags='';
+  if(m.reviewed_by_pegasus) tags+='<span class="trust-badge sm"><span class="tb-dot"></span>Reviewed</span>';
+  if(m.verified_identity||m.verification_status==='verified') tags+='<span class="net-tag">\u2713 Verified</span>';
+  (m.markets||[]).slice(0,4).forEach(function(mk){ tags+='<span class="net-tag">'+esc(mk)+'</span>'; });
+  (m.specialties||[]).slice(0,3).forEach(function(sp){ tags+='<span class="net-tag">'+esc(sp)+'</span>'; });
+  var meta=[roleLabel(m.role)]; if(m.company_name) meta.push(m.company_name);
+  var d=document.getElementById('net-detail'); if(!d) return;
+  d.innerHTML =
+    '<div class="net-eyebrow">Member Profile</div>'+
+    '<div class="net-prof-head">'+
+      '<div class="net-prof-av">'+avHTML(m)+'</div>'+
+      '<div><div class="net-prof-name">'+esc(m.full_name||'Member')+'</div>'+
+        '<div class="net-prof-meta">'+esc(meta.filter(Boolean).join(' \u00b7 '))+'</div>'+
+        '</div>'+
+    '</div>'+
+    '<div class="net-sig"><span class="sig-dot"></span>'+esc(ecoSignal(m))+'</div>'+
+    '<p class="net-bio">'+esc(m.bio||m.headline||'Pegasus Network member')+'</p>'+
+    (tags?'<div class="net-tags">'+tags+'</div>':'')+
+    NET_SHOW+
+    '<div class="net-cta"><a class="btn btn-pri" href="'+href+'">View Full Profile \u2192</a></div>';
+  scrollDetailMobile();
+};
+window.selectCat=function(name){
+  setActive(document.querySelector('.net-item[data-cat="'+name+'"]'));
+  var d=document.getElementById('net-detail'); if(!d) return;
+  d.innerHTML =
+    '<div class="net-eyebrow">Category</div>'+
+    '<h2 class="net-h">'+esc(name)+'</h2>'+
+    '<p class="net-p">'+esc(CAT_DESC[name]||'')+'</p>'+
+    NET_SHOW+
+    '<div class="net-cta"><a class="btn btn-pri" href="/signup.html">Create My Profile</a></div>';
+  scrollDetailMobile();
+};
+window.netRole=function(role,btn){
+  activeRole = (ROLE_META[role]!==undefined) ? role : (role||'');
+  document.querySelectorAll('.net-pill').forEach(function(p){ p.classList.toggle('active',(p.getAttribute('data-role')||'')===activeRole); });
+  var meta=ROLE_META[activeRole]||{h1:roleLabel(activeRole),sub:''};
+  var h1=document.getElementById('dir-h1'),sub=document.getElementById('dir-sub');
+  if(h1)h1.textContent=meta.h1; if(sub)sub.textContent=meta.sub||'';
+  try{ history.replaceState(null,'',activeRole?('?role='+activeRole):location.pathname); }catch(e){}
+  netFilter();
+  renderDefault();
+};
+
+async function loadNetwork(){
+  try {
+    var c = await window.PegSB.ready;
+
+    /* Privacy gate: public visitors must NOT see individual members.
+       Only authenticated members can load real profiles. Guests get the
+       category orientation + anonymized preview instead. */
+    var session=null;
+    try{ session = (window.PegAuth && PegAuth.getSession) ? await PegAuth.getSession() : ((await c.auth.getSession()).data||{}).session; }catch(e){ session=null; }
+    if(!session){ renderGuestNetwork(); return; }
+
+    var res = await c.from('profiles')
+      .select('id,full_name,role,headline,bio,professional_title,company_name,markets,specialties,avatar_url,banner_url,profile_slug,profile_completion,ambassador_status,verification_status,reviewed_by_pegasus,verified_identity,institutional_visibility')
+      .not('full_name','is',null)
+      .order('ambassador_status',{ascending:false})
+      .order('reviewed_by_pegasus',{ascending:false,nullsFirst:false})
+      .order('profile_completion',{ascending:false})
+      .limit(200);
+    ALL = res.data || [];
+    FILTERED = ALL.slice();
+    FOUNDER = ALL.filter(function(m){return m.ambassador_status;})[0]
+            || ALL.filter(function(m){return /anatoliy/i.test(m.full_name||'');})[0] || null;
+    if(FOUNDER){ founderLink = FOUNDER.profile_slug ? '/u/'+FOUNDER.profile_slug : (FOUNDER.id?'/public-profile.html?id='+FOUNDER.id:'/members.html'); }
+    var urlRole=(new URLSearchParams(location.search).get('role')||'').toLowerCase();
+    activeRole = ROLE_META[urlRole] ? urlRole : '';
+    document.querySelectorAll('.net-pill').forEach(function(p){ p.classList.toggle('active',(p.getAttribute('data-role')||'')===activeRole); });
+    var meta=ROLE_META[activeRole]||{}; var h1=document.getElementById('dir-h1'),sub=document.getElementById('dir-sub');
+    if(h1&&meta.h1)h1.textContent=meta.h1; if(sub&&meta.sub)sub.textContent=meta.sub;
+    netFilter();
+    renderDefault();
+  } catch(e){
+    var l=document.getElementById('net-list'); if(l) l.innerHTML='<div class="net-empty">Could not load members. Please try again.</div>';
+    console.error('[Network]',e);
+  }
+}
+
+/* Guest view — confident "who's inside" presentation + live activity.
+   No locks, no "category forming", no empty member rows. The goal is to convey
+   an active, PRIVATE network — not an empty directory. */
+function renderGuestNetwork(){
+  ALL=[]; FILTERED=[];
+
+  /* Hide every element that signals emptiness to a logged-out visitor */
+  ['.net-intro','.dir-hero-note'].forEach(function(s){var e=document.querySelector(s); if(e) e.style.display='none';});
+  ['net-search','net-filters'].forEach(function(id){var e=document.getElementById(id); if(e) e.style.display='none';});
+  var leftSearch=document.querySelector('.net-left .net-search'); if(leftSearch) leftSearch.style.display='none';
+
+  /* Update hero copy to a confident, private framing */
+  var h1=document.getElementById('dir-h1'); if(h1) h1.textContent='Inside the Pegasus Network';
+  var sub=document.getElementById('dir-sub'); if(sub) sub.textContent='A private ecosystem of capital, real estate, and growth professionals — connected through aligned relationships.';
+
+  /* Collapse the two-column layout into one confident presentation */
+  var layout=document.querySelector('.net-layout');
+  if(layout){
+    layout.style.display='block';
+    layout.style.maxWidth='1000px';
+    layout.style.margin='0 auto';
+  }
+  var left=document.querySelector('.net-left'); if(left) left.style.display='none';
+  var right=document.getElementById('net-detail');
+  if(!right) return;
+  right.style.width='100%';
+
+  /* Who's inside — confident category tiles (no locks / no "forming") */
+  var WHO=[
+    ['◈','Capital Partners','Private lenders, hard money, family offices, debt funds, syndicators.'],
+    ['◆','Growth Partners','Investors, developers, builders, founders, and operators.'],
+    ['🏠','Real Estate & Brokers','Agents, commercial brokers, and mortgage brokers.'],
+    ['◷','Professional Services','Attorneys, CPAs, advisors, insurance, title & escrow.'],
+    ['⬢','RWA & Tokenization','Sponsors, platforms, securities counsel, compliance partners.'],
+    ['⬡','Ecosystem Members','PropTech, AI, and the partners who support the network.'],
+  ];
+  var tiles=WHO.map(function(w){
+    return '<div class="g-tile"><div class="g-tile-ic">'+w[0]+'</div>'+
+      '<div class="g-tile-name">'+w[1]+'</div>'+
+      '<div class="g-tile-desc">'+w[2]+'</div></div>';
+  }).join('');
+
+  /* Live anonymized activity */
+  var SIG=[
+    ['var(--teal)','Capital provider active in California','live'],
+    ['var(--blue)','Business funding request received','new'],
+    ['var(--gold)','Private introduction forming — Dubai','forming'],
+    ['var(--green)','Founder session opening soon','this week'],
+    ['var(--teal)','Real estate professional joined the network','new'],
+    ['var(--gold)','RWA discussion forming','active'],
+  ];
+  var sigRows=SIG.map(function(s,i){
+    return '<div class="g-sig" style="animation-delay:'+(i*0.08)+'s"><span class="g-sig-dot" style="background:'+s[0]+'"></span><span class="g-sig-t">'+esc(s[1])+'</span><span class="g-sig-m">'+s[2]+'</span></div>';
+  }).join('');
+
+  right.innerHTML =
+    '<div class="g-wrap">'+
+      '<div class="g-block">'+
+        '<div class="g-eyebrow">Who participates</div>'+
+        '<h2 class="g-h">A private network of serious participants.</h2>'+
+        '<p class="g-p">Pegasus connects professionals across capital, real estate, and growth. Individual members — names, profiles, and contact details — stay protected until you join. Here\u2019s who\u2019s inside.</p>'+
+        '<div class="g-grid">'+tiles+'</div>'+
+      '</div>'+
+      '<div class="g-block">'+
+        '<div class="g-eyebrow"><span class="g-live"></span>Network live</div>'+
+        '<h2 class="g-h">A network in motion.</h2>'+
+        '<p class="g-p">Anonymized signals from across the ecosystem — real activity, no private details.</p>'+
+        '<div class="g-signals">'+sigRows+'</div>'+
+      '</div>'+
+      '<div class="g-cta">'+
+        '<h3>Members can see — and meet — each other.</h3>'+
+        '<p>Visitors explore the ecosystem. Members appear in the network, access profiles, and connect through aligned introductions.</p>'+
+        '<div class="g-cta-row"><a class="btn btn-pri btn-lg" href="/signup.html">Build Your Presence</a><a class="btn btn-ghost btn-lg" href="/explore.html">Explore the Ecosystem</a></div>'+
+      '</div>'+
+    '</div>';
+
+  /* Inject guest-only styles once */
+  if(!document.getElementById('g-style')){
+    var st=document.createElement('style'); st.id='g-style';
+    st.textContent=
+      '.g-wrap{max-width:880px;margin:0 auto}'+
+      '.g-block{padding:8px 0 30px}'+
+      '.g-eyebrow{font-size:9.5px;font-family:var(--mono);letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px}'+
+      '.g-live{width:7px;height:7px;border-radius:50%;background:var(--green);animation:gPulse 2s infinite}'+
+      '@keyframes gPulse{0%{box-shadow:0 0 0 0 rgba(14,154,102,0.4)}70%{box-shadow:0 0 0 7px rgba(14,154,102,0)}100%{box-shadow:0 0 0 0 rgba(14,154,102,0)}}'+
+      '.g-h{font-family:var(--serif);font-weight:300;font-size:clamp(20px,2.6vw,27px);letter-spacing:-0.01em;margin:0 0 8px;color:var(--text)}'+
+      '.g-p{font-size:13.5px;color:var(--text2);line-height:1.65;margin:0 0 20px;max-width:620px}'+
+      '.g-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}'+
+      '.g-tile{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:18px 18px;transition:transform .2s,box-shadow .2s,border-color .2s}'+
+      '.g-tile:hover{transform:translateY(-2px);box-shadow:var(--sh-raise);border-color:var(--border2)}'+
+      '.g-tile-ic{font-size:18px;color:var(--teal);margin-bottom:9px}'+
+      '.g-tile-name{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:5px;letter-spacing:-0.01em}'+
+      '.g-tile-desc{font-size:12px;color:var(--text2);line-height:1.55}'+
+      '.g-signals{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r4);overflow:hidden}'+
+      '.g-sig{display:flex;gap:13px;align-items:center;padding:14px 20px;opacity:0;animation:gFade .5s ease forwards}'+
+      '@keyframes gFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}'+
+      '.g-sig+.g-sig{border-top:1px solid var(--border)}'+
+      '.g-sig-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:gDot 2.6s infinite}'+
+      '@keyframes gDot{0%,100%{opacity:1}50%{opacity:.45}}'+
+      '.g-sig-t{font-size:12.5px;color:var(--text);font-weight:500}'+
+      '.g-sig-m{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;flex-shrink:0;white-space:nowrap}'+
+      '.g-cta{text-align:center;background:linear-gradient(180deg,var(--gold-dim),var(--bg1));border:1px solid var(--gold-dim);border-radius:var(--r4);padding:34px 28px;margin-top:10px}'+
+      '.g-cta h3{font-family:var(--serif);font-weight:300;font-size:clamp(19px,2.4vw,24px);margin:0 0 8px;color:var(--text)}'+
+      '.g-cta p{font-size:13px;color:var(--text2);max-width:480px;margin:0 auto 20px;line-height:1.6}'+
+      '.g-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}'+
+      '@media(max-width:760px){.g-grid{grid-template-columns:1fr}}';
+    document.head.appendChild(st);
+  }
+}
+loadNetwork();
+/* Re-fetch + re-render when the page is restored from the browser's
+   back/forward cache (bfcache), so navigating away and back never shows
+   a stale snapshot of the member list. */
+window.addEventListener('pageshow',function(e){ if(e.persisted){ loadNetwork(); } });
+</script>
+<script src="/js/pegasus-living.js"></script>
+</body>
+</html>

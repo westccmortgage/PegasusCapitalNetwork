@@ -1,0 +1,76 @@
+<!DOCTYPE html><html lang="en"><head><title>Match Engine — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/match-engine.html"><meta name="description" content="The Pegasus Match Engine surfaces lenders and capital partners whose appetite aligns with your deal — private, member-directed introductions, no cold outreach."><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Match Engine — Pegasus Network"><meta property="og:description" content="The Pegasus Match Engine surfaces lenders and capital partners whose appetite aligns with your deal — private, member-directed introductions, no cold outreach."><meta property="og:url" content="https://pegasuscapitalnetwork.com/match-engine.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Match Engine — Pegasus Network"><meta name="twitter:description" content="The Pegasus Match Engine surfaces lenders and capital partners whose appetite aligns with your deal — private, member-directed introductions, no cold outreach."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.boot(async ()=>{
+  const me=Pegasus.limit('matchEngine');
+  const v=Pegasus.mountApp({active:'Match Engine',title:'Pegasus Match Engine',sub:'Capital alignment scoring'});
+  if(me==='none'){
+    v.insertAdjacentHTML('beforeend','<div class="gate"><div class="gate-ic">◎</div><div class="gate-tm">Pegasus Match Engine</div><h2 class="h2" style="margin-bottom:10px">Active Capital Matching</h2><p class="sub" style="margin:0 auto 24px;text-align:center">Score Growth Partner deal profiles against live lender appetite — Capital Alignment, Deal Strength, Funding Probability, Documentation Readiness, and Risk Level. Real-time lender matching is part of Institutional access.</p><div style="display:flex;gap:10px;justify-content:center"><a class="btn btn-ghost" href="/membership.html">Compare Access Layers</a><a class="btn btn-gold" href="/membership.html">Activate with Gold →</a></div></div>');
+    return;
+  }
+  const standardOnly = me==='standard';
+  const APPETITES = await PegAPI.listAppetites();
+  v.insertAdjacentHTML('beforeend','<div class="grid" style="grid-template-columns:1fr 1.2fr"><div class="card"><div class="card-head"><div class="card-title">Growth Partner Deal Profile</div></div><div class="card-body" id="form"></div></div><div id="results"></div></div>');
+  document.getElementById('form').innerHTML=
+    '<div class="row2"><div class="field"><label class="label">Loan Type</label><select class="input" id="loanType"><option>Construction</option><option>Bridge</option><option selected>DSCR</option><option>Permanent</option></select></div><div class="field"><label class="label">Amount (USD)</label><input class="input input-mono" id="amount" value="2100000"></div></div>'+
+    '<div class="row2"><div class="field"><label class="label">State</label><select class="input" id="state"><option>TX</option><option selected>AZ</option><option>FL</option><option>CO</option><option>NY</option></select></div><div class="field"><label class="label">Asset Type</label><select class="input" id="assetType"><option selected>Multifamily</option><option>Mixed-Use</option><option>Retail</option><option>Office</option><option>SFR</option></select></div></div>'+
+    '<div class="row2"><div class="field"><label class="label">LTV / LTC %</label><input class="input input-mono" id="ltv" value="75"></div><div class="field"><label class="label">DSCR</label><input class="input input-mono" id="dscr" value="1.35"></div></div>'+
+    '<div class="row2"><div class="field"><label class="label">Sponsor Experience (yrs)</label><input class="input input-mono" id="spyears" value="8"></div><div class="field"><label class="label">Doc Readiness %</label><input class="input input-mono" id="docs" value="72"></div></div>'+
+    '<div class="field"><label class="label">Exit Strategy</label><select class="input" id="exit"><option selected>Refinance</option><option>Sale</option><option>Hold</option><option>Undefined</option></select></div>'+
+    '<button class="btn btn-pri" style="width:100%;justify-content:center;margin-top:6px" onclick="run()">Run Capital Alignment →</button>'+
+    '<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="submitReq()">Submit as Financing Request</button>';
+  window.collect=()=>({loanType:loanType.value,amount:+amount.value,state:state.value,assetType:assetType.value,ltv:+ltv.value,dscr:+dscr.value,constructionStage:'N/A',sponsorYears:+spyears.value,exit:exit.value,docsReady:+docs.value});
+  window.run=function(){
+    if(window._matchStarterMode){
+      /* Show upgrade info instead of crashing — user has seen the form, now explain value */
+      var res=document.getElementById('results');
+      if(res) res.innerHTML='<div class="banner bn-trial" style="margin-top:14px"><div class="banner-msg">◎ <span>'+
+        '<b>Activate Match Engine</b> — You’ve filled in your deal. Capital alignment scoring, '+
+        'deal strength analysis, and lender matching are available on Gold access. '+
+        '</span></div><div style="display:flex;gap:10px;margin-top:10px">'+
+        '<a class="btn btn-gold" href="/membership.html">See Gold Access →</a>'+
+        '<a class="btn btn-ghost" href="/members.html">Browse the Network</a>'+
+        '</div></div>';
+      return;
+    }
+    const deal=collect();
+    let aps=(APPETITES||[]).map(ap=>({ap,r:PegasusMatch.scoreMatch(deal,ap)})).filter(x=>x&&x.r).sort((a,b)=>b.r.alignment-a.r.alignment);
+    if(standardOnly)aps=aps.slice(0,3);
+    if(!aps.length){ document.getElementById('results').innerHTML='<div class="banner bn-info" style="margin-top:14px"><div class="banner-msg">◎ <span>No lender appetite profiles available to match against. Contact support or check back later.</span></div></div>'; return; }
+    const top=aps[0].r;
+    let h='<div class="card dark" style="margin-bottom:14px;border-color:'+top.fit.color+'55"><div class="card-body"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.1em">Best Capital Alignment</div><div style="font-size:13px;font-weight:600;margin-top:3px">'+aps[0].ap.name+'</div></div><span class="tag '+top.fit.cls+'" style="font-size:10px;padding:5px 12px">'+top.fit.label+'</span></div>'+
+      '<div class="grid" style="grid-template-columns:repeat(5,1fr);gap:8px">'+[['Capital Alignment',top.alignment,'var(--teal)'],['Deal Strength',top.strength,'var(--blue-lt)'],['Funding Prob.',top.funding+'%','var(--green)'],['Doc Readiness',top.docs+'%','var(--amber)'],['Risk',top.risk,top.risk==='Low'?'var(--green)':top.risk==='Elevated'?'var(--red)':'var(--amber)']].map(x=>'<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 8px;text-align:center"><div style="font-size:18px;font-family:var(--mono);font-weight:500;color:'+x[2]+'">'+x[1]+'</div><div style="font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-top:3px">'+x[0]+'</div></div>').join('')+'</div>'+(top.flags.length?'<div style="margin-top:12px;font-size:10px;color:var(--amber);font-family:var(--mono)">⚠ '+top.flags.join(' · ')+'</div>':'')+'</div></div>';
+    h+='<div class="card"><div class="card-head"><div class="card-title">Lender Appetite Alignment</div><span style="font-size:10px;font-family:var(--mono);color:var(--text3)">'+aps.length+' profiles'+(standardOnly?' · Standard tier':'')+'</span></div><div class="card-body" style="padding:0">';
+    h+=aps.map(x=>'<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border)"><div style="flex:1"><div style="font-size:12px;font-weight:600">'+x.ap.name+'</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">'+x.ap.loanTypes.join(' · ')+' · '+x.ap.rate+'</div></div><div style="width:120px"><div class="bar" style="margin:0"><div class="bar-f" style="width:'+x.r.alignment+'%;background:'+x.r.fit.color+'"></div></div></div><div style="width:34px;text-align:right;font-size:14px;font-family:var(--mono);font-weight:500;color:'+x.r.fit.color+'">'+x.r.alignment+'</div><span class="tag '+x.r.fit.cls+'" style="width:96px;text-align:center">'+x.r.fit.label+'</span></div>').join('');
+    h+='</div></div>';
+    if(standardOnly)h+='<div class="banner bn-info" style="margin-top:14px"><div class="banner-msg">◎ <span>Standard Match Engine shows your top 3 alignments. Institutional access unlocks the full lender network and real-time matching.</span></div><a class="btn btn-sm btn-gold" href="/membership.html">Upgrade →</a></div>';
+    document.getElementById('results').innerHTML=h;
+  };
+  window.submitReq=async function(){
+    const c=collect(); const req={loan_type:c.loanType,amount:c.amount,state:c.state,asset_type:c.assetType,ltv:c.ltv,dscr:c.dscr,sponsor_years:c.sponsorYears,exit_strategy:c.exit,docs_ready:c.docsReady,construction_stage:c.constructionStage};
+    const out=await PegAPI.submitFinancingRequest(req);
+    Pegasus.toast('◎','var(--green-dim)','Financing request submitted',out.scored+' lender appetites scored');
+    run();
+  };
+  run();
+});
+</script></body></html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="en"><head><title>Submit a Financing Request — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/submit-deal.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Submit a Financing Request — Pegasus Network"><meta property="og:description" content="Describe your deal and connect with marketplace lending participants. Pegasus is a marketplace platform — not a lender. Terms vary by lender."><meta property="og:url" content="https://pegasuscapitalnetwork.com/submit-deal.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Submit a Financing Request — Pegasus Network"><meta name="twitter:description" content="Describe your deal and connect with marketplace lending participants. Pegasus is a marketplace platform — not a lender. Terms vary by lender."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Describe your deal and connect with marketplace lending participants. Pegasus is a marketplace platform — not a lender. Terms vary by lender."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+PegPages.mountContent('submit-deal',()=>PegPages.form({key:'submit-deal',h1:'Submit a Financing Request',lead:'Describe your deal. The Pegasus Match Engine surfaces lenders whose appetite aligns. Member-directed — no hard credit pull.',eyebrow:'Growth Partners',
+segments:[['🏢','Investment Property','DSCR / Bridge'],['🏗️','Construction','Ground-up / Value-add'],['🔁','Refinance','Cash-out / Rate']],
+fields:[[['Loan Type','','select',['DSCR','Bridge','Construction','Permanent']],['Loan Amount','2100000','mono']],[['Property State','','select',['TX','AZ','FL','CO','NY','CA']],['Asset Type','','select',['Multifamily','Mixed-Use','Retail','Office','SFR']]],[['LTV / LTC %','75','mono'],['DSCR','1.35','mono']],[['Timeline','','select',['ASAP','30 days','60 days','90+ days']],['Exit Strategy','','select',['Refinance','Sale','Hold']]],[['Deal Notes','Tell lenders about the opportunity, sponsor experience, and use of funds','area']]],
+toast:'Deal submitted',submit:'Run Capital Alignment →'}));
+
+// Real submit handler (was missing — the form silently discarded input). Persists
+// to deal_submissions via PegForms.submitDeal, mirroring the other intake pages.
+window.pegSubmit=async function(btn){
+  var g=function(id){var e=document.getElementById(id);return e?String(e.value||'').trim():'';};
+  var loanType=g('f_loan_type'),amount=g('f_loan_amount'),state=g('f_property_state'),
+      assetType=g('f_asset_type'),ltv=g('f_ltv_ltc'),notes=g('f_deal_notes');
+  var err=document.getElementById('f_err'); if(err)err.textContent='';
+  if(!amount.replace(/[^0-9.]/g,'')){ if(err)err.textContent='Please enter a loan amount.'; return; }
+  var _t=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent='Submitting…';}
+  try{
+    await PegForms.submitDeal({dealType:loanType,amount:amount.replace(/[^0-9.]/g,''),state:state,assetType:assetType,ltv:ltv,notes:notes});
+    Pegasus.toast('✓','var(--green-dim)','Deal submitted','The Match Engine will surface aligned lenders.');
+    if(btn){btn.textContent='Submitted ✓';}
+  }catch(e){
+    if(err)err.textContent=(e&&e.message)||'Could not submit. Please sign in and try again.';
+    if(btn){btn.disabled=false;btn.textContent=_t;}
+  }
+};
+</script></body></html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Member Profile — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/public-profile.html">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="Pegasus Network member profile.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529">
+<link rel="stylesheet" href="/css/showcase.css">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<style>
+/* ── Public Profile — refined layout hierarchy (premium operational identity) ── */
+*{box-sizing:border-box}
+
+/* Hero — compressed: operational identity, not a landing banner (~220px) */
+.pp-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#08111C 0%,#0F1E38 42%,#162645 66%,#0A1830 100%)}
+.pp-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
+/* Company wordmark — integrated backdrop, vertically centered on the right, subtle */
+.pp-hero-wm{position:absolute;right:34px;top:50%;transform:translateY(-50%);max-width:46%;text-align:right;
+  font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,84px);font-weight:300;line-height:0.92;
+  color:rgba(255,255,255,0.035);letter-spacing:-0.02em;text-transform:uppercase;pointer-events:none;user-select:none;z-index:1}
+.pp-hero-horizon{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(154,123,34,0.5) 40%,rgba(154,123,34,0.5) 60%,transparent 100%)}
+.pp-hero-c{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:24px 40px 22px;display:grid;grid-template-columns:auto 1fr auto;gap:0 22px;align-items:center}
+
+/* Avatar — tighter */
+.pp-av{width:66px;height:66px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,0.16);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:23px;color:rgba(255,255,255,0.92);overflow:hidden}
+.pp-av img{width:100%;height:100%;object-fit:cover}
+
+/* Identity — compressed grouping */
+.pp-name{font-family:'Cormorant Garamond',serif;font-size:29px;font-weight:400;color:#fff;line-height:1.08;letter-spacing:-0.01em;margin:0;animation:pp-up .6s ease both}
+.pp-sub{font-size:12px;color:rgba(255,255,255,0.55);margin-top:3px;animation:pp-up .6s .08s ease both}
+.pp-sub strong{color:rgba(255,255,255,0.82)}
+.pp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;animation:pp-up .6s .16s ease both}
+.pp-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:500;letter-spacing:.03em}
+.pp-tag-v{background:rgba(14,154,102,0.22);color:#7FCBA2;border:1px solid rgba(14,154,102,0.28)}
+.pp-tag-a{background:rgba(154,123,34,0.22);color:#E8C46A;border:1px solid rgba(154,123,34,0.28)}
+.pp-tag-r{background:rgba(35,95,166,0.22);color:#92B8F0;border:1px solid rgba(35,95,166,0.3)}
+.pp-tag-m{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.1)}
+
+/* Tagline — inline, tighter */
+.pp-tagline{display:flex;align-items:center;gap:9px;margin-top:9px;animation:pp-up .6s .22s ease both}
+.pp-tagline-bar{width:2px;height:22px;background:linear-gradient(180deg,rgba(154,123,34,0.9),rgba(154,123,34,0.15));border-radius:1px;flex-shrink:0}
+.pp-tagline-text{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:300;font-style:italic;color:rgba(255,255,255,0.72);line-height:1.3}
+
+/* Mini stats */
+.pp-stats{display:flex;gap:13px;margin-top:8px;animation:pp-up .6s .28s ease both}
+.pp-stat{display:flex;align-items:center;gap:5px}
+.pp-stat-v{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,0.55)}
+.pp-stat-l{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.04em}
+.pp-stat-sep{width:1px;height:10px;background:rgba(255,255,255,0.1);align-self:center}
+
+/* Hero actions — sit in the third column, vertically centered */
+.pp-actions{display:flex;flex-direction:row;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;animation:pp-up .6s .34s ease both}
+.pp-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
+@media(max-width:760px){.pp-actions{justify-content:flex-start;margin-top:10px}}
+/* Recently Active panel — sits to the left of content, pulls into left margin on wide screens */
+.pp-active-panel{float:left;width:280px;margin:0 28px 20px 0;background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+@media(min-width:1500px){.pp-active-panel{margin-left:-200px}}
+@media(min-width:1700px){.pp-active-panel{margin-left:-300px}}
+@media(max-width:1200px){.pp-active-panel{float:none;width:auto;margin:0 0 20px 0}}
+
+@keyframes pp-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Identity rail — strong segmented infrastructure (was a thin footer strip) ── */
+.pp-strip{background:#0B1628;border-bottom:1px solid rgba(255,255,255,0.07)}
+.pp-strip-inner{max-width:1160px;margin:0 auto;padding:0 40px;display:flex;overflow-x:auto;scrollbar-width:none}
+.pp-strip-inner::-webkit-scrollbar{display:none}
+.pp-strip-item{display:flex;flex-direction:column;gap:4px;padding:15px 26px 15px 0;margin-right:26px;border-right:1px solid rgba(255,255,255,0.08);white-space:nowrap;flex-shrink:0}
+.pp-strip-item:last-child{border-right:none;margin-right:0}
+.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.38)}
+.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.9);font-weight:400;letter-spacing:-0.005em}
+.pp-rail-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.pp-rail-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,0.4)}
+.pp-rail-dot.gold{background:#CDA748}
+.pp-rail-dot.blue{background:#6B9FE8}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Body layout — identity column widened for a real card */
+.pp-body{max-width:1160px;margin:0 auto;padding:28px 40px 56px;display:grid;grid-template-columns:284px 1fr 240px;gap:22px;align-items:start}
+@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:20px}}
+
+/* Card */
+.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:18px}
+.pp-card:last-child{margin-bottom:0}
+.pp-card-head{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pp-card-label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3)}
+.pp-card-label-serif{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--text);letter-spacing:.01em}
+.pp-card-body{padding:18px 20px}
+.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none}
+
+/* Identity fields */
+.pp-field{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.pp-field:last-child{border-bottom:none;padding-bottom:0}
+.pp-field-icon{width:22px;height:22px;border-radius:4px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.pp-field-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.pp-field-val{font-size:12.5px;color:var(--text);margin-top:2px}
+.pp-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pp-chip{padding:2px 7px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:'IBM Plex Mono',monospace}
+
+/* Badges */
+.pp-badge{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
+.pp-badge:last-child{margin-bottom:0}
+.pp-badge-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.pp-badge-name{font-size:11.5px;font-weight:500;color:var(--text)}
+.pp-badge-desc{font-size:10px;color:var(--text3);margin-top:1px}
+.pp-badge.gold{background:#FBF6EB;border-color:rgba(154,123,34,0.2)}
+.pp-badge.green{background:#E8F5EE;border-color:rgba(14,154,102,0.15)}
+.pp-badge.blue{background:#EEF3FB;border-color:rgba(35,95,166,0.12)}
+
+/* Member Updates */
+.pp-updates{margin-bottom:16px}
+.pp-update{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;transition:box-shadow .15s}
+.pp-update:hover{box-shadow:var(--sh-card)}
+.pp-update:nth-child(odd){margin-left:0;margin-right:40px}
+.pp-update:nth-child(even){margin-left:32px;margin-right:8px}
+.pp-update-bar{border-radius:0}
+.pp-update-content{padding:14px 18px;background:var(--bg1)}
+.pp-update-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.pp-update-type{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.pp-update-num{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:rgba(28,30,26,0.1);line-height:1}
+.pp-update-head{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--text);line-height:1.35;margin-bottom:8px}
+.pp-update-body{font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.pp-update-foot{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)}
+.pp-update-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3)}
+.pp-update-cta{font-size:11.5px;font-weight:500;text-decoration:none;padding:4px 12px;border:1px solid var(--border2);border-radius:var(--r1);color:var(--text)}
+.pp-update-cta:hover{border-color:var(--blue);color:var(--blue)}
+
+/* About */
+.pp-about{font-size:13px;color:var(--text2);line-height:1.75}
+.pp-about p+p{margin-top:10px}
+
+/* Metrics — Network Presence, slightly larger type/spacing */
+.pp-metric{padding:13px 20px;border-bottom:1px solid var(--border)}
+.pp-metric:last-child{border-bottom:none}
+.pp-metric-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pp-metric-label{font-size:12px;color:var(--text2)}
+.pp-metric-val{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)}
+.pp-metric-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.pp-metric-fill{height:100%;border-radius:2px}
+.pp-graph{padding:16px 20px}
+.pp-graph svg{width:100%;height:150px}
+
+/* ── Featured Showcase band — full-width, prominent, integrated into the profile ── */
+.pp-showcase{background:linear-gradient(180deg,var(--bg),var(--bg2));border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pp-showcase-inner{max-width:1160px;margin:0 auto;padding:8px 40px 14px}
+.pp-showcase-inner .sc-section{margin:14px 0}
+@media(max-width:1020px){.pp-showcase-inner{padding:8px 20px}}
+
+/* CTA */
+.pp-cta{text-align:center;padding:40px 20px 0;border-top:1px solid var(--border);margin-top:8px;max-width:1160px;margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px}
+.pp-cta-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:8px}
+.pp-cta-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.pp-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* Status band */
+.pp-band{background:#0B1628;padding:28px 40px;margin-top:0}
+.pp-band-inner{max-width:1160px;margin:0 auto}
+.pp-band-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;font-weight:600}
+.pp-band-items{display:flex;flex-wrap:wrap;gap:8px}
+.pp-band-item{display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:5px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04)}
+.pp-band-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.pp-band-name{font-size:11px;font-weight:500;color:rgba(255,255,255,0.8)}
+.pp-band-since{font-size:9.5px;color:rgba(154,123,34,0.8);text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-top:1px}
+
+/* ── Capital Identity Card (cid-) — premium identity card, more breathing room ── */
+.cid-role{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--text);letter-spacing:-0.01em;padding:20px 22px 4px;line-height:1.18}
+.cid-company{font-size:13px;color:var(--text2);padding:0 22px 18px}
+.cid-divider{height:1px;background:var(--border);margin:0 22px}
+.cid-section{padding:18px 22px 0}
+.cid-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3);margin-bottom:9px;font-family:var(--mono)}
+.cid-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cid-chip{background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:5px 12px;font-size:12px;color:var(--text);white-space:nowrap;line-height:1.3}
+.cid-footer{display:flex;flex-wrap:wrap;gap:12px 20px;padding:18px 22px 20px;border-top:1px solid var(--border);margin-top:18px}
+.cid-meta-item{font-size:12.5px;color:var(--text2);display:flex;align-items:center;gap:5px}
+.cid-link{color:var(--blue);text-decoration:none}.cid-link:hover{text-decoration:underline}
+.cid-foot-pad{height:18px}
+.cid-empty{padding:18px 22px 20px;font-size:12px;color:var(--text3);font-style:italic}
+/* ──────────────────────────────────────────────────── */
+
+/* ── UX refinement pass: single-column professional presence flow ── */
+.pp-hero-c{grid-template-columns:auto 1fr}                 /* no action column */
+.pp-id-line{max-width:900px;margin:0 auto;padding:14px 40px;display:flex;flex-wrap:wrap;gap:10px 22px;border-bottom:1px solid var(--border)}
+.pp-id-item{font-size:12.5px;color:var(--text2);display:inline-flex;align-items:center;gap:6px}
+.pp-flow{max-width:900px;margin:0 auto;padding:8px 40px 48px}
+@media(max-width:980px){.pp-id-line,.pp-flow{padding-left:20px;padding-right:20px}}
+.pp-focus{margin:30px 0 8px;padding:22px 26px;background:linear-gradient(135deg,rgba(35,95,166,0.05),rgba(14,154,102,0.04));border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r3)}
+.pp-focus-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:9px}
+.pp-focus-text{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.4;color:var(--text)}
+.pp-sec{margin:32px 0}
+.pp-sec-label{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.pp-presence{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.pp-presence{grid-template-columns:1fr}}
+.pp-presence-metrics{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+.pp-presence-map{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:16px 18px}
+.pp-feat{display:block;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r2);margin-bottom:8px;text-decoration:none;transition:border-color .15s}
+.pp-feat:hover{border-color:var(--blue)}
+.pp-feat-kind{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:4px}
+.pp-feat-title{font-size:13px;font-weight:500;color:var(--text)}
+.pp-feat-note{font-size:11.5px;color:var(--text2);margin-top:3px}
+.pp-showcase{background:none;border:none}                 /* inline, not a boxed band */
+.pp-showcase-inner{max-width:none;margin:0;padding:0}
+.pp-showcase-inner .sc-section{margin:32px 0}
+/* Owner-only floating management controls */
+.pp-manage{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.pp-manage-btn{padding:9px 18px;border-radius:24px;background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.pp-manage-menu{display:none;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:hidden;min-width:184px}
+.pp-manage-menu.open{display:flex}
+.pp-manage-item{padding:11px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;border-bottom:1px solid var(--border);text-align:left;cursor:pointer;font-family:var(--sans)}
+.pp-manage-item:last-child{border-bottom:none}
+.pp-manage-item:hover{background:var(--bg2)}
+
+</style>
+</head>
+<body>
+<!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
+
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-billing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-system.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-routing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-media.js"></script>
+<script src="/js/profile/profile-showcase.js"></script>
+<script>
+Pegasus.boot(async function () {
+  Pegasus.mountPublic('');
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function cap(s){return(s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+  var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Agent',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
+  function roleLabel(r){r=(r||'').toLowerCase();return ROLE_LABELS[r]||cap(r||'member');}
+  function webHref(u){u=(u||'').trim();if(!u)return '#';return /^[a-z][a-z0-9+.-]*:\/\//i.test(u)?u:('https://'+u.replace(/^\/+/,''));}
+  function trustBadges(p){var o='';
+    if(p&&p.reviewed_by_pegasus)o+='<span class="trust-badge" title="Reviewed by Pegasus — ecosystem review of professional presence and participation. Not a financial, legal, or investment endorsement."><span class="tb-dot"></span>Reviewed by Pegasus</span> ';
+    if(p&&p.institutional_visibility)o+='<span class="trust-badge inst"><span class="tb-dot"></span>Institutional</span> ';
+    if(p&&p.verified_identity)o+='<span class="trust-badge verified"><span class="tb-dot"></span>Verified Identity</span> ';
+    return o;}
+  function initials(n){var w=(n||'').trim().split(/\s+/);return((w[0]?w[0][0]:'')+( w[1]?w[1][0]:'')).toUpperCase();}
+
+  /* ── Footer ── */
+  function addFooter(){
+    var f=document.createElement('div'); f.innerHTML=Pegasus.footer();
+    if(f.firstElementChild) document.body.appendChild(f.firstElementChild);
+  }
+
+  /* ── Resolve profile from slug/id ── */
+  var route = await window.PegProfileRoute.resolve('public');
+
+  if(route.noTarget){
+    document.body.innerHTML+='<main style="max-width:900px;margin:80px auto;text-align:center;padding:40px"><p style="font-family:serif;font-size:24px;font-weight:300;color:var(--text)">Discover the Network</p><p style="color:var(--text2);margin:12px 0 24px">Find verified brokers, lenders, investors, and more.</p><a class="btn btn-pri" href="/members.html">Browse Members →</a></main>';
+    addFooter(); return;
+  }
+  if(route.notFound || !route.profile){
+    document.body.innerHTML+='<main style="max-width:900px;margin:80px auto;text-align:center;padding:40px"><p style="font-family:serif;font-size:24px;font-weight:300;color:var(--text)">Profile not available</p><p style="color:var(--text2);margin:12px 0 24px">This member\'s profile is private or the link is no longer active.</p><a class="btn btn-ghost" href="/members.html">Browse the Network →</a></main>';
+    addFooter(); return;
+  }
+
+  var p = route.profile;
+
+  /* SEO: set canonical, title, and description from the real profile */
+  (function(){
+    var slug = p.profile_slug;
+    var canonUrl = slug ? 'https://pegasuscapitalnetwork.com/u/'+slug
+                        : 'https://pegasuscapitalnetwork.com/public-profile.html?id='+p.id;
+    var cl = document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', canonUrl);
+    var roleLbl = (p.role||'member').replace(/_/g,' ');
+    document.title = (p.full_name||'Member') + ' — Pegasus Network';
+    var desc = (p.headline || p.current_focus || (p.full_name+' · '+roleLbl+(p.location?' · '+p.location:'')) ).slice(0,160);
+    var md = document.querySelector('meta[name="description"]');
+    if(!md){ md=document.createElement('meta'); md.name='description'; document.head.appendChild(md); }
+    md.setAttribute('content', desc);
+    /* Open Graph for link sharing */
+    function og(prop,val){ var m=document.querySelector('meta[property="'+prop+'"]'); if(!m){ m=document.createElement('meta'); m.setAttribute('property',prop); document.head.appendChild(m);} m.setAttribute('content',val); }
+    og('og:title', (p.full_name||'Member')+' — Pegasus Network');
+    og('og:description', desc);
+    og('og:url', canonUrl);
+    og('og:type', 'profile');
+    if(p.avatar_url) og('og:image', p.avatar_url);
+  })();
+  var name = p.full_name || 'Pegasus Member';
+  var firstName = name.split(' ')[0];
+
+  /* SEO */
+  document.title = name + ' — Pegasus Network';
+  var mDesc = document.querySelector('meta[name=description]');
+  if(mDesc) mDesc.content = (p.professional_title||roleLabel(p.role)) + (p.company_name?' · '+p.company_name:'') + (p.markets&&p.markets.length?' · '+p.markets.slice(0,2).join(', '):'');
+  if(p.avatar_url){var og=document.createElement('meta');og.setAttribute('property','og:image');og.content=p.avatar_url;document.head.appendChild(og);}
+
+  /* ── Tags ── */
+  var tags = '';
+  if(p.verification_status==='verified') tags+='<span class="pp-tag pp-tag-v">✓ Verified</span>';
+  if(p.ambassador_status) tags+='<span class="pp-tag pp-tag-a">⬡ Ambassador</span>';
+  if(p.role) tags+='<span class="pp-tag pp-tag-r">'+esc(roleLabel(p.role))+'</span>';
+  (p.markets||[]).slice(0,3).forEach(function(m){tags+='<span class="pp-tag pp-tag-m">'+esc(m)+'</span>';});
+
+  /* ── Mini stats ── */
+  var statsHtml =
+    '<div class="pp-stat"><span class="pp-stat-v">'+(p.profile_completion||20)+'%</span><span class="pp-stat-l">complete</span></div>'+
+    (p.markets&&p.markets.length?'<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+p.markets.length+'</span><span class="pp-stat-l">markets</span></div>':'')+
+    '<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+new Date(p.created_at||Date.now()).getFullYear()+'</span><span class="pp-stat-l">member since</span></div>';
+
+  /* ── Action buttons ── */
+  var actions = route.isOwner
+    ? '<a class="btn btn-pri" href="/ai-assistant.html" style="background:rgba(34,113,195,0.85);border-color:rgba(58,143,232,0.4)">✦ Capital Assistant</a>'
+    : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
+      '<a class="btn btn-ghost" href="/members.html" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)">Browse Network</a>';
+
+  /* ── Avatar ── */
+  var avHtml = p.avatar_url
+    ? '<img src="'+esc(p.avatar_url)+'" alt="'+esc(name)+'">'
+    : initials(name)||'?';
+
+  /* ── Banner style ── */
+  var bannerExtra = p.banner_url
+    ? '<img src="'+esc(p.banner_url)+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35">'
+    : '';
+
+  /* ── Signal strip (markets + specialties as live intelligence) ── */
+  var rail = function(label, val, dot){ return '<div class="pp-strip-item"><div class="pp-rail-label">'+(dot?'<span class="pp-rail-dot '+dot+'"></span>':'')+label+'</div><div class="pp-rail-val">'+esc(val)+'</div></div>'; };
+  var stripItems = [];
+  if(p.role) stripItems.push(rail('Role', roleLabel(p.role), 'blue'));
+  if(p.ecosystem_role) stripItems.push(rail('Ecosystem Role', p.ecosystem_role, 'gold'));
+  if(p.expertise_areas&&p.expertise_areas.length) stripItems.push(rail('Expertise', p.expertise_areas.join(' · '), 'gold'));
+  if(p.company_name) stripItems.push(rail('Company', p.company_name));
+  if(p.markets&&p.markets.length) stripItems.push(rail('Active Markets', p.markets.join(', '), 'green'));
+  if(p.specialties&&p.specialties.length) stripItems.push(rail('Specialties', p.specialties.join(' · '), 'gold'));
+  if(p.current_focus) stripItems.push(rail('Current Focus', p.current_focus, 'green'));
+  if(p.professional_title) stripItems.push(rail('Title', p.professional_title));
+  stripItems.push(rail('Visibility', (p.verification_status==='verified'?'Verified':(p.profile_completion>=80?'High':'Growing')), 'gold'));
+
+  /* ── Identity card ── */
+  /* Capital Identity — same cid- renderer as profile.html */
+  var idFields = '';
+  (function buildIdentity(){
+    var out = '';
+    if(p.role) out+='<div class="cid-role">'+esc(roleLabel(p.role))+'</div>';
+    if(p.ecosystem_role) out+='<div class="cid-company">'+esc(p.ecosystem_role)+'</div>';
+    if(p.company_name) out+='<div class="cid-company">'+esc(p.company_name)+'</div>';
+    if(p.role||p.company_name||p.ecosystem_role) out+='<div class="cid-divider"></div>';
+    if(p.ecosystem_contribution){
+      out+='<div class="cid-section"><div class="cid-label">Contribution</div><div style="font-size:12.5px;color:var(--text2);line-height:1.6">'+esc(p.ecosystem_contribution)+'</div></div>';
+    }
+    if(p.expertise_areas&&p.expertise_areas.length){
+      out+='<div class="cid-section"><div class="cid-label">Expertise</div><div class="cid-chips">'+
+        p.expertise_areas.map(function(x){return'<span class="cid-chip">'+esc(x)+'</span>';}).join('')+
+      '</div></div>';
+    }
+    if(p.markets&&p.markets.length){
+      out+='<div class="cid-section"><div class="cid-label">Active Markets</div><div class="cid-chips">'+
+        p.markets.map(function(m){return'<span class="cid-chip">'+esc(m)+'</span>';}).join('')+
+      '</div></div>';
+    }
+    if(p.specialties&&p.specialties.length){
+      out+='<div class="cid-section"><div class="cid-label">Specialties</div><div class="cid-chips">'+
+        p.specialties.map(function(sp){return'<span class="cid-chip">'+esc(sp)+'</span>';}).join('')+
+      '</div></div>';
+    }
+    var foot=[];
+    if(p.location) foot.push('<span class="cid-meta-item">📍 '+esc(p.location)+'</span>');
+    if(p.website)  foot.push('<span class="cid-meta-item">🌐 <a href="'+esc(webHref(p.website))+'" target="_blank" rel="noopener" class="cid-link">'+esc(p.website.replace(/^https?:\/\//,''))+'</a></span>');
+    if(foot.length) out+='<div class="cid-footer">'+foot.join('')+'</div>';
+    else if(out) out+='<div class="cid-foot-pad"></div>';
+    if(!out) out='<div class="cid-empty">Profile details not yet added.</div>';
+    idFields = out;
+  })();
+
+  /* ── Status badges ── */
+  var badges = '';
+  if(p.ambassador_status) badges+='<div class="pp-badge gold"><div class="pp-badge-icon" style="background:rgba(154,123,34,0.12)">⭐</div><div><div class="pp-badge-name">Pegasus Ambassador</div><div class="pp-badge-desc">Active network builder</div></div></div>';
+  if(p.verification_status==='verified') badges+='<div class="pp-badge green"><div class="pp-badge-icon" style="background:rgba(14,154,102,0.1)">✓</div><div><div class="pp-badge-name">Verified Member</div><div class="pp-badge-desc">Identity confirmed</div></div></div>';
+  if(p.profile_completion>=80) badges+='<div class="pp-badge blue"><div class="pp-badge-icon" style="background:rgba(35,95,166,0.1)">🏛</div><div><div class="pp-badge-name">Capital Partner</div><div class="pp-badge-desc">Active deal flow participant</div></div></div>';
+
+  /* ── Member Updates ── */
+  var updateTypeMap={program:{icon:'🚀',label:'New Program',bg:'rgba(154,123,34,0.10)',col:'#6B4A0A',bar:'#9A7B22'},milestone:{icon:'🏆',label:'Milestone',bg:'rgba(35,95,166,0.08)',col:'#0F3A7A',bar:'#235FA6'},opportunity:{icon:'💼',label:'Opportunity',bg:'rgba(12,126,150,0.08)',col:'#064A5C',bar:'#0C7E96'},announcement:{icon:'📢',label:'Announcement',bg:'rgba(86,96,107,0.08)',col:'#2E353D',bar:'#56606B'},seeking:{icon:'🔍',label:'Seeking',bg:'rgba(14,154,102,0.08)',col:'#0A5C3D',bar:'#0E9A66'},partnership:{icon:'🤝',label:'Partnership',bg:'rgba(181,118,15,0.08)',col:'#5A3E0A',bar:'#B5760F'}};
+  var rawUpdates = (p.featured_modules||[]).filter(function(m){return m&&m.kind==='update'&&m.title;});
+  var updatesHtml = rawUpdates.map(function(u,i){
+    var t=updateTypeMap[u.type]||updateTypeMap.announcement;
+    var d=u.date?new Date(u.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+    return '<div class="pp-update">'+
+      '<div class="pp-update-bar" style="background:'+t.bar+'"></div>'+
+      '<div class="pp-update-content">'+
+        '<div class="pp-update-meta">'+
+          '<span class="pp-update-type" style="background:'+t.bg+';color:'+t.col+';border:1px solid '+t.bg+'">'+t.icon+' '+t.label+'</span>'+
+          '<span class="pp-update-num">0'+(i+1)+'</span>'+
+        '</div>'+
+        '<div class="pp-update-head">'+esc(u.title)+'</div>'+
+        (u.body?'<div class="pp-update-body">'+esc(u.body)+'</div>':'')+
+        '<div class="pp-update-foot">'+
+          '<span class="pp-update-date">'+d+'</span>'+
+          (u.cta_label&&u.cta_url?'<a href="'+esc(u.cta_url)+'" class="pp-update-cta">'+esc(u.cta_label)+'</a>':'')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  /* ── Metrics ── */
+  var comp = p.profile_completion||20;
+  var metricsHtml =
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Profile Completion</span><span class="pp-metric-val">'+comp+'</span></div><div class="pp-metric-bar"><div class="pp-metric-fill" style="width:'+comp+'%;background:var(--blue)"></div></div></div>'+
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Verified Status</span><span class="pp-metric-val">'+(p.verification_status==='verified'?'✓ Yes':'Pending')+'</span></div></div>'+
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Ambassador</span><span class="pp-metric-val">'+(p.ambassador_status?'⭐ Yes':'—')+'</span></div></div>'+
+    '<div class="pp-metric"><div class="pp-metric-row"><span class="pp-metric-label">Capital Visibility</span><span class="pp-metric-val">'+(comp>=80?'High':comp>=50?'Medium':'Growing')+'</span></div><div class="pp-metric-bar"><div class="pp-metric-fill" style="width:'+(Math.min(100,comp+10))+'%;background:var(--green)"></div></div></div>';
+
+  /* ── Network SVG map (role-based) ── */
+  var mkts=p.markets||[];
+  var roles=roleLabel(p.role);
+  var BAR_COLORS=['#235FA6','#0E9A66','#9A7B22','#56606B','#0C7E96'];
+  var _mkts=(p.markets||[]).slice(0,5);
+  var networkSvg;
+  if(_mkts.length){
+    networkSvg='<div class="pp-mktbars">'+_mkts.map(function(m,i){
+      var w=Math.round(100-i*15);
+      var color=BAR_COLORS[i]||'#56606B';
+      return '<div style="margin-bottom:11px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'+
+          '<span style="font-size:12px;color:var(--text)">'+esc(m)+'</span>'+
+          '<span style="font-family:var(--mono);font-size:10px;color:'+color+';font-weight:500">ACTIVE</span>'+
+        '</div>'+
+        '<div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">'+
+          '<div style="height:100%;width:'+w+'%;background:'+color+';border-radius:3px"></div>'+
+        '</div>'+
+      '</div>';
+    }).join('')+'</div>';
+  } else {
+    networkSvg='<div style="padding:18px 4px;text-align:center;font-size:12px;color:var(--text3)">Active markets will appear here.</div>';
+  }
+
+  /* ── Status band items ── */
+  var bandItems = '';
+  if(p.ambassador_status) bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(154,123,34,.18)">⭐</div><div><div class="pp-band-name">Ambassador</div><div class="pp-band-since">Active</div></div></div>';
+  if(p.verification_status==='verified') bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(14,154,102,.15)">✓</div><div><div class="pp-band-name">Verified</div><div class="pp-band-since">Confirmed</div></div></div>';
+  if(p.role) bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(255,255,255,.08)">⬡</div><div><div class="pp-band-name">'+esc(roleLabel(p.role))+'</div><div class="pp-band-since">Pegasus Network</div></div></div>';
+  (p.markets||[]).forEach(function(m){bandItems+='<div class="pp-band-item"><div class="pp-band-icon" style="background:rgba(255,255,255,.05)">📍</div><div><div class="pp-band-name">'+esc(m)+'</div><div class="pp-band-since">Active market</div></div></div>';});
+
+  /* ── Inline identity details (replaces Capital Identity sidebar) ── */
+  var idLine=[];
+  if(p.location) idLine.push('<span class="pp-id-item">\uD83D\uDCCD '+esc(p.location)+'</span>');
+  if(p.company_name) idLine.push('<span class="pp-id-item">\uD83C\uDFE2 '+esc(p.company_name)+'</span>');
+  if(p.specialties&&p.specialties.length) idLine.push('<span class="pp-id-item">\u2B50 '+esc(p.specialties.join(' \u00B7 '))+'</span>');
+  if(p.markets&&p.markets.length) idLine.push('<span class="pp-id-item">\uD83C\uDF0E '+esc(p.markets.join(' \u2022 '))+'</span>');
+  if(p.website) idLine.push('<span class="pp-id-item">\uD83C\uDF10 <a href="'+esc(webHref(p.website))+'" target="_blank" rel="noopener" class="cid-link">'+esc(p.website.replace(/^https?:\/\//,''))+'</a></span>');
+
+  /* ── Assemble page (single calm vertical flow) ── */
+  document.body.insertAdjacentHTML('beforeend',
+
+    /* 1. COMPACT HERO — no action buttons; status lives in the tags */
+    '<section class="pp-hero">'+
+      '<div class="pp-hero-grid"></div>'+ bannerExtra +
+      '<a href="/members.html" class="pp-back" style="position:absolute;top:14px;left:40px;z-index:3;color:rgba(255,255,255,.75);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em">\u2190 Member Network</a>'+
+      '<div class="pp-hero-wm" aria-hidden="true">'+esc((p.company_name||name||'').toUpperCase()||'P')+'</div>'+
+      '<div class="pp-hero-c">'+
+        '<div class="pp-av">'+avHtml+'</div>'+
+        '<div>'+
+          '<h1 class="pp-name">'+esc(name)+'</h1>'+ (trustBadges(p)?('<div class="pp-trust" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+trustBadges(p)+'</div>'):'')+
+          '<div class="pp-sub"><strong>'+esc(p.professional_title||p.ecosystem_role||roleLabel(p.role))+'</strong>'+(p.company_name?' \u00B7 '+esc(p.company_name):'')+'</div>'+
+          (tags?'<div class="pp-tags">'+tags+'</div>':'')+
+          '<div class="pp-stats">'+statsHtml+'</div>'+
+        '</div>'+
+        '<div class="pp-actions">'+actions+'</div>'+
+      '</div>'+
+      '<div class="pp-hero-horizon"></div>'+
+    '</section>'+
+
+    /* Inline identity line */
+    (idLine.length?'<div class="pp-id-line">'+idLine.join('')+'</div>':'')+
+
+    '<div class="pp-flow">'+
+
+      /* OWNER: Recently Active members — up top, pulled left */
+      (route.isOwner?
+        '<div id="pp-active-members" class="pp-active-panel"></div>'
+      :'')+
+
+      /* 2. CURRENT FOCUS — directional statement above About */
+      (p.current_focus?
+        '<div class="pp-focus">'+
+          '<div class="pp-focus-label">Current Focus</div>'+
+          '<div class="pp-focus-text">'+esc(p.current_focus)+'</div>'+
+        '</div>'
+      :'')+
+
+      /* 3. ABOUT */
+      (p.bio?
+        '<section class="pp-sec">'+
+          '<div class="pp-sec-label">About</div>'+
+          '<div class="pp-about">'+esc(p.bio).split(/\n+/).map(function(t){return t.trim()?'<p>'+t+'</p>':'';}).join('')+'</div>'+
+        '</section>'
+      :'')+
+
+      /* Ecosystem identity (ecosystem members) */
+      ((p.ecosystem_contribution||p.ecosystem_goals)?
+        '<section class="pp-sec">'+
+          (p.ecosystem_contribution?'<div class="pp-sec-label">Contribution</div><div class="pp-about"><p>'+esc(p.ecosystem_contribution)+'</p></div>':'')+
+          (p.ecosystem_goals?'<div class="pp-sec-label" style="margin-top:22px">Open To</div><div class="pp-about"><p>'+esc(p.ecosystem_goals)+'</p></div>':'')+
+        '</section>'
+      :'')+
+
+      /* 4. SHOWCASE — major section directly below About */
+      '<section class="pp-showcase"><div class="pp-showcase-inner" id="ppShowcase"></div></section>'+
+
+      /* Member Updates */
+      (rawUpdates.length?
+        '<section class="pp-sec">'+
+          '<div class="pp-sec-label">Member Updates</div>'+
+          '<div class="pp-updates">'+updatesHtml+'</div>'+
+        '</section>'
+      :'')+
+
+      /* 5. NETWORK PRESENCE — moved lower, calmer, ecosystem-oriented */
+      '<section class="pp-sec">'+
+        '<div class="pp-sec-label">Network Presence</div>'+
+        '<div class="pp-presence">'+
+          '<div class="pp-presence-metrics">'+metricsHtml+'</div>'+
+          '<div class="pp-presence-map">'+networkSvg+'</div>'+
+        '</div>'+
+      '</section>'+
+
+      /* 6. SECONDARY — featured work */
+      (function(){
+        var fm=(p.featured_modules||[]).filter(function(m){return m&&m.kind!=='update';});
+        if(!fm.length && !route.isOwner) return '';
+        return '<section class="pp-sec">'+
+          '<div class="pp-sec-label">Featured'+(route.isOwner?' <a class="pp-card-action" href="/profile-edit.html">+ Add</a>':'')+'</div>'+
+          (fm.length? fm.map(function(m){
+            return '<a href="'+esc(m.href||'#')+'" class="pp-feat">'+
+              '<div class="pp-feat-kind">'+esc(m.kind||'Featured')+'</div>'+
+              '<div class="pp-feat-title">'+esc(m.title||'')+'</div>'+
+              (m.note?'<div class="pp-feat-note">'+esc(m.note)+'</div>':'')+
+            '</a>';
+          }).join('') : '<div style="font-size:12.5px;color:var(--text3)">Feature a Deal Room, market report, or pitch deck.</div>')+
+        '</section>';
+      })()+
+
+    '</div>'+
+
+    /* CTA for visitors */
+    (!route.isOwner?
+      '<div class="pp-cta">'+
+        '<div class="pp-cta-title">Connect with '+esc(firstName)+' on Pegasus</div>'+
+        '<div class="pp-cta-sub">Join the network to request an introduction, open a Deal Room, or access the Match Engine.</div>'+
+        '<div class="pp-cta-btns">'+
+          '<a class="btn btn-pri btn-lg" href="/signup.html">Join the Network \u2192</a>'+
+          '<a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>'+
+          '<a class="btn btn-ghost btn-lg" href="/members.html">Browse Members</a>'+
+        '</div>'+
+      '</div><br>'
+    :'')+
+
+    /* OWNER-ONLY floating management controls */
+    (route.isOwner?
+      '<div class="pp-manage" id="ppManage">'+
+        '<div class="pp-manage-menu" id="ppManageMenu">'+
+          '<a class="pp-manage-item" href="/profile-edit.html">\u270E Edit Profile</a>'+
+          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy Link</button>'+
+          '<a class="pp-manage-item" href="/showcase.html">\u2756 Manage Showcase</a>'+
+          '<a class="pp-manage-item" href="/profile-edit.html">\u2699 Settings</a>'+
+        '</div>'+
+        '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage</button>'+
+      '</div>'
+    :'')
+  );
+
+  window.ppToggleManage=function(){var m=document.getElementById('ppManageMenu');if(m)m.classList.toggle('open');};
+
+  /* ── Recently Active Members panel (owner only) ────────────────
+     Shows members who joined or updated profile recently.
+     Gives the owner context of who is active in the network.    */
+  if(route.isOwner){
+    (async function(){
+      var panel=document.getElementById('pp-active-members'); if(!panel)return;
+      try{
+        var sb=await window.PegSB.ready;
+        var me=(await sb.auth.getUser()).data.user.id;
+        var {data}=await sb.from('profiles')
+          .select('id,full_name,role,profile_slug,headline,location')
+          .not('full_name','is',null)
+          .neq('id',me)
+          .order('updated_at',{ascending:false})
+          .limit(8);
+        if(!data||!data.length){panel.remove();return;}
+        panel.innerHTML=
+          '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Recently Active</div>'+
+          data.map(function(m){
+            var ini=(m.full_name||'?').split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+            var link=m.profile_slug?'/u/'+m.profile_slug:'/public-profile.html?id='+m.id;
+            var rl=(m.role||'member').replace(/_/g,' ');
+            return '<a href="'+link+'" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">'+
+              '<div style="width:32px;height:32px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+ini+'</div>'+
+              '<div style="min-width:0;flex:1">'+
+                '<div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+m.full_name+'</div>'+
+                '<div style="font-size:10px;color:var(--text3);text-transform:capitalize">'+rl+'</div>'+
+              '</div>'+
+            '</a>';
+          }).join('')+
+          '<a href="/members.html" style="display:block;font-size:11px;color:var(--blue-lt);text-align:center;padding-top:10px;text-decoration:none">See all members →</a>';
+      }catch(e){panel.remove();}
+    }());
+  }
+
+  try{
+    if(window.PegShowcase){
+      await PegShowcase.mountInto('#ppShowcase', { ownerId: p.id, isOwner: route.isOwner, role: p.role });
+      var _scSec=document.querySelector('.pp-showcase');
+      if(_scSec && !document.querySelector('#ppShowcase .sc-section')) _scSec.remove();
+    }
+  }catch(e){ console.warn('[Showcase] mount skipped:', e&&e.message); }
+
+  addFooter();
+});
+</script>
+</body>
+</html>

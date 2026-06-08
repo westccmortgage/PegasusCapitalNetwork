@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="en"><head><title>Lead Finder — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/lead-finder.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Lead Finder — Pegasus Network"><meta property="og:description" content="Define loan type, geography, loan amount range, property type, and borrower profile."><meta property="og:url" content="https://pegasuscapitalnetwork.com/lead-finder.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Lead Finder — Pegasus Network"><meta name="twitter:description" content="Define loan type, geography, loan amount range, property type, and borrower profile."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Define loan type, geography, loan amount range, property type, and borrower profile."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+const v=Pegasus.mountApp({active:'Match Engine',title:'Capital Finder',sub:'Find aligned counterparties'});
+v.insertAdjacentHTML('beforeend','<div class="banner bn-info"><div class="banner-msg">◎ <span>Capital Finder is powered by the Pegasus Match Engine. Score your deal against live lender appetite.</span></div><a class="btn btn-sm btn-pri" href="/match-engine.html">Open Match Engine →</a></div>');
+v.insertAdjacentHTML('beforeend','<div class="grid g3">'+PegasusMatch.APPETITES.slice(0,6).map(function(a){return '<div class="card hc"><div class="card-body"><div style="font-size:13px;font-weight:600;margin-bottom:4px">'+a.name+'</div><div style="font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;margin-bottom:10px">'+a.loanTypes.join(' · ')+'</div><div class="kv"><span class="kv-k">Size band</span><span class="kv-v">'+Pegasus.fmt(a.min)+'-'+Pegasus.fmt(a.max)+'</span></div><div class="kv"><span class="kv-k">Max LTV</span><span class="kv-v">'+a.maxLTV+'%</span></div><div class="kv"><span class="kv-k">Rate from</span><span class="kv-v" style="color:var(--green)">'+a.rate+'</span></div><a class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:12px" href="/match-engine.html">Check Alignment →</a></div></div>';}).join('')+'</div>');
+</script></body></html>

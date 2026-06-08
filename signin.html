@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="en"><head><title>Sign In — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/signin.html"><meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Sign in to Pegasus Network — access your profile, deal rooms, and capital network."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<div class="auth-wrap"><div class="auth-card">
+  <div class="auth-head"><div class="auth-mark"><img src="/assets/brand/pegasus-symbol.svg" alt="Pegasus" style="width:32px;height:32px;object-fit:contain"></div><div class="auth-title">Welcome back</div><div class="auth-sub">CAPITAL INFRASTRUCTURE · INSTITUTIONAL ACCESS</div></div>
+  <div class="auth-body">
+    <button class="btn btn-ghost" id="goGoogle" style="width:100%;justify-content:center;gap:10px;margin-bottom:14px" onclick="doGoogle()"><svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.614z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg><span>Continue with Google</span></button>    <div class="divider" style="margin:14px 0 16px">OR USE EMAIL</div>
+    <div class="field"><label class="label" for="em">Work Email</label><input class="input" id="em" placeholder="you@firm.com"></div>
+    <div class="field"><div style="display:flex;justify-content:space-between"><label class="label" for="pw">Password</label><a class="auth-alt" style="margin:0;font-size:10px" href="/forgot-password.html">Forgot?</a></div><div class="pw-wrap"><input class="input" type="password" id="pw" placeholder="••••••••"><button class="pw-toggle" type="button" aria-label="Show password" title="Show password">👁</button></div></div>
+    <div id="err" style="color:var(--red);font-size:11px;font-family:var(--mono);min-height:14px;margin-bottom:10px"></div>
+    <button class="btn btn-pri" id="go" style="width:100%;justify-content:center" onclick="doSignin()">Access Workspace →</button>
+    <div class="divider">SECURE SESSION</div>
+    <div style="text-align:center;font-size:10px;color:var(--text3);font-family:var(--mono)">&#128274; Encrypted · Supabase Auth</div>
+    <div class="auth-alt">New to Pegasus? <a href="/signup.html">Create an account</a></div>
+  </div></div></div>
+<script>
+Pegasus.mountPublic();
+/* Guard: already signed in? Skip the form — route to dashboard or onboarding. */
+(async function(){
+  /* Save the page that linked here (for deep link after auth) */
+  try {
+    var _ref = document.referrer;
+    if (_ref && _ref.indexOf(location.hostname) >= 0) {
+      var _rPath = new URL(_ref).pathname;
+      if (!_rPath.startsWith('/signin') && !_rPath.startsWith('/signup') && !_rPath.startsWith('/auth-callback')) {
+        localStorage.setItem('pegasus.redirectAfterAuth', _rPath + new URL(_ref).search);
+      }
+    }
+  } catch(_) {}
+  try {
+    var s = await PegAuth.getSession();
+    if (s && s.user) {
+      await Pegasus.store.hydrate();
+      var p = Pegasus.store.get().profile;
+      /* Go to own profile hub — not dashboard or get-started */
+      var _sl = p && p.profile_slug;
+      var _id = p && p.id;
+      location.replace(_sl ? '/u/'+_sl : _id ? '/public-profile.html?id='+_id : '/dashboard.html');
+    }
+  } catch(_) {}
+})();
+async function doGoogle(){
+  var btn=document.getElementById('goGoogle'); btn.disabled=true; var prev=btn.innerHTML; btn.innerHTML='Redirecting to Google…';
+  try{ await PegAuth.signInWithGoogle(); /* browser navigates away to Google */ }
+  catch(e){ btn.disabled=false; btn.innerHTML=prev; document.getElementById('err').textContent=(e&&e.message)||'Google sign-in unavailable.'; }
+}
+async function doSignin(){
+  const email=document.getElementById('em').value, password=document.getElementById('pw').value;
+  const btn=document.getElementById('go'); btn.disabled=true; btn.textContent='Signing in…';
+  try{
+    await PegAuth.signIn({email,password});
+    await Pegasus.store.hydrate();
+    location.href = Pegasus.store.isAdmin() ? 'admin.html' : 'profile.html';
+  }catch(e){
+    btn.disabled=false; btn.textContent='Access Workspace →';
+    var raw=(e&&e.message)||'';
+    var msg=raw.indexOf('missing email or phone')>=0||raw.indexOf('Missing email')>=0?'Please enter your email address.':
+      raw.indexOf('Invalid login credentials')>=0?'Incorrect email or password. Please try again.':
+      raw.indexOf('Email not confirmed')>=0?'Please confirm your email address before signing in.':
+      raw||'Sign in failed. Please try again.';
+    document.getElementById('err').textContent=msg;
+  }
+}
+</script></body></html>

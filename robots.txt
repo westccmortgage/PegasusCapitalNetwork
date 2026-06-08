@@ -1,0 +1,42 @@
+# Pegasus Capital Network — robots.txt
+# Generated 2026-05-29
+
+User-agent: *
+
+# Public pages — all allowed
+Allow: /
+
+# Block private / authenticated pages from indexing
+Disallow: /admin.html
+Disallow: /admin-requests.html
+Disallow: /admin-trust-reviews.html
+Disallow: /apply-review.html
+Disallow: /auth-callback.html
+Disallow: /crm.html
+Disallow: /dashboard.html
+Disallow: /deal-room.html
+Disallow: /deal-rooms.html
+Disallow: /get-started.html
+Disallow: /intelligence.html
+Disallow: /messages.html
+Disallow: /my-requests.html
+Disallow: /network-requests.html
+Disallow: /profile-edit.html
+Disallow: /profile.html
+Disallow: /showcase-admin.html
+Disallow: /saved-scenario.html
+Disallow: /submit-deal.html
+Disallow: /rwa-project-intake.html
+Disallow: /rwa-project-workspace.html
+Disallow: /badge-proof-submit.html
+Disallow: /lead-finder.html
+Disallow: /deal-analyzer.html
+Disallow: /capital-strategy-simulator.html
+Disallow: /deal-feed.html
+Disallow: /rwa-readiness-check.html
+Disallow: /rwa-project-intake.html
+Disallow: /reset-password.html
+Disallow: /request.html
+
+# Sitemap location
+Sitemap: https://pegasuscapitalnetwork.com/sitemap.xml

@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><title>RWA Project Workspace — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/rwa-project-workspace.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="RWA Project Workspace — Pegasus Network"><meta property="og:description" content="Organize your RWA project documentation, professional team contacts, compliance checklist, and partner connections in one private workspace."><meta property="og:url" content="https://pegasuscapitalnetwork.com/rwa-project-workspace.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="RWA Project Workspace — Pegasus Network"><meta name="twitter:description" content="Organize your RWA project documentation, professional team contacts, compliance checklist, and partner connections in one private workspace."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Organize your RWA project documentation, professional team contacts, compliance checklist, and partner connections in one private workspace."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+const v=Pegasus.mountApp({active:'Deal Rooms',title:'RWA Project Workspace',sub:'Riverside Apartments · Tokenization'});
+var WF=['Intake','Readiness','Legal Structure','Issuance','Distribution','Secondary'];
+var flow='<div class="flow" style="margin-bottom:16px">'+WF.map(function(w,i){return '<div class="flow-i '+(i<2?'done':i===2?'active':'')+'"><div class="flow-line"></div><div class="flow-node">'+(i<2?'✓':i+1)+'</div><div class="flow-lbl">'+w+'</div></div>';}).join('')+'</div>';
+v.insertAdjacentHTML('beforeend',flow);
+(async function(){try{
+    var id=new URLSearchParams(location.search).get('id');
+    var metrics=[['—','Asset Value','var(--blue)'],['—','Target Raise','var(--teal)'],['Reg D','Structure','var(--green)'],['—','Readiness','var(--amber)']];
+    if(id){var c=await window.PegSB.ready; if(c){var {data}=await c.from('rwa_project_intakes').select('*').eq('id',id).maybeSingle(); if(data){metrics[0][0]=data.asset_value?'$'+Number(data.asset_value).toLocaleString():'—'; metrics[1][0]=data.target_raise?'$'+Number(data.target_raise).toLocaleString():'—';}}}
+    v.insertAdjacentHTML('beforeend','<div class="grid g4" style="margin-bottom:16px">'+metrics.map(function(s){return '<div class="stat" style="--accent:'+s[2]+'"><div class="stat-v" style="font-size:20px">'+s[0]+'</div><div class="stat-l">'+s[1]+'</div></div>';}).join('')+'</div>');
+  }catch(e){v.insertAdjacentHTML('beforeend','<div style="padding:12px;font-size:12px;color:var(--text3)">Project data loads from Supabase.</div>');}})();
+v.insertAdjacentHTML('beforeend','<div class="grid g2"><div class="card"><div class="card-head"><div class="card-title">Readiness Checklist</div></div><div class="card-body">'+[['Asset valuation','Verified','tag-g'],['Title & legal review','Verified','tag-g'],['Securities structure','In review','tag-a'],['Custody arrangement','Pending','tag-b'],['Offering documents','Pending','tag-b']].map(function(c){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px;color:var(--text2)">'+c[0]+'</span><span class="tag '+c[2]+'">'+c[1]+'</span></div>';}).join('')+'</div></div><div class="card"><div class="card-head"><div class="card-title">RWA Partners Engaged</div></div><div class="card-body">'+[['Your Company','Issuance Platform','TR'],['Lex Digital Trust','Legal & Securities','LD']].map(function(p){return '<div style="display:flex;gap:11px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><div class="avatar">'+p[2]+'</div><div><div style="font-size:12px;font-weight:600">'+p[0]+'</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">'+p[1]+'</div></div></div>';}).join('')+'</div></div></div>');
+</script></body></html>

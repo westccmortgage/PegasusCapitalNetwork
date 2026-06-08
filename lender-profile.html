@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"><head><title>Lender Profile — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/lender-profile.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Lender Profile — Pegasus Network"><meta property="og:description" content="Profile information will appear here. This is a self-reported marketplace profile."><meta property="og:url" content="https://pegasuscapitalnetwork.com/lender-profile.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Lender Profile — Pegasus Network"><meta name="twitter:description" content="Profile information will appear here. This is a self-reported marketplace profile."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Profile information will appear here. This is a self-reported marketplace profile."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png"><link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#08111C"></head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+
+function mapProfile(p, tier){
+  return {
+    n: p.full_name||p.display_name||'Member',
+    r: (p.role||'Member').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),
+    i: (p.full_name||'M').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+    av: p.avatar_color||'linear-gradient(135deg,#112244,#2271C3)',
+    company: p.company_name||p.company||null,
+    market: p.market||p.markets_served||null,
+    since: p.member_since||(p.created_at?p.created_at.slice(0,7):null),
+    completion: p.profile_completion||null,
+    verified: !!p.verified,
+    featured: p.featured_kind||null,
+    title: p.professional_title||null,
+    headline: p.headline||null,
+    currentFocus: p.current_focus||null,
+    bio: p.bio||null,
+    tags: (p.specialties||(p.tags||[])),
+    credentials: p.credentials||[],
+    detailTitle: 'Profile',
+    details: [
+      p.role       && ['Role', (p.role||'').replace(/_/g,' ')],
+      p.market     && ['Market', p.market],
+      p.company_name && ['Company', p.company_name],
+    ].filter(Boolean),
+    activity: p.recent_activity||[],
+    metrics: [],
+    cta: 'Request Introduction',
+    cta2: 'Save to Network',
+    tier: tier
+  };
+}
+
+Pegasus.boot(async ()=>{
+  var id=new URLSearchParams(location.search).get('id');
+  var m=null;
+  if(id){
+    try{
+      var c=await window.PegSB.ready;
+      if(c){
+        var {data: prof}=await c.from('profiles').select('id,full_name,role,avatar_color,company_name,created_at,profile_completion,featured_kind,professional_title,headline,current_focus,bio,specialties,credentials,markets,location,website,verification_status,profile_slug').eq('id',id).maybeSingle();
+        if(prof) m=mapProfile(prof,'');
+      }
+    }catch(e){}
+  }
+  PegPages.mountContent('lender-profile',()=>m?PegPages.profileBody(m):PegPages.profileEmpty(id));
+  document.title=(m?m.n+' — ':'')+'Lender Profile — Pegasus Network';
+});
+</script></body></html>

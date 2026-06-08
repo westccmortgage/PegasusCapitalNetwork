@@ -1,0 +1,23 @@
+{
+  "name": "pegasus-v69-platform-rebuild",
+  "version": "69.0.0",
+  "description": "Pegasus Network \u2014 the operating system for structured real estate capital.",
+  "private": true,
+  "scripts": {
+    "build": "npm install",
+    "qa": "node qa/link-audit.js && echo 'Run npm run qa:runtime for browser tests'",
+    "qa:links": "node qa/link-audit.js",
+    "qa:runtime": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/runtime-audit.js",
+    "qa:forms": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/form-audit.js",
+    "qa:auth": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/auth-audit.js",
+    "qa:mobile": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/mobile-audit.js",
+    "qa:all": "npm run qa:links && npm run qa:runtime && npm run qa:auth && npm run qa:mobile"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0"
+  }
+}

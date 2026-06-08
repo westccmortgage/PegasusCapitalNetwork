@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><title>Your request — Pegasus</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<div id="nav"></div>
+<div class="rq-wrap"><div id="rqView"><div class="rq-card">Loading your request…</div></div></div>
+<div id="footer"></div>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.mountPublic('Platform');
+document.getElementById('footer').outerHTML = Pegasus.footer();
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+var ROLE_LABEL={agent:'Real estate guidance',lender:'Financing',insurance:'Insurance',business_funding_provider:'Business funding',rwa_partner:'Real-world asset partner'};
+var SLOT_STATE={open:'Searching the network',claimed:'Joined',engaged:'Working with you',closed:'Complete'};
+var STATUS={new:'Received',routed:'Routing to the right people',active:'Your team is forming',connected:'Your team is in place',closed:'Closed',dismissed:'Closed'};
+var EVENT={
+  routed:'We received your request and routed it to the right people.',
+  claimed:'A professional joined your request.',
+  engaged:'A professional began working with you.',
+  connected:'Your team is in place.',
+  escalated:'Pegasus prioritized your request for attention.',
+  viewed:'A professional reviewed your request.',
+  messaged:'A message was sent on your request.'
+};
+function when(iso){ try{var d=new Date(iso);return d.toLocaleString();}catch(e){return '';} }
+
+(async function(){
+  var host=document.getElementById('rqView');
+  var token=new URLSearchParams(location.search).get('token');
+  if(!token){ host.innerHTML='<div class="rq-card"><h1 style="font-family:var(--serif);font-weight:300">Your request</h1><p style="color:var(--text2)">We couldn’t find a request reference. If you just started one, please return to the homepage and continue.</p><a class="btn btn-pri" href="/">Back to Pegasus</a></div>'; return; }
+  var sb=null; try{ sb=await window.PegSB.ready; }catch(e){}
+  if(!sb){ host.innerHTML='<div class="rq-card"><p>Could not connect right now. Please refresh in a moment.</p></div>'; return; }
+  async function load(){
+    try{ var r=await sb.rpc('request_status_by_token',{p_token:token}); if(r.error) throw r.error; render(r.data); }
+    catch(e){ /* keep last view on transient errors */ }
+  }
+  function render(d){
+    if(!d || !d.found){ host.innerHTML='<div class="rq-card"><h1 style="font-family:var(--serif);font-weight:300">Your request</h1><p style="color:var(--text2)">We couldn’t find this request. It may have been closed.</p><a class="btn btn-pri" href="/">Back to Pegasus</a></div>'; return; }
+    var slots=(d.slots||[]).map(function(s){
+      var on=(s.status!=='open'); return '<li><span class="rd'+(on?' on':'')+'"></span>'+esc(ROLE_LABEL[s.role]||s.role)+'<span class="rs">'+esc(SLOT_STATE[s.status]||s.status)+'</span></li>';
+    }).join('');
+    var tl=(d.timeline||[]).slice().reverse().map(function(e){
+      return '<li>'+esc(EVENT[e.kind]||e.kind)+'<div class="t">'+esc(when(e.at))+'</div></li>';
+    }).join('');
+    host.innerHTML =
+      '<div class="rq-card">'+
+        '<div class="eyebrow">Your request</div>'+
+        '<h1 style="font-family:var(--serif);font-weight:300;font-size:27px;margin:6px 0 14px">Pegasus has your request.</h1>'+
+        '<span class="rq-status"><span class="d"></span>'+esc(STATUS[d.status]||d.status)+'</span>'+
+        '<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-top:16px">We’ll reach you at the email you provided. You can keep this page open to follow progress — it updates on its own.</p>'+
+      '</div>'+
+      '<div class="rq-card"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:6px">Your team</div>'+
+        '<ul class="rq-team">'+(slots||'<li style="color:var(--text3)">Assembling…</li>')+'</ul></div>'+
+      '<div class="rq-card"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:6px">Progress</div>'+
+        '<ul class="rq-tl">'+(tl||'<li>Just received.</li>')+'</ul></div>';
+  }
+  load(); setInterval(load, 15000);
+})();
+</script>
+</body></html>

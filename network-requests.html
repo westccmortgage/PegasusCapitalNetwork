@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en"><head><title>Network Requests — Pegasus</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/profile/profile-system.js"></script>
+<script>
+var TYPE={property:'Property',business:'Business',rwa:'Real-world asset',other:'General'};
+var ROLE={agent:'Real estate',lender:'Financing',insurance:'Insurance',business_funding_provider:'Business funding',rwa_partner:'Real-world assets'};
+var STATUS={new:'Forming',routed:'Forming',active:'Forming',connected:'Connected',closed:'Closed',dismissed:'Closed'};
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function money(a,b){function f(n){n=Number(n);if(!n)return null;if(n>=1e6)return '$'+(n/1e6).toFixed(n%1e6?1:0)+'M';if(n>=1e3)return '$'+Math.round(n/1e3)+'K';return '$'+n;}var lo=f(a),hi=f(b);if(lo&&hi)return lo+'–'+hi;return lo||hi||null;}
+function ago(iso){try{var s=(Date.now()-new Date(iso).getTime())/1000;if(s<3600)return Math.max(1,Math.round(s/60))+'m ago';if(s<86400)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago';}catch(e){return '';}}
+function meta(r){return [r.location?esc(r.location):null, money(r.amount_min,r.amount_max), r.timeline?esc(r.timeline):null].filter(Boolean).join(' · ');}
+
+async function claimSlot(slotId,btn){
+  btn.disabled=true; btn.textContent='Claiming…';
+  try{ var sb=await window.PegSB.ready; var r=await sb.rpc('claim_slot',{p_slot_id:slotId}); if(r.error) throw r.error;
+    if(window.Pegasus&&Pegasus.toast)Pegasus.toast('Claimed — contact details unlocked'); await loadAll();
+  }catch(e){ if(window.Pegasus&&Pegasus.toast)Pegasus.toast(e.message||'This role was just taken'); await loadAll(); }
+}
+async function engageSlot(slotId,btn){
+  btn.disabled=true; btn.textContent='Updating…';
+  try{ var sb=await window.PegSB.ready; var r=await sb.rpc('engage_slot',{p_slot_id:slotId}); if(r.error) throw r.error;
+    if(window.Pegasus&&Pegasus.toast)Pegasus.toast('Marked as engaged'); await loadAll();
+  }catch(e){ if(window.Pegasus&&Pegasus.toast)Pegasus.toast(e.message||'Could not update'); btn.disabled=false; btn.textContent='Mark as engaged'; }
+}
+window.claimSlot=claimSlot; window.engageSlot=engageSlot;
+
+function renderOpen(list){
+  var host=document.getElementById('nrOpen'); if(!host)return;
+  if(!list.length){ host.innerHTML='<div class="nr-empty">No open requests match your role right now. We’ll notify you the moment one arrives.</div>'; return; }
+  host.innerHTML=list.map(function(r){
+    return '<div class="nr-card">'+
+      '<div class="nr-top"><span class="nr-badge">'+esc(TYPE[r.type]||r.type)+'</span>'+
+        '<span class="nr-role">You can fill · '+esc(ROLE[r.open_slot_role]||r.open_slot_role)+'</span>'+
+        '<span class="nr-time">'+ago(r.created_at)+'</span></div>'+
+      (meta(r)?'<div class="nr-meta">'+meta(r)+'</div>':'')+
+      (r.note?'<div class="nr-note">“'+esc(r.note)+'”</div>':'')+
+      '<div class="nr-from">From '+esc(r.contact_first||'a member')+' · full contact unlocks when you claim</div>'+
+      '<button class="btn btn-pri nr-act" onclick="claimSlot(\''+r.open_slot_id+'\',this)">Claim this role →</button>'+
+    '</div>';
+  }).join('');
+}
+function renderMine(list){
+  var host=document.getElementById('nrMine'); if(!host)return;
+  if(!list.length){ host.innerHTML='<div class="nr-empty">You haven’t claimed any requests yet. Claim one above to begin.</div>'; return; }
+  host.innerHTML=list.map(function(r){
+    var c=[]; if(r.contact_email)c.push('<a href="mailto:'+esc(r.contact_email)+'">'+esc(r.contact_email)+'</a>'); if(r.contact_phone)c.push(esc(r.contact_phone));
+    return '<div class="nr-card nr-mine">'+
+      '<div class="nr-top"><span class="nr-badge">'+esc(TYPE[r.type]||r.type)+'</span>'+
+        '<span class="nr-role">Your role · '+esc(ROLE[r.my_role]||r.my_role)+'</span>'+
+        '<span class="nr-pill '+esc(r.status)+'">'+esc(STATUS[r.status]||r.status)+'</span></div>'+
+      (meta(r)?'<div class="nr-meta">'+meta(r)+'</div>':'')+
+      (r.note?'<div class="nr-note">“'+esc(r.note)+'”</div>':'')+
+      '<div class="nr-contact"><strong>'+esc(r.contact_name||'Contact')+'</strong>'+(c.length?' · '+c.join(' · '):'')+'</div>'+
+      (r.my_slot_status==='claimed'
+        ? '<button class="btn btn-pri nr-act" onclick="engageSlot(\''+r.slot_id+'\',this)">Mark as engaged →</button>'
+        : '<span class="nr-engaged">Engaged ✓</span>')+
+    '</div>';
+  }).join('');
+}
+async function loadAll(){
+  var sb=await window.PegSB.ready;
+  try{ var o=await sb.rpc('network_open_requests'); renderOpen(o.error?[]:(o.data||[])); }catch(e){ renderOpen([]); }
+  try{ var m=await sb.rpc('my_claimed_requests'); renderMine(m.error?[]:(m.data||[])); }catch(e){ renderMine([]); }
+}
+
+Pegasus.boot(function(st){
+  var v=Pegasus.mountApp({active:'Network Requests',title:'Network Requests',sub:'Opportunities matched to your role'});
+  v.innerHTML=
+    '<div class="card"><div class="card-body">'+
+      '<p style="color:var(--text2);font-size:14px;line-height:1.6;margin:0">When a member states a need, Pegasus routes it to the roles that can help. Claim a role to unlock the contact and begin the connection.</p>'+
+    '</div></div>'+
+    '<div class="nr-sec">Open in the network</div><div id="nrOpen"><div class="nr-empty">Loading…</div></div>'+
+    '<div class="nr-sec">Your engagements</div><div id="nrMine"><div class="nr-empty">Loading…</div></div>'+
+    '<p class="nr-legal">Pegasus facilitates introductions between members. It is not a party to, and does not advise on, any transaction.</p>';
+  loadAll();
+});
+</script>
+</body></html>
