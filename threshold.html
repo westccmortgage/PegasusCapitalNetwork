@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en"><head><title>Enter Pegasus</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<div id="nav"></div>
+<section class="cin cin-threshold">
+  <canvas id="cinCanvas" class="cin-canvas"></canvas>
+  <div class="cin-focus"></div>
+  <div class="cin-presence" aria-hidden="true"></div>
+  <div class="cin-signals" id="cinSignals" aria-hidden="true"></div>
+  <div class="th-inner">
+    <div id="thEye" class="th-r">Pegasus</div>
+    <p id="thL1" class="th-line th-r">You are now entering a protected ecosystem — built around trusted relationships, aligned opportunities, and meaningful introductions.</p>
+    <p id="thL2" class="th-line sm th-r">Inside Pegasus, your presence becomes discoverable to the right people — not broadcast into noise.</p>
+    <p id="thL3" class="th-line sm th-r">The next step is building your presence inside the ecosystem.</p>
+    <a id="thCta" class="btn btn-pri th-cta th-r" href="/signup.html">Enter Pegasus →</a>
+  </div>
+</section>
+<div id="footer"></div>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/pegasus-living.js"></script>
+<script>
+Pegasus.mountPublic('Platform');
+document.getElementById('footer').outerHTML = Pegasus.footer();
+(function(){
+  // carry the visitor's intent forward into presence creation
+  var p=new URLSearchParams(location.search).get('intent');
+  var cta=document.getElementById('thCta');
+  if(cta&&p) cta.setAttribute('href','/signup.html?intent='+encodeURIComponent(p));
+  var els=[document.getElementById('thEye'),document.getElementById('thL1'),document.getElementById('thL2'),document.getElementById('thL3'),cta];
+  var reduce=false; try{reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+  if(reduce){ els.forEach(function(e){if(e)e.classList.add('show');}); return; }
+  var d=[200,1000,2400,3700,4900];
+  els.forEach(function(e,i){ if(e) setTimeout(function(){e.classList.add('show');}, d[i]); });
+})();
+</script>
+</body></html>
