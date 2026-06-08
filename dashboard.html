@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="en"><head><title>Dashboard — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/dashboard.html"><meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529"><link rel="stylesheet" href="/css/activation.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
+
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-billing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/profile/profile-system.js"></script>
+<script src="/js/activation.js"></script>
+<script>
+Pegasus.boot((st)=>{
+  const v=Pegasus.mountApp({active:'Dashboard',title:'Dashboard',sub:'Operational overview'});
+
+  /* ── Billing upgrade success handler ── */
+  (async function handleUpgradeSuccess(){
+    const params = new URLSearchParams(window.location.search);
+    const upgradeParam = params.get('upgrade');
+    const activatedParam = params.get('activated');
+
+    if (activatedParam) {
+      // Landed here after polling confirmed the upgrade — show clean success
+      var tierName = activatedParam.charAt(0).toUpperCase() + activatedParam.slice(1);
+      v.insertAdjacentHTML('afterbegin',
+        '<div class="banner bn-active" style="margin-bottom:12px">'+
+        '<div class="banner-msg">⬢ <span><b>'+tierName+' access activated!</b> '+
+        'Your new features are now available. Welcome to '+tierName+'.</span></div>'+
+        '</div>');
+      // Clean URL
+      history.replaceState({}, '', '/dashboard.html');
+      return;
+    }
+
+    if (upgradeParam === 'success') {
+      var targetTier = params.get('tier') || '';
+      var tierDisplay = targetTier.charAt(0).toUpperCase() + targetTier.slice(1);
+
+      // Show immediate feedback — payment went through, now waiting for webhook
+      v.insertAdjacentHTML('afterbegin',
+        '<div class="banner bn-trial" style="margin-bottom:12px" id="upgrade-banner">'+
+        '<div class="banner-msg">🎉 <span><b>Payment received'+
+        (tierDisplay?' — '+tierDisplay+' access':'')+' activating.</b> '+
+        'This usually takes under 30 seconds.</span></div>'+
+        '<div id="upgrade-status" style="font-size:11px;color:var(--green);margin-top:6px;font-family:var(--mono)">'+
+        'Connecting to Stripe…</div>'+
+        '</div>');
+
+      // Poll Supabase directly every 2 seconds for up to 60 seconds
+      try {
+        var sb = await window.PegSB.ready;
+        var userResp = await sb.auth.getUser();
+        var uid = userResp.data && userResp.data.user && userResp.data.user.id;
+        if (!uid) return;
+
+        var attempts = 0;
+        var maxAttempts = 30;
+        var statusEl = document.getElementById('upgrade-status');
+
+        /* ── FALLBACK: verify checkout session via backend (works even if
+         *    the Stripe webhook is delayed/misconfigured). Secure — the
+         *    backend validates our auth token + session ownership. ── */
+        var sessionId = params.get('session_id');
+        if (sessionId) {
+          (async function verifyFallback(){
+            if (statusEl) statusEl.textContent = 'Confirming payment with Stripe…';
+            try {
+              var sess = (await sb.auth.getSession()).data.session;
+              if (!sess) { if(statusEl) statusEl.textContent='Not signed in — please sign in again.'; return; }
+              var tok = sess.access_token;
+              var vr = await fetch('/.netlify/functions/verify-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+                body: JSON.stringify({ session_id: sessionId })
+              });
+              var vd = {};
+              try { vd = await vr.json(); } catch(_) {}
+              console.log('[Billing] verify-checkout-session result:', vr.status, vd);
+              window.__PEG_BILLING_DEBUG = { http: vr.status, result: vd };
+
+              if (vd && vd.activated && ['pro','gold'].includes(vd.tier)) {
+                clearInterval(poller);
+                window.location.href = '/dashboard.html?activated=' + vd.tier;
+                return;
+              }
+              /* Not activated — surface the exact reason so it's never a silent spinner */
+              if (statusEl) {
+                var why = vd.reason || ('HTTP ' + vr.status);
+                if (vr.status === 404) why = 'verify function not deployed (404)';
+                if (why && why.indexOf('does not exist') >= 0) why = 'billing tables missing — run migration 010_billing_sync.sql';
+                statusEl.innerHTML = 'Could not auto-activate: <b>' + why + '</b>. Polling will keep trying…';
+                statusEl.style.color = 'var(--amber)';
+              }
+            } catch(e) {
+              console.warn('[Billing] verify fallback error:', e.message);
+              if (statusEl) { statusEl.textContent = 'Verify error: ' + e.message; statusEl.style.color = 'var(--amber)'; }
+            }
+          })();
+        }
+
+        var poller = setInterval(async function() {
+          attempts++;
+          if (statusEl) statusEl.textContent = 'Checking subscription… (' + attempts + '/' + maxAttempts + ')';
+          try {
+            var { data: sub } = await sb.from('subscriptions')
+              .select('tier,status')
+              .eq('user_id', uid)
+              .maybeSingle();
+
+            var upgraded = sub && ['pro','gold'].includes(sub.tier) && ['active','trialing'].includes(sub.status);
+
+            if (!upgraded) {
+              // Also check memberships table (v68 compat)
+              var { data: mem } = await sb.from('memberships')
+                .select('tier,plan,status')
+                .eq('user_id', uid)
+                .maybeSingle();
+              var memTier = mem && (mem.tier || mem.plan);
+              upgraded = mem && ['pro','gold'].includes(memTier) && ['active','trialing'].includes(mem.status);
+              if (upgraded && mem) sub = { tier: memTier, status: mem.status };
+            }
+
+            if (upgraded) {
+              clearInterval(poller);
+              // Redirect to clean URL — Pegasus.boot will re-hydrate with new tier
+              window.location.href = '/dashboard.html?activated=' + (sub.tier || targetTier);
+              return;
+            }
+          } catch(e) {
+            if (statusEl) statusEl.textContent = 'Retrying… (DB error: ' + (e.message||'unknown') + ')';
+          }
+
+          if (attempts >= maxAttempts) {
+            clearInterval(poller);
+            if (statusEl) statusEl.textContent =
+              'Still activating — please refresh the page in a moment or check your email for confirmation.';
+          }
+        }, 2000);
+      } catch(e) {
+        var statusEl = document.getElementById('upgrade-status');
+        if (statusEl) statusEl.textContent = 'Could not connect to database. Please refresh the page.';
+      }
+    }
+  })();
+
+  const t=Pegasus.tier(), rooms=st.dealRooms;
+
+  /* ── Intent-based "Your Focus" card ──────────────────────────────────────
+     Reads onboarding_intent + role from the store. Shows a personalised
+     block with direct CTAs to the most relevant section for this user.
+     Stays compact on mobile (one CTA) and shows a "change focus" link.  */
+  const FOCUS_CONFIGS = {
+    capital_seeker:    { ic:'💰', title:'Your capital search',        sub:'Lenders and investors matched to your deal profile.', ctas:[{l:'Open Deal Room',h:'/deal-rooms.html'},{l:'Ask the Assistant',h:'/ai-assistant.html'}] },
+    capital_provider:  { ic:'🏦', title:'Your deal flow',             sub:'Borrowers, operators, and projects looking for capital.', ctas:[{l:'Browse Members',h:'/members.html'},{l:'Network Requests',h:'/network-requests.html'}] },
+    real_estate_agent: { ic:'🏠', title:'Your agent network',         sub:'Investors, buyers, and developers in the network.', ctas:[{l:'Browse Members',h:'/members.html'},{l:'Publish Showcase',h:'/showcase.html'}] },
+    company_builder:   { ic:'🚀', title:'Build your presence',        sub:'Capital partners, advisors, and collaborators for your project.', ctas:[{l:'Find Capital',h:'/ai-assistant.html'},{l:'Deal Rooms',h:'/deal-rooms.html'}] },
+    event_creator:     { ic:'📣', title:'Host your event',            sub:'Build your audience and reach the right professionals.', ctas:[{l:'Capital Sessions',h:'/capital-sessions.html'},{l:'Browse Members',h:'/members.html'}] },
+    network_explore:   { ic:'🤝', title:'Explore the network',        sub:'New members, deals, and opportunities this week.', ctas:[{l:'Browse Members',h:'/members.html'},{l:'Open CRM',h:'/crm.html'}] },
+    rwa_interest:      { ic:'🌐', title:'RWA & tokenization',         sub:'Digital real estate partners, education, and events.', ctas:[{l:'RWA Network',h:'/rwa-network.html'},{l:'RWA Education',h:'/rwa-education.html'}] },
+  };
+  function renderFocusCard(intent) {
+    var cfg = FOCUS_CONFIGS[intent];
+    var role = st.profile && st.profile.role;
+    if (!cfg && !role) return '';
+    /* Derive from role if no explicit intent */
+    if (!cfg) {
+      if (role==='lender'||role==='investor') cfg=FOCUS_CONFIGS.capital_provider;
+      else if (role==='borrower'||role==='developer') cfg=FOCUS_CONFIGS.capital_seeker;
+      else cfg=FOCUS_CONFIGS.network_explore;
+    }
+    return '<div class="focus-card" style="display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:14px">'+
+      '<div style="display:flex;align-items:center;gap:12px;min-width:0">'+
+        '<span style="font-size:24px;flex-shrink:0">'+cfg.ic+'</span>'+
+        '<div style="min-width:0">'+
+          '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:2px">Your Focus</div>'+
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">'+cfg.title+'</div>'+
+          '<div style="font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+cfg.sub+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
+        cfg.ctas.map(function(c,i){return '<a href="'+c.h+'" class="btn '+(i===0?'btn-pri':'btn-ghost')+' btn-sm">'+c.l+' →</a>';}).join('')+
+        '<a href="/get-started.html" style="font-size:11px;color:var(--text3);margin-left:4px;white-space:nowrap">change focus</a>'+
+      '</div>'+
+    '</div>';
+  }
+  const userIntent = st.profile && st.profile.onboarding_intent;
+  /* Expose updater so intent picker can refresh without page reload */
+  window._pegDashFocusUpdate = function(newIntent) {
+    var fc = document.querySelector('.focus-card');
+    if (fc) fc.outerHTML = renderFocusCard(newIntent);
+  };
+  if (userIntent || (st.profile && st.profile.role)) {
+    v.insertAdjacentHTML('beforeend', renderFocusCard(userIntent));
+  }
+
+  /* ── Intent Feed: "Who you'll want to meet" ──────────────────────
+     Async — runs after main render, queries Supabase by intent/role,
+     shows 4 relevant profiles with View + Connect buttons.         */
+  v.insertAdjacentHTML('beforeend','<div id="intent-feed" style="margin-bottom:14px"></div>');
+  (async function(){
+    var feedEl=document.getElementById('intent-feed'); if(!feedEl)return;
+    var intent=st.profile&&st.profile.onboarding_intent, role=st.profile&&st.profile.role;
+    var FEED_ROLES={capital_seeker:['lender','investor','broker'],capital_provider:['borrower','developer','broker'],real_estate_agent:['investor','developer','borrower'],company_builder:['lender','investor'],event_creator:null,network_explore:null,rwa_interest:['rwa_partner']};
+    var FEED_LABELS={capital_seeker:'Capital providers you should meet',capital_provider:'Deal seekers looking for capital',real_estate_agent:'Investors & buyers in the network',company_builder:'Capital partners for builders',event_creator:'Members who may attend your session',network_explore:'New members this week',rwa_interest:'RWA partners in the network'};
+    var roles=FEED_ROLES[intent]||null, label=FEED_LABELS[intent]||'Who you\'ll want to meet';
+    if(!intent&&role){
+      if(role==='lender'||role==='investor'){roles=['borrower','developer'];label='Active deal seekers';}
+      else if(role==='borrower'||role==='developer'){roles=['lender','investor'];label='Capital providers in the network';}
+    }
+    try{
+      var c=await window.PegSB.ready;
+      var q=c.from('profiles').select('id,full_name,role,profile_slug,location,headline').not('full_name','is',null).order('created_at',{ascending:false}).limit(8);
+      if(roles&&roles.length) q=q.in('role',roles);
+      var {data}=await q;
+      if(!data||!data.length){feedEl.remove();return;}
+      var uid=(await c.auth.getUser()).data.user.id;
+      var people=data.filter(function(p){return p.id!==uid;}).slice(0,4);
+      if(!people.length){feedEl.remove();return;}
+      // Which of these have I already messaged? (persist Connected state across reloads)
+      var connected={};
+      try{
+        var {data:sent}=await c.from('messages').select('receiver_id').eq('sender_id',uid).in('receiver_id',people.map(function(p){return p.id;}));
+        (sent||[]).forEach(function(m){connected[m.receiver_id]=1;});
+      }catch(_e){}
+      var cards=people.map(function(p){
+        var ini=(p.full_name||'?').split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+        var link=p.profile_slug?'/u/'+p.profile_slug:'/public-profile.html?id='+p.id;
+        var rl=(p.role||'member').replace(/_/g,' ');
+        var isConn=connected[p.id];
+        var connBtn=isConn
+          ? '<a href="/messages.html" class="btn btn-ghost btn-sm" style="font-size:11px;padding:5px 10px;color:var(--green);border-color:rgba(46,160,67,0.4)" title="Go to Messages">✓ Connected</a>'
+          : '<button class="btn btn-pri btn-sm ca-connect-btn" style="font-size:11px;padding:5px 10px" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(p.full_name)+'" onclick="window.caConnect(this.dataset.pid,decodeURIComponent(this.dataset.pname),this)">Connect</button>';
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px">'+
+          '<div style="width:38px;height:38px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+ini+'</div>'+
+          '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+Pegasus.esc(p.full_name)+'</div>'+
+          '<div style="font-size:11px;color:var(--text3);text-transform:capitalize">'+rl+(p.location?'· '+Pegasus.esc(p.location):'')+'</div>'+
+          (p.headline?'<div style="font-size:11px;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+Pegasus.esc(p.headline)+'</div>':'')+
+          '</div>'+
+          '<div style="display:flex;gap:6px;flex-shrink:0">'+
+            '<a href="'+link+'" class="btn btn-ghost btn-sm" style="font-size:11px;padding:5px 10px">View</a>'+
+            connBtn+
+          '</div>'+
+        '</div>';
+      }).join('');
+      feedEl.innerHTML='<div class="card" style="margin-bottom:0"><div class="card-head"><div class="card-title">◈ '+label+'</div><a href="/members.html" style="font-size:11px;color:var(--text3)">See all →</a></div><div class="card-body" style="display:flex;flex-direction:column;gap:8px">'+cards+'</div></div>';
+    }catch(e){feedEl.remove();}
+  }());
+
+  window.caConnect=async function(recipientId,name,btn){
+    // Guard against double-send
+    if(btn){ if(btn.dataset.sending==='1'||btn.dataset.done==='1') return; btn.dataset.sending='1'; var _t=btn.textContent; btn.textContent='Sending…'; btn.disabled=true; }
+    try{
+      var c=await window.PegSB.ready;
+      var me=(await c.auth.getUser()).data.user; if(!me){Pegasus.toast('!','var(--red)','Sign in required','Please sign in to connect.');if(btn){btn.dataset.sending='';btn.textContent=_t;btn.disabled=false;}return;}
+      var r=await c.rpc('connect_member',{p_recipient:recipientId,p_message:null});
+      if(r.error) throw r.error;
+      // Permanent "Connected" state on the button
+      if(btn){
+        btn.dataset.sending=''; btn.dataset.done='1'; btn.disabled=false;
+        btn.classList.remove('btn-pri'); btn.classList.add('btn-ghost');
+        btn.style.color='var(--green)'; btn.style.borderColor='rgba(46,160,67,0.4)';
+        btn.textContent='✓ Connected';
+        btn.onclick=function(){ location.href='/messages.html'; };
+        btn.title='Go to Messages';
+      }
+      Pegasus.toast('✓','var(--green)','Connected','You messaged '+name+'. Find the conversation in Messages.');
+      if(window.caRenderConnections) window.caRenderConnections();   // refresh the list card
+    }catch(e){
+      console.error('[caConnect]',e);
+      if(btn){btn.dataset.sending='';btn.textContent=_t;btn.disabled=false;}
+      var msg=(e&&(e.message||e.hint||e.details))?(e.message||e.hint||e.details):'Please try again.';
+      Pegasus.toast('!','var(--red)','Could not send', String(msg).slice(0,120));
+    }
+  };
+
+  v.insertAdjacentHTML('beforeend', PegBilling.stateBanner());
+  v.insertAdjacentHTML('beforeend','<div class="grid g4" style="margin-bottom:14px">'+PegBilling.dealRoomCard()+PegBilling.aiCard()+PegBilling.matchCard()+'<div class="stat" style="--accent:var(--teal)"><div class="stat-ic">🔔</div><div class="stat-v">'+(st.counts.unreadNotifications||0)+'</div><div class="stat-l">Notifications</div><div class="stat-m" style="color:var(--teal)">'+(st.counts.unreadMessages>0?st.counts.unreadMessages+' unread':'No new messages')+'</div></div></div>');
+  const room=rooms.find(r=>r.activity&&r.activity.length)||rooms[0];
+  const acts=(t==='starter')?[{x:'Deal Rooms are available on Pro and Gold. Upgrade to launch your first Capital Workspace.',t:'',c:'var(--text3)'}]:
+    (room&&room.activity&&room.activity.length)?room.activity:
+    [{x:'No deal activity yet. Launch your first Capital Workspace to see workflow updates here.',t:'',c:'var(--text3)'}];
+  let html='<div class="grid" style="grid-template-columns:1fr 1.4fr">'+PegBilling.membershipCard();
+  html+='<div class="card"><div class="card-head"><div class="card-title">⟳ Workflow Activity</div><span class="link" onclick="location.href=\'deal-rooms.html\'">All Deal Rooms →</span></div><div class="card-body">';
+  html+=acts.map(a=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)"><div style="width:6px;height:6px;border-radius:50%;background:'+a.c+';margin-top:6px;flex-shrink:0"></div><div><div style="font-size:11px;color:var(--text2);line-height:1.45">'+a.x+'</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:2px">'+(a.t||'')+'</div></div></div>').join('');
+  html+='</div></div></div>'; v.insertAdjacentHTML('beforeend',html);
+  const p=st.profile||{};
+  const upgradeCard=(function(){
+    if(t==='gold') return '<div class="card"><div class="card-head"><div class="card-title">⬢ Institutional Access</div></div><div class="card-body"><div style="font-size:12px;color:var(--text2);line-height:1.6">Full platform access — unlimited Deal Rooms, Match Engine, priority visibility.</div></div></div>';
+    var pp=p&&p.profile_completion||0,ca=p&&p.created_at?new Date(p.created_at):new Date(),dsj=Math.floor((Date.now()-ca.getTime())/86400000);
+    if(pp<50||dsj<7) return '';
+    return '<div class="card" style="border-color:rgba(170,137,38,0.2)"><div class="card-body" style="display:flex;flex-direction:column;justify-content:center;height:100%"><div style="font-size:14px;font-weight:600;margin-bottom:6px">Ready to go further?</div><div style="font-size:12px;color:var(--text2);margin-bottom:14px">'+(t==='starter'?'Unlock Deal Rooms, Match Engine, and advanced tools.':'Upgrade to Gold for unlimited workspaces.')+'</div><a class="btn btn-ghost btn-sm" href="/membership.html">See what’s included →</a></div></div>';
+  }());
+  v.insertAdjacentHTML('beforeend','<div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div class="card-title">Profile Status</div><span class="link" onclick="location.href=\'profile-edit.html\'">Edit →</span></div><div class="card-body"><div class="kv"><span class="kv-k">Profile completeness</span><span class="kv-v" style="color:var(--green)">'+(p.profile_completion||0)+'%</span></div><div class="kv"><span class="kv-k">Verification</span><span class="kv-v" style="text-transform:capitalize">'+(p.verification_status||'unverified')+'</span></div><div class="kv"><span class="kv-k">Role</span><span class="kv-v" style="text-transform:capitalize">'+(p.role||'—')+'</span></div></div></div>'+upgradeCard+'</div>');
+
+  /* ── Your Connections ─────────────────────────────────────────────
+     People you've reached out to (distinct recipients of your messages),
+     so the Connect button has a visible, persistent result.            */
+  v.insertAdjacentHTML('beforeend','<div id="ca-connections" style="margin-top:14px"></div>');
+  window.caRenderConnections=async function(){
+    var host=document.getElementById('ca-connections'); if(!host)return;
+    try{
+      var c=await window.PegSB.ready;
+      var me=(await c.auth.getUser()).data.user; if(!me){host.innerHTML='';return;}
+      // Messages I've sent → distinct recipients (most recent first)
+      var {data:msgs}=await c.from('messages').select('receiver_id,created_at').eq('sender_id',me.id).order('created_at',{ascending:false});
+      if(!msgs||!msgs.length){host.innerHTML='';return;}
+      var seen={}, ids=[];
+      msgs.forEach(function(m){ if(m.receiver_id&&!seen[m.receiver_id]){seen[m.receiver_id]=1;ids.push(m.receiver_id);} });
+      if(!ids.length){host.innerHTML='';return;}
+      var {data:profs}=await c.from('profiles').select('id,full_name,role,profile_slug,location').in('id',ids.slice(0,12));
+      if(!profs||!profs.length){host.innerHTML='';return;}
+      var byId={}; profs.forEach(function(p){byId[p.id]=p;});
+      var rows=ids.slice(0,12).map(function(id){
+        var p=byId[id]; if(!p)return'';
+        var ini=(p.full_name||'?').split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+        var rl=(p.role||'member').replace(/_/g,' ');
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px">'+
+          '<div style="width:34px;height:34px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+ini+'</div>'+
+          '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+Pegasus.esc(p.full_name||'Member')+'</div>'+
+          '<div style="font-size:11px;color:var(--text3);text-transform:capitalize">'+rl+(p.location?'· '+Pegasus.esc(p.location):'')+'</div></div>'+
+          '<span style="font-size:10px;color:var(--green);font-family:var(--mono);flex-shrink:0">✓ Connected</span>'+
+          '<a href="/messages.html" class="btn btn-ghost btn-sm" style="font-size:11px;padding:5px 10px;flex-shrink:0">Message →</a>'+
+        '</div>';
+      }).join('');
+      host.innerHTML='<div class="card" style="margin-bottom:0"><div class="card-head"><div class="card-title">⬡ Your Connections</div><a href="/messages.html" style="font-size:11px;color:var(--text3)">Open Messages →</a></div><div class="card-body" style="display:flex;flex-direction:column;gap:8px">'+rows+'</div></div>';
+    }catch(e){ host.innerHTML=''; }
+  };
+  window.caRenderConnections();
+});
+</script>
+<script>document.addEventListener('DOMContentLoaded',function(){ if(window.PegActivation) PegActivation.dashboardBanner(); });</script>
+</body></html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html><html lang="en"><head><title>Get in Touch — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/contact.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Get in Touch — Pegasus Network"><meta property="og:description" content="Whether you have a question about the platform, need help with a deal, or want to explore a partnership — reach out and we'll get back to you fast."><meta property="og:url" content="https://pegasuscapitalnetwork.com/contact.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Get in Touch — Pegasus Network"><meta name="twitter:description" content="Whether you have a question about the platform, need help with a deal, or want to explore a partnership — reach out and we'll get back to you fast."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Whether you have a question about the platform, need help with a deal, or want to explore a partnership — reach out and we'll get back to you fast."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png"><link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#08111C"></head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+PegPages.mountContent('contact',()=>PegPages.form({key:'contact',h1:'Get in Touch',lead:'Questions about membership, partnerships, or the platform? Send a message and the team will respond.',eyebrow:'Contact',
+fields:[[['Full Name','Jordan Maxwell','text',null,'ct_name'],['Work Email','you@firm.com','text',null,'ct_email']],[['Topic','','select',['General Inquiry','Membership','Partnership','Press','Support'],'ct_subject']],[['Message','How can we help?','area',null,'ct_msg']]],submit:'Send Message →'}));
+function val(id){var e=document.getElementById(id);return e?(''+e.value).trim():'';}
+window.pegSubmit=async function(btn){var f={name:val('ct_name'),email:val('ct_email'),subject:val('ct_subject'),message:val('ct_msg')};var err=document.getElementById('f_err');err.textContent='';if(!f.email){err.textContent='Email is required.';return;}var t=btn.textContent;btn.disabled=true;btn.textContent='Submitting…';try{var r=await PegForms.submitContact(f);Pegasus.toast('\u2713','var(--green-dim)','Message sent',r&&r.demo?'Saved (preview mode)':'Received — we will be in touch shortly');document.querySelectorAll('.form-card .input').forEach(function(i){i.value='';});}catch(e){err.textContent=(e&&e.message)||'Submission failed. Please try again.';}finally{btn.disabled=false;btn.textContent=t;}};
+</script></body></html>

@@ -1,0 +1,55 @@
+/* ============================================================================
+   PEGASUS — Activation & Referral styles (.act-*). Light, matches the canvas.
+   ========================================================================== */
+.act-loading{padding:40px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px}
+.act-wrap{padding:4px 0 44px;max-width:760px}
+
+.act-hero{margin-bottom:22px}
+.act-hero-t{font-family:var(--serif);font-size:26px;color:var(--text);line-height:1.1}
+.act-hero-s{font-size:13.5px;color:var(--text2);margin-top:8px;line-height:1.6;max-width:54ch}
+.act-prog{margin-top:16px}
+.act-prog-bar{height:7px;background:var(--bg2);border-radius:6px;overflow:hidden}
+.act-prog-bar span{display:block;height:100%;background:var(--blue);border-radius:6px;transition:width .4s ease}
+.act-prog-l{font-family:var(--mono);font-size:10.5px;color:var(--text3);margin-top:6px;letter-spacing:.04em}
+
+/* Referral panel — the growth engine, given prominence */
+.act-ref{background:linear-gradient(135deg,rgba(35,95,166,0.06),rgba(14,154,102,0.045));border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r3);padding:18px 20px;margin-bottom:24px}
+.act-ref-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.act-ref-k{font-family:var(--serif);font-size:17px;color:var(--text)}
+.act-ref-sub{font-size:11.5px;color:var(--text3);margin-top:5px;line-height:1.55;max-width:46ch}
+.act-ref-count{text-align:center;flex:none}
+.act-ref-num{font-family:var(--serif);font-size:28px;color:var(--blue);line-height:1}
+.act-ref-lbl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-top:3px}
+.act-ref-linkrow{display:flex;gap:8px;margin-top:14px}
+.act-ref-linkrow .input{flex:1;font-family:var(--mono);font-size:12px}
+.act-ref-share{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.act-share{font-size:11px;font-family:var(--mono);letter-spacing:.03em;text-decoration:none;color:var(--text2);background:var(--bg1);border:1px solid var(--border2);border-radius:16px;padding:5px 13px}
+.act-share:hover{border-color:var(--blue);color:var(--blue)}
+
+/* Steps */
+.act-steps{display:flex;flex-direction:column;gap:10px}
+.act-step{display:flex;align-items:center;gap:14px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:14px 16px}
+.act-step.hero{border-color:var(--blue);background:var(--blue-dim)}
+.act-step.done{opacity:.66}
+.act-step-ck{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.act-step.done .act-step-ck{background:var(--green);border-color:var(--green)}
+.act-step-main{flex:1}
+.act-step-t{font-size:13.5px;font-weight:500;color:var(--text)}
+.act-step-b{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5}
+.act-step-tag{flex:none;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--green)}
+.act-step .btn{flex:none}
+
+.act-alldone{margin-top:20px;text-align:center;font-size:13px;color:var(--green);background:rgba(14,154,102,.06);border:1px solid rgba(14,154,102,.2);border-radius:var(--r3);padding:16px}
+
+/* Dashboard banner */
+.act-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;text-decoration:none;background:var(--blue-dim);border:1px solid rgba(34,113,195,.25);border-radius:var(--r3);padding:12px 16px;margin-bottom:14px}
+.act-banner-l{flex:1}
+.act-banner-t{font-size:12.5px;font-weight:500;color:var(--text)}
+.act-banner-bar{height:5px;background:rgba(255,255,255,.5);border-radius:4px;overflow:hidden;margin-top:6px;max-width:280px}
+.act-banner-bar span{display:block;height:100%;background:var(--blue);border-radius:4px}
+.act-banner-cta{flex:none;font-size:12px;font-weight:500;color:var(--blue);font-family:var(--mono)}
+
+@media(max-width:600px){
+  .act-ref-head{flex-direction:column}
+  .act-ref-linkrow{flex-direction:column}
+}

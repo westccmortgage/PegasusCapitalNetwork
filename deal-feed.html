@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="en"><head><title>Deal Feed — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/deal-feed.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Deal Feed — Pegasus Network"><meta property="og:description" content="Pegasus Lenders Group is a marketplace and membership platform. Pegasus is not a lender, mortgage loan originator, broker-dealer, investment adviser,…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/deal-feed.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Deal Feed — Pegasus Network"><meta name="twitter:description" content="Pegasus Lenders Group is a marketplace and membership platform. Pegasus is not a lender, mortgage loan originator, broker-dealer, investment adviser,…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Pegasus Lenders Group is a marketplace and membership platform. Pegasus is not a lender, mortgage loan originator, broker-dealer, investment adviser,…"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+const v=Pegasus.mountApp({active:'Intelligence',title:'Deal Feed',sub:'Live marketplace activity'});
+(async function(){try{
+    var c=await window.PegSB.ready;
+    var counts=[['—','Open Requests','var(--blue)'],['—','In Matching','var(--teal)'],['—','Funded · 7d','var(--green)'],['—','Volume · 30d','var(--gold)']];
+    if(c){
+      var [{count:open},{count:matching}]=await Promise.all([c.from('financing_requests').select('*',{count:'exact',head:true}).eq('status','submitted'),c.from('match_results').select('*',{count:'exact',head:true})]);
+      counts[0][0]=String(open||0); counts[1][0]=String(matching||0);
+    }
+    v.insertAdjacentHTML('beforeend','<div class="grid g4" style="margin-bottom:16px">'+counts.map(function(s){return '<div class="stat" style="--accent:'+s[2]+'"><div class="stat-v">'+s[0]+'</div><div class="stat-l">'+s[1]+'</div></div>';}).join('')+'</div>');
+  }catch(e){v.insertAdjacentHTML('beforeend','<div style="padding:12px;font-size:12px;color:var(--text3)">Platform metrics load from Supabase.</div>');}})();
+let h='<div class="card"><div class="card-head"><div class="card-title">⟳ Capital Flow · Live</div><span class="badge b-active">● Streaming</span></div><div class="card-body" style="padding:0">';
+h+=PEG_DATA.activity.map(a=>'<div style="display:flex;gap:12px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid var(--border)"><div style="width:7px;height:7px;border-radius:50%;background:'+a.c+';margin-top:6px;flex-shrink:0"></div><div style="flex:1"><div style="font-size:12px;color:var(--text2);line-height:1.5">'+a.x+'</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:3px">'+a.m+'</div></div><span class="tag '+a.tag[1]+'">'+a.tag[0]+'</span></div>').join('');
+h+='</div></div>';v.insertAdjacentHTML('beforeend',h);
+</script></body></html>

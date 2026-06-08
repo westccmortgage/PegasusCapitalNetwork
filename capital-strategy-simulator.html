@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="en"><head><title>Capital Strategy Simulator — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/capital-strategy-simulator.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Capital Strategy Simulator — Pegasus Network"><meta property="og:description" content="Explore educational scenarios across real estate, stocks, private lending, business capital funding, crypto, RWA, and other capital paths."><meta property="og:url" content="https://pegasuscapitalnetwork.com/capital-strategy-simulator.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Capital Strategy Simulator — Pegasus Network"><meta name="twitter:description" content="Explore educational scenarios across real estate, stocks, private lending, business capital funding, crypto, RWA, and other capital paths."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Explore educational scenarios across real estate, stocks, private lending, business capital funding, crypto, RWA, and other capital paths."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+const v=Pegasus.mountApp({active:'Intelligence',title:'Capital Strategy Simulator',sub:'Model financing scenarios'});
+v.insertAdjacentHTML('beforeend','<div class="grid" style="grid-template-columns:1fr 1.2fr"><div class="card"><div class="card-head"><div class="card-title">Scenario</div></div><div class="card-body" id="in"></div></div><div id="out"></div></div>');
+document.getElementById('in').innerHTML='<div class="field"><label class="label">Purchase Price</label><input class="input input-mono" id="pp" value="7250000"></div><div class="field"><label class="label">Target Leverage (LTV %)</label><input class="input input-mono" id="lv" value="75"></div><div class="field"><label class="label">Equity Available</label><input class="input input-mono" id="eq" value="2000000"></div><div class="field"><label class="label">Strategy</label><select class="input" id="st"><option>Bridge-to-Perm</option><option>Construction-to-Perm</option><option>Cash-out Refi</option></select></div><button class="btn btn-pri" style="width:100%;justify-content:center" onclick="sim()">Simulate →</button>';
+window.sim=function(){var pp=+pp_.value,lv=+lv_.value/100,eq=+eq_.value;var debt=pp*lv;var need=pp-debt;var gap=need-eq;
+document.getElementById('out').innerHTML='<div class="grid g2" style="gap:14px">'+[['Senior Debt','$'+Math.round(debt).toLocaleString(),'var(--blue-lt)'],['Equity Needed','$'+Math.round(need).toLocaleString(),'var(--teal)'],['Equity Gap',(gap>0?'$'+Math.round(gap).toLocaleString():'Fully covered'),gap>0?'var(--amber)':'var(--green)'],['Leverage',(lv*100).toFixed(0)+'%','var(--gold)']].map(function(m){return '<div class="stat" style="--accent:'+m[2]+'"><div class="stat-v" style="color:'+m[2]+';font-size:20px">'+m[1]+'</div><div class="stat-l">'+m[0]+'</div></div>';}).join('')+'</div><div class="card" style="margin-top:14px"><div class="card-body"><div style="font-size:12px;color:var(--text2);line-height:1.6">'+(gap>0?'This scenario needs <b style="color:var(--amber)">$'+Math.round(gap).toLocaleString()+'</b> in additional equity or mezzanine. The Match Engine can surface mezz/preferred-equity partners.':'Your equity covers the gap. This is a financeable structure for senior debt partners in the network.')+'</div><a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/match-engine.html">Find Capital Partners →</a></div></div>';};
+var pp_=document.getElementById('pp'),lv_=document.getElementById('lv'),eq_=document.getElementById('eq');sim();
+</script></body></html>

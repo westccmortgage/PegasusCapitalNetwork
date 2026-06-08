@@ -1,0 +1,196 @@
+/* ============================================================================
+   PEGASUS — Profile Ecosystem Layer · profile-ecosystem.css
+   All selectors are scoped to .peco-* so they cannot affect global styles.
+   Uses the platform's existing CSS variables (light institutional aesthetic).
+   ============================================================================ */
+
+/* ── 3-column ecosystem grid (breaks out of .wrap-narrow only on profile) ─── */
+.peco-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr) 300px;
+  gap: 22px;
+  align-items: start;
+  width: 100%;
+}
+.peco-col { display: flex; flex-direction: column; gap: 18px; }
+.peco-col-wide { grid-column: span 1; }
+@media (max-width: 1100px) {
+  .peco-grid { grid-template-columns: 1fr; }
+}
+
+/* ── HERO ──────────────────────────────────────────────────────────────── */
+.peco-hero {
+  grid-column: 1 / -1;
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: var(--r4);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(20, 24, 28, 0.04);
+  margin-bottom: 22px;
+}
+.peco-hero-banner {
+  position: relative;
+  height: 168px;
+  background: linear-gradient(120deg, #0a1830 0%, #112244 45%, #1c3a63 100%);
+}
+.peco-hero-wm {
+  position: absolute; right: -40px; bottom: -60px; width: 320px; height: 320px;
+  background: url('/assets/brand/pegasus-symbol.svg') no-repeat center/contain;
+  opacity: 0.06; filter: grayscale(1) brightness(2.4); pointer-events: none;
+}
+.peco-hero-foot {
+  display: flex; align-items: flex-end; gap: 20px;
+  padding: 0 32px 22px; margin-top: -52px; position: relative;
+}
+.peco-avatar { position: relative; flex-shrink: 0; }
+.peco-avatar-img, .peco-avatar-fallback {
+  width: 112px; height: 112px; border-radius: 22px;
+  border: 4px solid var(--bg1); object-fit: cover; display: block;
+  box-shadow: 0 6px 20px rgba(20, 24, 28, 0.12);
+}
+.peco-avatar-fallback {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 34px; font-weight: 500; color: #fff;
+}
+.peco-verify {
+  position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px;
+  border-radius: 50%; background: var(--green); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; border: 3px solid var(--bg1);
+}
+.peco-hero-id { flex: 1; min-width: 0; padding-bottom: 4px; }
+.peco-hero-name {
+  font-family: var(--serif); font-weight: 300; font-size: 28px;
+  letter-spacing: -0.02em; line-height: 1.1; color: var(--text);
+}
+.peco-hero-title { font-size: 14px; color: var(--text2); margin-top: 4px; }
+.peco-hero-meta {
+  font-size: 11px; color: var(--text3); font-family: var(--mono);
+  margin-top: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+}
+.peco-dot { color: var(--border3); }
+.peco-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; align-self: center; }
+.peco-focus {
+  padding: 13px 32px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text2);
+}
+.peco-focus-k {
+  font-family: var(--mono); font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text3); margin-right: 8px;
+}
+
+/* ── Reputation badges ─────────────────────────────────────────────────── */
+.peco-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 11px; }
+.peco-badge {
+  font-size: 9px; font-family: var(--mono); text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 3px 9px; border-radius: 20px;
+  border: 1px solid transparent;
+}
+.peco-badge-green { color: var(--green); background: var(--green-dim); border-color: rgba(13, 184, 122, 0.22); }
+.peco-badge-gold  { color: var(--gold);  background: var(--gold-dim);  border-color: rgba(170, 137, 38, 0.25); }
+.peco-badge-blue  { color: var(--blue);  background: var(--blue-dim);  border-color: rgba(34, 113, 195, 0.22); }
+.peco-badge-teal  { color: var(--teal, #0db87a); background: rgba(13, 184, 122, 0.08); border-color: rgba(13, 184, 122, 0.18); }
+
+/* ── Cards / sections ──────────────────────────────────────────────────── */
+.peco-card { box-shadow: 0 1px 2px rgba(20, 24, 28, 0.04); }
+.peco-sec { margin-bottom: 18px; }
+.peco-sec:last-child { margin-bottom: 0; }
+.peco-sec-h {
+  font-family: var(--mono); font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text3); margin-bottom: 10px;
+}
+.peco-bio { font-size: 13px; color: var(--text2); line-height: 1.65; }
+.peco-muted { color: var(--text3); }
+.peco-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.peco-chip {
+  font-size: 11px; padding: 4px 11px; border-radius: 8px;
+  background: var(--bg2); color: var(--text2); border: 1px solid var(--border);
+}
+.peco-chip-b { background: var(--blue-dim); color: var(--blue); border-color: rgba(34, 113, 195, 0.18); }
+.peco-chip-a { background: var(--amber-dim); color: var(--amber); border-color: rgba(180, 130, 20, 0.18); }
+.peco-cred { font-size: 12px; color: var(--text2); padding: 6px 0; border-bottom: 1px solid var(--border); }
+.peco-cred:last-child { border-bottom: none; }
+
+/* ── Metrics ───────────────────────────────────────────────────────────── */
+.peco-metric {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+}
+.peco-metric:last-child { border-bottom: none; }
+.peco-metric-k { color: var(--text2); }
+.peco-metric-v { font-family: var(--mono); color: var(--text); font-weight: 500; }
+
+/* ── Signals stream ────────────────────────────────────────────────────── */
+.peco-stream-head {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 14px;
+}
+.peco-stream-title { font-family: var(--serif); font-weight: 300; font-size: 20px; letter-spacing: -0.01em; }
+.peco-stream-live {
+  font-size: 9px; font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--green); display: inline-flex; align-items: center; gap: 5px;
+}
+.peco-signal-list { display: flex; flex-direction: column; gap: 10px; }
+.peco-signal-link { text-decoration: none; display: block; }
+.peco-signal {
+  display: flex; align-items: center; gap: 13px;
+  background: var(--bg1); border: 1px solid var(--border); border-radius: var(--r3);
+  padding: 14px 16px; transition: all .15s;
+}
+.peco-signal-link:hover .peco-signal { border-color: var(--border3); box-shadow: 0 2px 10px rgba(20, 24, 28, 0.06); transform: translateY(-1px); }
+.peco-signal-ic {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  color: var(--tone, var(--blue)); background: color-mix(in srgb, var(--tone, var(--blue)) 10%, transparent);
+}
+.peco-signal-body { flex: 1; min-width: 0; }
+.peco-signal-title { font-size: 13px; font-weight: 500; color: var(--text); }
+.peco-signal-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+.peco-signal-arrow { color: var(--text3); font-size: 15px; }
+
+/* ── Featured / activity ───────────────────────────────────────────────── */
+.peco-feat {
+  display: block; text-decoration: none; padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.peco-feat:last-child { border-bottom: none; }
+.peco-feat-kind { font-size: 9px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); }
+.peco-feat-title { font-size: 13px; font-weight: 500; color: var(--text); margin-top: 2px; }
+.peco-feat-note { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.peco-act { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.peco-act:last-child { border-bottom: none; }
+.peco-act-ic { color: var(--text3); font-size: 12px; width: 16px; text-align: center; }
+.peco-act-label { flex: 1; font-size: 12px; color: var(--text2); }
+.peco-act-when { font-size: 10px; font-family: var(--mono); color: var(--text3); }
+
+/* ── Empty states ──────────────────────────────────────────────────────── */
+.peco-empty {
+  text-align: center; padding: 40px 28px;
+  background: var(--bg1); border: 1px dashed var(--border2); border-radius: var(--r4);
+}
+.peco-empty-mark { font-size: 28px; color: var(--text3); margin-bottom: 12px; }
+.peco-empty-title { font-family: var(--serif); font-weight: 300; font-size: 19px; margin-bottom: 8px; }
+.peco-empty-sub { font-size: 12px; color: var(--text2); max-width: 360px; margin: 0 auto; line-height: 1.6; }
+.peco-empty-mini { font-size: 12px; color: var(--text3); line-height: 1.6; }
+
+/* ── Completion panel ──────────────────────────────────────────────────── */
+.peco-complete-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; font-family: var(--serif); font-weight: 300; font-size: 17px;
+}
+.peco-complete-pct { font-family: var(--mono); font-size: 13px; color: var(--green); }
+.peco-progress { height: 6px; border-radius: 3px; background: var(--bg2); overflow: hidden; margin-bottom: 14px; }
+.peco-progress-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width .4s ease; }
+.peco-miss-label { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+
+/* ── Edit page: media upload controls ──────────────────────────────────── */
+.peco-upload-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.peco-upload {
+  flex: 1; min-width: 180px; border: 1px dashed var(--border2); border-radius: var(--r3);
+  padding: 16px; text-align: center; background: var(--bg1);
+}
+.peco-upload-prev {
+  width: 100%; height: 90px; border-radius: var(--r2); object-fit: cover;
+  margin-bottom: 10px; background: var(--bg2);
+}
+.peco-upload-prev.avatar { width: 90px; height: 90px; border-radius: 18px; margin: 0 auto 10px; }
+.peco-upload-label { font-size: 11px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }

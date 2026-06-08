@@ -1,0 +1,8 @@
+{
+  "app": "pegasus-network",
+  "PEGASUS_STABLE_BUILD": "2026-05-24T16:37:29Z",
+  "fix": "apex-www-redirect-loop",
+  "canonical_host": "pegasuscapitalnetwork.com",
+  "alias_host": "pegasuslendersgroup.com",
+  "note": "apex/www canonicalization is owned by Netlify dashboard Primary-domain, NOT by netlify.toml. If this loads at the canonical apex, the loop is resolved."
+}

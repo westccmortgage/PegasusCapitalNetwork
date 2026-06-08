@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="en"><head><title>Verifying — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/auth-callback.html"><meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png"><link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#08111C"></head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/access/access-validate.js"></script>
+<script src="/js/access/access-system.js"></script>
+<script src="/js/access/access-onboarding.js"></script>
+<div class="auth-wrap"><div id="cb-wrap"><div class="auth-card"><div class="auth-body" style="text-align:center;padding:44px 32px"><div style="width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--blue);animation:spin 0.8s linear infinite;margin:0 auto 20px"></div><div class="auth-title" style="font-size:16px">Verifying…</div></div></div></div></div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<script>
+Pegasus.mountPublic('');
+(async function(){
+  var wrap=document.getElementById('cb-wrap');
+  function show(html){ if(wrap) wrap.innerHTML=html; }
+
+  function showCheckEmail(){
+    show('<div class="auth-card"><div class="auth-body" style="text-align:center;padding:44px 32px">'
+      +'<div style="width:56px;height:56px;border-radius:14px;background:rgba(35,95,166,0.08);border:1px solid rgba(35,95,166,0.2);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 18px">\u2709\ufe0f</div>'
+      +'<div class="auth-title">Check your email</div>'
+      +'<p class="sub" style="margin:8px auto 22px;text-align:center">We sent you a confirmation link. Click it to activate your account.</p>'
+      +'<div style="font-size:12px;color:var(--text2);margin-bottom:22px;line-height:1.6">Check your spam folder if you don\u2019t see it within a minute. The link expires in 24 hours.</div>'
+      +'<a class="btn btn-ghost" style="width:100%;justify-content:center" href="/signin.html">Back to sign in</a>'
+      +'</div></div>');
+  }
+
+  /* Fill any blank profile fields from the auth user_metadata (which on a
+   * Google OAuth callback carries the user's name and picture from Google).
+   * Uses upsert with onConflict:'id' so a brand-new row works, and uses the
+   * existing value as the primary value so we NEVER overwrite a field the
+   * user has manually edited. Idempotent. */
+  async function hydrateProfileFromAuthUser(sb, sessionUser, existingProfile){
+    var meta = (sessionUser && sessionUser.user_metadata) || {};
+    var fromAuthName   = meta.full_name || meta.name || null;
+    var fromAuthAvatar = meta.avatar_url || meta.picture || null;
+    var emailPrefix    = sessionUser && sessionUser.email ? sessionUser.email.split('@')[0] : null;
+
+    /* Current name is "blank-equivalent" if it's empty or only the email prefix
+     * (which is what handle_new_user falls back to for Google users whose
+     * trigger ran before migration 032 landed). */
+    var currentName = (existingProfile && existingProfile.full_name) || '';
+    var nameIsBlank = !currentName.trim() || currentName === emailPrefix;
+
+    var patch = {};
+    if (nameIsBlank && fromAuthName)                                    patch.full_name = fromAuthName;
+    if ((!existingProfile || !existingProfile.avatar_url) && fromAuthAvatar) patch.avatar_url = fromAuthAvatar;
+    if (!existingProfile || !existingProfile.email)                     patch.email = sessionUser.email;
+
+    if (Object.keys(patch).length === 0) return false; /* nothing to do */
+
+    patch.id = sessionUser.id;
+    try {
+      var res = await sb.from('profiles').upsert(patch, { onConflict: 'id' });
+      if (res.error) { console.warn('[Callback] profile hydrate error:', res.error.message); return false; }
+      return true;
+    } catch (e) {
+      console.warn('[Callback] profile hydrate exception:', e && e.message);
+      return false;
+    }
+  }
+
+  // Supabase auto-processes URL hash tokens (access_token, type=signup or
+  // OAuth return). Small delay so the client can exchange them.
+  try {
+    // Password-recovery links must go to the set-new-password page, NOT the
+    // dashboard. Detect the recovery flow from the URL hash/query and redirect.
+    var _h = (location.hash || '') + ' ' + (location.search || '');
+    if (_h.indexOf('type=recovery') !== -1) {
+      location.replace('/reset-password.html' + (location.hash || ''));
+      return;
+    }
+    await new Promise(function(r){ setTimeout(r, 800); });
+    var session = await PegAuth.getSession();
+
+    // No session means the user landed here without authenticating yet —
+    // most commonly a "check your email" handoff from email/password signup.
+    if (!session || !session.user) { showCheckEmail(); return; }
+
+    var u = session.user;
+    var isConfirmed = u.email_confirmed_at || u.confirmed_at;
+
+    // For Google OAuth the email is implicitly verified by Google. For email/
+    // password the user must click the confirmation link first. If we get an
+    // unconfirmed email-flow session, show the "check email" card.
+    if (!isConfirmed) { showCheckEmail(); return; }
+
+    // Hydrate the store so we know the current profile state.
+    await Pegasus.store.hydrate();
+    var st = Pegasus.store.get();
+
+    // Fill blank profile fields from Google (or any OAuth provider) metadata.
+    // Idempotent and only fills BLANKS — never overwrites user-edited data.
+    var sb = await window.PegSB.ready;
+    var didPatch = await hydrateProfileFromAuthUser(sb, u, st.profile);
+    if (didPatch) { await Pegasus.store.hydrate(); st = Pegasus.store.get(); }
+
+    // Redeem any pending invitation code. Supports both email-flow
+    // (user_metadata.access_code) and OAuth-flow (localStorage handoff set
+    // by signup.html before redirecting to Google).
+    var redeemed = null;
+    try {
+      if (window.PegAccess) {
+        var pc = await PegAccess.pendingCode();
+        if (pc) redeemed = await PegAccess.redeem(pc);
+      }
+    } catch (_) {}
+
+    // Decide where to route the user. The rules:
+    //  - If they redeemed a code that maps to a specific onboarding flow,
+    //    honor that flow's destination.
+    //  - Else if their profile is finished (onboarding_complete), dashboard.
+    //  - Else send them into activation/get-started to finish onboarding.
+    // We NEVER bounce an authenticated user back to signup or to a generic
+    // "Choose Access Layer" pricing CTA. Logged-in means logged-in.
+    var dest;
+    var welcomeTitle = 'Welcome back';
+    var welcomeBody  = 'Opening your Pegasus presence\u2026';
+    var tierLine     = '';
+
+    /* ── Determine profile hub URL ──────────────────────────────────────
+       Always do a direct Supabase query using the confirmed session user ID.
+       This is more reliable than Store.get() which can race with auth init.
+       If slug is missing, generate it now so the URL is always clean.       */
+    var hubDest = '/dashboard.html'; /* fallback */
+    try {
+      var sbHub = await window.PegSB.ready;
+      var hubRes = await sbHub.from('profiles')
+        .select('id, profile_slug, full_name, onboarding_intent')
+        .eq('id', u.id)
+        .maybeSingle();
+      var hp = hubRes.data;
+
+      if (hp && hp.id) {
+        var slug = hp.profile_slug;
+
+        /* Auto-generate slug if missing — do it now, once, forever */
+        if (!slug && hp.full_name) {
+          var cyrMap = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ж':'zh','з':'z','и':'i','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
+          var base = hp.full_name.toLowerCase().split('').map(function(c){ return cyrMap[c]!==undefined?cyrMap[c]:c; }).join('')
+            .replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-+|-+$/g,'');
+          slug = base || ('member-' + hp.id.slice(0,6));
+          /* Check uniqueness */
+          var chk = await sbHub.from('profiles').select('id').eq('profile_slug',slug).neq('id',hp.id).limit(1);
+          if (chk.data && chk.data.length) slug = slug + '-' + hp.id.slice(0,4);
+          await sbHub.from('profiles').update({ profile_slug: slug }).eq('id', hp.id);
+        }
+
+        hubDest = slug ? '/u/' + slug : '/public-profile.html?id=' + hp.id;
+        welcomeBody = 'Your network is ready.';
+      } else {
+        /* No profile row — brand new user needs onboarding */
+        hubDest = '/get-started.html';
+        welcomeTitle = 'Welcome to Pegasus';
+        welcomeBody  = 'Let’s set up your presence.';
+      }
+    } catch (e) {
+      console.warn('[auth-callback] hub detection error:', e && e.message);
+      hubDest = '/dashboard.html';
+    }
+
+    /* ── Check for deep link (user was heading somewhere before login) ── */
+    var deepLink = '';
+    try {
+      deepLink = localStorage.getItem('pegasus.redirectAfterAuth') || '';
+      if (deepLink) localStorage.removeItem('pegasus.redirectAfterAuth');
+    } catch(_) {}
+    /* Only honor deep links to protected app pages, not auth pages */
+    var isValidDeep = deepLink && deepLink.startsWith('/') &&
+      !deepLink.startsWith('/signin') && !deepLink.startsWith('/signup') &&
+      !deepLink.startsWith('/auth-callback');
+
+    if (redeemed && redeemed.ok) {
+      var w = (window.PegAccessOnboarding
+                 ? PegAccessOnboarding.welcome(redeemed.onboarding_flow)
+                 : { title: 'You’re in.', body: 'Access activated.' });
+      welcomeTitle = w.title;
+      var tierLabel = (window.PegAccess ? PegAccess.tierLabel(redeemed.membership_tier) : redeemed.membership_tier);
+      tierLine = '<div style="font-size:11px;font-family:var(--mono);color:var(--green);margin-bottom:22px">'
+                 + tierLabel + ' access activated · invitation honored</div>';
+      /* After code redemption: go to profile hub (not get-started) */
+      dest = isValidDeep ? deepLink : hubDest;
+      welcomeBody = 'Your access is active. Opening your profile…';
+    } else {
+      dest = isValidDeep ? deepLink : hubDest;
+    }
+
+    // Auto-forward after a short beat so the user sees they’ve been recognized.
+    show('<div class="auth-card"><div class="auth-body" style="text-align:center;padding:44px 32px">'
+      + '<div style="width:56px;height:56px;border-radius:14px;background:var(--green-dim);border:1px solid rgba(13,184,122,0.25);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 18px">\u2713</div>'
+      + '<div class="auth-title">' + welcomeTitle + '</div>'
+      + '<p class="sub" style="margin:8px auto 14px;text-align:center">' + welcomeBody + '</p>'
+      + tierLine
+      + '<a class="btn btn-pri" style="width:100%;justify-content:center" href="' + dest + '">Continue \u2192</a>'
+      + '</div></div>');
+
+    setTimeout(function(){ location.href = dest; }, 900);
+
+  } catch (e) {
+    show('<div class="auth-card"><div class="auth-body" style="text-align:center;padding:44px 32px">'
+      + '<div style="font-size:28px;margin-bottom:14px">\u26a0\ufe0f</div>'
+      + '<div class="auth-title">Verification issue</div>'
+      + '<p class="sub" style="margin:8px auto 22px">The sign-in link may have expired or already been used. Please request a new one.</p>'
+      + '<a class="btn btn-ghost" style="width:100%;justify-content:center" href="/forgot-password.html">Request new link</a>'
+      + '<div class="auth-alt"><a href="/signin.html">Back to sign in</a></div>'
+      + '</div></div>');
+  }
+})();
+</script></body></html>

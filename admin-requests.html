@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="en"><head><title>Requests — Pegasus Admin</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<div id="nav"></div>
+<div class="ar-wrap" style="max-width:940px"><div id="arView"><div class="ar-card">Checking access…</div></div></div>
+<div id="footer"></div>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.mountPublic('Platform');
+document.getElementById('footer').outerHTML = Pegasus.footer();
+var TYPE={property:'Property',business:'Business',rwa:'Real-world asset',other:'General'};
+var ROLE={agent:'Real estate',lender:'Financing',insurance:'Insurance',business_funding_provider:'Business funding',rwa_partner:'Real-world assets'};
+var STATUS={new:'Forming',routed:'Forming',active:'Forming',connected:'Connected',closed:'Closed',dismissed:'Closed'};
+var SLOT={open:'Searching',claimed:'Joined',engaged:'Working',closed:'Done'};
+var EVENT={routed:'Routed to the network',claimed:'A professional joined',engaged:'A professional engaged',connected:'Team in place',escalated:'Escalated',closed:'Closed',viewed:'Reviewed',messaged:'Message sent'};
+var FILTER='all';
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function money(a,b){function f(n){n=Number(n);if(!n)return null;if(n>=1e6)return '$'+(n/1e6).toFixed(n%1e6?1:0)+'M';if(n>=1e3)return '$'+Math.round(n/1e3)+'K';return '$'+n;}var lo=f(a),hi=f(b);if(lo&&hi)return lo+'–'+hi;return lo||hi||null;}
+function meta(r){return [r.location?esc(r.location):null,money(r.amount_min,r.amount_max),r.timeline?esc(r.timeline):null].filter(Boolean).join(' · ');}
+function when(iso){try{return new Date(iso).toLocaleString();}catch(e){return '';}}
+async function getSB(){ try{ return await window.PegSB.ready; }catch(e){ return null; } }
+
+async function setFilter(f){ FILTER=f; await load(); }
+async function runSweep(btn){
+  if(!confirm('Run the escalation sweep now? Requests idle 24h+ with open roles will be escalated.'))return;
+  btn.disabled=true; var o=btn.textContent; btn.textContent='Sweeping…';
+  try{ var sb=await getSB(); var r=await sb.rpc('escalate_stale_requests',{p_hours:24}); if(r.error)throw r.error;
+    if(window.Pegasus&&Pegasus.toast)Pegasus.toast('Escalated '+((r.data&&r.data.escalated)||0)+' request(s)'); await load();
+  }catch(e){ if(window.Pegasus&&Pegasus.toast)Pegasus.toast(e.message||'Sweep failed'); btn.disabled=false; btn.textContent=o; }
+}
+async function escalateOne(id,btn){
+  btn.disabled=true;
+  try{ var sb=await getSB(); var r=await sb.rpc('admin_escalate_request',{p_request_id:id}); if(r.error)throw r.error;
+    if(window.Pegasus&&Pegasus.toast)Pegasus.toast('Escalated'); await load();
+  }catch(e){ if(window.Pegasus&&Pegasus.toast)Pegasus.toast(e.message||'Failed'); btn.disabled=false; }
+}
+async function closeOne(id,btn){
+  var reason=prompt('Close this request? Optional reason:'); if(reason===null)return;
+  btn.disabled=true;
+  try{ var sb=await getSB(); var r=await sb.rpc('admin_close_request',{p_request_id:id,p_reason:reason||null}); if(r.error)throw r.error;
+    if(window.Pegasus&&Pegasus.toast)Pegasus.toast('Closed'); await load();
+  }catch(e){ if(window.Pegasus&&Pegasus.toast)Pegasus.toast(e.message||'Failed'); btn.disabled=false; }
+}
+async function toggleTimeline(id,el){
+  var box=document.getElementById('tl-'+id);
+  if(box){ box.remove(); return; }
+  try{ var sb=await getSB(); var r=await sb.rpc('admin_request_detail',{p_request_id:id}); if(r.error)throw r.error;
+    var d=r.data||{}; var ev=(d.timeline_events||[]).slice().reverse().map(function(e){
+      return '<li>'+esc(EVENT[e.kind]||e.kind)+(e.actor?' · '+esc(e.actor):'')+'<div class="t">'+esc(when(e.at))+'</div></li>'; }).join('');
+    var div=document.createElement('div'); div.id='tl-'+id; div.className='ar-tl';
+    div.innerHTML='<ul class="rq-tl">'+(ev||'<li>No events.</li>')+'</ul>';
+    el.parentNode.parentNode.appendChild(div);
+  }catch(e){ if(window.Pegasus&&Pegasus.toast)Pegasus.toast('Could not load timeline'); }
+}
+window.setFilter=setFilter;window.runSweep=runSweep;window.escalateOne=escalateOne;window.closeOne=closeOne;window.toggleTimeline=toggleTimeline;
+
+function card(r){
+  var slots=(r.slots||[]).map(function(s){var on=(s.status!=='open');
+    return '<li><span class="rd'+(on?' on':'')+'"></span>'+esc(ROLE[s.role]||s.role)+'<span class="rs">'+esc(SLOT[s.status]||s.status)+(s.filled_name?' · '+esc(s.filled_name):'')+'</span></li>';}).join('');
+  var c=[]; if(r.contact_email)c.push(esc(r.contact_email)); if(r.contact_phone)c.push(esc(r.contact_phone));
+  var open=(r.status!=='closed'&&r.status!=='dismissed');
+  return '<div class="nr-card'+(r.stuck?' nr-stuck':'')+'">'+
+    '<div class="nr-top"><span class="nr-badge">'+esc(TYPE[r.type]||r.type)+'</span>'+
+      '<span class="nr-pill '+esc(r.status)+'">'+esc(STATUS[r.status]||r.status)+'</span>'+
+      (r.stuck?'<span class="nr-stuckmark">Stuck · '+r.idle_hours+'h idle</span>':'')+
+      '<span class="nr-time">updated '+esc(when(r.last_activity_at))+'</span></div>'+
+    (meta(r)?'<div class="nr-meta">'+meta(r)+'</div>':'')+
+    (r.note?'<div class="nr-note">“'+esc(r.note)+'”</div>':'')+
+    '<div class="nr-contact"><strong>'+esc(r.contact_name||'—')+'</strong>'+(c.length?' · '+c.join(' · '):'')+'</div>'+
+    '<ul class="nr-team">'+(slots||'<li class="rs">No roles</li>')+'</ul>'+
+    '<div class="ar-actions">'+
+      '<button class="btn btn-ghost btn-sm" onclick="toggleTimeline(\''+r.id+'\',this)">Timeline</button>'+
+      (open?'<button class="btn btn-ghost btn-sm" onclick="escalateOne(\''+r.id+'\',this)">Escalate</button>':'')+
+      (open?'<button class="btn btn-ghost btn-sm" onclick="closeOne(\''+r.id+'\',this)">Close</button>':'')+
+    '</div>'+
+  '</div>';
+}
+
+async function load(){
+  var host=document.getElementById('arView'); var sb=await getSB(); if(!sb){host.innerHTML='<div class="ar-card">Could not connect.</div>';return;}
+  var counts={}; try{ var cc=await sb.rpc('admin_request_counts'); if(cc.error)throw cc.error; counts=cc.data||{}; }
+  catch(e){ host.innerHTML='<div class="ar-card"><h2 style="font-family:var(--serif);font-weight:300">Admin access required</h2><p style="color:var(--text2)">This console is available to Pegasus administrators.</p></div>'; return; }
+  var res=await sb.rpc('admin_list_requests',{p_status: FILTER==='all'?null:FILTER});
+  var list=(res.error?[]:(res.data||[]));
+  function tab(k,lbl){ return '<button class="ar-tab'+(FILTER===k?' on':'')+'" onclick="setFilter(\''+k+'\')">'+lbl+' <span>'+(counts[k]!=null?counts[k]:0)+'</span></button>'; }
+  host.innerHTML=
+    '<div class="ar-head"><div><h1 style="font-family:var(--serif);font-weight:300;font-size:24px;margin:0">Requests</h1>'+
+      '<div style="color:var(--text3);font-size:12px;margin-top:4px">Triage the living request engine</div></div>'+
+      '<button class="btn btn-pri btn-sm" onclick="runSweep(this)">Run escalation sweep</button></div>'+
+    '<div class="ar-tabs">'+tab('all','All')+tab('forming','Forming')+tab('stuck','Stuck')+tab('connected','Connected')+tab('closed','Closed')+'</div>'+
+    '<div id="arList">'+(list.length?list.map(card).join(''):'<div class="nr-empty">No requests in this view.</div>')+'</div>'+
+    '<p class="nr-legal">Pegasus facilitates introductions between members. Closing a request changes its status; it does not delete records.</p>';
+}
+(async function(){ var sb=await getSB(); if(!sb){document.getElementById('arView').innerHTML='<div class="ar-card">Could not connect.</div>';return;} await load(); })();
+</script>
+</body></html>

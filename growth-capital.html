@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><title>Growth Capital — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/growth-capital.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Growth Capital — Pegasus Network"><meta property="og:description" content="Growth Capital on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/growth-capital.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Growth Capital — Pegasus Network"><meta name="twitter:description" content="Growth Capital on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<meta name="description" content="Pegasus Growth Capital — connect founders and companies with aligned capital partners, curated opportunities, and institutional-quality access."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png"><link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#08111C"></head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.boot(()=>{
+  Pegasus.mountPublic('');
+  var main=document.createElement('main'); main.className='fade'; document.body.appendChild(main);
+  var FOUNDERS=[];  // Founders populate from founder_submissions as verified members join
+
+  var ROOMS=[['◈','Venture Deal Room','Structured diligence workspace for an emerging-company raise.'],['◇','SAFE Round','Coordinate a SAFE with aligned strategic investors.'],['▤','Growth Capital Room','Later-stage growth equity and structured capital.'],['⬡','Strategic Partnership Room','Member-directed strategic capital relationships.']];
+  function fcard(x){ return '<div class="founder-card"><div style="display:flex;gap:12px;align-items:center;margin-bottom:14px"><div class="amb-av" style="width:46px;height:46px;border-radius:12px;font-size:16px;margin:0;background:'+x.av+'">'+x.i+'</div><div><div style="font-size:14px;font-weight:600">'+x.co+'</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">'+x.sector+'</div></div><span class="stage-chip" style="margin-left:auto">'+x.stage+'</span></div>'+
+    '<div class="kv"><span class="kv-k">Raise Target</span><span class="kv-v">'+x.raise+'</span></div>'+
+    '<div class="kv"><span class="kv-k">Capital Type</span><span class="kv-v">'+x.cap+'</span></div>'+
+    '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin:12px 0 14px"><b style="color:var(--text)">Strategic needs:</b> '+x.need+'</div>'+
+    '<a class="btn btn-ghost btn-sm" href="/founder-profile.html" style="width:100%;justify-content:center">View Founder Profile →</a></div>'; }
+  main.innerHTML='<section class="page-hero"><div class="page-hero-in"><div class="eyebrow">Emerging Companies</div>'+
+    '<h1>Growth <em>Capital</em></h1><p class="page-lead">Institutional founder–investor infrastructure. Strategic capital relationships, venture deal rooms, and aligned introductions for emerging companies — member-directed, never a public offering.</p>'+
+    '<div class="hero-cta"><a class="btn btn-pri btn-lg" href="#founder-intake">Submit Founder Profile</a><a class="btn btn-ghost btn-lg" href="/capital-partner-profile.html">Capital Partner Profiles →</a></div></div></section>'+
+    (FOUNDERS.length?'<div class="section"><div class="eyebrow" style="margin-bottom:16px">Founder Network · Featured</div><div class="dir-grid">'+FOUNDERS.map(fcard).join('')+'</div></div>':'')+  
+    '<div class="section" style="padding-top:0"><div class="eyebrow" style="margin-bottom:16px">Capital Room Types</div><div class="grid g2">'+ROOMS.map(function(r){return '<div class="room-type"><div class="ic">'+r[0]+'</div><div><div style="font-size:13px;font-weight:600;margin-bottom:4px">'+r[1]+'</div><div style="font-size:11px;color:var(--text2);line-height:1.55">'+r[2]+'</div></div></div>';}).join('')+'</div></div>'+
+    '<div class="section" style="padding-top:0"><div class="card dark"><div class="card-head"><div class="card-title"><span class="ai-avatar"><img src="/assets/brand/pegasus-symbol.svg" alt=""></span>Strategic Capital Alignment</div></div><div class="card-body"><p style="font-size:12px;color:var(--text2);line-height:1.65">Pegasus scores founder–investor fit on sector, stage, and check size — surfacing strategic alignment, not hype. Introductions remain member-directed and compliance-safe.</p><div class="grid g3" style="margin-top:14px">'+[['Sector Fit','Coming soon'],['Stage Match','Coming soon'],['Check Alignment','Coming soon']].map(function(a){return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:18px;font-family:var(--mono);color:var(--teal)">'+a[1]+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">'+a[0]+'</div></div>';}).join('')+'</div></div></div></div>'+
+    '<div class="section" id="founder-intake" style="padding-top:0"><div class="form-card card"><div class="card-body" style="padding:28px"><div class="eyebrow" style="margin-bottom:6px">Founder Intake</div><h2 class="h2" style="margin-bottom:18px">Submit your company for strategic alignment.</h2>'+
+    '<div class="row2"><div class="field"><label class="label">Company</label><input class="input" id="g_co" placeholder="Acme Inc."></div><div class="field"><label class="label">Founder Name</label><input class="input" id="g_founder" placeholder="Jordan Maxwell"></div></div>'+
+    '<div class="row2"><div class="field"><label class="label">Work Email</label><input class="input" id="g_email" type="email" autocomplete="email" placeholder="you@company.com"></div><div class="field"><label class="label">Sector</label><input class="input" id="g_sector" placeholder="Real Estate Fintech"></div></div>'+
+    '<div class="row2"><div class="field"><label class="label">Stage</label><select class="input" id="g_stage"><option>Pre-Seed</option><option>Seed</option><option>Series A</option><option>Series B+</option></select></div><div class="field"><label class="label">Raise Target</label><input class="input" id="g_raise" type="number" min="0" inputmode="numeric" placeholder="5000000"></div></div>'+
+    '<div class="field"><label class="label">Traction</label><textarea class="input" id="g_traction" rows="2" placeholder="Revenue, customers, key milestones"></textarea></div>'+
+    '<div class="field"><label class="label">Strategic Needs / Use of Funds</label><textarea class="input" id="g_use" rows="3" placeholder="What strategic capital relationships are you seeking?"></textarea></div>'+
+    '<div id="f_err" style="color:var(--red);font-size:11px;font-family:var(--mono);min-height:14px;margin:4px 0"></div>'+
+    '<button class="btn btn-pri" id="g_submit" style="width:100%;justify-content:center" onclick="window.gSubmit(this)">Submit for Strategic Alignment →</button>'+
+    '<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-align:center;margin-top:14px">Member-directed strategic capital relationships. Not a public offering, crowdfunding, or solicitation. No guaranteed outcomes.</div>'+
+    '</div></div></div>';
+  var f=document.createElement('div'); f.innerHTML=Pegasus.footer(); document.body.appendChild(f.firstElementChild);
+  function v(id){var e=document.getElementById(id);return e?(''+e.value).trim():'';}
+  window.gSubmit=async function(btn){ var err=document.getElementById('f_err'); err.textContent='';
+    var f={company:v('g_co'),founder:v('g_founder'),email:v('g_email'),sector:v('g_sector'),stage:v('g_stage'),raise:v('g_raise'),traction:v('g_traction'),useOfFunds:v('g_use')};
+    if(!f.email||!f.company){err.textContent='Company and email are required.';return;}
+    var t=btn.textContent; btn.disabled=true; btn.textContent='Submitting…';
+    try{ var r=await PegForms.submitFounder(f); Pegasus.toast('✓','var(--green-dim)','Founder profile received',r&&r.demo?'Saved (preview)':'Our team will review for strategic alignment'); document.querySelectorAll('#founder-intake .input').forEach(function(i){i.value='';}); }
+    catch(e){ err.textContent=(e&&e.message)||'Submission failed.'; }
+    finally{ btn.disabled=false; btn.textContent=t; } };
+  document.title='Growth Capital — Pegasus Network';
+});
+</script></body></html>

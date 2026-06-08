@@ -1,0 +1,387 @@
+<!DOCTYPE html><html lang="en"><head><title>Admin — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/admin.html"><meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
+
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/access/access-system.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/health-monitor.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-billing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/access/access-validate.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/access/access-admin.js?v=dealroom-entitlements-20260524-1529"></script>
+<script>
+Pegasus.boot(()=>{
+
+// ── ADMIN GATE ─────────────────────────────────────────────────────────────
+// Two-layer protection: (1) ALLOW_DEMO_FALLBACK=false already blocks
+// unauthenticated users at the auth layer. (2) This check ensures even a
+// signed-in non-admin cannot access the console — redirect them cleanly.
+var _st = window.PegStore && window.PegStore.get ? window.PegStore.get() : {};
+var _isLive  = _st.mode === 'live';
+var _isAdmin = window.PegStore && typeof window.PegStore.isAdmin === 'function'
+               ? window.PegStore.isAdmin()
+               : (_st.profile && _st.profile.role === 'admin');
+if(!_isLive)  { location.replace('/'); return; }          // not authenticated
+if(!_isAdmin) { location.replace('/dashboard.html'); return; } // authenticated but not admin
+// ── END ADMIN GATE ─────────────────────────────────────────────────────────
+
+const v=Pegasus.mountApp({active:'Admin',title:'Admin Console',sub:'Platform operations'});
+// KPI row
+(async function loadAdminStats(){
+    try{
+      var c=await window.PegSB.ready;
+      var dash=[['👥','—','Members','Live from Supabase','var(--blue)'],['💳','—','MRR','Stripe Billing','var(--green)'],['◈','—','Active Deal Rooms','Live from Supabase','var(--teal)'],['⚑','—','Pending Review','Submissions','var(--amber)']];
+      if(c){
+        var [{count:mc},{count:dc},{count:rc}]=await Promise.all([
+          c.from('profiles').select('*',{count:'exact',head:true}),
+          c.from('deal_rooms').select('*',{count:'exact',head:true}).neq('workflow_state','closed'),
+          c.from('founder_submissions').select('*',{count:'exact',head:true}).eq('status','submitted')
+        ]);
+        dash[0][1]=String(mc||0);
+        dash[2][1]=String(dc||0);
+        dash[3][1]=String(rc||0);
+        dash[1][1]='See Stripe'; dash[1][3]='Stripe Dashboard';
+      }
+      v.insertAdjacentHTML('beforeend','<div class="grid g4" style="margin-bottom:16px">'+dash.map(function(k){return '<div class="stat" style="--accent:'+k[4]+'"><div class="stat-ic">'+k[0]+'</div><div class="stat-v">'+k[1]+'</div><div class="stat-l">'+k[2]+'</div><div class="stat-m" style="color:'+k[4]+'">'+k[3]+'</div></div>';}).join('')+'</div>');
+    }catch(e){
+      v.insertAdjacentHTML('beforeend','<div class="panel" style="padding:18px;color:var(--text2);font-size:12px;margin-bottom:16px">Platform metrics load from Supabase. Verify database connection and RLS policies.</div>');
+    }
+  })();
+// section tabs
+v.insertAdjacentHTML('beforeend','<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap" id="atabs"></div><div id="apanel"></div>');
+const sections=['Users','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health'];
+document.getElementById('atabs').innerHTML=sections.map((s,i)=>'<div class="toggle-opt '+(i===0?'on':'')+'" style="font-size:11px" onclick="aShow(\''+s+'\')">'+s+'</div>').join('');
+function tbl(cols,rows){return '<div class="card"><table class="tbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
+const chip=(t,c)=>'<span class="badge '+c+'">'+t+'</span>';
+
+/* ── Real-data loaders for admin tabs ────────────────────────────────────────
+   These replace the previous hardcoded demo rows. Each loader queries
+   Supabase, shows a loading state, then either a clean empty state or
+   the real rows. Nothing is fabricated.
+   Note: lender_appetite_profiles, financing_requests, and match_results
+   all have OWNER-ONLY RLS in production. Admin-wide visibility requires
+   admin SELECT policies in Supabase \u2014 not in scope for this frontend
+   change. Until those policies are added, these tabs show only the admin's
+   own rows (typically empty) and the empty state explains why. */
+function adminEmpty(icon, title, body){
+  return '<div style="text-align:center;padding:48px 24px;color:var(--text2);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:12px">'+
+    '<div style="font-size:28px;margin-bottom:12px">'+icon+'</div>'+
+    '<div style="font-weight:600;color:var(--text);font-size:14px;margin-bottom:8px">'+title+'</div>'+
+    '<div style="max-width:520px;margin:0 auto;line-height:1.55;color:var(--text3);font-size:12px">'+body+'</div>'+
+  '</div>';
+}
+async function loadUsers(p){
+  p.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading members\u2026</div>';
+  try{
+    var c=await window.PegSB.ready;
+    var res=await c.from('profiles')
+      .select('id,full_name,role,profile_slug,location,company_name,verification_status,ambassador_status,profile_completion,created_at')
+      .not('full_name','is',null)
+      .order('created_at',{ascending:false})
+      .limit(500);
+    if(res.error) throw res.error;
+    var rows=res.data||[];
+    if(!rows.length){ p.innerHTML=adminEmpty('\ud83d\udc65','No members yet','Members will appear here as people create profiles.'); return; }
+
+    var search='<input id="usr-search" placeholder="Search by name, role, company\u2026" oninput="usrFilter()" style="width:100%;max-width:380px;padding:9px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg1);color:var(--text);font-size:13px;margin-bottom:14px">';
+    var count='<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">'+rows.length+' members</div>';
+
+    window.__usrRows=rows;
+    p.innerHTML=search+count+'<div id="usr-tbl"></div>';
+    renderUserRows(rows);
+  }catch(e){
+    console.error('[admin] loadUsers failed:',e);
+    p.innerHTML=adminErr((e&&e.message)||'Could not load members. Check that you are signed in as an admin and that RLS allows reading profiles.');
+  }
+}
+function renderUserRows(rows){
+  var host=document.getElementById('usr-tbl'); if(!host)return;
+  if(!rows.length){ host.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px">No matches.</div>'; return; }
+  function esc(x){return (x==null?'':String(x)).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});}
+  function vstatus(v){ if(v==='verified')return '<span style="color:var(--green)">\u2713 Verified</span>'; if(v==='pending')return '<span style="color:var(--amber)">Pending</span>'; return '<span style="color:var(--text3)">\u2014</span>'; }
+  var head='<div class="card" style="overflow-x:auto"><table class="tbl"><thead><tr>'+
+    ['Name','Role','Company','Location','Status','Actions'].map(function(h){return '<th>'+h+'</th>';}).join('')+
+    '</tr></thead><tbody>';
+  var body=rows.map(function(m){
+    var link=m.profile_slug?'/u/'+m.profile_slug:'/public-profile.html?id='+m.id;
+    var role=(m.role||'member').replace(/_/g,' ');
+    var amb=m.ambassador_status?' <span title="Ambassador" style="color:var(--amber)">\u2b21</span>':'';
+    return '<tr>'+
+      '<td style="font-weight:600;color:var(--text)">'+esc(m.full_name)+amb+'</td>'+
+      '<td style="text-transform:capitalize;color:var(--text2)">'+esc(role)+'</td>'+
+      '<td style="color:var(--text2)">'+esc(m.company_name||'\u2014')+'</td>'+
+      '<td style="color:var(--text2)">'+esc(m.location||'\u2014')+'</td>'+
+      '<td>'+vstatus(m.verification_status)+'</td>'+
+      '<td style="white-space:nowrap"><a class="btn btn-ghost btn-sm" href="'+link+'">View \u2192</a> <a class="btn btn-ghost btn-sm" href="/profile-edit.html?id='+encodeURIComponent(m.id)+'" style="margin-left:6px">Edit \u2192</a></td>'+
+    '</tr>';
+  }).join('');
+  host.innerHTML=head+body+'</tbody></table></div>';
+}
+window.usrFilter=function(){
+  var q=(document.getElementById('usr-search')||{}).value||'';
+  q=q.toLowerCase().trim();
+  var all=window.__usrRows||[];
+  var f=!q?all:all.filter(function(m){
+    return ((m.full_name||'')+' '+(m.role||'')+' '+(m.company_name||'')+' '+(m.location||'')).toLowerCase().indexOf(q)!==-1;
+  });
+  renderUserRows(f);
+};
+function adminErr(msg){
+  return '<div class="banner bn-cancel"><div class="banner-msg">\u26a0\ufe0f <span>'+(msg||'Query failed')+'</span></div></div>';
+}
+function adminLoading(label){
+  return '<div style="text-align:center;padding:40px;color:var(--text3);font-size:12px">'+(label||'Loading\u2026')+'</div>';
+}
+function fmtMoney(n){ try { return Pegasus.fmt(n); } catch(_) { return '$'+Number(n||0).toLocaleString(); } }
+
+async function loadSubscriptions(p){
+  p.innerHTML = adminLoading('Loading subscriptions…');
+  try {
+    var c = await window.PegSB.ready;
+    var res = await c.from('subscriptions')
+      .select('user_id,tier,status,source,trial_end,current_period_end,updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(50);
+    if (res.error) { p.innerHTML = adminErr(res.error.message); return; }
+    var rows = res.data || [];
+    if (!rows.length){
+      p.innerHTML = adminEmpty('💳','No subscriptions yet',
+        'Active subscriptions will appear here once members upgrade via access code or Stripe. '+
+        'Admin-wide visibility requires an admin SELECT policy on <code>subscriptions</code> '+
+        '(currently owner-only RLS — showing your own record only).');
+      return;
+    }
+    p.innerHTML = tbl(
+      ['User','Tier','Status','Source','Expires','Updated'],
+      rows.map(function(r){
+        var exp = r.trial_end || r.current_period_end;
+        var tierCls = r.tier==='gold' ? 'b-active' : r.tier==='pro' ? 'b-trial' : 'b-none';
+        return [
+          (r.user_id||'').slice(0,8)+'…',
+          chip((r.tier||'—'), tierCls),
+          chip((r.status||'active'), r.status==='active' ? 'b-active' : 'b-cancel'),
+          (r.source||'—'),
+          exp ? new Date(exp).toLocaleDateString() : '—',
+          r.updated_at ? new Date(r.updated_at).toLocaleDateString() : '—'
+        ];
+      })
+    );
+  } catch(e){ p.innerHTML = adminErr(e.message); }
+}
+
+async function loadLenders(p){
+  p.innerHTML = adminLoading('Loading lender appetites\u2026');
+  try {
+    var c = await window.PegSB.ready;
+    var res = await c.from('lender_appetite_profiles')
+      .select('id,name,loan_types,states,min_loan,max_loan,max_ltv,dscr_min,is_showcase,active')
+      .eq('active', true)
+      .order('updated_at', { ascending: false })
+      .limit(50);
+    if (res.error) { p.innerHTML = adminErr(res.error.message); return; }
+    var rows = res.data || [];
+    if (!rows.length){
+      p.innerHTML = adminEmpty('\ud83c\udfe6','No lender appetite profiles yet',
+        'Real lender profiles will appear here once members publish their appetite. '+
+        'Admin-wide visibility across all lenders requires an admin SELECT policy on '+
+        '<code>lender_appetite_profiles</code> (currently owner-only RLS).');
+      return;
+    }
+    p.innerHTML = tbl(
+      ['Lender','Loan Types','States','Size Band','Max LTV','DSCR Min'],
+      rows.map(function(r){
+        return [
+          Pegasus.esc(r.name||'\u2014'),
+          Pegasus.esc((r.loan_types||[]).join(', ')) || '\u2014',
+          Pegasus.esc((r.states||[]).join('/')) || '\u2014',
+          fmtMoney(r.min_loan||0)+'\u2013'+fmtMoney(r.max_loan||0),
+          (r.max_ltv||0)+'%',
+          (r.dscr_min||'\u2014')
+        ];
+      })
+    );
+  } catch(e){ p.innerHTML = adminErr(e.message); }
+}
+
+async function loadSubmissions(p){
+  p.innerHTML = adminLoading('Loading submissions\u2026');
+  try {
+    var c = await window.PegSB.ready;
+    var res = await c.from('financing_requests')
+      .select('id,loan_type,amount,state,dscr,status,created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (res.error) { p.innerHTML = adminErr(res.error.message); return; }
+    var rows = res.data || [];
+    if (!rows.length){
+      p.innerHTML = adminEmpty('\ud83d\udcdd','No submissions yet',
+        'Financing requests from Growth Partners will appear here as they are submitted. '+
+        'Admin-wide visibility requires an admin SELECT policy on <code>financing_requests</code> '+
+        '(currently owner-only RLS \u2014 only the submitter can read their own row).');
+      return;
+    }
+    p.innerHTML = tbl(
+      ['Submission','Type','Amount','State','DSCR','Status'],
+      rows.map(function(r){
+        var statusCls = r.status==='matched' ? 'b-active' : (r.status==='matching' ? 'b-trial' : 'b-none');
+        return [
+          (r.id||'').slice(0,8),
+          Pegasus.esc(r.loan_type||'\u2014'),
+          fmtMoney(r.amount||0),
+          Pegasus.esc(r.state||'\u2014'),
+          (r.dscr||'\u2014'),
+          chip((r.status||'open'), statusCls)
+        ];
+      })
+    );
+  } catch(e){ p.innerHTML = adminErr(e.message); }
+}
+
+async function loadMatches(p){
+  p.innerHTML = adminLoading('Loading match activity\u2026');
+  try {
+    var c = await window.PegSB.ready;
+    var res = await c.from('match_results')
+      .select('id,request_id,appetite_id,alignment,fit,created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (res.error) { p.innerHTML = adminErr(res.error.message); return; }
+    var rows = res.data || [];
+    if (!rows.length){
+      p.innerHTML = adminEmpty('\ud83c\udfaf','No match activity yet',
+        'Match results between financing requests and lender appetites will appear here. '+
+        'Admin-wide visibility requires an admin SELECT policy on <code>match_results</code> '+
+        '(currently owner-only RLS \u2014 visible only to the request submitter or the lender).');
+      return;
+    }
+    p.innerHTML = tbl(
+      ['Request','Appetite','Alignment','Fit','When'],
+      rows.map(function(r){
+        var fitCls = r.alignment>=80 ? 'b-active' : (r.alignment>=60 ? 'b-trial' : 'b-cancel');
+        var when = r.created_at ? new Date(r.created_at).toLocaleString() : '\u2014';
+        return [
+          (r.request_id||'').slice(0,8),
+          (r.appetite_id||'').slice(0,8),
+          (r.alignment||0),
+          chip((r.fit||'\u2014'), fitCls),
+          when
+        ];
+      })
+    );
+  } catch(e){ p.innerHTML = adminErr(e.message); }
+}
+
+async function loadReview(p){
+  p.innerHTML = adminLoading('Loading items requiring review\u2026');
+  try {
+    var c = await window.PegSB.ready;
+    /* Aggregate items needing manual review. Currently sourced from
+       trust_reviews pending queue. Other sources can be added as admin
+       SELECT policies are added to the relevant tables. */
+    var pendingReviews = await c.from('trust_reviews')
+      .select('id,status,created_at,user_id')
+      .eq('status','pending')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    var items = [];
+    if (!pendingReviews.error && pendingReviews.data){
+      pendingReviews.data.forEach(function(r){
+        items.push([
+          (r.user_id||'').slice(0,8),
+          'Trust Review',
+          'Pending review',
+          'Med',
+          '<a href="/admin-trust-reviews.html" class="link">Open queue</a>'
+        ]);
+      });
+    }
+    if (!items.length){
+      p.innerHTML = adminEmpty('\u2691','Nothing requires manual review',
+        'When items need admin attention \u2014 pending trust reviews, KYC verifications, doc mismatches, payment failures, or low-alignment matches \u2014 they will be listed here. '+
+        'Additional sources can be wired as you add admin SELECT policies to the relevant tables.');
+      return;
+    }
+    p.innerHTML = '<div class="banner bn-cancel"><div class="banner-msg">\u2691 <span>'+items.length+' item(s) require manual review.</span></div></div>'+
+      tbl(['Item','Type','Flag','Priority','Action'], items);
+  } catch(e){ p.innerHTML = adminErr(e.message); }
+}
+
+/* Platform Health manual: prepended above the live panel so the admin
+   can see how to run a manual check and how to enable the weekly sweep. */
+var HEALTH_MANUAL_HTML =
+  '<div class="card" style="margin-bottom:16px;border:1px solid var(--border)">'+
+    '<div class="card-head" style="padding:14px 18px;border-bottom:1px solid var(--border)">'+
+      '<div class="card-title" style="font-weight:600">How to run the Platform Health check</div>'+
+    '</div>'+
+    '<div class="card-body" style="padding:18px;font-size:13px;line-height:1.6;color:var(--text2)">'+
+      '<div style="margin-bottom:14px">'+
+        '<div style="font-weight:600;color:var(--text);margin-bottom:4px">\u2022 Run a check now (manual)</div>'+
+        'Scroll to the panel below and click <span style="font-family:var(--mono);background:var(--bg2);padding:2px 7px;border-radius:4px">\u21fa Re-run</span> '+
+        '(or <span style="font-family:var(--mono);background:var(--bg2);padding:2px 7px;border-radius:4px">Run Health Check</span> if no checks have run yet). '+
+        'The check tests Supabase connectivity, RLS policies, data integrity, link health, and recent uploads. Results are saved to the <code>health_reports</code> table and exportable as JSON/CSV.'+
+      '</div>'+
+      '<div style="margin-bottom:14px">'+
+        '<div style="font-weight:600;color:var(--text);margin-bottom:4px">\u2022 Enable the weekly automated check (one-time setup)</div>'+
+        'In Supabase \u2192 SQL Editor, run the contents of <code>supabase/schedule_health.sql</code>. '+
+        'That schedules a <code>pg_cron</code> job to call the <code>scheduled-health-check</code> Netlify function once a week. '+
+        'Once active, the panel below shows <em>"Watchdog active"</em> and the last automated run date. '+
+        'If you ever see <em>"Automated weekly sweep last ran N days ago \u2014 pg_cron may be stopped"</em>, the cron job has stalled and needs to be re-scheduled.'+
+      '</div>'+
+      '<div>'+
+        '<div style="font-weight:600;color:var(--text);margin-bottom:4px">\u2022 Export and share a report</div>'+
+        'After a check completes, use <span style="font-family:var(--mono);background:var(--bg2);padding:2px 7px;border-radius:4px">\u2193 JSON</span>, '+
+        '<span style="font-family:var(--mono);background:var(--bg2);padding:2px 7px;border-radius:4px">\u2193 CSV</span>, or '+
+        '<span style="font-family:var(--mono);background:var(--bg2);padding:2px 7px;border-radius:4px">\u2295 Copy</span> in the panel below.'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+
+window.aShow=function(s){[...document.querySelectorAll('#atabs .toggle-opt')].forEach(e=>e.classList.toggle('on',e.textContent===s));const p=document.getElementById('apanel');
+  if(s==='Users'){ loadUsers(p); return; }
+  if(s==='Subscriptions'){ loadSubscriptions(p); return; }
+  if(s==='Deal Rooms')p.innerHTML=tbl(['Deal Room','Sponsor','Amount','Stage','Alignment','Lenders'],PEG_DATA.dealRooms.map(d=>[d.name,d.participants[0].n,Pegasus.fmt(d.amount),chip(['Draft','Submitted','Reviewing','Matched','Docs Req','Term Sheet','Funded','Closed'][d.stage],'b-trial'),d.alignment,d.lenders.length]).concat([['Lakeside Industrial','Tom A.','.5M',chip('Draft','b-none'),'—','0']]));
+  if(s==='Lender Profiles'){ loadLenders(p); return; }
+  if(s==='Growth Partner Submissions'){ loadSubmissions(p); return; }
+  if(s==='Match Activity'){ loadMatches(p); return; }
+  if(s==='Analytics')p.innerHTML='<div class="grid g2"><div class="card"><div class="card-head"><div class="card-title">Deal Flow · 7mo</div></div><div class="card-body"><div style="display:flex;gap:5px;align-items:flex-end;height:120px">'+[38,52,44,68,58,78,92].map(h=>'<div style="flex:1;background:linear-gradient(180deg,var(--blue),var(--bg3));border-radius:3px 3px 0 0;height:'+h+'%"></div>').join('')+'</div></div></div><div class="card"><div class="card-head"><div class="card-title">Tier Distribution</div></div><div class="card-body">'+[['Starter',38,'var(--text2)'],['Pro',44,'var(--blue-lt)'],['Gold',18,'var(--gold)']].map(t=>'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span>'+t[0]+'</span><span class="kv-v">'+t[1]+'%</span></div><div class="bar" style="margin:0"><div class="bar-f" style="width:'+t[1]+'%;background:'+t[2]+'"></div></div></div>').join('')+'</div></div></div>';
+  if(s==='Access System'){
+    if(window.PegAccessAdmin){ PegAccessAdmin.render(p); }
+    else { p.innerHTML='<div class="banner bn-cancel"><div class="banner-msg">🔴 <span>access-admin.js not loaded.</span></div></div>'; }
+    return;
+  }
+  if(s==='Platform Health'){
+    if(window.PegHealth){
+      /* How-to instructions ABOVE the live panel — admin can see how to
+         run a check manually and how to enable the weekly automated sweep. */
+      p.innerHTML = HEALTH_MANUAL_HTML;
+      var live = document.createElement('div');
+      p.appendChild(live);
+      PegHealth.renderPanel(live);
+    } else {
+      p.innerHTML = HEALTH_MANUAL_HTML + '<div class="banner bn-cancel"><div class="banner-msg">⚠️ <span>health-monitor.js not loaded — the live panel below won\'t render. Check that the script tag is present in this page.</span></div></div>';
+    }
+    return;
+  }
+  if(s==='Manual Review'){ loadReview(p); return; }
+};
+aShow('Users');
+
+});
+</script></body></html>

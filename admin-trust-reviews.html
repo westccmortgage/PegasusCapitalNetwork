@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><title>Trust Reviews — Pegasus Admin</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<div id="nav"></div>
+<div class="ar-wrap" style="max-width:920px"><div id="trView"><div class="ar-card">Checking access…</div></div></div>
+<div id="footer"></div>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.mountApp({active:'Admin · Trust', title:'Trust Reviews', sub:'Pegasus moderation queue'});
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var FILTER='pending';
+
+async function getSB(){ try{ return await window.PegSB.ready; }catch(e){ return null; } }
+
+(async function(){
+  var host=document.getElementById('trView');
+  var sb=await getSB();
+  if(!sb){ host.innerHTML='<div class="ar-card">Could not connect.</div>'; return; }
+  // admin gate via the same RPC the admin features use
+  try{ var t=await sb.rpc('admin_list_reviews',{p_status:null}); if(t.error) throw t.error; }
+  catch(e){ host.innerHTML='<div class="ar-card"><h1 style="font-family:var(--serif);font-weight:300">Trust Reviews</h1><p style="color:var(--text2)">Admin access required.</p></div>'; return; }
+  load();
+})();
+
+async function load(){
+  var host=document.getElementById('trView');
+  var sb=await getSB();
+  var res=await sb.rpc('admin_list_reviews',{p_status: FILTER==='all'?null:FILTER});
+  var rows=(res&&!res.error&&res.data)?res.data:[];
+  var pills=['pending','more_info','approved','denied','revoked','all'].map(function(s){
+    return '<button class="dir-filter-pill'+(FILTER===s?' active':'')+'" onclick="setFilter(\''+s+'\')">'+s.replace('_',' ')+'</button>';
+  }).join('');
+  var head='<div class="ar-card"><div class="eyebrow">Trust Layer</div><h1 style="font-family:var(--serif);font-weight:300;font-size:26px;margin:6px 0 14px">Reviewed by Pegasus — Reviews</h1>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+pills+'</div></div>';
+  if(!rows.length){ host.innerHTML=head+'<div class="ar-card" style="color:var(--text2)">No '+esc(FILTER)+' reviews.</div>'; return; }
+  host.innerHTML = head + rows.map(rowCard).join('');
+}
+
+function rowCard(r){
+  var app=r.application||{};
+  var line=function(k,val){ return val?('<div style="font-size:12.5px;color:var(--text2);margin-top:4px"><span style="color:var(--text3)">'+k+':</span> '+esc(val)+'</div>'):''; };
+  var badges='';
+  if(r.reviewed_by_pegasus) badges+='<span class="trust-badge sm"><span class="tb-dot"></span>Reviewed</span> ';
+  if(r.verified_identity) badges+='<span class="trust-badge verified sm"><span class="tb-dot"></span>Verified</span> ';
+  if(r.institutional_visibility) badges+='<span class="trust-badge inst sm"><span class="tb-dot"></span>Institutional</span> ';
+  return '<div class="tr-row" id="tr_'+r.id+'">'+
+    '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">'+
+      '<div><strong style="font-size:15px">'+esc(r.full_name||'(no name)')+'</strong> '+
+        '<span style="font-size:12px;color:var(--text3)">'+esc(r.company_name||'')+(r.email?(' · '+esc(r.email)):'')+'</span></div>'+
+      '<span class="ar-status '+(r.status==='approved'?'approved':(r.status==='pending'||r.status==='more_info'?'pending':(r.status==='denied'||r.status==='revoked'?'revoked':'')))+'"><span class="tb-dot"></span>'+esc(r.status)+'</span>'+
+    '</div>'+
+    '<div style="margin-top:6px">'+badges+'</div>'+
+    line('Summary', app.professional_summary)+ line('Website', app.website)+ line('Ecosystem role', app.ecosystem_role)+
+    line('Current focus', app.current_focus)+ line('Expertise', app.expertise)+ line('Licenses', app.licenses)+ line('Social', app.social)+
+    (r.admin_notes?('<div style="font-size:12px;color:var(--text3);margin-top:8px;border-left:2px solid var(--border2);padding-left:10px"><em>Last note:</em> '+esc(r.admin_notes)+'</div>'):'')+
+    '<div class="tr-acts">'+
+      '<button class="btn btn-pri btn-sm" onclick="decide(\''+r.id+'\',\'approved\')">Approve</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="decide(\''+r.id+'\',\'more_info\')">Request info</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="decide(\''+r.id+'\',\'denied\')">Deny</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="decide(\''+r.id+'\',\'revoked\')">Revoke</button>'+
+      '<span style="flex:1"></span>'+
+      '<button class="btn btn-ghost btn-sm" onclick="flag(\''+r.user_id+'\',\'verified_identity\','+(r.verified_identity?'false':'true')+')">'+(r.verified_identity?'Unverify ID':'Verify ID')+'</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="flag(\''+r.user_id+'\',\'institutional_visibility\','+(r.institutional_visibility?'false':'true')+')">'+(r.institutional_visibility?'Remove Inst.':'Mark Institutional')+'</button>'+
+    '</div></div>';
+}
+
+function setFilter(s){ FILTER=s; load(); }
+
+async function decide(id, decision){
+  var note = prompt('Optional note to the member ('+decision+'):','');
+  if(note===null && decision!=='approved') return; // allow cancel except quick approve
+  var sb=await getSB();
+  try{ var r=await sb.rpc('review_decide',{p_review_id:id,p_decision:decision,p_notes:note||null}); if(r.error) throw r.error; load(); }
+  catch(e){ alert('Failed: '+(e.message||e)); }
+}
+async function flag(uid, key, val){
+  var sb=await getSB();
+  try{ var r=await sb.rpc('admin_set_trust_flag',{p_user:uid,p_flag:key,p_value:val}); if(r.error) throw r.error; load(); }
+  catch(e){ alert('Failed: '+(e.message||e)); }
+}
+</script>
+</body></html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html><html lang="en"><head><title>Apply for Reviewed Status — Pegasus</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/apply-review.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Apply for Reviewed Status — Pegasus"><meta property="og:description" content="Apply Review on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/apply-review.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Apply for Reviewed Status — Pegasus"><meta name="twitter:description" content="Apply Review on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Apply Review on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><meta name="theme-color" content="#08111C">
+</head><body>
+<div id="nav"></div>
+<div class="ar-wrap"><div id="arView"><div class="ar-card">Loading…</div></div></div>
+<div id="footer"></div>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/profile/profile-system.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.mountPublic('Platform');
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var LEGAL = '“Reviewed by Pegasus” indicates a member profile has undergone ecosystem review for professional presence and participation standards. It does not constitute financial, legal, or investment endorsement, due-diligence approval, or any recommendation. Review eligibility does not guarantee approval, and status may be revoked for conduct that falls below ecosystem standards.';
+
+(async function(){
+  var host = document.getElementById('arView');
+  var sb = null; try{ sb = await window.PegSB.ready; }catch(e){}
+  var user = null;
+  if(sb){ try{ var u = await sb.auth.getUser(); if(u&&u.data&&u.data.user) user = u.data.user; }catch(e){} }
+  if(!user && window.PegProfile && PegProfile.currentUser) user = PegProfile.currentUser();
+  if(!user){
+    host.innerHTML = '<div class="ar-card"><h1 style="font-family:var(--serif);font-weight:300">Apply for Reviewed Status</h1><p style="color:var(--text2)">Sign in to apply for <em>Reviewed by Pegasus</em>.</p><a class="btn btn-pri btn-lg" href="/signin.html">Sign in</a></div>';
+    return;
+  }
+  var prof = (window.PegProfile && PegProfile.ownProfile && PegProfile.ownProfile()) || {};
+  var status='none', notes=''; try{ var r=await sb.rpc('get_my_review'); if(!r.error&&r.data){ status=r.data.status||'none'; notes=r.data.admin_notes||''; } }catch(e){}
+  var eligible=false; try{ var el=await sb.rpc('is_review_eligible'); if(!el.error) eligible=!!el.data; }catch(e){}
+  render(status, notes, eligible, prof);
+})();
+
+function statusCard(status, notes){
+  var map={none:['Not yet applied',''],pending:['Under review','pending'],approved:['Reviewed by Pegasus','approved'],denied:['Not approved','denied'],more_info:['More information requested','pending'],revoked:['Status revoked','revoked'],withdrawn:['Withdrawn','']};
+  var m=map[status]||map.none;
+  var h='<div class="ar-card"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'+
+    '<div><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:6px">Your trust status</div>'+
+    '<span class="ar-status '+(m[1]||'')+'"><span class="tb-dot"></span>'+esc(m[0])+'</span></div></div>';
+  if(notes) h+='<p style="margin-top:14px;font-size:13px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px"><strong>Reviewer note:</strong> '+esc(notes)+'</p>';
+  return h+'</div>';
+}
+
+function render(status, notes, eligible, p){
+  var host=document.getElementById('arView');
+  var applied = (status==='pending');
+  var v=function(x){return esc(p[x]||'');};
+  var html = statusCard(status, notes);
+
+  if(applied){
+    html += '<div class="ar-card"><h2 style="font-family:var(--serif);font-weight:300;margin-bottom:8px">Your application is in review</h2>'+
+      '<p style="color:var(--text2);font-size:14px">Our team reviews each application individually for professional presence and ecosystem participation. You\'ll be notified when there\'s an update. You can update and resubmit your application below.</p></div>';
+  }
+
+  html += '<div class="ar-card">'+
+    '<div class="eyebrow">Reviewed by Pegasus</div>'+
+    '<h1 style="font-family:var(--serif);font-weight:300;font-size:28px;letter-spacing:-.02em;margin:6px 0 10px">Apply for reviewed status</h1>'+
+    '<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:8px">A curated review of your professional presence and participation. Reviewed members receive elevated ecosystem visibility, stronger trust positioning, and preferred showcase placement.</p>'+
+    (eligible?'<p style="font-size:12px;color:var(--green)">✓ Your membership tier is eligible for review.</p>'
+            :'<p style="font-size:12px;color:var(--text3)">Review is prioritized for Gold members. You may still apply; eligibility does not guarantee approval.</p>')+
+    '<div style="height:14px"></div>'+
+    field('Professional summary','ar_summary','textarea','A focused summary of who you are and your professional standing.', v('bio'), 600, true)+
+    row2(
+      field('Company / firm','ar_company','input','Your company', v('company_name'), 80),
+      field('Website','ar_website','input','https://yoursite.com', v('website'), 200)
+    )+
+    row2(
+      field('Ecosystem role','ar_role','input','e.g. Capital Connector, Advisor', v('ecosystem_role'), 60),
+      field('Current focus','ar_focus','input','What you\'re working on now', v('current_focus'), 140, true)
+    )+
+    field('Areas of expertise','ar_expertise','input','Comma-separated', esc((p.specialties||[]).join(', ')), 200)+
+    row2(
+      field('Licenses (optional)','ar_licenses','input','e.g. NMLS #, DRE #', '', 160),
+      field('Social profile (optional)','ar_social','input','LinkedIn / X URL', '', 200)
+    )+
+    '<div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button class="btn btn-pri btn-lg" id="ar_submit" onclick="submitReview()">'+(applied?'Update application':'Submit for review')+'</button><span id="ar_msg" style="font-size:13px;color:var(--text2)"></span></div>'+
+    '<div class="ar-legal">'+esc(LEGAL)+'</div>'+
+  '</div>';
+  host.innerHTML = html;
+}
+function field(label,id,kind,ph,val,max,count){
+  var attrs='id="'+id+'" maxlength="'+max+'"'+(count?' data-count':'')+' placeholder="'+esc(ph)+'"';
+  var input = kind==='textarea'
+    ? '<textarea class="input" '+attrs+' rows="4">'+(val||'')+'</textarea>'
+    : '<input class="input" '+attrs+' value="'+(val||'')+'">';
+  return '<div class="field"><label class="label">'+esc(label)+'</label>'+input+'</div>';
+}
+function row2(a,b){ return '<div class="ep-grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+a+b+'</div>'; }
+
+async function submitReview(){
+  var btn=document.getElementById('ar_submit'), msg=document.getElementById('ar_msg');
+  var g=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+  var app={ professional_summary:g('ar_summary'), company:g('ar_company'), website:g('ar_website'),
+    ecosystem_role:g('ar_role'), current_focus:g('ar_focus'), expertise:g('ar_expertise'),
+    licenses:g('ar_licenses'), social:g('ar_social') };
+  if(!app.professional_summary){ msg.textContent='Please add a professional summary.'; msg.style.color='var(--amber)'; return; }
+  btn.disabled=true; msg.style.color='var(--text2)'; msg.textContent='Submitting…';
+  try{
+    var sb=await window.PegSB.ready;
+    var r=await sb.rpc('apply_for_review',{app:app});
+    if(r.error) throw r.error;
+    msg.style.color='var(--green)'; msg.textContent='Submitted — your application is under review.';
+    setTimeout(function(){ location.reload(); }, 1200);
+  }catch(e){ btn.disabled=false; msg.style.color='var(--amber)'; msg.textContent='Could not submit: '+(e.message||e); }
+}
+</script>
+</body></html>

@@ -1,0 +1,136 @@
+/* ============================================================================
+   PEGASUS — Showcase System styles (curated member visibility layer)
+   Scoped to .sc-* so it never collides with global or .peco-/.pp- styles.
+   Built on existing pegasus.css tokens. Editorial, curated, premium, minimal.
+   ============================================================================ */
+
+/* ── Section frame (used on profiles + manager) ──────────────────────────── */
+.sc-section{margin:22px 0}
+.sc-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;gap:12px}
+.sc-title{font-family:var(--serif);font-weight:400;font-size:21px;letter-spacing:-0.01em;color:var(--text)}
+.sc-kicker{font-size:9px;font-family:var(--mono);letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.sc-count{font-size:10px;font-family:var(--mono);color:var(--text3)}
+.sc-action{font-size:11px;font-family:var(--mono);color:var(--blue);cursor:pointer}
+.sc-action:hover{color:var(--blue-lt)}
+
+/* ── Editorial card grid ─────────────────────────────────────────────────── */
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.sc-card{position:relative;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);
+  overflow:hidden;box-shadow:0 1px 2px rgba(20,24,28,0.04),0 9px 26px rgba(20,24,28,0.05);
+  transition:transform .22s cubic-bezier(.2,.8,.3,1),box-shadow .22s,border-color .22s}
+.sc-card:hover{transform:translateY(-3px);box-shadow:var(--sh-raise);border-color:var(--border2)}
+.sc-card.dim{opacity:0.55}
+
+.sc-media{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,var(--bg2),var(--bg3));overflow:hidden}
+.sc-media img{width:100%;height:100%;object-fit:cover;display:block}
+.sc-media-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:34px;font-weight:300;color:var(--text4);
+  background:radial-gradient(circle at 30% 20%,rgba(35,95,166,0.10),transparent 60%)}
+.sc-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(8,17,28,0.35))}
+
+/* Visibility badge (top-left over media) */
+.sc-badge{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:5px;
+  font-size:8.5px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;font-weight:500;
+  padding:4px 9px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);color:#fff}
+.scb-off_market        {background:rgba(27,49,71,0.72)}
+.scb-featured          {background:rgba(35,95,166,0.78)}
+.scb-institutional     {background:rgba(27,49,71,0.82)}
+.scb-growth_capital    {background:rgba(14,154,102,0.78)}
+.scb-verified          {background:rgba(14,154,102,0.72)}
+.scb-ambassador_reviewed{background:rgba(154,123,34,0.82)}
+.sc-featured-pin{position:absolute;top:12px;right:12px;z-index:2;width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold);
+  background:rgba(8,17,28,0.55);backdrop-filter:blur(8px);border:1px solid rgba(205,167,72,0.4)}
+
+.sc-body{padding:16px 18px 18px}
+.sc-cat{font-size:9px;font-family:var(--mono);letter-spacing:0.12em;text-transform:uppercase;color:var(--blue);margin-bottom:7px}
+.sc-name{font-size:15px;font-weight:600;letter-spacing:-0.01em;line-height:1.3;color:var(--text)}
+.sc-sum{font-size:12.5px;color:var(--text2);line-height:1.6;margin-top:7px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sc-meta{display:flex;align-items:center;gap:8px;margin-top:13px;padding-top:13px;border-top:1px solid var(--border)}
+.sc-loc{font-size:10px;font-family:var(--mono);color:var(--text3);display:flex;align-items:center;gap:4px}
+.sc-cta{margin-left:auto;font-size:11px;font-weight:600;color:var(--blue);text-decoration:none}
+.sc-cta:hover{color:var(--blue-lt)}
+
+/* Owner / admin controls strip on a card */
+.sc-controls{display:flex;gap:6px;padding:10px 18px;border-top:1px solid var(--border);background:var(--bg2)}
+.sc-ctl{font-size:10px;font-family:var(--mono);color:var(--text3);cursor:pointer;padding:3px 8px;border-radius:5px;
+  border:1px solid var(--border2);background:var(--bg1);transition:all .15s}
+.sc-ctl:hover{color:var(--text);border-color:var(--border3)}
+.sc-ctl.danger:hover{color:var(--red);border-color:var(--red)}
+.sc-ctl.gold:hover{color:var(--gold);border-color:var(--gold)}
+.sc-status{margin-left:auto;font-size:8.5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em;
+  padding:3px 8px;border-radius:4px}
+.scs-active{background:var(--green-dim);color:var(--green)}
+.scs-hidden{background:var(--bg4);color:var(--text3)}
+.scs-flagged{background:var(--red-dim);color:var(--red)}
+.scs-pending{background:var(--amber-dim);color:var(--amber)}
+
+/* ── Empty + add-tile ────────────────────────────────────────────────────── */
+.sc-empty{border:1px dashed var(--border3);border-radius:var(--r3);padding:34px 24px;text-align:center}
+.sc-empty-ic{font-size:24px;color:var(--text4);margin-bottom:10px}
+.sc-empty-t{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--text);margin-bottom:6px}
+.sc-empty-s{font-size:12px;color:var(--text3);max-width:42ch;margin:0 auto 16px;line-height:1.6}
+.sc-add-tile{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:200px;
+  border:1px dashed var(--border3);border-radius:var(--r3);cursor:pointer;color:var(--text3);transition:all .18s;background:var(--bg1)}
+.sc-add-tile:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.sc-add-ic{font-size:22px}
+.sc-add-l{font-size:12px;font-family:var(--mono);letter-spacing:0.04em}
+
+/* ── Elegant limit / upgrade prompt (NOT aggressive) ─────────────────────── */
+.sc-limit{display:flex;align-items:center;gap:16px;padding:18px 20px;border:1px solid var(--border2);
+  border-radius:var(--r3);background:linear-gradient(180deg,var(--bg1),var(--bg2))}
+.sc-limit-ic{width:42px;height:42px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:18px;background:var(--gold-dim);border:1px solid rgba(154,123,34,0.25);color:var(--gold)}
+.sc-limit-t{font-size:13px;font-weight:600;color:var(--text)}
+.sc-limit-s{font-size:11.5px;color:var(--text3);line-height:1.5;margin-top:2px}
+.sc-limit .btn{margin-left:auto;flex-shrink:0}
+
+/* ── Editor modal (uses global .scrim/.modal but wider) ──────────────────── */
+.sc-modal{max-width:560px !important}
+.sc-badge-pick{display:flex;flex-wrap:wrap;gap:7px}
+.sc-bp{font-size:10px;font-family:var(--mono);letter-spacing:0.04em;text-transform:uppercase;padding:6px 11px;
+  border-radius:16px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s}
+.sc-bp:hover{color:var(--text2)}
+.sc-bp.on{background:var(--blue);color:#fff;border-color:transparent}
+
+/* ── Discovery rail (curated, not a feed) ────────────────────────────────── */
+.sc-disc{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+
+@media(max-width:640px){
+  .sc-grid,.sc-disc{grid-template-columns:1fr}
+}
+
+/* ── Light editor modal (matches the site canvas, not the dark global modal) ── */
+.sce-scrim{position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto}
+.sce-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:880px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden;animation:scePop .18s ease}
+@keyframes scePop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sce-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
+.sce-title{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--text)}
+.sce-x{border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px}
+.sce-x:hover{background:var(--bg3);color:var(--text)}
+.sce-grid{display:grid;grid-template-columns:1fr 322px}
+.sce-form{padding:22px 24px;border-right:1px solid var(--border)}
+.sce-form .field{margin-bottom:14px}
+.sce-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sce-form .label .opt{color:var(--text4);font-weight:400;text-transform:none;letter-spacing:0}
+.sce-imgrow{display:flex;gap:8px;align-items:center}
+.sce-imgrow .input{flex:1}
+.sce-hint{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:8px}
+.sce-badge-pick{display:flex;flex-wrap:wrap;gap:7px}
+.sce-bp{font-size:10px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:6px 11px;border:1px solid var(--border2);border-radius:20px;color:var(--text3);cursor:pointer;background:var(--bg1)}
+.sce-bp:hover{color:var(--text2);border-color:var(--blue)}
+.sce-bp.on{background:var(--blue);color:#fff;border-color:transparent}
+.sce-preview{padding:22px;background:var(--bg2)}
+.sce-prev-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-family:var(--mono);margin-bottom:12px}
+.sce-foot{display:flex;align-items:center;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--bg1)}
+.sce-err{flex:1;font-size:11px;font-family:var(--mono);color:var(--red);min-height:14px;text-align:left}
+@media(max-width:760px){.sce-grid{grid-template-columns:1fr}.sce-form{border-right:none;border-bottom:1px solid var(--border)}.sce-preview{display:none}}
+
+/* card facts + tags + draft status */
+.sc-facts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.sc-fact{font-size:11px;font-family:var(--mono);color:var(--text2);background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:2px 8px}
+.sc-fact-st{color:var(--green);border-color:rgba(14,154,102,.25);background:rgba(14,154,102,.06)}
+.sc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.sc-tagchip{font-size:10px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:2px 9px}
+.sc-status.scs-draft{color:var(--amber)}

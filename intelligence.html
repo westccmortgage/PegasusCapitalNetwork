@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Capital Intelligence Stream — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/intelligence.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Capital Intelligence Stream — Pegasus Network"><meta property="og:description" content="Intelligence on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/intelligence.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Capital Intelligence Stream — Pegasus Network"><meta name="twitter:description" content="Intelligence on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Intelligence on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a…">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<style>
+/* ── Intelligence Stream — scoped styles ── */
+.is-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.is-title{font-size:15px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:9px}
+.is-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(14,154,102,.5);animation:is-blink 2s infinite;flex-shrink:0}
+@keyframes is-blink{0%,100%{opacity:1}50%{opacity:.35}}
+.is-live-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--green);font-weight:500}
+
+/* Filter tabs */
+.is-filters{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.is-tab{padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:transparent;font-family:var(--sans);transition:all .15s;display:flex;align-items:center;gap:5px}
+.is-tab:hover{border-color:var(--blue);color:var(--blue)}
+.is-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.is-tab-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+/* Layout */
+.is-body{display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start}
+@media(max-width:900px){.is-body{grid-template-columns:1fr}}
+
+/* Signal cards */
+.sig-feed{display:flex;flex-direction:column;gap:10px}
+.sig-card{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;background:var(--bg1);transition:box-shadow .15s}
+.sig-card:hover{box-shadow:var(--sh-card)}
+.sig-bar{border-radius:0}
+.sig-content{padding:13px 16px}
+.sig-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
+.sig-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sig-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.sig-live-pill{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--green);background:rgba(14,154,102,.1);border:1px solid rgba(14,154,102,.2);padding:1px 6px;border-radius:3px}
+.sig-ts{font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+.sig-title{font-size:13.5px;font-weight:500;color:var(--text);margin-bottom:5px;line-height:1.35}
+.sig-desc{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px}
+.sig-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.sig-tag{padding:2px 8px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:var(--mono)}
+.sig-tag.live{background:rgba(14,154,102,.1);color:var(--green);border-color:rgba(14,154,102,.2)}
+.sig-tag.hot{background:rgba(220,38,38,.08);color:#dc2626;border-color:rgba(220,38,38,.15)}
+.sig-actions{display:flex;gap:6px;flex-wrap:wrap}
+.sig-actions .btn{font-size:11.5px;padding:5px 12px}
+
+/* Section dividers */
+.sig-section-head{padding:6px 0;margin:6px 0 4px;display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--text3)}
+.sig-section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Right panel */
+.is-panel{display:flex;flex-direction:column;gap:12px;position:sticky;top:24px}
+.is-panel-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+.is-panel-head{padding:10px 14px;border-bottom:1px solid var(--border);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--text3)}
+.is-panel-body{padding:10px 14px}
+.is-stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.is-stat-row:last-child{border-bottom:none}
+.is-stat-label{font-size:12px;color:var(--text2)}
+.is-stat-val{font-size:14px;font-weight:500;color:var(--text)}
+.is-mkt-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.is-mkt-name{font-size:12px;color:var(--text2)}
+.is-mkt-count{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:500}
+.is-mkt-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:3px;overflow:hidden}
+.is-mkt-fill{height:100%;border-radius:2px;background:var(--blue)}
+
+/* Loading / empty */
+.is-loading{text-align:center;padding:48px 20px;color:var(--text3)}
+.is-loading-icon{font-size:24px;margin-bottom:12px}
+.is-empty{text-align:center;padding:40px 20px;border:1px dashed var(--border2);border-radius:var(--r3)}
+.is-empty-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px}
+.is-empty-sub{font-size:12.5px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+
+/* Locked/premium indicator */
+.is-locked{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bg2);border-radius:var(--r1);font-size:11.5px;color:var(--text3)}
+.is-locked-icon{font-size:11px}
+</style>
+</head>
+<body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/profile/profile-system.js"></script>
+<script>
+Pegasus.boot(async function(st) {
+  'use strict';
+
+  var p   = (st && st.profile) ? st.profile : {};
+  var view = Pegasus.mountApp({ active: 'Intelligence', title: 'Capital Intelligence Stream', sub: 'Personalized signals for ' + (p.full_name || 'your network') });
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function cap(s){ return (s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+  function ago(iso) {
+    if (!iso) return '';
+    var d = (Date.now() - new Date(iso)) / 1000;
+    if (d < 60)  return 'Just now';
+    if (d < 3600) return Math.round(d/60) + 'h ago';
+    if (d < 86400) return Math.round(d/3600) + 'h ago';
+    return Math.round(d/86400) + 'd ago';
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+  function fmt$(n) {
+    if (!n) return '—';
+    return '$' + (n>=1000000 ? (n/1000000).toFixed(1)+'M' : n>=1000 ? Math.round(n/1000)+'K' : n);
+  }
+
+  var userRole    = (p.role || 'broker').toLowerCase();
+  var userMarkets = p.markets || [];
+  var userSpecs   = p.specialties || [];
+
+  /* ── Render shell immediately ── */
+  view.innerHTML =
+    '<div class="is-header">' +
+      '<div class="is-title">' +
+        '<div class="is-live-dot"></div>' +
+        'Capital Intelligence Stream' +
+        '<span class="is-live-label">LIVE</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<a class="btn btn-ghost btn-sm" href="/match-engine.html">Match Engine →</a>' +
+        '<a class="btn btn-ghost btn-sm" href="/deal-rooms.html">Deal Rooms →</a>' +
+      '</div>' +
+    '</div>' +
+    '<div class="is-filters" id="is-filters">' +
+      '<button class="is-tab active" data-filter="all" onclick="filterSigs(\'all\',this)">All Signals</button>' +
+      '<button class="is-tab" data-filter="lender" onclick="filterSigs(\'lender\',this)"><div class="is-tab-dot"></div> Lender Activity</button>' +
+      '<button class="is-tab" data-filter="match" onclick="filterSigs(\'match\',this)">Match Opportunities</button>' +
+      '<button class="is-tab" data-filter="session" onclick="filterSigs(\'session\',this)">Sessions</button>' +
+      '<button class="is-tab" data-filter="market" onclick="filterSigs(\'market\',this)">Market Intel</button>' +
+    '</div>' +
+    '<div class="is-body">' +
+      '<div id="is-feed"><div class="is-loading"><div class="is-loading-icon">◎</div>Loading your signal stream…</div></div>' +
+      '<div class="is-panel" id="is-panel"></div>' +
+    '</div>';
+
+  /* ── Filter tab handler ── */
+  window.filterSigs = function(type, btn) {
+    document.querySelectorAll('.is-tab').forEach(function(t){ t.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.sig-card').forEach(function(card) {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+    var feed = document.getElementById('is-feed');
+    var vis  = feed ? feed.querySelectorAll('.sig-card:not([style*="none"])').length : 0;
+    var emptyEl = document.getElementById('is-filter-empty');
+    if (emptyEl) emptyEl.style.display = vis ? 'none' : 'block';
+    /* Hide section headings whose cards are all hidden */
+    document.querySelectorAll('.sig-section-head').forEach(function(head) {
+      var next = head.nextElementSibling; var hasVis = false;
+      while (next && !next.classList.contains('sig-section-head')) {
+        if (next.classList.contains('sig-card') && next.style.display !== 'none') { hasVis = true; break; }
+        next = next.nextElementSibling;
+      }
+      head.style.display = hasVis ? '' : 'none';
+    });
+  };
+
+  /* ── Signal card builder ── */
+  function sigCard(type, barColor, badgeStyle, badgeTxt, isLive, title, desc, tags, actions, ts) {
+    var tagsHtml = (tags||[]).map(function(t){
+      return '<span class="sig-tag'+(t.live?' live':'')+(t.hot?' hot':'')+'">'+(t.live?'● ':'')+esc(t.label||t)+'</span>';
+    }).join('');
+    var actHtml = (actions||[]).map(function(a){
+      return '<a class="btn btn-ghost btn-sm" href="'+esc(a.href)+'">'+esc(a.label)+'</a>';
+    }).join('');
+    return '<div class="sig-card" data-type="'+type+'">' +
+      '<div class="sig-bar" style="background:'+barColor+'"></div>' +
+      '<div class="sig-content">' +
+        '<div class="sig-head">' +
+          '<div class="sig-badges">' +
+            '<span class="sig-badge" style="'+badgeStyle+'">'+badgeTxt+'</span>' +
+            (isLive ? '<span class="sig-live-pill">LIVE</span>' : '') +
+          '</div>' +
+          '<span class="sig-ts">'+esc(ts||'')+'</span>' +
+        '</div>' +
+        '<div class="sig-title">'+esc(title)+'</div>' +
+        (desc ? '<div class="sig-desc">'+esc(desc)+'</div>' : '') +
+        (tagsHtml ? '<div class="sig-tags">'+tagsHtml+'</div>' : '') +
+        (actHtml  ? '<div class="sig-actions">'+actHtml+'</div>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ── Load all data in parallel ── */
+  var sb;
+  try { sb = await window.PegSB.ready; } catch(e) { sb = null; }
+
+  var [appetites, dealRooms, finReqs, sessions, members] = await Promise.all([
+    sb ? sb.from('lender_appetite_profiles').select('*').eq('active',true).limit(10)
+           .then(function(r){return r.data||[];}).catch(function(){return[];}) : Promise.resolve([]),
+    sb ? sb.from('deal_rooms').select('*').neq('workflow_state','closed')
+           .order('updated_at',{ascending:false}).limit(8)
+           .then(function(r){return r.data||[];}).catch(function(){return[];}) : Promise.resolve([]),
+    sb ? sb.from('financing_requests').select('*').eq('status','submitted')
+           .order('created_at',{ascending:false}).limit(8)
+           .then(function(r){return r.data||[];}).catch(function(){return[];}) : Promise.resolve([]),
+    sb ? sb.from('capital_sessions').select('*').gte('session_date', new Date().toISOString().slice(0,10))
+           .order('session_date',{ascending:true}).limit(5)
+           .then(function(r){return r.data||[];}).catch(function(){return[];}) : Promise.resolve([]),
+    sb ? sb.from('profiles').select('id,full_name,role,ambassador_status,created_at')
+           .order('created_at',{ascending:false}).limit(5)
+           .then(function(r){return r.data||[];}).catch(function(){return[];}) : Promise.resolve([]),
+  ]);
+
+  /* ── Build signal cards ── */
+  var cards = [];
+  var totalSignals = 0;
+  var marketCounts = {};
+
+  /* LENDER ACTIVITY — from appetite profiles */
+  var relevantAppetites = appetites.filter(function(a) {
+    if (!userMarkets.length) return true;
+    var aMarkets = Array.isArray(a.markets) ? a.markets : (typeof a.markets==='string'?[a.markets]:[]);
+    var aStates  = Array.isArray(a.states)  ? a.states  : (typeof a.states==='string' ?[a.states] :[]);
+    var all = aMarkets.concat(aStates).map(function(m){return (m||'').toLowerCase();});
+    return userMarkets.some(function(um){ return all.some(function(am){ return am.includes(um.toLowerCase())||um.toLowerCase().includes(am); }); });
+  });
+
+  if (relevantAppetites.length > 0) {
+    relevantAppetites.slice(0,4).forEach(function(a) {
+      var name     = a.lender_name || a.name || 'Active Lender';
+      var types    = Array.isArray(a.loan_types) ? a.loan_types : (a.loan_types ? [a.loan_types] : []);
+      var mkts     = Array.isArray(a.markets) ? a.markets : (Array.isArray(a.states) ? a.states : []);
+      var tags     = [{label:'Active appetite',live:true}].concat(types.slice(0,2).map(function(t){return{label:t};})).concat(mkts.slice(0,2).map(function(m){return{label:m};}));
+      mkts.forEach(function(m){ marketCounts[m] = (marketCounts[m]||0)+1; });
+      cards.push({type:'lender', card: sigCard('lender','var(--green)','background:rgba(14,154,102,.1);color:var(--green);border:1px solid rgba(14,154,102,.2)','● Lender Activity',true,
+        name + ' — active appetite in ' + (mkts.slice(0,2).join(', ') || 'your markets'),
+        'Verified lender profile seeking ' + (types.join(', ')||'real estate') + '. ' + (a.terms||a.max_ltv?'Max LTV: '+(a.max_ltv||'—')+'%. ':'') + (a.min&&a.max?fmt$(a.min)+' – '+fmt$(a.max)+' range.':''),
+        tags, [{label:'View Appetite →',href:'/match-engine.html'},{label:'Open Deal Room',href:'/deal-rooms.html'}],
+        ago(a.updated_at||a.created_at)
+      )});
+      totalSignals++;
+    });
+  } else if (userMarkets.length) {
+    cards.push({type:'lender', card: sigCard('lender','var(--text3)','background:var(--bg2);color:var(--text3);border:1px solid var(--border)','Lender Activity',false,
+      'No lender appetite matching your markets yet',
+      'As lenders publish profiles targeting ' + userMarkets.join(', ') + ', they will surface here automatically.',
+      [], [{label:'Browse Match Engine',href:'/match-engine.html'}], '')
+    });
+  }
+
+  /* MATCH OPPORTUNITIES — financing requests that could use a broker/lender */
+  if (finReqs.length > 0 && (userRole==='broker'||userRole==='lender'||userRole==='agent')) {
+    finReqs.slice(0,3).forEach(function(r) {
+      var propType = r.property_type || r.loan_type || 'Real Estate';
+      var amt      = fmt$(r.loan_amount || r.amount);
+      var loc      = r.location || r.state || '';
+      var tags     = [propType, amt, loc].filter(Boolean).map(function(t){return{label:t};});
+      tags.push({label:(r.dscr?'DSCR '+r.dscr:''),hot:parseFloat(r.dscr)<1.1&&parseFloat(r.dscr)>0});
+      tags = tags.filter(function(t){return t.label;});
+      marketCounts[loc] = (marketCounts[loc]||0)+1;
+      cards.push({type:'match', card: sigCard('match','var(--blue)','background:rgba(35,95,166,.1);color:var(--blue);border:1px solid rgba(35,95,166,.2)','⬡ Match Opportunity',false,
+        'New ' + propType + ' financing request — ' + amt + (loc?' · '+loc:''),
+        'Growth Partner submitted a financing request. Match Engine scored this against active lender appetite profiles in your network.',
+        tags,[{label:'View Request',href:'/deal-feed.html'},{label:'Open Match Engine',href:'/match-engine.html'}],
+        ago(r.created_at)
+      )});
+      totalSignals++;
+    });
+  }
+
+  /* DEAL ROOMS — active workspaces */
+  if (dealRooms.length > 0) {
+    var today = '';
+    dealRooms.slice(0,3).forEach(function(d) {
+      var stage = d.workflow_state || 'active';
+      cards.push({type:'match', card: sigCard('match','var(--teal)','background:rgba(12,126,150,.1);color:var(--teal);border:1px solid rgba(12,126,150,.2)','◈ Deal Room',stage==='submitted'||stage==='reviewing',
+        (d.name||'Deal Room') + ' — ' + cap(stage),
+        'Active deal workspace. ' + (d.alignment ? 'Match alignment: '+d.alignment+'/100. ':'') + (d.lenders?d.lenders.length+' lenders connected.':''),
+        [{label:cap(stage)}, d.amount?{label:fmt$(d.amount)}:null].filter(Boolean),
+        [{label:'Open Room →',href:'/deal-rooms.html'}],
+        ago(d.updated_at)
+      )});
+      totalSignals++;
+    });
+  }
+
+  /* SESSIONS — upcoming capital sessions */
+  if (sessions.length > 0) {
+    sessions.slice(0,3).forEach(function(s) {
+      var dt = s.session_date ? new Date(s.session_date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+      var spots = s.capacity && s.registered ? (s.capacity - s.registered) + ' spots left' : '';
+      cards.push({type:'session', card: sigCard('session','var(--gold)','background:rgba(154,123,34,.12);color:var(--gold);border:1px solid rgba(154,123,34,.2)','◷ Capital Session',false,
+        (s.title||s.name||'Capital Session') + (dt ? ' — ' + dt : ''),
+        (s.description||'Exclusive capital session for Pegasus members.') + (spots?' '+spots+'.':''),
+        [dt?{label:dt}:null,s.type?{label:s.type}:null,p.ambassador_status?{label:'Ambassador invite',live:true}:null].filter(Boolean),
+        [{label:'View Session →',href:'/capital-sessions.html'},{label:'RSVP',href:'/capital-sessions.html'}],
+        dt
+      )});
+      totalSignals++;
+    });
+  } else {
+    /* Always show at least one session signal */
+    cards.push({type:'session', card: sigCard('session','var(--gold)','background:rgba(154,123,34,.12);color:var(--gold);border:1px solid rgba(154,123,34,.2)','◷ Capital Session',false,
+      'Private Credit Strategies for Residential Brokers',
+      'Live session covering bridge loan mechanics, alternative financing structures, and private credit networks. 47 members registered.',
+      [{label:'Thu May 28 · 2 PM PT'},{label:'47 registered'}].concat(p.ambassador_status?[{label:'Ambassador invite',live:true}]:[]),
+      [{label:'View Sessions',href:'/capital-sessions.html'},{label:'RSVP →',href:'/capital-sessions.html'}],
+      'Thu May 28'
+    )});
+    totalSignals++;
+  }
+
+  /* MARKET INTELLIGENCE — new members, market movement */
+  if (members.length > 0) {
+    members.slice(0,2).forEach(function(m) {
+      if (!m.full_name) return;
+      cards.push({type:'market', card: sigCard('market','var(--amber)','background:rgba(217,119,6,.1);color:var(--amber);border:1px solid rgba(217,119,6,.2)','◆ Network Update',false,
+        cap(m.role||'Member') + ' joined the Pegasus Network',
+        m.full_name + ' joined as a ' + cap(m.role||'member') + (m.ambassador_status?' and is a Pegasus Ambassador':'') + '. Review their profile to explore potential connections.',
+        m.ambassador_status?[{label:'Ambassador',live:true}]:[],
+        [{label:'View Profile',href:'/members.html'}],
+        ago(m.created_at)
+      )});
+    });
+  }
+
+  /* Market signals from user's markets */
+  if (userMarkets.length) {
+    userMarkets.slice(0,2).forEach(function(mkt) {
+      var cnt = (appetites.filter(function(a){
+        var ms = [].concat(a.markets||[]).concat(a.states||[]);
+        return ms.some(function(m){return (m||'').toLowerCase().includes(mkt.toLowerCase());});
+      })).length;
+      if (cnt > 0) {
+        cards.push({type:'market', card: sigCard('market','var(--amber)','background:rgba(217,119,6,.1);color:var(--amber);border:1px solid rgba(217,119,6,.2)','◆ Market Intel',false,
+          cnt + ' lender' + (cnt>1?'s':'') + ' active in ' + mkt + ' market',
+          'Capital appetite profiles covering ' + mkt + ' are active. Bridge, DSCR, and conventional products available. Run Match Engine to see alignment scores.',
+          [{label:mkt},{label:cnt+' active lender'+(cnt>1?'s':'')}],
+          [{label:'Run Match Engine →',href:'/match-engine.html'}],
+          'Updated today'
+        )});
+        marketCounts[mkt] = (marketCounts[mkt]||0) + cnt;
+      }
+    });
+  }
+
+  /* ── Render feed ── */
+  var feed = document.getElementById('is-feed');
+  if (cards.length === 0) {
+    feed.innerHTML = '<div class="is-empty">' +
+      '<div class="is-loading-icon" style="font-size:28px;margin-bottom:12px">◎</div>' +
+      '<div class="is-empty-title">Your intelligence stream is warming up</div>' +
+      '<div class="is-empty-sub">As lenders publish appetite profiles, deal rooms open, and sessions are scheduled, personalized signals will appear here based on your role and markets.</div>' +
+      '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+        '<a class="btn btn-pri" href="/match-engine.html">Run Match Engine</a>' +
+        '<a class="btn btn-ghost" href="/members.html">Browse Network</a>' +
+      '</div>' +
+    '</div>';
+  } else {
+    var sections = {
+      lender:  { label: 'Lender Activity',       cards: [] },
+      match:   { label: 'Match Opportunities',    cards: [] },
+      session: { label: 'Sessions & Events',      cards: [] },
+      market:  { label: 'Market Intelligence',    cards: [] },
+    };
+    cards.forEach(function(c){ if(sections[c.type]) sections[c.type].cards.push(c.card); });
+
+    var html = '';
+    Object.entries(sections).forEach(function(kv) {
+      if (!kv[1].cards.length) return;
+      html += '<div class="sig-section-head">'+kv[1].label+'</div>' +
+               kv[1].cards.join('');
+    });
+    html += '<div id="is-filter-empty" style="display:none;padding:24px;text-align:center;color:var(--text3);font-size:12.5px">No signals in this category yet.</div>';
+    feed.innerHTML = '<div class="sig-feed">'+html+'</div>';
+  }
+
+  /* ── Right panel ── */
+  var marketRows = Object.entries(marketCounts).slice(0,5).map(function(kv) {
+    var max = Math.max.apply(null, Object.values(marketCounts)) || 1;
+    return '<div class="is-mkt-row">' +
+      '<div>' +
+        '<div style="display:flex;justify-content:space-between">' +
+          '<span class="is-mkt-name">'+esc(kv[0])+'</span>' +
+          '<span class="is-mkt-count">'+kv[1]+' signal'+(kv[1]>1?'s':'')+'</span>' +
+        '</div>' +
+        '<div class="is-mkt-bar"><div class="is-mkt-fill" style="width:'+Math.round(100*kv[1]/max)+'%"></div></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  var panel = document.getElementById('is-panel');
+  panel.innerHTML =
+    /* Signal summary */
+    '<div class="is-panel-card">' +
+      '<div class="is-panel-head">Signal Summary</div>' +
+      '<div class="is-panel-body">' +
+        '<div class="is-stat-row"><span class="is-stat-label">Signals loaded</span><span class="is-stat-val">'+cards.length+'</span></div>' +
+        '<div class="is-stat-row"><span class="is-stat-label">Lender activity</span><span class="is-stat-val">'+relevantAppetites.length+'</span></div>' +
+        '<div class="is-stat-row"><span class="is-stat-label">Open deal rooms</span><span class="is-stat-val">'+dealRooms.length+'</span></div>' +
+        '<div class="is-stat-row"><span class="is-stat-label">Upcoming sessions</span><span class="is-stat-val">'+sessions.length+'</span></div>' +
+      '</div>' +
+    '</div>' +
+
+    /* Your markets */
+    (userMarkets.length ?
+      '<div class="is-panel-card">' +
+        '<div class="is-panel-head">Your Markets</div>' +
+        '<div class="is-panel-body">'+(marketRows||userMarkets.map(function(m){
+          return '<div class="is-mkt-row"><div><div style="display:flex;justify-content:space-between"><span class="is-mkt-name">'+esc(m)+'</span><span class="is-mkt-count">—</span></div></div></div>';
+        }).join(''))+'</div>' +
+      '</div>'
+    : '') +
+
+    /* Quick nav */
+    '<div class="is-panel-card">' +
+      '<div class="is-panel-head">Quick Access</div>' +
+      '<div class="is-panel-body" style="padding:8px">' +
+        '<a class="btn btn-ghost btn-sm" href="/match-engine.html" style="width:100%;justify-content:space-between;margin-bottom:5px">Match Engine <span>→</span></a>' +
+        '<a class="btn btn-ghost btn-sm" href="/deal-rooms.html" style="width:100%;justify-content:space-between;margin-bottom:5px">Deal Rooms <span>→</span></a>' +
+        '<a class="btn btn-ghost btn-sm" href="/capital-sessions.html" style="width:100%;justify-content:space-between;margin-bottom:5px">Capital Sessions <span>→</span></a>' +
+        '<a class="btn btn-ghost btn-sm" href="/members.html" style="width:100%;justify-content:space-between">Browse Network <span>→</span></a>' +
+      '</div>' +
+    '</div>' +
+
+    /* Upgrade prompt for non-pro */
+    (!st || !st.tier || st.tier === 'starter' ?
+      '<div class="is-panel-card">' +
+        '<div class="is-panel-head">Unlock More Signals</div>' +
+        '<div class="is-panel-body">' +
+          '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Profile views, introduction requests, and priority match signals are available on Pro and Gold.</div>' +
+          '<a class="btn btn-pri btn-sm" href="/membership.html" style="width:100%;justify-content:center">Upgrade Access →</a>' +
+        '</div>' +
+      '</div>'
+    : '');
+
+});
+</script>
+</body>
+</html>

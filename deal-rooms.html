@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><title>Deal Rooms — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/deal-rooms.html"><meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="stylesheet" href="/css/dealroom.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script src="/js/pegasus-dealroom.js"></script>
+<script>
+Pegasus.boot(async (st)=>{
+  const v=Pegasus.mountApp({active:'Deal Rooms',title:'Pegasus Capital Workspaces',sub:'Where opportunities become real'});
+  const cap=Pegasus.limit('dealRooms'), WF=PegAPI.WF;
+  const lbl=s=>s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const VIS=PegRoom.VIS;
+  if(cap===0){
+    /* Profile-first philosophy: show the page and explain value.
+       Gate only the CREATE action — not the view.              */
+    v.insertAdjacentHTML('beforeend',
+      '<div class="banner bn-info" style="margin-bottom:18px">'+
+        '<div class="banner-msg">◈ <span>'+
+          '<b>Capital Workspaces</b> — Protected deal environments where Growth Partners, '+
+          'lenders, and capital partners structure opportunities together. '+
+          'Available on Pro and Gold. <a href="/membership.html" style="color:var(--blue-lt);text-decoration:underline">See what’s included →</a>'+
+        '</span></div>'+
+      '</div>'
+    );
+    /* Continue rendering — let Starter see the page and existing rooms */
+  }
+  const rooms=await PegAPI.listDealRooms();
+  window._drAllRooms=rooms; // stash for filter re-renders
+  window._drRenderRooms=function(filtered){
+    var g='<div class="grid g2">';
+    g+=filtered.map(d=>{const idx=WF.indexOf(d.workflow_state); const sc=idx>=7?'var(--green)':idx>=5?'var(--amber)':idx>=3?'var(--teal)':'var(--blue)';
+      const bars=WF.map((w,i)=>'<div style="flex:1;height:3px;border-radius:2px;background:'+(i<idx?'var(--blue)':i===idx?'var(--teal)':'var(--bg4)')+'"></div>').join('');
+      const vmeta=VIS[d.visibility||'invite_only']||VIS.invite_only;
+      return '<div class="card hc" style="cursor:pointer;border-top:2px solid '+sc+'" onclick="location.href=\'deal-room.html?id='+d.id+'\'"><div class="card-body"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px"><div><div style="font-size:15px;font-weight:600;letter-spacing:-0.01em">'+Pegasus.esc(d.name)+'</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px">'+Pegasus.esc(d.structure_type||d.deal_type||'Opportunity')+' \u00B7 '+Pegasus.esc(d.location||'')+'</div></div><div style="text-align:right"><div style="font-size:20px;font-family:var(--mono);font-weight:500">'+Pegasus.fmt(d.amount)+'</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">'+(vmeta.ic+' '+vmeta.name)+'</div></div></div><div style="display:flex;gap:2px;margin-bottom:8px">'+bars+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span class="tag tag-t">\u25CF '+lbl(d.workflow_state)+'</span><span style="font-size:9px;color:var(--text3);font-family:var(--mono)">Alignment '+(d.alignment_score||0)+'/100</span></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--border);padding-top:14px"><div><div style="font-size:14px;font-family:var(--mono);font-weight:500;color:var(--teal)">'+(d.alignment_score||0)+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase">Alignment</div></div><div><div style="font-size:14px;font-family:var(--mono);font-weight:500;color:var(--green)">'+((d.participants&&d.participants.length)||0)+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase">Participants</div></div><div><div style="font-size:14px;font-family:var(--mono);font-weight:500">Stage '+(idx+1)+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase">Workflow</div></div></div></div></div>';
+    }).join('');
+    g+='</div>';
+    var existing=document.getElementById('dr-grid'); if(existing) existing.remove();
+    var el=document.createElement('div'); el.id='dr-grid'; el.innerHTML=g;
+    document.getElementById('pegView').appendChild(el);
+  };
+  const atCap=cap!==Infinity && rooms.length>=cap;
+  v.insertAdjacentHTML('beforeend','<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px"><div style="display:flex;gap:6px">'+['All','Active','Underwriting','Funded'].map((f,i)=>'<div class="tier-chip" id="dr-f-'+f+'" style="background:'+(i===0?'var(--blue-dim)':'var(--bg2)')+';border:1px solid '+(i===0?'rgba(34,113,195,0.3)':'var(--border2)')+';color:'+(i===0?'var(--blue-lt)':'var(--text3)')+';cursor:pointer" onclick="drFilter(\''+f+'\')" >'+f+'</div>').join('')+'</div><div style="display:flex;align-items:center;gap:12px">'+(cap===Infinity?'<span style="font-size:11px;color:var(--gold);font-family:var(--mono)">Unlimited \u00B7 Institutional</span>':'<span style="font-size:11px;color:var(--text3);font-family:var(--mono)">'+rooms.length+' / '+cap+' active</span>')+'<button class="btn btn-pri" '+(atCap?'disabled':'')+' onclick="PegRoom.launchCreate()">+ Launch Capital Workspace</button></div></div>');
+  if(atCap && cap>0)v.insertAdjacentHTML('beforeend','<div class="banner bn-cancel"><div class="banner-msg">\u26A0 <span>You have reached your active workspace capacity ('+cap+'). Upgrade to Institutional for unlimited workspaces.</span></div><a class="btn btn-sm btn-pri" href="/membership.html">Upgrade \u2192</a></div>');
+  if(!rooms.length){
+    if(cap===0){
+      /* Starter: explain the value, link to membership — don't open a form they can't submit */
+      v.insertAdjacentHTML('beforeend','<div class="gate" style="padding:46px 40px"><div class="gate-ic" style="background:var(--blue-dim);border-color:rgba(34,113,195,0.25);color:var(--blue)">\u25C8</div><h2 class="h2" style="margin-bottom:8px">Capital Workspaces</h2><p class="sub" style="margin:0 auto 22px;text-align:center;max-width:54ch">Structure an opportunity, invite aligned participants, and collaborate in a protected environment \u2014 with a document vault, workflow tracking, and quiet Match Engine alignment. Available on Pro and Gold access.</p><div style="display:flex;gap:10px;justify-content:center"><a class="btn btn-ghost" href="/members.html">Browse the Network</a><a class="btn btn-pri" href="/membership.html">See Access Layers \u2192</a></div></div>');
+    } else {
+      v.insertAdjacentHTML('beforeend','<div class="gate" style="padding:46px 40px"><div class="gate-ic" style="background:var(--blue-dim);border-color:rgba(34,113,195,0.25);color:var(--blue)">\u25C8</div><h2 class="h2" style="margin-bottom:8px">No workspaces yet</h2><p class="sub" style="margin:0 auto 22px;text-align:center;max-width:50ch">Launch your first Capital Workspace to structure an opportunity, invite aligned participants, and collaborate in a protected environment.</p><div style="display:flex;justify-content:center"><button class="btn btn-pri" onclick="PegRoom.launchCreate()">Launch Capital Workspace \u2192</button></div></div>');
+    }
+    return;
+  }
+  let g='<div class="grid g2">';
+  g+=rooms.map(d=>{const idx=WF.indexOf(d.workflow_state); const sc=idx>=7?'var(--green)':idx>=5?'var(--amber)':idx>=3?'var(--teal)':'var(--blue)';
+    const bars=WF.map((w,i)=>'<div style="flex:1;height:3px;border-radius:2px;background:'+(i<idx?'var(--blue)':i===idx?'var(--teal)':'var(--bg4)')+'"></div>').join('');
+    const vmeta=VIS[d.visibility||'invite_only']||VIS.invite_only;
+    return '<div class="card hc" style="cursor:pointer;border-top:2px solid '+sc+'" onclick="location.href=\'deal-room.html?id='+d.id+'\'"><div class="card-body"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px"><div><div style="font-size:15px;font-weight:600;letter-spacing:-0.01em">'+Pegasus.esc(d.name)+'</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px">'+Pegasus.esc(d.structure_type||d.deal_type||'Opportunity')+' \u00B7 '+Pegasus.esc(d.location||'')+'</div></div><div style="text-align:right"><div style="font-size:20px;font-family:var(--mono);font-weight:500">'+Pegasus.fmt(d.amount)+'</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">'+(vmeta.ic+' '+vmeta.name)+'</div></div></div><div style="display:flex;gap:2px;margin-bottom:8px">'+bars+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span class="tag tag-t">\u25CF '+lbl(d.workflow_state)+'</span><span style="font-size:9px;color:var(--text3);font-family:var(--mono)">Alignment '+(d.alignment_score||0)+'/100</span></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--border);padding-top:14px"><div><div style="font-size:14px;font-family:var(--mono);font-weight:500;color:var(--teal)">'+(d.alignment_score||0)+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase">Alignment</div></div><div><div style="font-size:14px;font-family:var(--mono);font-weight:500;color:var(--green)">'+((d.participants&&d.participants.length)||0)+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase">Participants</div></div><div><div style="font-size:14px;font-family:var(--mono);font-weight:500">Stage '+(idx+1)+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase">Workflow</div></div></div></div></div>';}).join('');
+  g+='</div>'; v.insertAdjacentHTML('beforeend',g);
+});
+  window.drFilter=function(f){
+    var all=window._drAllRooms||[]; var render=window._drRenderRooms; if(!render) return;
+    var WF_MAP={Active:['submitted','reviewing','matched','term_sheet'],Underwriting:['docs_requested','under_review','in_diligence'],Funded:['funded','closed']};
+    var filtered=f==='All'?all:all.filter(function(d){ return (WF_MAP[f]||[]).indexOf(d.workflow_state)>=0; });
+    /* update chip highlight */
+    ['All','Active','Underwriting','Funded'].forEach(function(n){
+      var el=document.getElementById('dr-f-'+n); if(!el) return;
+      var on=n===f;
+      el.style.background=on?'var(--blue-dim)':'var(--bg2)';
+      el.style.borderColor=on?'rgba(34,113,195,0.3)':'var(--border2)';
+      el.style.color=on?'var(--blue-lt)':'var(--text3)';
+    });
+    if(!filtered.length){
+      var existing=document.getElementById('dr-grid'); if(existing) existing.remove();
+      var el=document.createElement('div'); el.id='dr-grid';
+      el.innerHTML='<div style="text-align:center;padding:32px;color:var(--text2);font-size:13px">No '+f.toLowerCase()+' workspaces.</div>';
+      document.getElementById('pegView').appendChild(el);
+    } else { render(filtered); }
+  };
+</script></body></html>

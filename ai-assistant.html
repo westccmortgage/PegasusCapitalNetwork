@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="en"><head><title>Capital Assistant — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/ai-assistant.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Capital Assistant — Pegasus Network"><meta property="og:description" content="Pegasus Lenders Group is a marketplace and membership platform. Pegasus is not a lender, mortgage loan originator, broker-dealer, investment adviser,…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/ai-assistant.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Capital Assistant — Pegasus Network"><meta name="twitter:description" content="Pegasus Lenders Group is a marketplace and membership platform. Pegasus is not a lender, mortgage loan originator, broker-dealer, investment adviser,…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Pegasus Lenders Group is a marketplace and membership platform. Pegasus is not a lender, mortgage loan originator, broker-dealer, investment adviser,…"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png"><link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#08111C">
+<style>
+.ca-wrap{max-width:720px;margin:0 auto;padding:0 16px 32px}
+.ca-chat{display:flex;flex-direction:column;gap:10px;min-height:240px;max-height:52vh;overflow-y:auto;padding:18px;background:var(--bg1);border:1px solid var(--border);border-radius:12px 12px 0 0;scroll-behavior:smooth}
+.ca-bubble{max-width:82%;padding:11px 15px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.ca-bubble.user{align-self:flex-end;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);color:var(--text)}
+.ca-bubble.ai{align-self:flex-start;background:var(--bg3);color:var(--text2)}
+.ca-bubble.ai a{color:var(--blue-lt);text-decoration:underline}
+.ca-bubble.thinking{align-self:flex-start;background:var(--bg3);color:var(--text3);font-style:italic}
+.ca-input-row{display:flex;gap:0;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;overflow:hidden;background:var(--bg)}
+.ca-input{flex:1;border:none;background:transparent;padding:14px 16px;font-size:14px;color:var(--text);outline:none;font-family:var(--sans)}
+.ca-input::placeholder{color:var(--text3)}
+.ca-send{border:none;background:var(--blue);color:#fff;padding:14px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap}
+.ca-send:hover{background:#1a5fb4}
+.ca-send:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed}
+.ca-prompts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.ca-prompt{padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.ca-prompt:hover{border-color:var(--blue);color:var(--blue-lt);background:var(--blue-dim)}
+.ca-ctx{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:10px;text-align:center}
+</style>
+</head><body>
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.boot(async (st) => {
+  Pegasus.mountApp({ active:'Capital Assistant', title:'Capital Assistant', sub:'Find people, deals, and opportunities in the network' });
+  var v = document.getElementById('pegView');
+
+  /* ── Build UI ─────────────────────────────────────────────────── */
+  v.innerHTML =
+    '<div class="ca-wrap">' +
+      '<div id="ca-chat" class="ca-chat">' +
+        '<div class="ca-bubble ai">Hi! I\'m the Pegasus Capital Assistant.\n\nAsk me about lenders, investors, brokers, or upcoming sessions in the network. I\'ll find real members who match what you need.\n\nFor example: <i>"I need a bridge lender in Los Angeles"</i> or <i>"Find me a hard money lender for a fix &amp; flip."</i></div>' +
+      '</div>' +
+      '<div class="ca-input-row">' +
+        '<input class="ca-input" id="ca-in" placeholder="Ask about lenders, investors, sessions…" autocomplete="off" />' +
+        '<button class="ca-send" id="ca-btn" onclick="window.caAsk()">Ask →</button>' +
+      '</div>' +
+      '<div class="ca-prompts">' +
+        ['I need a bridge lender in California','Find a hard money lender for fix &amp; flip','Who are the investors in the network?','Show upcoming Capital Sessions','I\'m looking for a mortgage broker'].map(function(p){
+          return '<button class="ca-prompt" onclick="window.caPrompt(this.innerText)">'+p+'</button>';
+        }).join('') +
+      '</div>' +
+      '<div class="ca-ctx" id="ca-ctx">Loading network data…</div>' +
+    '</div>';
+
+  /* ── Fetch real context from Supabase ─────────────────────────── */
+  var networkContext = { profiles:[], lenders:[], sessions:[] };
+  try {
+    var sb = await window.PegSB.ready;
+
+    /* Public member profiles */
+    var pr = await sb.from('profiles')
+      .select('full_name, role, profile_slug, id, location, headline')
+      .not('full_name','is',null)
+      .limit(100);
+    networkContext.profiles = pr.data || [];
+
+    /* Public lender profiles */
+    var lr = await sb.from('lender_profiles')
+      .select('loan_types, min_loan_amount, max_loan_amount, states_served, profiles(full_name, id)')
+      .eq('is_public', true)
+      .limit(30);
+    networkContext.lenders = lr.data || [];
+
+    /* Upcoming sessions */
+    var sr = await sb.from('webinar_library')
+      .select('title, webinar_date, topic, speaker_name, description')
+      .eq('status','published')
+      .order('webinar_date',{ascending:true})
+      .limit(8);
+    networkContext.sessions = sr.data || [];
+
+    var totalCtx = networkContext.profiles.length + networkContext.lenders.length;
+    document.getElementById('ca-ctx').textContent =
+      totalCtx + ' network members loaded · ' + networkContext.sessions.length + ' upcoming sessions · Informational only — not financial advice';
+  } catch(e) {
+    document.getElementById('ca-ctx').textContent = 'Network data unavailable — answering from general knowledge';
+  }
+
+  /* ── Conversation history ─────────────────────────────────────── */
+  var history = [];
+
+  /* ── Build system prompt with real data ───────────────────────── */
+  function buildSystem() {
+    var members = (networkContext.profiles || []).map(function(p){
+      var link = p.profile_slug ? '/u/'+p.profile_slug : '/public-profile.html?id='+p.id;
+      return '- '+p.full_name+' | '+(p.role||'member')+' | '+(p.location||'')+' | '+(p.headline||'')+' | '+link;
+    }).join('\n') || 'No profiles yet.';
+
+    var lenders = (networkContext.lenders || []).map(function(l){
+      var name = (l.profiles && l.profiles.full_name) || 'Lender';
+      var types = (l.loan_types||[]).join(', ') || 'various';
+      var range = l.min_loan_amount&&l.max_loan_amount ? '$'+l.min_loan_amount.toLocaleString()+'-$'+l.max_loan_amount.toLocaleString() : '';
+      var states = (l.states_served||[]).slice(0,5).join(', ');
+      return '- '+name+' | '+types+' | '+range+' | '+states;
+    }).join('\n') || 'No lender profiles yet.';
+
+    var sessions = (networkContext.sessions || []).map(function(s){
+      var d = s.webinar_date ? new Date(s.webinar_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'TBD';
+      return '- "'+s.title+'" | '+d+' | '+(s.speaker_name||'TBD');
+    }).join('\n') || 'No upcoming sessions.';
+
+    return 'You are the Pegasus Capital Network AI Assistant — helping capital markets professionals find the right people, deals, and opportunities.\n\n' +
+      'LIVE NETWORK DATA ('+new Date().toLocaleDateString()+'):\n\n' +
+      'MEMBERS ('+networkContext.profiles.length+'):\n'+members+'\n\n' +
+      'LENDER PROFILES ('+networkContext.lenders.length+'):\n'+lenders+'\n\n' +
+      'UPCOMING SESSIONS ('+networkContext.sessions.length+'):\n'+sessions+'\n\n' +
+      'YOUR ROLE:\n' +
+      '- Find and recommend real members by name when they match the request\n' +
+      '- Include the profile link when recommending someone (e.g. "Profile: /u/john-smith")\n' +
+      '- Be specific and actionable — name 2-4 matches, not generic advice\n' +
+      '- If no exact match exists, recommend posting at /network-requests.html\n' +
+      '- For sessions, mention the title and date\n\n' +
+      'FORMAT: concise (under 180 words), bullet points for multiple people, end with one clear next step.\n\n' +
+      'PLATFORM LINKS: Deal Rooms → /deal-rooms.html | Match Engine → /match-engine.html | Members → /members.html | Network Requests → /network-requests.html\n\n' +
+      'COMPLIANCE: Pegasus is not a lender, broker, or investment advisor. All recommendations are informational only.';
+  }
+
+  /* ── Render a chat bubble ─────────────────────────────────────── */
+  function bubble(role, text) {
+    var chat = document.getElementById('ca-chat');
+    var div = document.createElement('div');
+    div.className = 'ca-bubble ' + role;
+    if (role === 'ai') {
+      /* Convert plain profile links to clickable anchors */
+      var safe = text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+        .replace(/(\/u\/[\w-]+|\/public-profile\.html\?id=[\w-]+|\/[\w-]+\.html)/g,
+          '<a href="$1" style="color:var(--blue-lt)">$1</a>');
+      div.innerHTML = safe;
+    } else {
+      div.textContent = text;
+    }
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+  }
+
+  /* ── Send message to Worker ───────────────────────────────────── */
+  window.caAsk = async function() {
+    var inp = document.getElementById('ca-in');
+    var btn = document.getElementById('ca-btn');
+    var msg = inp.value.trim();
+    if (!msg) return;
+
+    inp.value = ''; inp.disabled = true; btn.disabled = true; btn.textContent = '…';
+    bubble('user', msg);
+    history.push({ role:'user', content:msg });
+
+    var thinking = bubble('thinking', 'Searching the network…');
+
+    try {
+      var resp = await fetch('https://broken-bar-9fe5.crdpartners2020.workers.dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 1024,
+          system: buildSystem(),
+          messages: history,
+          site: 'pegasus'
+        })
+      });
+
+      var raw = await resp.text();
+      var parsed = JSON.parse(raw);
+      var reply = (parsed.content && parsed.content[0] && parsed.content[0].text) || 'No response received.';
+
+      thinking.remove();
+      bubble('ai', reply);
+      history.push({ role:'assistant', content:reply });
+
+      /* Keep history to last 10 messages to avoid token overflow */
+      if (history.length > 10) history = history.slice(-10);
+
+    } catch(e) {
+      thinking.remove();
+      bubble('ai', 'Network error — please try again. If this persists, the assistant may be temporarily unavailable.');
+    }
+
+    inp.disabled = false; btn.disabled = false; btn.textContent = 'Ask →';
+    inp.focus();
+  };
+
+  /* ── Prompt chip click ────────────────────────────────────────── */
+  window.caPrompt = function(text) {
+    var inp = document.getElementById('ca-in');
+    inp.value = text.replace(/&amp;/g,'&');
+    inp.focus();
+    window.caAsk();
+  };
+
+  /* Enter key sends ─────────────────────────────────────────────── */
+  document.getElementById('ca-in').addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.caAsk(); }
+  });
+});
+</script>
+</body></html>
