@@ -163,6 +163,7 @@ Pegasus.boot(async function(){
   (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
 
   var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';
+  var avHtml = p.logo_url ? '<img src="'+(Pegasus.safeUrl?Pegasus.safeUrl(p.logo_url):esc(p.logo_url))+'" alt="">' : esc(initials);
 
   // HERO
   var hero =
@@ -170,7 +171,7 @@ Pegasus.boot(async function(){
     '<div class="pp-hero-grid"></div>'+
     '<div class="pp-hero-wm" aria-hidden="true">'+esc((p.name||'').slice(0,16))+'</div>'+
     '<div class="pp-hero-c">'+
-      '<div class="pp-av">'+esc(initials)+'</div>'+
+      '<div class="pp-av">'+avHtml+'</div>'+
       '<div>'+
         '<h1 class="pp-name">'+esc(p.name)+'</h1>'+
         '<div class="pp-sub"><strong>'+esc(typeLbl)+'</strong>'+(loc?' · '+esc(loc):'')+'</div>'+
@@ -279,7 +280,7 @@ Pegasus.boot(async function(){
     '<div class="pp-body"><div>'+leftCol+'</div><div>'+mainCol+'</div><div>'+rightCol+'</div></div>';
   addFooter();
 
-  // Copy link handler — copies the clean public URL.
+  // Copy link handler
   window.presenceCopyLink = function(){
     var url = cleanUrl;
     function done(){ Pegasus.toast('⧉','var(--green-dim)','Link copied', url.replace(/^https?:\/\//,'')); }

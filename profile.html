@@ -540,6 +540,12 @@ Pegasus.boot(async function () {
   /* ── Businesses & Projects (the member's own business pages) ──────────────────
      The personal profile shows the person; business pages show what they
      represent. Read-only list here — full management lives in /my-presences.html. */
+  function ppBizLogo(name,logo,size){
+    size=size||44;
+    var ini=(name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase()||'◈';
+    if(logo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;background:var(--bg2)"><img src="'+esc(logo)+'" alt="" style="width:100%;height:100%;object-fit:cover"></div>';
+    return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--blue-lt);font-size:'+Math.round(size/2.6)+'px;flex-shrink:0">'+esc(ini)+'</div>';
+  }
   window.ppBizCopy = function(type, slug){
     var u='https://pegasuscapitalnetwork.com'+Pegasus.presencePath(type, slug);
     try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(u); } }catch(e){}
@@ -559,10 +565,13 @@ Pegasus.boot(async function () {
           var url=Pegasus.presencePath(b.presence_type, b.slug);
           var loc=[b.location,b.market].filter(Boolean).join(' · ');
           return '<div class="pp-card" style="margin-bottom:10px"><div style="padding:14px 16px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
-            '<div style="flex:1;min-width:0">'+
-              '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(b.name)+'</div>'+
-              '<div style="font-size:11px;color:var(--text3);margin-top:3px">'+esc(TL[b.presence_type]||b.presence_type)+(loc?' · '+esc(loc):'')+'</div>'+
-              (b.short_description?'<div style="font-size:12px;color:var(--text3);line-height:1.5;margin-top:7px;max-width:560px">'+esc(b.short_description)+'</div>':'')+
+            '<div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">'+
+              ppBizLogo(b.name,b.logo_url,44)+
+              '<div style="min-width:0">'+
+                '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(b.name)+'</div>'+
+                '<div style="font-size:11px;color:var(--text3);margin-top:3px">'+esc(TL[b.presence_type]||b.presence_type)+(loc?' · '+esc(loc):'')+'</div>'+
+                (b.short_description?'<div style="font-size:12px;color:var(--text3);line-height:1.5;margin-top:7px;max-width:560px">'+esc(b.short_description)+'</div>':'')+
+              '</div>'+
             '</div>'+
             '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start">'+
               '<a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+

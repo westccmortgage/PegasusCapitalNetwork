@@ -79,6 +79,14 @@ var BUSINESS_TYPES = {company:1, capital_program:1, fund:1};
 
 function canManage(role){ return role==='owner' || role==='admin' || role==='editor'; }
 
+// Logo chip — uploaded logo, or initials fallback. Reused on cards + edit modal.
+function logoChip(name, logo, size){
+  size = size || 44;
+  var ini=(name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase()||'◈';
+  if(logo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;background:var(--bg2)"><img src="'+esc(logo)+'" alt="" style="width:100%;height:100%;object-fit:cover"></div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;background:var(--blue-dim);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--blue-lt);font-size:'+Math.round(size/2.6)+'px;flex-shrink:0">'+esc(ini)+'</div>';
+}
+
 // ── Intro ────────────────────────────────────────────────────────────────────
 v.insertAdjacentHTML('beforeend',
   '<div class="card" style="margin-bottom:18px"><div class="card-body" style="padding:18px 20px">'+
@@ -158,9 +166,12 @@ function presenceCard(p){
   }
 
   return '<div class="card" style="margin-bottom:12px"><div class="card-body" style="padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start">'+
-    '<div style="flex:1;min-width:0">'+
-      '<div style="font-size:15px;font-weight:600;color:var(--text)">'+esc(p.name)+'</div>'+
-      meta + desc +
+    '<div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">'+
+      (p.presence_type!=='personal'?logoChip(p.name,p.logo_url,44):'')+
+      '<div style="min-width:0">'+
+        '<div style="font-size:15px;font-weight:600;color:var(--text)">'+esc(p.name)+'</div>'+
+        meta + desc +
+      '</div>'+
     '</div>'+ actions +
   '</div></div>';
 }
@@ -482,16 +493,86 @@ window.mpCopyLink = function(type, slug){
   }catch(e){ fallback(); }
 };
 
+// ── Logo upload / replace / remove (business pages only) ─────────────────────
+// Reuses the existing public 'profile-media' bucket: files go under
+// {uid}/presence-logo-… (owner-enforced by the bucket's RLS), then the public
+// URL is stored via the set_presence_logo RPC.
+function mpRenderLogoPreview(url){
+  var box=document.getElementById('mp-logo-preview'); if(!box) return;
+  var nm=window.__MP_EDIT_NAME||'';
+  box.innerHTML=logoChip(nm, url, 52);
+  var actions=document.getElementById('mp-logo-actions');
+  if(actions){
+    actions.innerHTML='<button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById(\'mp-logo-file\').click()">'+(url?'Replace Logo':'Upload Logo')+'</button>'+
+      (url?' <button type="button" class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpRemoveLogo(\''+esc(window.__MP_EDIT_ID)+'\')">Remove</button>':'');
+  }
+}
+window.mpLogoPicked = function(id, input){
+  var file = input && input.files && input.files[0]; if(!file) return;
+  mpUploadLogoFile(id, file);
+};
+async function mpUploadLogoFile(id, file){
+  var st=document.getElementById('mp-logo-status');
+  if(!/^image\//.test(file.type)){ if(st)st.textContent='Please choose an image file (JPG, PNG, WebP).'; return; }
+  if(file.size/1048576 > 5){ if(st)st.textContent='Image must be under 5MB.'; return; }
+  var ext=(file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'')||'png';
+  var path=window.__MP_UID+'/presence-logo-'+id+'-'+Date.now()+'.'+ext;
+  if(st)st.textContent='Uploading…';
+  try{
+    var up=await c.storage.from('profile-media').upload(path,file,{cacheControl:'3600',upsert:true,contentType:file.type});
+    if(up.error){
+      var em=(up.error.message||'').toLowerCase();
+      if(em.indexOf('bucket')!==-1||em.indexOf('not found')!==-1) throw new Error('Storage bucket "profile-media" missing — run migration 007 in Supabase.');
+      if(em.indexOf('row-level')!==-1||em.indexOf('policy')!==-1||em.indexOf('denied')!==-1) throw new Error('Upload not permitted (storage policy). Run migration 007.');
+      throw up.error;
+    }
+    var pub=c.storage.from('profile-media').getPublicUrl(path);
+    var url=pub&&pub.data?pub.data.publicUrl:null;
+    if(!url) throw new Error('Could not resolve the logo URL.');
+    var r=await c.rpc('set_presence_logo',{p_presence_id:id,p_logo_url:url});
+    if(r.error) throw new Error((r.error.message||'Could not save logo')+' (apply migration 052?)');
+    var row=(window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0]; if(row) row.logo_url=url;
+    mpRenderLogoPreview(url);
+    if(st)st.textContent='Logo updated.';
+    Pegasus.toast('◫','var(--green-dim)','Logo updated','');
+  }catch(e){ console.error('[my-presences] logo upload:', e); if(st)st.textContent='Upload failed: '+((e&&e.message)||e); }
+}
+window.mpRemoveLogo = async function(id){
+  if(!confirm('Remove this logo?')) return;
+  var st=document.getElementById('mp-logo-status');
+  try{
+    var r=await c.rpc('set_presence_logo',{p_presence_id:id,p_logo_url:null});
+    if(r.error) throw r.error;
+    var row=(window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0]; if(row) row.logo_url=null;
+    mpRenderLogoPreview(null);
+    if(st)st.textContent='Logo removed.';
+    Pegasus.toast('◫','var(--amber-dim)','Logo removed','');
+  }catch(e){ if(st)st.textContent='Could not remove logo: '+((e&&e.message)||e); }
+};
+
 // ── Edit ─────────────────────────────────────────────────────────────────────
 window.mpEdit = function(id){
   var p = (window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0];
   if(!p) return;
   if(p.presence_type==='personal'){ location.href='/profile-edit.html'; return; }
+  window.__MP_EDIT_ID=id; window.__MP_EDIT_NAME=p.name||'';
   var statusOpts = ['active','draft'].map(function(o){
     var selv = (p.status||'active')===o ? 'selected' : '';
     return '<option value="'+o+'" '+selv+'>'+(o.charAt(0).toUpperCase()+o.slice(1))+'</option>';
   }).join('');
-  var inner = formFields(p) +
+  var logoField =
+    '<div class="field"><label class="label">Logo</label>'+
+      '<div style="display:flex;align-items:center;gap:12px">'+
+        '<div id="mp-logo-preview">'+logoChip(p.name, p.logo_url, 52)+'</div>'+
+        '<div id="mp-logo-actions" style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById(\'mp-logo-file\').click()">'+(p.logo_url?'Replace Logo':'Upload Logo')+'</button>'+
+          (p.logo_url?'<button type="button" class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpRemoveLogo(\''+esc(id)+'\')">Remove</button>':'')+
+        '</div>'+
+        '<input type="file" id="mp-logo-file" accept="image/*" style="display:none" onchange="mpLogoPicked(\''+esc(id)+'\', this)">'+
+      '</div>'+
+      '<div id="mp-logo-status" class="opt" style="margin-top:6px"></div>'+
+    '</div>';
+  var inner = logoField + formFields(p) +
     '<div class="field"><label class="label">Status</label><select class="input" id="mp_status">'+statusOpts+'</select>'+
       '<div class="opt" style="margin-top:4px">Use Archive (on the card) to retire a page.</div></div>';
   var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
