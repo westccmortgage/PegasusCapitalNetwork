@@ -146,11 +146,14 @@ function presenceCard(p){
       '<div style="font-size:11px;color:var(--text3)">Managed through your main profile.</div>'+
       '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Edit Main Profile →</a></div>';
   } else {
-    var btns = '<button class="btn btn-ghost btn-sm" onclick="mpPreview(\''+esc(p.id)+'\')">View Preview</button>';
+    var pageUrl = '/presence.html?slug=' + encodeURIComponent(p.slug||'');
+    var btns = '<a class="btn btn-pri btn-sm" href="'+pageUrl+'">View Page</a>';
+    btns += ' <button class="btn btn-ghost btn-sm" onclick="mpPreview(\''+esc(p.id)+'\')">Preview</button>';
     if(canManage(p._role)) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>';
     if(canManage(p._role) && p.status!=='archived')
       btns += ' <button class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpArchive(\''+esc(p.id)+'\')">Archive</button>';
-    actions = '<div style="white-space:nowrap">'+btns+'</div>';
+    if(p.slug) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpCopyLink(\''+esc(p.slug)+'\')">Copy Link</button>';
+    actions = '<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:360px">'+btns+'</div>';
   }
 
   return '<div class="card" style="margin-bottom:12px"><div class="card-body" style="padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start">'+
@@ -408,6 +411,21 @@ window.mpPreview = function(id){
     console.error('[my-presences] preview error:', err);
     alert('Could not open preview: '+((err&&err.message)||err));
   }
+};
+
+// ── Copy Link (to the public/member presence page) ───────────────────────────
+window.mpCopyLink = function(slug){
+  var url = 'https://pegasuscapitalnetwork.com/presence.html?slug=' + slug;
+  function done(){ Pegasus.toast('⧉','var(--green-dim)','Link copied', url.replace(/^https?:\/\//,'')); }
+  function fallback(){
+    try{ var ta=document.createElement('textarea'); ta.value=url; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+    catch(e){ alert(url); }
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done).catch(fallback); }
+    else fallback();
+  }catch(e){ fallback(); }
 };
 
 // ── Edit ─────────────────────────────────────────────────────────────────────
