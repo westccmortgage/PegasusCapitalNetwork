@@ -201,7 +201,18 @@ Pegasus.boot(async function(){
   var detailRows = field('Category',p.category)+field('Industry',p.industry)+field('Location',p.location)+field('Market',p.market)+
     (p.website_url?fieldRaw('Website','<a href="'+safeHref(p.website_url)+'" target="_blank" rel="noopener noreferrer" style="color:var(--blue);word-break:break-all">'+esc(p.website_url)+'</a>'):'');
   var details = detailRows ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Details</span></div><div class="pp-card-body">'+detailRows+'</div></div>' : '';
-  var managed = canManage ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Managed by</span></div><div class="pp-card-body"><div style="font-size:12.5px;color:var(--text2)">Managed by <strong style="color:var(--text)">you</strong></div><a class="pp-card-action" href="/profile.html" style="display:inline-block;margin-top:6px">View your profile →</a></div></div>' : '';
+  // Managed by / Represented by — safe attribution (never owner_user_id).
+  var mb = data.managed_by || {};
+  var managed = '';
+  if(mb.generic){
+    managed = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Managed by</span></div><div class="pp-card-body"><div style="font-size:12.5px;color:var(--text2)">Connected Pegasus member</div></div></div>';
+  } else if(mb.name){
+    var mbLink = mb.you ? '/profile.html' : (mb.slug ? '/u/'+encodeURIComponent(mb.slug) : '');
+    managed = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Managed by</span></div><div class="pp-card-body">'+
+      '<div style="font-size:13px;color:var(--text)">'+(mb.you ? 'Managed by <strong>you</strong>' : '<strong>'+esc(mb.name)+'</strong>')+'</div>'+
+      (mbLink ? '<a class="pp-card-action" href="'+mbLink+'" style="display:inline-block;margin-top:6px">View profile →</a>' : '')+
+    '</div></div>';
+  }
   var leftCol = details + managed;
 
   // MAIN column — Focus + offerings + conversation
