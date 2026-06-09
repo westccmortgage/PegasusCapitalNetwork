@@ -5,6 +5,25 @@
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#08111C">
+<style>
+/* Self-contained modal + form styles. The .sce-* modal classes and the
+   .ws-textarea / .opt helpers live in showcase.css / dealroom.css, which this
+   page does not load — so they are defined here (copied faithfully) to keep
+   My Presences self-contained. .field/.label/.input/.row2 come from pegasus.css. */
+.sce-scrim{position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto}
+.sce-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden;animation:scePop .18s ease}
+@keyframes scePop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sce-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
+.sce-title{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--text)}
+.sce-x{border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px}
+.sce-x:hover{background:var(--bg3);color:var(--text)}
+.sce-foot{display:flex;align-items:center;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--bg1)}
+.sce-err{flex:1;font-size:11px;font-family:var(--mono);color:var(--red);min-height:14px;text-align:left}
+.opt{display:block;font-size:11px;color:var(--text4);font-weight:400;text-transform:none;letter-spacing:0}
+.ws-textarea{width:100%;background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:13.5px;line-height:1.6;outline:none;transition:all .15s;resize:vertical;min-height:84px}
+.ws-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
+.ws-textarea::placeholder{color:var(--text4)}
+</style>
 </head><body>
 <!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
 <script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
@@ -68,7 +87,7 @@ v.insertAdjacentHTML('beforeend',
       '<br><span style="color:var(--text3)">Your personal profile represents <strong style="color:var(--text2);font-weight:600">you</strong>. '+
       'Your presences represent the companies, projects, programs, events, or opportunities you manage.</span>'+
     '</div>'+
-    '<div style="margin-top:14px"><button class="btn btn-pri btn-sm" onclick="mpCreate()">+ Create New Presence</button></div>'+
+    '<div style="margin-top:14px"><button class="btn btn-pri btn-sm" data-create-presence="true">+ Create New Presence</button></div>'+
   '</div></div>'+
   '<div id="mp-body"><div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading your presences…</div></div>');
 
@@ -201,7 +220,7 @@ function fullEmptyState(){
       'Your personal profile represents you. Presences let you manage separate companies, projects, events, capital programs, or opportunities from the same Pegasus account — without mixing everything into one personal page.'+
       '<br><br>Create your first professional presence when you are ready to represent a specific business, project, or opportunity inside the ecosystem.'+
     '</div>'+
-    '<div style="margin-top:18px"><button class="btn btn-pri" onclick="mpCreate()">+ Create New Presence</button></div>'+
+    '<div style="margin-top:18px"><button class="btn btn-pri" data-create-presence="true">+ Create New Presence</button></div>'+
   '</div>';
 }
 
@@ -265,15 +284,38 @@ function collectFields(){
 
 // ── Create ───────────────────────────────────────────────────────────────────
 window.mpCreate = function(){
-  var typeOpts = CREATE_TYPES.map(function(t){ return '<option value="'+t[0]+'">'+t[1]+'</option>'; }).join('');
-  var inner = '<div class="field"><label class="label">Presence type <span style="color:var(--red)">*</span></label>'+
-      '<select class="input" id="mp_type">'+typeOpts+'</select>'+
-      '<div class="opt" style="margin-top:4px">Personal presences are managed through your profile and can\'t be created here.</div></div>'+
-      formFields({visibility:'member_only'});
-  var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
-    '<button class="btn btn-pri" onclick="mpSaveCreate()">Create Presence</button>';
-  Pegasus.modal(shell('Create new presence', inner, footer));
+  try{
+    if(!window.Pegasus || typeof Pegasus.modal !== 'function'){
+      console.error('[my-presences] Pegasus.modal is unavailable — cannot open create modal.');
+      alert('The form could not open. Please refresh the page and try again.');
+      return;
+    }
+    var typeOpts = CREATE_TYPES.map(function(t){ return '<option value="'+t[0]+'">'+t[1]+'</option>'; }).join('');
+    var inner = '<div class="field"><label class="label">Presence type <span style="color:var(--red)">*</span></label>'+
+        '<select class="input" id="mp_type">'+typeOpts+'</select>'+
+        '<div class="opt" style="margin-top:4px">Personal presences are managed through your profile and can\'t be created here.</div></div>'+
+        formFields({visibility:'member_only'});
+    var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
+      '<button class="btn btn-pri" onclick="mpSaveCreate()">Create Presence</button>';
+    Pegasus.modal(shell('Create new presence', inner, footer));
+  }catch(err){
+    console.error('[my-presences] failed to open create modal:', err);
+    alert('Could not open the create form: '+((err&&err.message)||err));
+  }
 };
+
+// Reliable delegated handler — works for both the top button and the
+// dynamically-rendered empty-state button regardless of render timing.
+if(!window.__MP_DELEGATED){
+  window.__MP_DELEGATED = true;
+  document.addEventListener('click', function(event){
+    var trigger = event.target.closest ? event.target.closest('[data-create-presence]') : null;
+    if(!trigger) return;
+    event.preventDefault();
+    if(typeof window.mpCreate === 'function'){ window.mpCreate(); }
+    else { console.error('[my-presences] mpCreate handler not ready.'); }
+  });
+}
 
 window.mpSaveCreate = async function(){
   setErr('');
