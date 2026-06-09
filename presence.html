@@ -85,7 +85,10 @@ Pegasus.boot(async function(){
            /could not find the function|function .* does not exist|schema cache|not found/.test(msg);
   }
   async function fallbackResolve(s){
-    var SAFE = 'id,presence_type,name,slug,tagline,short_description,category,industry,location,market,website_url,public_cta_label,public_cta_url,offers,looking_for,ideal_connections,visibility,status';
+    // Base columns only — guaranteed to exist regardless of which presence
+    // migrations are applied, so the fallback never fails on a missing optional
+    // column (offers/looking_for/ideal_connections come only from the RPC path).
+    var SAFE = 'id,presence_type,name,slug,tagline,short_description,category,industry,location,market,website_url,public_cta_label,public_cta_url,visibility,status';
     if(isLoggedIn()){
       var uid=null; try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){}
       var q=await c.from('presences').select(SAFE).eq('slug',s).maybeSingle();
@@ -110,10 +113,12 @@ Pegasus.boot(async function(){
     var res;
     try { res = await c.rpc('get_presence_page_by_slug', { p_slug: s }); }
     catch(netErr){ console.error('[presence] rpc threw:', netErr); res = { error: netErr }; }
-    if(res && !res.error) return res.data;
-    console.error('[presence] rpc error:', res && res.error);
-    if(res && res.error && !rpcMissing(res.error)) throw res.error;
-    console.warn('[presence] get_presence_page_by_slug unavailable — using RLS/view fallback. Apply migrations 049/050 and RESTART the Supabase project.');
+    if(res && !res.error) return res.data;          // RPC available → authoritative
+    // ANY rpc error (missing function, stale schema cache, or a column the live
+    // schema doesn't have yet) → degrade to the safe RLS/view fallback rather
+    // than failing the page. Apply migrations 049–051 + restart Supabase for the
+    // full server-side experience (managed_by, offerings).
+    console.warn('[presence] get_presence_page_by_slug failed — using RLS/view fallback. Apply migrations 049–051 and RESTART the Supabase project. Error:', res && res.error);
     return await fallbackResolve(s);
   }
 
