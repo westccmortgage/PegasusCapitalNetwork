@@ -1,0 +1,339 @@
+<!DOCTYPE html><html lang="en"><head><title>My Presences — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/my-presences.html"><meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
+
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script>
+Pegasus.boot(async function(){
+
+// ── AUTH GATE ────────────────────────────────────────────────────────────────
+// Member-only page. Unauthenticated users are redirected to sign in, matching
+// the existing guard convention (ALLOW_DEMO_FALLBACK=false blocks at the auth
+// layer; this is the page-level backstop).
+var _st = (window.PegStore && PegStore.get) ? PegStore.get() : {};
+if(_st.mode !== 'live'){ location.replace('/signin.html'); return; }
+
+var v = Pegasus.mountApp({active:'My Presences', title:'My Presences', sub:'Manage your professional identities'});
+
+var c = null;
+try { c = await window.PegSB.ready; } catch(e) { c = null; }
+var uid = null;
+try { var u = await c.auth.getUser(); uid = u && u.data && u.data.user && u.data.user.id; } catch(e) {}
+if(!uid){ location.replace('/signin.html'); return; }
+window.__MP_UID = uid;
+
+var esc = Pegasus.esc;
+
+// ── Labels ───────────────────────────────────────────────────────────────────
+var TYPE_LABEL = {
+  personal:'Personal Presence', company:'Company', project:'Project',
+  showcase:'Showcase', event:'Event', capital_program:'Capital Program',
+  property:'Property / Listing', fund:'Fund / Vehicle'
+};
+var VIS_LABEL = { public_preview:'Public Preview', member_only:'Members Only', private:'Private' };
+// Non-personal types selectable when creating a presence (personal is excluded).
+var CREATE_TYPES = [
+  ['company','Company'],['project','Project'],['showcase','Showcase'],
+  ['event','Event'],['capital_program','Capital Program'],
+  ['property','Property / Listing'],['fund','Fund / Vehicle']
+];
+// Which group a (non-archived) presence belongs to.
+var BUSINESS_TYPES = {company:1, capital_program:1, fund:1};
+
+function canManage(role){ return role==='owner' || role==='admin' || role==='editor'; }
+
+// ── Intro ────────────────────────────────────────────────────────────────────
+v.insertAdjacentHTML('beforeend',
+  '<div class="card" style="margin-bottom:18px"><div class="card-body" style="padding:18px 20px">'+
+    '<div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:680px">'+
+      'Manage the personal, business, project, and showcase identities you use inside Pegasus.'+
+      '<br><span style="color:var(--text3)">Your personal profile represents <strong style="color:var(--text2);font-weight:600">you</strong>. '+
+      'Your presences represent the companies, projects, programs, events, or opportunities you manage.</span>'+
+    '</div>'+
+    '<div style="margin-top:14px"><button class="btn btn-pri btn-sm" onclick="mpCreate()">+ Create New Presence</button></div>'+
+  '</div></div>'+
+  '<div id="mp-body"><div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading your presences…</div></div>');
+
+// ── Load ─────────────────────────────────────────────────────────────────────
+async function loadPresences(){
+  var body = document.getElementById('mp-body');
+  try{
+    // Canonical list of my presences (Phase 1 RPC) …
+    var pres = await c.rpc('get_my_presences');
+    if(pres.error) throw pres.error;
+    // … plus my role / can_publish_as for each (own membership rows are readable
+    // under RLS pmembers_read where user_id = auth.uid()).
+    var mem = await c.from('presence_members')
+      .select('presence_id, role, can_publish_as')
+      .eq('user_id', uid);
+    var roleBy = {};
+    (mem.data||[]).forEach(function(m){ roleBy[m.presence_id] = m; });
+
+    var rows = (pres.data||[]).map(function(p){
+      var m = roleBy[p.id] || {};
+      p._role = m.role || 'viewer';
+      p._can_publish_as = !!m.can_publish_as;
+      return p;
+    });
+    window.__MP_ROWS = rows;
+    renderPresences(rows);
+  }catch(e){
+    console.error('[my-presences] load failed:', e);
+    body.innerHTML = '<div class="banner bn-cancel"><div class="banner-msg">⚠️ <span>'+
+      esc((e&&e.message)||'Could not load your presences.')+'</span></div></div>';
+  }
+}
+
+function presenceCard(p){
+  var typeLbl = TYPE_LABEL[p.presence_type] || p.presence_type;
+  var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
+  var statusCls = p.status==='active' ? 'b-active' : (p.status==='archived' ? 'b-cancel' : 'b-none');
+  var roleLbl = (p._role||'viewer');
+  var pub = p._can_publish_as ? '<span class="badge b-trial" title="You can publish as this presence">Publish As</span>' : '';
+  var loc = [p.location, p.market].filter(Boolean).join(' · ');
+  var desc = p.short_description ? '<div style="font-size:12px;color:var(--text3);line-height:1.5;margin-top:8px;max-width:620px">'+esc(p.short_description)+'</div>' : '';
+
+  var meta =
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center">'+
+      '<span class="badge b-none" style="text-transform:capitalize">'+esc(typeLbl)+'</span>'+
+      '<span class="badge b-none">'+esc(visLbl)+'</span>'+
+      '<span class="badge '+statusCls+'" style="text-transform:capitalize">'+esc(p.status)+'</span>'+
+      '<span class="badge b-none" style="text-transform:capitalize">Role: '+esc(roleLbl)+'</span>'+
+      pub+
+      (loc?'<span style="font-size:11px;color:var(--text3);font-family:var(--mono)">'+esc(loc)+'</span>':'')+
+    '</div>';
+
+  var actions;
+  if(p.presence_type==='personal'){
+    actions = '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'+
+      '<div style="font-size:11px;color:var(--text3)">Managed through your main profile.</div>'+
+      '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Edit Main Profile →</a></div>';
+  } else {
+    var btns = '';
+    if(canManage(p._role)) btns += '<button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>';
+    if(canManage(p._role) && p.status!=='archived')
+      btns += ' <button class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpArchive(\''+esc(p.id)+'\')">Archive</button>';
+    actions = '<div style="white-space:nowrap">'+(btns||'<span style="font-size:11px;color:var(--text3)">View only</span>')+'</div>';
+  }
+
+  return '<div class="card" style="margin-bottom:12px"><div class="card-body" style="padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start">'+
+    '<div style="flex:1;min-width:0">'+
+      '<div style="font-size:15px;font-weight:600;color:var(--text)">'+esc(p.name)+'</div>'+
+      meta + desc +
+    '</div>'+ actions +
+  '</div></div>';
+}
+
+function section(title, sub, cards){
+  return '<div style="margin-bottom:26px">'+
+    '<div style="font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);margin-bottom:4px">'+esc(title)+'</div>'+
+    (sub?'<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+esc(sub)+'</div>':'<div style="margin-bottom:12px"></div>')+
+    cards +
+  '</div>';
+}
+
+function renderPresences(rows){
+  var body = document.getElementById('mp-body');
+  var personal = rows.filter(function(p){ return p.presence_type==='personal'; });
+  var nonPersonal = rows.filter(function(p){ return p.presence_type!=='personal'; });
+  var archived = nonPersonal.filter(function(p){ return p.status==='archived'; });
+  var live = nonPersonal.filter(function(p){ return p.status!=='archived'; });
+  var business = live.filter(function(p){ return BUSINESS_TYPES[p.presence_type]; });
+  var projects = live.filter(function(p){ return !BUSINESS_TYPES[p.presence_type]; });
+
+  var html = '';
+
+  // 1. Personal
+  html += section('Personal Presence', null,
+    personal.length ? personal.map(presenceCard).join('') :
+    '<div class="card"><div class="card-body" style="padding:16px 18px;font-size:12px;color:var(--text3)">No personal presence found.</div></div>');
+
+  // 2. Business & Professional
+  html += section('Business & Professional Presences', 'Companies, capital programs, and funds you manage.',
+    business.length ? business.map(presenceCard).join('') : groupEmpty());
+
+  // 3. Projects & Showcases
+  html += section('Projects & Showcases', 'Projects, showcases, events, and listings.',
+    projects.length ? projects.map(presenceCard).join('') : groupEmpty());
+
+  // 4. Archived
+  if(archived.length){
+    html += section('Archived Presences', 'No longer active. Not permanently deleted.',
+      archived.map(presenceCard).join(''));
+  }
+
+  // Full empty state (no non-personal presences at all)
+  if(!nonPersonal.length){
+    html = section('Personal Presence', null,
+      personal.length ? personal.map(presenceCard).join('') : '') + fullEmptyState();
+  }
+
+  body.innerHTML = html;
+}
+
+function groupEmpty(){
+  return '<div class="card"><div class="card-body" style="padding:16px 18px;font-size:12px;color:var(--text3)">'+
+    'You have not created any presences in this group yet.</div></div>';
+}
+
+function fullEmptyState(){
+  return '<div style="text-align:center;padding:44px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px">'+
+    '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">You have not created any business, project, or showcase presences yet.</div>'+
+    '<div style="max-width:560px;margin:0 auto;line-height:1.6;color:var(--text3);font-size:13px">'+
+      'Your personal profile represents you. Presences let you manage separate companies, projects, events, capital programs, or opportunities from the same Pegasus account — without mixing everything into one personal page.'+
+      '<br><br>Create your first professional presence when you are ready to represent a specific business, project, or opportunity inside the ecosystem.'+
+    '</div>'+
+    '<div style="margin-top:18px"><button class="btn btn-pri" onclick="mpCreate()">+ Create New Presence</button></div>'+
+  '</div>';
+}
+
+// ── Modal shell (matches the app's sce-* modal convention) ───────────────────
+function shell(title, inner, footer){
+  return '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal">'+
+    '<div class="sce-head"><div class="sce-title">'+esc(title)+'</div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+    '<div style="padding:18px 20px;max-height:70vh;overflow-y:auto">'+inner+'</div>'+
+    '<div class="sce-foot"><div id="mpErr" class="sce-err"></div>'+footer+'</div></div></div>';
+}
+
+function gv(id){ var e=document.getElementById(id); return e?e.value:''; }
+function setErr(msg){ var e=document.getElementById('mpErr'); if(e) e.textContent=msg||''; }
+
+function formFields(p){
+  p = p || {};
+  function val(k){ return p[k]!=null ? esc(p[k]) : ''; }
+  var visOpts = ['public_preview','member_only','private'].map(function(o){
+    var selv = (p.visibility||'member_only')===o ? 'selected' : '';
+    return '<option value="'+o+'" '+selv+'>'+VIS_LABEL[o]+'</option>';
+  }).join('');
+  return '<div class="field"><label class="label">Name <span style="color:var(--red)">*</span></label>'+
+      '<input class="input" id="mp_name" maxlength="120" value="'+val('name')+'" placeholder="e.g. West Coast Capital Mortgage"></div>'+
+    '<div class="field"><label class="label">Tagline</label>'+
+      '<input class="input" id="mp_tagline" maxlength="160" value="'+val('tagline')+'" placeholder="Short positioning line"></div>'+
+    '<div class="field"><label class="label">Short description</label>'+
+      '<textarea class="ws-textarea" id="mp_short_description" maxlength="600" data-count placeholder="What this presence represents…">'+val('short_description')+'</textarea></div>'+
+    '<div class="row2"><div class="field"><label class="label">Category</label>'+
+      '<input class="input" id="mp_category" maxlength="80" value="'+val('category')+'" placeholder="e.g. Lender"></div>'+
+      '<div class="field"><label class="label">Industry</label>'+
+      '<input class="input" id="mp_industry" maxlength="80" value="'+val('industry')+'" placeholder="e.g. Real Estate Finance"></div></div>'+
+    '<div class="row2"><div class="field"><label class="label">Location</label>'+
+      '<input class="input" id="mp_location" maxlength="120" value="'+val('location')+'" placeholder="City, State"></div>'+
+      '<div class="field"><label class="label">Market</label>'+
+      '<input class="input" id="mp_market" maxlength="120" value="'+val('market')+'" placeholder="e.g. CA / Southwest"></div></div>'+
+    '<div class="field"><label class="label">Website URL</label>'+
+      '<input class="input" id="mp_website_url" value="'+val('website_url')+'" placeholder="https://…"></div>'+
+    '<div class="row2"><div class="field"><label class="label">CTA label</label>'+
+      '<input class="input" id="mp_public_cta_label" maxlength="60" value="'+val('public_cta_label')+'" placeholder="e.g. Apply now"></div>'+
+      '<div class="field"><label class="label">CTA URL</label>'+
+      '<input class="input" id="mp_public_cta_url" value="'+val('public_cta_url')+'" placeholder="https://…"></div></div>'+
+    '<div class="field"><label class="label">Visibility</label>'+
+      '<select class="input" id="mp_visibility">'+visOpts+'</select></div>';
+}
+
+function collectFields(){
+  return {
+    p_name: gv('mp_name').trim(),
+    p_tagline: gv('mp_tagline').trim() || null,
+    p_short_description: gv('mp_short_description').trim() || null,
+    p_category: gv('mp_category').trim() || null,
+    p_industry: gv('mp_industry').trim() || null,
+    p_location: gv('mp_location').trim() || null,
+    p_market: gv('mp_market').trim() || null,
+    p_website_url: gv('mp_website_url').trim() || null,
+    p_public_cta_label: gv('mp_public_cta_label').trim() || null,
+    p_public_cta_url: gv('mp_public_cta_url').trim() || null,
+    p_visibility: gv('mp_visibility')
+  };
+}
+
+// ── Create ───────────────────────────────────────────────────────────────────
+window.mpCreate = function(){
+  var typeOpts = CREATE_TYPES.map(function(t){ return '<option value="'+t[0]+'">'+t[1]+'</option>'; }).join('');
+  var inner = '<div class="field"><label class="label">Presence type <span style="color:var(--red)">*</span></label>'+
+      '<select class="input" id="mp_type">'+typeOpts+'</select>'+
+      '<div class="opt" style="margin-top:4px">Personal presences are managed through your profile and can\'t be created here.</div></div>'+
+      formFields({visibility:'member_only'});
+  var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
+    '<button class="btn btn-pri" onclick="mpSaveCreate()">Create Presence</button>';
+  Pegasus.modal(shell('Create new presence', inner, footer));
+};
+
+window.mpSaveCreate = async function(){
+  setErr('');
+  var f = collectFields();
+  if(!f.p_name){ setErr('A name is required.'); return; }
+  var args = Object.assign({ p_presence_type: gv('mp_type') }, f);
+  try{
+    var res = await c.rpc('create_presence', args);
+    if(res.error) throw res.error;
+    Pegasus.closeModal();
+    Pegasus.toast('◫','var(--blue-dim)','Presence created', f.p_name);
+    await loadPresences();
+  }catch(e){ setErr((e&&e.message)||'Could not create presence.'); }
+};
+
+// ── Edit ─────────────────────────────────────────────────────────────────────
+window.mpEdit = function(id){
+  var p = (window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0];
+  if(!p) return;
+  if(p.presence_type==='personal'){ location.href='/profile-edit.html'; return; }
+  var statusOpts = ['active','draft'].map(function(o){
+    var selv = (p.status||'active')===o ? 'selected' : '';
+    return '<option value="'+o+'" '+selv+'>'+(o.charAt(0).toUpperCase()+o.slice(1))+'</option>';
+  }).join('');
+  var inner = formFields(p) +
+    '<div class="field"><label class="label">Status</label><select class="input" id="mp_status">'+statusOpts+'</select>'+
+      '<div class="opt" style="margin-top:4px">Use Archive (on the card) to retire a presence.</div></div>';
+  var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
+    '<button class="btn btn-pri" onclick="mpSaveEdit(\''+esc(id)+'\')">Save changes</button>';
+  Pegasus.modal(shell('Edit presence', inner, footer));
+};
+
+window.mpSaveEdit = async function(id){
+  setErr('');
+  var f = collectFields();
+  if(!f.p_name){ setErr('A name is required.'); return; }
+  var args = Object.assign({ p_presence_id: id, p_status: gv('mp_status') }, f);
+  try{
+    var res = await c.rpc('update_presence_basic', args);
+    if(res.error) throw res.error;
+    Pegasus.closeModal();
+    Pegasus.toast('◫','var(--blue-dim)','Presence updated', f.p_name);
+    await loadPresences();
+  }catch(e){ setErr((e&&e.message)||'Could not save changes.'); }
+};
+
+// ── Archive ──────────────────────────────────────────────────────────────────
+window.mpArchive = async function(id){
+  var p = (window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0] || {};
+  if(p.presence_type==='personal') return;
+  if(!confirm('Archive this presence? It will no longer appear as active, but it will not be permanently deleted.')) return;
+  try{
+    var res = await c.rpc('archive_presence', { p_presence_id: id });
+    if(res.error) throw res.error;
+    Pegasus.toast('◫','var(--amber-dim)','Presence archived', p.name||'');
+    await loadPresences();
+  }catch(e){ alert((e&&e.message)||'Could not archive presence.'); }
+};
+
+await loadPresences();
+
+});
+</script></body></html>
