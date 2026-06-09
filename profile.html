@@ -537,6 +537,51 @@ Pegasus.boot(async function () {
     /* STATUS BAND */
     (bandItems?'<div class="pp-band"><div class="pp-band-inner"><div class="pp-band-label">Network Standing</div><div class="pp-band-items">'+bandItems+'</div></div></div>':'');
 
+  /* ── Businesses & Projects (the member's own business pages) ──────────────────
+     The personal profile shows the person; business pages show what they
+     represent. Read-only list here — full management lives in /my-presences.html. */
+  window.ppBizCopy = function(slug){
+    var u='https://pegasuscapitalnetwork.com/presence.html?slug='+slug;
+    try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(u); } }catch(e){}
+    try{ Pegasus.toast('⧉','var(--green-dim)','Link copied', u.replace(/^https?:\/\//,'')); }catch(e){}
+  };
+  (async function loadBusinesses(){
+    try{
+      var sbb = await window.PegSB.ready;
+      var resB = await sbb.rpc('get_my_presences');
+      if(resB.error){ console.warn('[profile] businesses load:', resB.error.message); return; }
+      var TL={company:'Company',project:'Project',showcase:'Showcase',event:'Event / Session',capital_program:'Capital Program',property:'Property / Listing',fund:'Fund / Vehicle',personal:'Personal'};
+      var rows=(resB.data||[]).filter(function(x){ return x.presence_type!=='personal' && x.status!=='archived'; });
+      var host=document.createElement('div'); host.className='pp-content';
+      var inner;
+      if(rows.length){
+        inner = rows.map(function(b){
+          var url='/presence.html?slug='+encodeURIComponent(b.slug||'');
+          var loc=[b.location,b.market].filter(Boolean).join(' · ');
+          return '<div class="pp-card" style="margin-bottom:10px"><div style="padding:14px 16px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
+            '<div style="flex:1;min-width:0">'+
+              '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(b.name)+'</div>'+
+              '<div style="font-size:11px;color:var(--text3);margin-top:3px">'+esc(TL[b.presence_type]||b.presence_type)+(loc?' · '+esc(loc):'')+'</div>'+
+              (b.short_description?'<div style="font-size:12px;color:var(--text3);line-height:1.5;margin-top:7px;max-width:560px">'+esc(b.short_description)+'</div>':'')+
+            '</div>'+
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start">'+
+              '<a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+
+              (b.slug?'<button class="btn btn-ghost btn-sm" onclick="ppBizCopy(\''+esc(b.slug)+'\')">Copy Link</button>':'')+
+            '</div>'+
+          '</div></div>';
+        }).join('');
+      } else {
+        inner = '<div class="pp-card"><div style="padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'+
+          '<span style="font-size:12.5px;color:var(--text3)">Promote a business, project, or opportunity with its own page so the right people can find you.</span>'+
+          '<a class="btn btn-pri btn-sm" href="/my-presences.html">Create Free Business Page</a></div></div>';
+      }
+      host.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 12px">'+
+        '<span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:400;color:var(--text)">Businesses &amp; Projects</span>'+
+        '<a href="/my-presences.html" style="font-size:11px;color:var(--blue);font-weight:500;text-decoration:none">Manage →</a></div>'+inner;
+      view.appendChild(host);
+    }catch(e){ /* non-fatal — section just won't render */ }
+  })();
+
   /* ── Trust status strip (own profile) ── */
   (async function(){
     var el=document.getElementById('trustStatus'); if(!el) return;

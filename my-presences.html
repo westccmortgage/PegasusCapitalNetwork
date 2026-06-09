@@ -50,7 +50,7 @@ Pegasus.boot(async function(){
 var _st = (window.PegStore && PegStore.get) ? PegStore.get() : {};
 if(_st.mode !== 'live'){ location.replace('/signin.html'); return; }
 
-var v = Pegasus.mountApp({active:'My Presences', title:'My Presences', sub:'Manage your professional identities'});
+var v = Pegasus.mountApp({active:'Business Pages', title:'Promote My Business', sub:'Create pages so the right people can discover and connect with you'});
 
 var c = null;
 try { c = await window.PegSB.ready; } catch(e) { c = null; }
@@ -83,13 +83,14 @@ function canManage(role){ return role==='owner' || role==='admin' || role==='edi
 v.insertAdjacentHTML('beforeend',
   '<div class="card" style="margin-bottom:18px"><div class="card-body" style="padding:18px 20px">'+
     '<div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:680px">'+
-      'Manage the personal, business, project, and showcase identities you use inside Pegasus.'+
+      'Create pages for your business, projects, services, events, or opportunities so the right people can discover and connect with you.'+
       '<br><span style="color:var(--text3)">Your personal profile represents <strong style="color:var(--text2);font-weight:600">you</strong>. '+
-      'Your presences represent the companies, projects, programs, events, or opportunities you manage.</span>'+
+      'Your business pages represent what you offer, what you are building, and who you want to connect with.</span>'+
     '</div>'+
-    '<div style="margin-top:14px"><button class="btn btn-pri btn-sm" data-create-presence="true">+ Create New Presence</button></div>'+
+    '<div style="margin-top:14px"><button class="btn btn-pri btn-sm" data-create-presence="true">+ Create Free Business Page</button></div>'+
   '</div></div>'+
-  '<div id="mp-body"><div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading your presences…</div></div>');
+  '<div id="mp-flash"></div>'+
+  '<div id="mp-body"><div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading your business pages…</div></div>');
 
 // ── Load ─────────────────────────────────────────────────────────────────────
 async function loadPresences(){
@@ -117,7 +118,7 @@ async function loadPresences(){
   }catch(e){
     console.error('[my-presences] load failed:', e);
     body.innerHTML = '<div class="banner bn-cancel"><div class="banner-msg">⚠️ <span>'+
-      esc((e&&e.message)||'Could not load your presences.')+'</span></div></div>';
+      esc((e&&e.message)||'Could not load your business pages.')+'</span></div></div>';
   }
 }
 
@@ -147,9 +148,9 @@ function presenceCard(p){
       '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Edit Main Profile →</a></div>';
   } else {
     var pageUrl = '/presence.html?slug=' + encodeURIComponent(p.slug||'');
-    var btns = '<a class="btn btn-pri btn-sm" href="'+pageUrl+'">View Page</a>';
+    var btns = '<a class="btn btn-pri btn-sm" href="'+pageUrl+'">View Business Page</a>';
     btns += ' <button class="btn btn-ghost btn-sm" onclick="mpPreview(\''+esc(p.id)+'\')">Preview</button>';
-    if(canManage(p._role)) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>';
+    if(canManage(p._role)) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit Page</button>';
     if(canManage(p._role) && p.status!=='archived')
       btns += ' <button class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpArchive(\''+esc(p.id)+'\')">Archive</button>';
     if(p.slug) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpCopyLink(\''+esc(p.slug)+'\')">Copy Link</button>';
@@ -184,12 +185,12 @@ function renderPresences(rows){
   var html = '';
 
   // 1. Personal
-  html += section('Personal Presence', null,
+  html += section('Your Personal Profile', null,
     personal.length ? personal.map(presenceCard).join('') :
-    '<div class="card"><div class="card-body" style="padding:16px 18px;font-size:12px;color:var(--text3)">No personal presence found.</div></div>');
+    '<div class="card"><div class="card-body" style="padding:16px 18px;font-size:12px;color:var(--text3)">No personal profile found.</div></div>');
 
-  // 2. Business & Professional
-  html += section('Business & Professional Presences', 'Companies, capital programs, and funds you manage.',
+  // 2. Businesses & Companies
+  html += section('Businesses & Companies', 'Companies, capital programs, and funds you represent.',
     business.length ? business.map(presenceCard).join('') : groupEmpty());
 
   // 3. Projects & Showcases
@@ -198,13 +199,13 @@ function renderPresences(rows){
 
   // 4. Archived
   if(archived.length){
-    html += section('Archived Presences', 'No longer active. Not permanently deleted.',
+    html += section('Archived Pages', 'No longer active. Not permanently deleted.',
       archived.map(presenceCard).join(''));
   }
 
-  // Full empty state (no non-personal presences at all)
+  // Full empty state (no business pages at all)
   if(!nonPersonal.length){
-    html = section('Personal Presence', null,
+    html = section('Your Personal Profile', null,
       personal.length ? personal.map(presenceCard).join('') : '') + fullEmptyState();
   }
 
@@ -213,17 +214,17 @@ function renderPresences(rows){
 
 function groupEmpty(){
   return '<div class="card"><div class="card-body" style="padding:16px 18px;font-size:12px;color:var(--text3)">'+
-    'You have not created any presences in this group yet.</div></div>';
+    'Nothing here yet.</div></div>';
 }
 
 function fullEmptyState(){
   return '<div style="text-align:center;padding:44px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px">'+
-    '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">You have not created any business, project, or showcase presences yet.</div>'+
+    '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:10px">Get discovered by the right people</div>'+
     '<div style="max-width:560px;margin:0 auto;line-height:1.6;color:var(--text3);font-size:13px">'+
-      'Your personal profile represents you. Presences let you manage separate companies, projects, events, capital programs, or opportunities from the same Pegasus account — without mixing everything into one personal page.'+
-      '<br><br>Create your first professional presence when you are ready to represent a specific business, project, or opportunity inside the ecosystem.'+
+      'Your personal profile represents you. Business pages let you promote a company, project, event, capital program, or opportunity from the same Pegasus account — so clients, partners, investors, and referral sources can find you and reach out.'+
+      '<br><br>Create your first business page when you\'re ready to show what you offer and who you want to connect with.'+
     '</div>'+
-    '<div style="margin-top:18px"><button class="btn btn-pri" data-create-presence="true">+ Create New Presence</button></div>'+
+    '<div style="margin-top:18px"><button class="btn btn-pri" data-create-presence="true">+ Create Free Business Page</button></div>'+
   '</div>';
 }
 
@@ -249,8 +250,14 @@ function formFields(p){
       '<input class="input" id="mp_name" maxlength="120" value="'+val('name')+'" placeholder="e.g. West Coast Capital Mortgage"></div>'+
     '<div class="field"><label class="label">Tagline</label>'+
       '<input class="input" id="mp_tagline" maxlength="160" value="'+val('tagline')+'" placeholder="Short positioning line"></div>'+
-    '<div class="field"><label class="label">Short description</label>'+
-      '<textarea class="ws-textarea" id="mp_short_description" maxlength="600" data-count placeholder="What this presence represents…">'+val('short_description')+'</textarea></div>'+
+    '<div class="field"><label class="label">What you do</label>'+
+      '<textarea class="ws-textarea" id="mp_short_description" maxlength="600" data-count placeholder="Describe what this business, project, or opportunity does…">'+val('short_description')+'</textarea></div>'+
+    '<div class="field"><label class="label">What you offer</label>'+
+      '<textarea class="ws-textarea" id="mp_offers" maxlength="600" data-count placeholder="Products, services, capital, deals, expertise…">'+val('offers')+'</textarea></div>'+
+    '<div class="field"><label class="label">What you\'re looking for</label>'+
+      '<textarea class="ws-textarea" id="mp_looking_for" maxlength="600" data-count placeholder="Clients, borrowers, investors, partners, referrals…">'+val('looking_for')+'</textarea></div>'+
+    '<div class="field"><label class="label">Who should connect with you</label>'+
+      '<textarea class="ws-textarea" id="mp_ideal_connections" maxlength="400" data-count placeholder="The kind of people or businesses you want to meet…">'+val('ideal_connections')+'</textarea></div>'+
     '<div class="row2"><div class="field"><label class="label">Category</label>'+
       '<input class="input" id="mp_category" maxlength="80" value="'+val('category')+'" placeholder="e.g. Lender"></div>'+
       '<div class="field"><label class="label">Industry</label>'+
@@ -285,6 +292,25 @@ function collectFields(){
   };
 }
 
+// The business "offerings" fields are written by a separate RPC (migration 050)
+// so the core create/edit RPCs stay untouched. Degrades gracefully if 050 isn't
+// applied yet (the page still saves the standard fields).
+function collectOfferings(){
+  return {
+    p_offers: gv('mp_offers').trim() || null,
+    p_looking_for: gv('mp_looking_for').trim() || null,
+    p_ideal_connections: gv('mp_ideal_connections').trim() || null
+  };
+}
+async function saveOfferings(presenceId){
+  var o = collectOfferings();
+  if(o.p_offers==null && o.p_looking_for==null && o.p_ideal_connections==null) return;
+  try{
+    var r = await c.rpc('set_presence_offerings', Object.assign({ p_presence_id: presenceId }, o));
+    if(r.error) console.warn('[my-presences] offerings not saved (apply migration 050):', r.error.message);
+  }catch(e){ console.warn('[my-presences] offerings save skipped:', e && e.message); }
+}
+
 // ── Create ───────────────────────────────────────────────────────────────────
 window.mpCreate = function(){
   try{
@@ -294,13 +320,13 @@ window.mpCreate = function(){
       return;
     }
     var typeOpts = CREATE_TYPES.map(function(t){ return '<option value="'+t[0]+'">'+t[1]+'</option>'; }).join('');
-    var inner = '<div class="field"><label class="label">Presence type <span style="color:var(--red)">*</span></label>'+
+    var inner = '<div class="field"><label class="label">What kind of page is this? <span style="color:var(--red)">*</span></label>'+
         '<select class="input" id="mp_type">'+typeOpts+'</select>'+
-        '<div class="opt" style="margin-top:4px">Personal presences are managed through your profile and can\'t be created here.</div></div>'+
+        '<div class="opt" style="margin-top:4px">Your personal profile is managed separately — this creates a page for a business, project, or opportunity.</div></div>'+
         formFields({visibility:'member_only'});
     var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
-      '<button class="btn btn-pri" onclick="mpSaveCreate()">Create Presence</button>';
-    Pegasus.modal(shell('Create new presence', inner, footer));
+      '<button class="btn btn-pri" onclick="mpSaveCreate()">Create Free Business Page</button>';
+    Pegasus.modal(shell('Create a free business page', inner, footer));
   }catch(err){
     console.error('[my-presences] failed to open create modal:', err);
     alert('Could not open the create form: '+((err&&err.message)||err));
@@ -328,11 +354,35 @@ window.mpSaveCreate = async function(){
   try{
     var res = await c.rpc('create_presence', args);
     if(res.error) throw res.error;
+    var newId = res.data;                 // create_presence returns the new id
+    await saveOfferings(newId);           // best-effort (migration 050)
     Pegasus.closeModal();
-    Pegasus.toast('◫','var(--blue-dim)','Presence created', f.p_name);
+    Pegasus.toast('◫','var(--green-dim)','Business page created', f.p_name);
     await loadPresences();
-  }catch(e){ setErr((e&&e.message)||'Could not create presence.'); }
+    mpFlashCreated(newId);
+  }catch(e){ setErr((e&&e.message)||'Could not create your business page.'); }
 };
+
+// Post-create "next steps" banner shown above the list.
+function mpFlashCreated(id){
+  var flash = document.getElementById('mp-flash'); if(!flash) return;
+  var p = (window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0];
+  if(!p){ flash.innerHTML=''; return; }
+  var url = '/presence.html?slug=' + encodeURIComponent(p.slug||'');
+  flash.innerHTML =
+    '<div class="card" style="margin-bottom:16px;border:1px solid var(--green)"><div class="card-body" style="padding:16px 18px">'+
+      '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">✓ Your business page is ready — '+esc(p.name)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--text3);line-height:1.6;margin-bottom:12px">Now make it useful: add what you offer and what you\'re looking for, copy your link, and share it with clients, partners, investors, or referral sources so Pegasus members know how to connect with you.</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+        '<a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+
+        '<button class="btn btn-ghost btn-sm" onclick="mpCopyLink(\''+esc(p.slug)+'\')">Copy Link</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit Page</button>'+
+        '<button class="btn btn-ghost btn-sm" data-create-presence="true">Create Another Business Page</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'mp-flash\').innerHTML=\'\'">Dismiss</button>'+
+      '</div>'+
+    '</div></div>';
+  try{ flash.scrollIntoView({behavior:'smooth', block:'nearest'}); }catch(e){}
+}
 
 // ── View Preview (private, authenticated-only) ───────────────────────────────
 // Read-only preview of the full presence, rendered from already-loaded data
@@ -386,27 +436,31 @@ window.mpPreview = function(id){
       '</div></div>';
 
     var rows =
-      pvRow('Short description', txt(p.short_description))+
+      pvRow('What you do', txt(p.short_description))+
+      pvRow('What you offer', txt(p.offers))+
+      pvRow('Looking for', txt(p.looking_for))+
+      pvRow('Who should connect', txt(p.ideal_connections))+
       pvRow('Category', txt(p.category))+
       pvRow('Industry', txt(p.industry))+
       pvRow('Location', txt(p.location))+
       pvRow('Market', txt(p.market))+
       pvRow('Website', linkVal(p.website_url))+
-      pvRow('Public CTA', ctaVal())+
+      pvRow('Call to action', ctaVal())+
       pvRow('Visibility', esc(visLbl))+
       pvRow('Status', '<span style="text-transform:capitalize">'+esc(p.status)+'</span>')+
       pvRow('Your role', '<span style="text-transform:capitalize">'+esc(p._role||'viewer')+'</span>')+
       pvRow('Can publish as', p._can_publish_as ? 'Yes' : 'No');
 
-    var phase3 = '<div style="margin-top:16px;padding:14px 16px;background:var(--bg2);border:1px dashed var(--border2);border-radius:10px">'+
-      '<div style="font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);margin-bottom:4px">Public presence page</div>'+
-      '<div style="font-size:13px;color:var(--text2);font-weight:600">Coming in Phase 3</div>'+
-      '<div style="font-size:11px;color:var(--text4);margin-top:4px">A shareable public page for this presence isn\'t available yet. This preview is visible only to you.</div></div>';
+    var pageUrl = '/presence.html?slug=' + encodeURIComponent(p.slug||'');
+    var live = '<div style="margin-top:16px;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">'+
+      '<div style="font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);margin-bottom:6px">Live business page</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px"><a class="btn btn-pri btn-sm" href="'+pageUrl+'">View Business Page</a>'+
+      (p.slug?'<button class="btn btn-ghost btn-sm" onclick="mpCopyLink(\''+esc(p.slug)+'\')">Copy Link</button>':'')+'</div></div>';
 
-    var inner = header + '<div>'+rows+'</div>' + phase3;
+    var inner = header + '<div>'+rows+'</div>' + live;
     var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Close</button>'+
-      (canManage(p._role) ? '<button class="btn btn-pri" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>' : '');
-    Pegasus.modal(shell('Presence preview', inner, footer));
+      (canManage(p._role) ? '<button class="btn btn-pri" onclick="mpEdit(\''+esc(p.id)+'\')">Edit Page</button>' : '');
+    Pegasus.modal(shell('Business page preview', inner, footer));
   }catch(err){
     console.error('[my-presences] preview error:', err);
     alert('Could not open preview: '+((err&&err.message)||err));
@@ -439,10 +493,10 @@ window.mpEdit = function(id){
   }).join('');
   var inner = formFields(p) +
     '<div class="field"><label class="label">Status</label><select class="input" id="mp_status">'+statusOpts+'</select>'+
-      '<div class="opt" style="margin-top:4px">Use Archive (on the card) to retire a presence.</div></div>';
+      '<div class="opt" style="margin-top:4px">Use Archive (on the card) to retire a page.</div></div>';
   var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
     '<button class="btn btn-pri" onclick="mpSaveEdit(\''+esc(id)+'\')">Save changes</button>';
-  Pegasus.modal(shell('Edit presence', inner, footer));
+  Pegasus.modal(shell('Edit business page', inner, footer));
 };
 
 window.mpSaveEdit = async function(id){
@@ -453,8 +507,9 @@ window.mpSaveEdit = async function(id){
   try{
     var res = await c.rpc('update_presence_basic', args);
     if(res.error) throw res.error;
+    await saveOfferings(id);              // best-effort (migration 050)
     Pegasus.closeModal();
-    Pegasus.toast('◫','var(--blue-dim)','Presence updated', f.p_name);
+    Pegasus.toast('◫','var(--green-dim)','Business page updated', f.p_name);
     await loadPresences();
   }catch(e){ setErr((e&&e.message)||'Could not save changes.'); }
 };
@@ -463,11 +518,11 @@ window.mpSaveEdit = async function(id){
 window.mpArchive = async function(id){
   var p = (window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0] || {};
   if(p.presence_type==='personal') return;
-  if(!confirm('Archive this presence? It will no longer appear as active, but it will not be permanently deleted.')) return;
+  if(!confirm('Archive this business page? It will no longer appear as active, but it will not be permanently deleted.')) return;
   try{
     var res = await c.rpc('archive_presence', { p_presence_id: id });
     if(res.error) throw res.error;
-    Pegasus.toast('◫','var(--amber-dim)','Presence archived', p.name||'');
+    Pegasus.toast('◫','var(--amber-dim)','Page archived', p.name||'');
     await loadPresences();
   }catch(e){ alert((e&&e.message)||'Could not archive presence.'); }
 };

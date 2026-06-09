@@ -143,7 +143,7 @@
         ${item('▣','CRM','/crm.html')}
         <div class="sb-sec">Account</div>
         ${item('❖','Showcase','/showcase.html')}
-        ${item('◫','My Presences','/my-presences.html')}
+        ${item('◫','Business Pages','/my-presences.html')}
         ${item('▤','Billing & Plan','/membership.html')}
         ${item('⚙','Edit Profile','/profile-edit.html')}
         ${(typeof Store!=='undefined'&&Store.isAdmin&&Store.isAdmin())?item('⚑','Admin Console','/admin.html'):''}
