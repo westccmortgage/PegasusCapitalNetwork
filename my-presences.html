@@ -146,11 +146,11 @@ function presenceCard(p){
       '<div style="font-size:11px;color:var(--text3)">Managed through your main profile.</div>'+
       '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Edit Main Profile →</a></div>';
   } else {
-    var btns = '';
-    if(canManage(p._role)) btns += '<button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>';
+    var btns = '<button class="btn btn-ghost btn-sm" onclick="mpPreview(\''+esc(p.id)+'\')">View Preview</button>';
+    if(canManage(p._role)) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>';
     if(canManage(p._role) && p.status!=='archived')
       btns += ' <button class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpArchive(\''+esc(p.id)+'\')">Archive</button>';
-    actions = '<div style="white-space:nowrap">'+(btns||'<span style="font-size:11px;color:var(--text3)">View only</span>')+'</div>';
+    actions = '<div style="white-space:nowrap">'+btns+'</div>';
   }
 
   return '<div class="card" style="margin-bottom:12px"><div class="card-body" style="padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start">'+
@@ -329,6 +329,85 @@ window.mpSaveCreate = async function(){
     Pegasus.toast('◫','var(--blue-dim)','Presence created', f.p_name);
     await loadPresences();
   }catch(e){ setErr((e&&e.message)||'Could not create presence.'); }
+};
+
+// ── View Preview (private, authenticated-only) ───────────────────────────────
+// Read-only preview of the full presence, rendered from already-loaded data
+// (window.__MP_ROWS). No new query, no public route — Phase 3 will add the real
+// public page.
+window.mpPreview = function(id){
+  try{
+    if(!window.Pegasus || typeof Pegasus.modal !== 'function'){
+      console.error('[my-presences] Pegasus.modal is unavailable — cannot open preview.');
+      alert('The preview could not open. Please refresh the page and try again.');
+      return;
+    }
+    var p = (window.__MP_ROWS||[]).filter(function(x){return x.id===id;})[0];
+    if(!p){ console.error('[my-presences] preview: presence not found', id); return; }
+
+    var typeLbl = TYPE_LABEL[p.presence_type] || p.presence_type;
+    var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
+    var statusCls = p.status==='active' ? 'b-active' : (p.status==='archived' ? 'b-cancel' : 'b-none');
+    var pub = p._can_publish_as ? '<span class="badge b-trial" title="You can publish as this presence">Publish As</span>' : '';
+
+    function txt(val){ return (val==null||val==='') ? '<span style="color:var(--text4)">—</span>' : esc(val); }
+    function linkVal(u){
+      if(!u) return '<span style="color:var(--text4)">—</span>';
+      var safe = (Pegasus.safeUrl ? Pegasus.safeUrl(u) : esc(u));
+      return '<a href="'+safe+'" target="_blank" rel="noopener noreferrer" style="color:var(--blue);word-break:break-all">'+esc(u)+'</a>';
+    }
+    function ctaVal(){
+      if(!p.public_cta_label && !p.public_cta_url) return '<span style="color:var(--text4)">—</span>';
+      var lbl = p.public_cta_label ? esc(p.public_cta_label) : '(no label)';
+      if(p.public_cta_url){
+        var safe = (Pegasus.safeUrl ? Pegasus.safeUrl(p.public_cta_url) : esc(p.public_cta_url));
+        return '<a href="'+safe+'" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">'+lbl+'</a>'+
+               ' <span style="color:var(--text4);font-size:11px;word-break:break-all">'+esc(p.public_cta_url)+'</span>';
+      }
+      return lbl;
+    }
+    function pvRow(label, valHtml){
+      return '<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px">'+
+        '<div style="color:var(--text3)">'+esc(label)+'</div>'+
+        '<div style="color:var(--text);line-height:1.5">'+valHtml+'</div></div>';
+    }
+
+    var header = '<div style="margin-bottom:14px">'+
+      '<div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--text)">'+esc(p.name)+'</div>'+
+      (p.tagline ? '<div style="font-size:13px;color:var(--text2);margin-top:4px">'+esc(p.tagline)+'</div>' : '')+
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center">'+
+        '<span class="badge b-none" style="text-transform:capitalize">'+esc(typeLbl)+'</span>'+
+        '<span class="badge b-none">'+esc(visLbl)+'</span>'+
+        '<span class="badge '+statusCls+'" style="text-transform:capitalize">'+esc(p.status)+'</span>'+
+        '<span class="badge b-none" style="text-transform:capitalize">Role: '+esc(p._role||'viewer')+'</span>'+pub+
+      '</div></div>';
+
+    var rows =
+      pvRow('Short description', txt(p.short_description))+
+      pvRow('Category', txt(p.category))+
+      pvRow('Industry', txt(p.industry))+
+      pvRow('Location', txt(p.location))+
+      pvRow('Market', txt(p.market))+
+      pvRow('Website', linkVal(p.website_url))+
+      pvRow('Public CTA', ctaVal())+
+      pvRow('Visibility', esc(visLbl))+
+      pvRow('Status', '<span style="text-transform:capitalize">'+esc(p.status)+'</span>')+
+      pvRow('Your role', '<span style="text-transform:capitalize">'+esc(p._role||'viewer')+'</span>')+
+      pvRow('Can publish as', p._can_publish_as ? 'Yes' : 'No');
+
+    var phase3 = '<div style="margin-top:16px;padding:14px 16px;background:var(--bg2);border:1px dashed var(--border2);border-radius:10px">'+
+      '<div style="font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);margin-bottom:4px">Public presence page</div>'+
+      '<div style="font-size:13px;color:var(--text2);font-weight:600">Coming in Phase 3</div>'+
+      '<div style="font-size:11px;color:var(--text4);margin-top:4px">A shareable public page for this presence isn\'t available yet. This preview is visible only to you.</div></div>';
+
+    var inner = header + '<div>'+rows+'</div>' + phase3;
+    var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Close</button>'+
+      (canManage(p._role) ? '<button class="btn btn-pri" onclick="mpEdit(\''+esc(p.id)+'\')">Edit</button>' : '');
+    Pegasus.modal(shell('Presence preview', inner, footer));
+  }catch(err){
+    console.error('[my-presences] preview error:', err);
+    alert('Could not open preview: '+((err&&err.message)||err));
+  }
 };
 
 // ── Edit ─────────────────────────────────────────────────────────────────────
