@@ -67,7 +67,13 @@ Pegasus.boot(async function(){
   }
 
   // ── Resolve slug ───────────────────────────────────────────────────────────
+  // Resolve slug from the query (?slug=, also set by the clean-URL rewrite) OR
+  // directly from a clean path like /business/<slug> or /project/<slug>.
   var slug = (new URLSearchParams(location.search)).get('slug') || '';
+  if(!slug){
+    var pm = location.pathname.match(/^\/(business|company|project|showcase|event|property|fund)\/([^\/?#]+)\/?$/i);
+    if(pm) slug = decodeURIComponent(pm[2]);
+  }
   slug = slug.trim();
   if(!slug){ stateView('Business page not found', 'No business page was specified.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
 
@@ -151,6 +157,10 @@ Pegasus.boot(async function(){
   var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
   var loc = [p.location, p.market].filter(Boolean).join(' · ');
   document.title = (p.name || 'Business Page') + ' — Pegasus Network';
+  // Clean public URL for this page (shown/copied; never the technical resolver).
+  var cleanPath = Pegasus.presencePath(p.presence_type, p.slug);
+  var cleanUrl = CANON + cleanPath;
+  (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
 
   var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';
 
@@ -261,7 +271,7 @@ Pegasus.boot(async function(){
       (canManage?'<a class="btn btn-pri btn-sm" href="/my-presences.html">Edit Page</a>':'')+
     '</div>'+
     (canManage&&visExplain?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text3);line-height:1.5"><strong style="color:var(--text2)">'+esc(visLbl)+':</strong> '+esc(visExplain)+'</div>':'')+
-    (canManage?'<div style="margin-top:10px;font-size:10px;color:var(--text4);font-family:var(--mono);word-break:break-all">'+esc(CANON+'/presence.html?slug='+p.slug)+'</div>':'')+
+    (canManage?'<div style="margin-top:10px;font-size:10px;color:var(--text4);font-family:var(--mono);word-break:break-all">'+esc(cleanUrl)+'</div>':'')+
   '</div></div>';
   var rightCol = summary;
 
@@ -269,9 +279,9 @@ Pegasus.boot(async function(){
     '<div class="pp-body"><div>'+leftCol+'</div><div>'+mainCol+'</div><div>'+rightCol+'</div></div>';
   addFooter();
 
-  // Copy link handler
+  // Copy link handler — copies the clean public URL.
   window.presenceCopyLink = function(){
-    var url = CANON + '/presence.html?slug=' + p.slug;
+    var url = cleanUrl;
     function done(){ Pegasus.toast('⧉','var(--green-dim)','Link copied', url.replace(/^https?:\/\//,'')); }
     function fallback(){
       try{ var ta=document.createElement('textarea'); ta.value=url; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }

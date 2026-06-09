@@ -307,6 +307,15 @@
     return (str||'').toLowerCase().trim()
       .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'member';
   }
+  /* Clean, shareable public path for a business/project/etc. presence.
+     Maps presence_type → user-facing route segment. The internal resolver
+     (presence.html?slug=) still works; users only ever see these clean URLs. */
+  function presencePath(type, slug){
+    if(!slug) return '/presence.html';
+    var map={company:'business',capital_program:'business',fund:'fund',project:'project',showcase:'showcase',event:'event',property:'property'};
+    var seg=map[type]||'business';
+    return '/'+seg+'/'+encodeURIComponent(slug);
+  }
   /* Build the shareable public-profile URL for the current user.
      Prefers profile_slug; falls back to ?id=. */
   var CANONICAL_ORIGIN='https://pegasuscapitalnetwork.com';
@@ -459,7 +468,7 @@
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
     fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal,
-    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify,
+    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath,
     setTier(t){ Store.set({tier:t}); },
   };
 })();

@@ -540,8 +540,8 @@ Pegasus.boot(async function () {
   /* ── Businesses & Projects (the member's own business pages) ──────────────────
      The personal profile shows the person; business pages show what they
      represent. Read-only list here — full management lives in /my-presences.html. */
-  window.ppBizCopy = function(slug){
-    var u='https://pegasuscapitalnetwork.com/presence.html?slug='+slug;
+  window.ppBizCopy = function(type, slug){
+    var u='https://pegasuscapitalnetwork.com'+Pegasus.presencePath(type, slug);
     try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(u); } }catch(e){}
     try{ Pegasus.toast('⧉','var(--green-dim)','Link copied', u.replace(/^https?:\/\//,'')); }catch(e){}
   };
@@ -556,7 +556,7 @@ Pegasus.boot(async function () {
       var inner;
       if(rows.length){
         inner = rows.map(function(b){
-          var url='/presence.html?slug='+encodeURIComponent(b.slug||'');
+          var url=Pegasus.presencePath(b.presence_type, b.slug);
           var loc=[b.location,b.market].filter(Boolean).join(' · ');
           return '<div class="pp-card" style="margin-bottom:10px"><div style="padding:14px 16px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
             '<div style="flex:1;min-width:0">'+
@@ -566,7 +566,7 @@ Pegasus.boot(async function () {
             '</div>'+
             '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start">'+
               '<a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+
-              (b.slug?'<button class="btn btn-ghost btn-sm" onclick="ppBizCopy(\''+esc(b.slug)+'\')">Copy Link</button>':'')+
+              (b.slug?'<button class="btn btn-ghost btn-sm" onclick="ppBizCopy(\''+esc(b.presence_type)+'\',\''+esc(b.slug)+'\')">Copy Link</button>':'')+
             '</div>'+
           '</div></div>';
         }).join('');
