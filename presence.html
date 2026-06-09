@@ -97,11 +97,56 @@ Pegasus.boot(async function(){
   try { c = await window.PegSB.ready; } catch(e) { c = null; }
   if(!c){ stateView('Something went wrong', 'We could not connect right now. Please try again shortly.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
 
+  // Is this error "the RPC isn't in the API yet" (049 not applied, or PostgREST
+  // schema cache not reloaded — the known Supabase quirk that needs a restart)?
+  function rpcMissing(err){
+    if(!err) return false;
+    var code = err.code || '';
+    var msg  = ((err.message||'')+' '+(err.details||'')+' '+(err.hint||'')).toLowerCase();
+    return code==='PGRST202' || code==='404' ||
+           /could not find the function|function .* does not exist|schema cache|not found/.test(msg);
+  }
+
+  // Degraded fallback using only Phase-1 objects (already in the API): RLS-
+  // protected presences for signed-in users, the safe view for anonymous ones.
+  // Selects whitelisted columns only — never owner_user_id / metadata.
+  async function fallbackResolve(s){
+    var SAFE = 'id,presence_type,name,slug,tagline,short_description,category,industry,location,market,website_url,public_cta_label,public_cta_url,visibility,status';
+    if(isLoggedIn()){
+      var uid=null; try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){}
+      var q=await c.from('presences').select(SAFE).eq('slug',s).maybeSingle();
+      if(q.error) console.error('[presence] fallback presences error:', q.error);
+      if(q.data){
+        var role=null, canPub=false, canManage=false;
+        if(uid){
+          var m=await c.from('presence_members').select('role,can_publish_as').eq('presence_id',q.data.id).eq('user_id',uid).maybeSingle();
+          if(m && m.data){ role=m.data.role; canPub=!!m.data.can_publish_as; canManage=['owner','admin','editor'].indexOf(role)!==-1; }
+        }
+        return { access:'full', presence:q.data, role:role, can_publish_as:canPub, can_manage:canManage };
+      }
+      return { access:'unavailable' };  // not visible under RLS (private/not-owned/archived) or absent
+    } else {
+      var v=await c.from('public_presence_previews').select('*').eq('slug',s).maybeSingle();
+      if(v.error) console.error('[presence] fallback view error:', v.error);
+      if(v.data){ v.data.visibility='public_preview'; return { access:'full', presence:v.data, role:null, can_publish_as:false, can_manage:false }; }
+      return null;  // not found / not public
+    }
+  }
+
+  async function resolvePresence(s){
+    var res;
+    try { res = await c.rpc('get_presence_page_by_slug', { p_slug: s }); }
+    catch(netErr){ console.error('[presence] rpc threw:', netErr); res = { error: netErr }; }
+    if(res && !res.error) return res.data;          // RPC available → authoritative
+    console.error('[presence] rpc error:', res && res.error);
+    if(res && res.error && !rpcMissing(res.error)) throw res.error;  // real failure → surface
+    console.warn('[presence] get_presence_page_by_slug unavailable — using RLS/view fallback. Apply migration 049 and RESTART the Supabase project for full server-side visibility handling.');
+    return await fallbackResolve(s);
+  }
+
   var data = null;
   try {
-    var res = await c.rpc('get_presence_page_by_slug', { p_slug: slug });
-    if(res.error) throw res.error;
-    data = res.data;
+    data = await resolvePresence(slug);
   } catch(e){
     console.error('[presence] load failed:', e);
     stateView('Something went wrong', 'This presence could not be loaded right now. Please try again shortly.', '<a class="btn btn-ghost" href="/">Return home</a>');
