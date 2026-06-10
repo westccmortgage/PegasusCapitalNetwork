@@ -313,11 +313,10 @@ Pegasus.boot(async function () {
     (p.markets&&p.markets.length?'<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+p.markets.length+'</span><span class="pp-stat-l">markets</span></div>':'')+
     '<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+new Date(p.created_at||Date.now()).getFullYear()+'</span><span class="pp-stat-l">member since</span></div>';
 
-  /* ── Action buttons — subtle owner controls (do not dominate the hero) ── */
+  /* ── Hero action area — owner controls live in a clean bar below the hero, so
+     the hero stays a presentation. Visitors get the connect CTAs. ── */
   var actions = route.isOwner
-    ? '<a class="btn btn-ghost" href="/profile-edit.html" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.22)">Edit Profile</a>'+
-      '<button class="btn btn-ghost" onclick="Pegasus.copyProfileLink()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.22)">Copy My Address</button>'+
-      '<a class="btn btn-ghost" href="/my-presences.html" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.22)">Manage Businesses</a>'
+    ? ''
     : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
       '<a class="btn btn-ghost" href="/members.html" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)">Browse Network</a>';
 
@@ -480,20 +479,22 @@ Pegasus.boot(async function () {
       '<div class="pp-hero-horizon"></div>'+
     '</section>'+
 
-    /* Inline identity line */
-    (idLine.length?'<div class="pp-id-line">'+idLine.join('')+'</div>':'')+
+    /* The cluttered horizontal identity strip under the hero is intentionally
+       NOT rendered on the public profile (location/company/markets/website read
+       as admin clutter here; they live in edit view + the businesses below). */
 
     '<div class="pp-flow">'+
 
-      /* Compact business/project strip near the top (populated async) */
-      '<div id="pp-biz-strip" style="display:none;margin-bottom:18px"></div>'+
-
-      /* OWNER: Recently Active members — up top, pulled left */
+      /* OWNER controls — compact, right-aligned; never shown to visitors */
       (route.isOwner?
-        '<div id="pp-active-members" class="pp-active-panel"></div>'
+        '<div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
+          '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Manage Profile</a>'+
+          '<button class="btn btn-ghost btn-sm" onclick="Pegasus.copyProfileLink()">Copy Link</button>'+
+          '<a class="btn btn-ghost btn-sm" href="/my-presences.html">Manage Businesses</a>'+
+        '</div>'
       :'')+
 
-      /* 2. CURRENT FOCUS — directional statement */
+      /* 1. CURRENT FOCUS — directly below the hero identity */
       (p.current_focus?
         '<div class="pp-focus">'+
           '<div class="pp-focus-label">Current Focus</div>'+
@@ -501,7 +502,15 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
-      /* 3. BUSINESSES & PROJECTS — before About (populated async) */
+      /* 2. Business/project logo tiles (populated async) */
+      '<div id="pp-biz-strip" style="display:none;margin-bottom:22px"></div>'+
+
+      /* OWNER: Network Signals panel — pulled left */
+      (route.isOwner?
+        '<div id="pp-active-members" class="pp-active-panel"></div>'
+      :'')+
+
+      /* 3. BUSINESSES & PROJECTS full section (populated async) */
       '<section class="pp-sec" id="pp-biz-section" style="display:none"></section>'+
 
       /* 4. ABOUT */
@@ -640,7 +649,13 @@ Pegasus.boot(async function () {
       var cards=list.map(function(b){
         var url=Pegasus.presencePath(b.presence_type, b.slug);
         var meta=[ACT_TL[b.presence_type]||b.presence_type, b.category, [b.location,b.market].filter(Boolean).join(' · ')].filter(Boolean).join(' · ');
-        var desc=b.short_description||b.tagline||'';
+        /* Hide empty/placeholder descriptions from visitors (e.g. test text like
+           "Solly"); only show a real description. Owner sees a prompt instead. */
+        var rawDesc=(b.short_description||b.tagline||'').trim();
+        var validDesc = rawDesc.length>=12 ? rawDesc : '';
+        var descHtml = validDesc
+          ? '<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-top:7px;max-width:560px">'+esc(validDesc)+'</div>'
+          : (b.can_manage ? '<div style="font-size:11.5px;color:var(--text4);margin-top:7px">Add a short business description. <a href="/my-presences.html" style="color:var(--blue)">Add →</a></div>' : '');
         var manage=b.can_manage ? ' <button class="btn btn-ghost btn-sm" onclick="ppBizCopy(\''+esc(b.presence_type)+'\',\''+esc(b.slug)+'\')">Copy Link</button> <a class="btn btn-ghost btn-sm" href="/my-presences.html">Manage</a>' : '';
         return '<div class="pp-card"><div class="pp-card-body" style="display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
           '<div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">'+
@@ -648,7 +663,7 @@ Pegasus.boot(async function () {
             '<div style="min-width:0">'+
               '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(b.name)+'</div>'+
               '<div style="font-size:11px;color:var(--text3);margin-top:3px">'+esc(meta)+'</div>'+
-              (desc?'<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-top:7px;max-width:560px">'+esc(desc)+'</div>':'')+
+              descHtml+
             '</div>'+
           '</div>'+
           '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start"><a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+manage+'</div>'+
