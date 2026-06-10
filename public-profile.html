@@ -492,7 +492,7 @@ Pegasus.boot(async function () {
         '<div id="pp-active-members" class="pp-active-panel"></div>'
       :'')+
 
-      /* 2. CURRENT FOCUS — directional statement above About */
+      /* 2. CURRENT FOCUS — directional statement */
       (p.current_focus?
         '<div class="pp-focus">'+
           '<div class="pp-focus-label">Current Focus</div>'+
@@ -500,7 +500,10 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
-      /* 3. ABOUT */
+      /* 3. BUSINESSES & PROJECTS — before About (populated async) */
+      '<section class="pp-sec" id="pp-biz-section" style="display:none"></section>'+
+
+      /* 4. ABOUT */
       (p.bio?
         '<section class="pp-sec">'+
           '<div class="pp-sec-label">About</div>'+
@@ -516,11 +519,9 @@ Pegasus.boot(async function () {
         '</section>'
       :'')+
 
-      /* 4. SHOWCASE — major section directly below About */
-      '<section class="pp-showcase"><div class="pp-showcase-inner" id="ppShowcase"></div></section>'+
-
-      /* Businesses & Projects this person represents (populated async) */
-      '<section class="pp-sec" id="pp-biz-section" style="display:none"></section>'+
+      /* Showcase band intentionally REMOVED from the personal profile: featured
+         opportunities, deals, and listings belong to a business/project page,
+         not the person. (See Businesses & Projects above.) */
 
       /* Member Updates */
       (rawUpdates.length?
@@ -649,7 +650,9 @@ Pegasus.boot(async function () {
           '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start"><a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+manage+'</div>'+
         '</div></div>';
       }).join('');
-      if(sec){ sec.innerHTML='<div class="pp-sec-label">Businesses &amp; Projects</div>'+cards; sec.style.display=''; }
+      if(sec){ sec.innerHTML='<div class="pp-sec-label">Businesses &amp; Projects</div>'+
+        '<div style="font-size:12.5px;color:var(--text3);margin:-6px 0 14px;max-width:620px">Companies, projects, and professional identities connected to this Pegasus member.</div>'+
+        cards; sec.style.display=''; }
 
       /* Compact hero strip — up to 5 clickable logo chips */
       if(strip){
@@ -668,13 +671,8 @@ Pegasus.boot(async function () {
     }catch(e){ /* non-fatal */ }
   })();
 
-  try{
-    if(window.PegShowcase){
-      await PegShowcase.mountInto('#ppShowcase', { ownerId: p.id, isOwner: route.isOwner, role: p.role });
-      var _scSec=document.querySelector('.pp-showcase');
-      if(_scSec && !document.querySelector('#ppShowcase .sc-section')) _scSec.remove();
-    }
-  }catch(e){ console.warn('[Showcase] mount skipped:', e&&e.message); }
+  /* Showcase mount removed: opportunities/listings/deals are presented on
+     business/project pages, not on the personal profile. */
 
   addFooter();
 });

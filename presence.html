@@ -253,10 +253,21 @@ Pegasus.boot(async function(){
       '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-pri" href="/signin.html">Sign In to Connect</a><a class="btn btn-ghost" href="/signup.html">Create Your Free Page</a></div>'+
     '</div></div>';
   }
+  // Featured Opportunities from THIS business. Opportunities (deals/projects/
+  // listings) belong to the business, not the owner's personal profile. No
+  // opportunity data model yet, so: owner sees a setup prompt; visitors see
+  // nothing (no empty placeholder).
+  var oppsSec = canManage
+    ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">Featured Opportunities</span></div><div class="pp-card-body">'+
+        '<div style="font-size:12.5px;color:var(--text4)">Add your first opportunity so people can see the specific deals, projects, or listings this business presents. <span style="color:var(--text3)">(Opportunity pages are coming soon.)</span></div>'+
+      '</div></div>'
+    : '';
+
   var mainCol = focus +
     bizSec('What we offer', p.offers, 'List the products, services, capital, or deals you offer.')+
     bizSec('What we are looking for', p.looking_for, 'Say what you are looking for — clients, capital, partners, deals.')+
     bizSec('Who should connect with us', p.ideal_connections, 'Describe the people or businesses who should reach out.')+
+    oppsSec +
     convo;
 
   // RIGHT column — Summary + actions (+ owner visibility note)
