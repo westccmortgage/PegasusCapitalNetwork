@@ -44,6 +44,8 @@
 #cinCanvas{display:none}                 /* the video is now the hero motion */
 .cin-in{position:relative;z-index:2}
 @media(max-width:760px){.cin-video-scrim{background:linear-gradient(180deg,rgba(8,17,28,.55),rgba(8,17,28,.78))}}
+/* Who-it's-for chips */
+.peg-who-chip{display:inline-flex;align-items:center;font-size:13px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:24px;padding:9px 16px;line-height:1}
 /* ── Hook refinement ── */
 .cin-q-accent{color:var(--gold,#CDA748)}
 .cin-micro{font-size:12.5px;font-family:var(--mono);letter-spacing:0.02em;color:var(--text3);margin-top:-6px;margin-bottom:6px;opacity:0.9}
@@ -123,7 +125,7 @@
     <p class="cin-lead cin-r3">Pegasus is a private ecosystem where capital, real estate, business growth, and professional relationships move through curated visibility, trusted introductions, and protected collaboration.</p>
     <p class="cin-micro cin-r3">No cold outreach. No random noise. No public marketplace chaos.</p>
     <div class="hero-cta cin-r4">
-      <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create Free Profile →</a>
+      <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Start Here →</a>
       <a class="btn btn-ghost btn-lg" href="/explore.html" style="margin-left:10px">Explore the Ecosystem</a>
     </div>
     <p class="cin-micro cin-r5" style="margin-top:14px">Already a member? <a href="/signin.html" style="color:var(--gold);text-decoration:underline">Sign In</a></p>
@@ -140,39 +142,77 @@
   </div>
 </section>
 
-<section class="home-section" id="areas-home" style="max-width:1100px;margin:0 auto;padding:44px 40px 10px">
-  <div class="eyebrow" style="text-align:center;justify-content:center">What's inside</div>
-  <h2 class="why-h2" style="text-align:center">Explore the ecosystem</h2>
-  <p class="why-intro">Pegasus is organized into areas built around what you're trying to do. Look around — no profile required.</p>
-  <div class="areas-home-grid" id="areasHome"></div>
+<!-- SECTION 2 — What you build inside -->
+<section class="home-section" style="max-width:1100px;margin:0 auto;padding:48px 40px 10px">
+  <div class="eyebrow" style="text-align:center;justify-content:center">What you build inside</div>
+  <h2 class="why-h2" style="text-align:center">Everything you need to be seen and trusted</h2>
+  <p class="why-intro">Pegasus gives you a complete professional presence — from who you are, to what you represent, to the opportunities you're connected to.</p>
+  <div class="why-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="why-card"><div class="why-ic">◉</div><h3>Personal Profile</h3><p>Present who you are and why people should trust you.</p></div>
+    <div class="why-card"><div class="why-ic">◫</div><h3>Business Page</h3><p>Promote your company, project, capital program, service, fund, event, or property.</p></div>
+    <div class="why-card"><div class="why-ic">◆</div><h3>Opportunities</h3><p>Connect specific projects, listings, capital needs, or business opportunities to the right people.</p></div>
+    <div class="why-card"><div class="why-ic">⬡</div><h3>Member Network</h3><p>Discover relevant professionals across capital, real estate, lending, development, and business growth.</p></div>
+    <div class="why-card"><div class="why-ic">◈</div><h3>Network Signals</h3><p>See what's moving inside Pegasus — without social-media noise.</p></div>
+    <div class="why-card"><div class="why-ic">▦</div><h3>Private Workspace</h3><p>Manage requests, introductions, CRM activity, and private business workflows.</p></div>
+  </div>
   <div class="why-cta"><a class="btn btn-ghost btn-lg" href="/explore.html">Explore the full ecosystem →</a></div>
 </section>
-<section class="home-section why-join" id="why">
-  <div class="eyebrow" style="text-align:center">Why it matters</div>
-  <h2 class="why-h2">Why Build a Profile?</h2>
-  <p class="why-intro">Your profile is your presence inside Pegasus. Without it, you can explore. With it, you can participate.</p>
-  <div class="why-grid">
-    <div class="why-card"><div class="why-ic">◆</div><h3>Be Discoverable</h3><p>Let lenders, developers, investors, and real estate professionals find you.</p></div>
-    <div class="why-card"><div class="why-ic">◆</div><h3>Connect With Capital</h3><p>Position yourself for funding, deal-flow, lending, and strategic introductions.</p></div>
-    <div class="why-card"><div class="why-ic">◆</div><h3>Build Your Network</h3><p>Join a private ecosystem focused on real estate, finance, and growth.</p></div>
+
+<!-- SECTION 3 — Who it's for -->
+<section class="home-section" style="max-width:900px;margin:0 auto;padding:44px 40px 10px">
+  <div class="eyebrow" style="text-align:center;justify-content:center">Who it's for</div>
+  <h2 class="why-h2" style="text-align:center">Built for the people who move capital and real estate</h2>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:24px">
+    <span class="peg-who-chip">Developers</span><span class="peg-who-chip">Lenders</span><span class="peg-who-chip">Investors</span>
+    <span class="peg-who-chip">Brokers</span><span class="peg-who-chip">Real estate professionals</span><span class="peg-who-chip">Founders</span>
+    <span class="peg-who-chip">Service providers</span><span class="peg-who-chip">Capital partners</span><span class="peg-who-chip">Borrowers</span>
+    <span class="peg-who-chip">Family offices &amp; private capital</span>
   </div>
-  <div class="why-cta"><a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create Free Profile</a></div>
 </section>
+
+<!-- SECTION 4 — How it works -->
 <section class="home-section how-works" id="how">
   <h2 class="why-h2">How Pegasus Works</h2>
-  <p class="how-sub">Create your profile, define your goals, and let the network surface aligned relationships.</p>
-  <div class="how-grid">
-    <div class="how-step"><div class="how-num">01</div><h3>Build Your Profile</h3><p>Create a professional profile that shows who you are, what you do, and what relationships you are looking for.</p></div>
-    <div class="how-step"><div class="how-num">02</div><h3>Define Your Goals</h3><p>Tell Pegasus whether you are looking for capital, deals, lending relationships, investor connections, or professional visibility.</p></div>
-    <div class="how-step"><div class="how-num">03</div><h3>Receive Aligned Introductions</h3><p>Pegasus helps surface relevant members, opportunities, and strategic relationships inside the network.</p></div>
+  <p class="how-sub">From creating a profile to managing real activity inside your private workspace.</p>
+  <div class="how-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div class="how-step"><div class="how-num">01</div><h3>Create your profile</h3><p>Show who you are, what you do, and the relationships you're looking for.</p></div>
+    <div class="how-step"><div class="how-num">02</div><h3>Add your business or project</h3><p>Create a business page to promote what you represent.</p></div>
+    <div class="how-step"><div class="how-num">03</div><h3>Become discoverable</h3><p>The right people find you across capital, real estate, and growth.</p></div>
+    <div class="how-step"><div class="how-num">04</div><h3>Connect through introductions</h3><p>Trusted, curated introductions — no cold outreach.</p></div>
+    <div class="how-step"><div class="how-num">05</div><h3>Manage in your workspace</h3><p>Track requests, introductions, and private business activity.</p></div>
   </div>
 </section>
+
+<!-- SECTION 5 — The separation -->
+<section class="home-section" style="max-width:900px;margin:0 auto;padding:30px 40px">
+  <div class="eyebrow" style="text-align:center;justify-content:center">The structure</div>
+  <h2 class="why-h2" style="text-align:center">Four clear layers</h2>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:24px">
+    <div class="why-card"><h3>Personal Profile</h3><p>Trust — who you are and why people should believe in you.</p></div>
+    <div class="why-card"><h3>Business Page</h3><p>Promotion — what your company, project, or program offers.</p></div>
+    <div class="why-card"><h3>Opportunity Page</h3><p>The deal — a specific project, listing, or capital need, presented by a business.</p></div>
+    <div class="why-card"><h3>Private Workspace</h3><p>Private operations — requests, introductions, and activity, kept to you.</p></div>
+  </div>
+</section>
+
+<!-- Private Capital Sessions (existing offering) -->
 <section class="home-section sessions-soon">
   <div class="sessions-card">
     <div class="eyebrow" style="text-align:center">Private Capital Sessions</div>
     <h2 class="why-h2" style="margin-bottom:12px">Private Capital Sessions — Live Now</h2>
     <p class="sessions-sub">Educational sessions for real estate, lending, investment, and capital professionals.</p>
-    <div class="why-cta"><a class="btn btn-pri btn-lg hero-cta-pri" href="/capital-sessions.html">View Capital Sessions</a></div>
+    <div class="why-cta"><a class="btn btn-ghost btn-lg" href="/capital-sessions.html">View Capital Sessions</a></div>
+  </div>
+</section>
+
+<!-- SECTION 6 — Final CTA -->
+<section class="home-section" style="text-align:center;max-width:900px;margin:0 auto;padding:30px 40px 66px">
+  <h2 class="why-h2">Build your professional presence inside Pegasus.</h2>
+  <p class="why-intro">Create your free profile, present your business, and become visible to the right people.</p>
+  <div class="why-cta" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create Free Profile</a>
+    <a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>
+    <a class="btn btn-ghost btn-lg" href="/explore.html">Explore the Ecosystem</a>
   </div>
 </section>
 <div id="footer"></div>
