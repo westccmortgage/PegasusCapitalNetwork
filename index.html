@@ -49,7 +49,8 @@
 @media(max-width:760px){.cin{height:auto;min-height:0;padding:64px 0 52px}}
 /* Soft bottom transition so the hero hands off naturally into the next section. */
 .cin::after{content:"";position:absolute;left:0;right:0;bottom:0;height:110px;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(8,17,28,0) 0%,var(--bg,#fff) 100%)}
-.cin-motto{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold,#CDA748);opacity:.8;margin-top:16px}
+.cin-motto{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--gold,#CDA748);margin:22px 0;text-shadow:0 1px 14px rgba(0,0,0,.45)}
+@media(max-width:760px){.cin-motto{font-size:11px;letter-spacing:.2em;margin:18px 0}}
 .cin-scroll{display:inline-flex;align-items:center;gap:7px}
 .cin-scroll::after{content:"";width:1px;height:16px;background:linear-gradient(rgba(154,123,34,.9),transparent);animation:cinScroll 1.8s ease-in-out infinite}
 @keyframes cinScroll{0%,100%{opacity:.4;transform:translateY(0)}50%{opacity:1;transform:translateY(4px)}}
@@ -133,7 +134,8 @@
     <div class="cin-eyebrow cin-r1">Pegasus Capital Network</div>
     <h1 class="cin-q cin-r2">Stop chasing the right people.<br><span class="cin-q-accent">Become visible to them.</span></h1>
     <p class="cin-lead cin-r3">A private ecosystem where capital, real estate, business growth, and professional relationships move through curated visibility, trusted introductions, and protected collaboration.</p>
-    <a class="cin-scroll cin-r4" href="#why-matters">Scroll to explore&nbsp;&nbsp;&darr;</a>
+    <div class="cin-motto cin-r4">We rise. We build. We fly.</div>
+    <a class="cin-scroll cin-r5" href="#why-matters">Scroll to explore&nbsp;&nbsp;&darr;</a>
   </div>
 </section>
 
