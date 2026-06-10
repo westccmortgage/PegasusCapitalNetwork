@@ -315,6 +315,8 @@ Pegasus.boot(async function () {
 
   /* ── Hero action area — owner controls live in a clean bar below the hero, so
      the hero stays a presentation. Visitors get the connect CTAs. ── */
+  /* Owner controls live ONLY in the single floating "Manage" dropdown (below),
+     so the hero stays a clean presentation. Visitors get the connect CTAs. */
   var actions = route.isOwner
     ? ''
     : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
@@ -485,16 +487,11 @@ Pegasus.boot(async function () {
 
     '<div class="pp-flow">'+
 
-      /* OWNER controls — compact, right-aligned; never shown to visitors */
-      (route.isOwner?
-        '<div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
-          '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Manage Profile</a>'+
-          '<button class="btn btn-ghost btn-sm" onclick="Pegasus.copyProfileLink()">Copy Link</button>'+
-          '<a class="btn btn-ghost btn-sm" href="/my-presences.html">Manage Businesses</a>'+
-        '</div>'
-      :'')+
+      /* Network Signals — left column, directly under the hero, for all viewers
+         (visibility-safe). Owner controls live only in the hero top-right. */
+      '<div id="pp-active-members" class="pp-active-panel"></div>'+
 
-      /* 1. CURRENT FOCUS — directly below the hero identity */
+      /* 1. CURRENT FOCUS — main column, top */
       (p.current_focus?
         '<div class="pp-focus">'+
           '<div class="pp-focus-label">Current Focus</div>'+
@@ -502,15 +499,7 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
-      /* 2. Business/project logo tiles (populated async) */
-      '<div id="pp-biz-strip" style="display:none;margin-bottom:22px"></div>'+
-
-      /* OWNER: Network Signals panel — pulled left */
-      (route.isOwner?
-        '<div id="pp-active-members" class="pp-active-panel"></div>'
-      :'')+
-
-      /* 3. BUSINESSES & PROJECTS full section (populated async) */
+      /* 2. BUSINESSES & PROJECTS full section (populated async) */
       '<section class="pp-sec" id="pp-biz-section" style="display:none"></section>'+
 
       /* 4. ABOUT */
@@ -575,9 +564,9 @@ Pegasus.boot(async function () {
       '<div class="pp-manage" id="ppManage">'+
         '<div class="pp-manage-menu" id="ppManageMenu">'+
           '<a class="pp-manage-item" href="/profile-edit.html">\u270E Edit Profile</a>'+
-          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy Link</button>'+
-          '<a class="pp-manage-item" href="/showcase.html">\u2756 Manage Showcase</a>'+
-          '<a class="pp-manage-item" href="/profile-edit.html">\u2699 Settings</a>'+
+          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy My Address</button>'+
+          '<a class="pp-manage-item" href="/my-presences.html">\u25EB Manage Businesses</a>'+
+          '<a class="pp-manage-item" href="/dashboard.html">\u25A6 My Workspace</a>'+
         '</div>'+
         '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage</button>'+
       '</div>'
@@ -591,7 +580,8 @@ Pegasus.boot(async function () {
      get_recent_network_activity RPC (visibility-safe; guests see business
      pages only, members also see people).                            */
   var ACT_TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
-  if(route.isOwner){
+  /* Network Signals render for every viewer (visibility-safe RPC). */
+  {
     (async function(){
       var panel=document.getElementById('pp-active-members'); if(!panel)return;
       try{
