@@ -43,6 +43,14 @@
              linear-gradient(180deg,rgba(8,17,28,.30) 0%,rgba(8,17,28,0) 30%,rgba(8,17,28,.55) 100%)}
 #cinCanvas{display:none}                 /* the video is now the hero motion */
 .cin-in{position:relative;z-index:2}
+/* Refined hero height — premium website hero, not a full-screen splash wall.
+   Lands ~74vh so the next section peeks at the bottom of the viewport. */
+.cin{height:74vh;min-height:620px;max-height:900px}
+@media(max-width:760px){.cin{height:auto;min-height:0;padding:72px 0 56px}}
+.cin-motto{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold,#CDA748);opacity:.8;margin-top:16px}
+.cin-scroll{display:inline-flex;align-items:center;gap:7px}
+.cin-scroll::after{content:"";width:1px;height:16px;background:linear-gradient(rgba(154,123,34,.9),transparent);animation:cinScroll 1.8s ease-in-out infinite}
+@keyframes cinScroll{0%,100%{opacity:.4;transform:translateY(0)}50%{opacity:1;transform:translateY(4px)}}
 @media(max-width:760px){.cin-video-scrim{background:linear-gradient(180deg,rgba(8,17,28,.55),rgba(8,17,28,.78))}}
 /* Who-it's-for chips */
 .peg-who-chip{display:inline-flex;align-items:center;font-size:13px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:24px;padding:9px 16px;line-height:1}
@@ -129,6 +137,7 @@
       <a class="btn btn-ghost btn-lg" href="/explore.html" style="margin-left:10px">Explore the Ecosystem</a>
     </div>
     <p class="cin-micro cin-r5" style="margin-top:14px">Already a member? <a href="/signin.html" style="color:var(--gold);text-decoration:underline">Sign In</a></p>
+    <div class="cin-motto cin-r5">We rise. We build. We fly.</div>
     <a class="cin-scroll cin-r6" href="#why-matters">Why this matters&nbsp;&nbsp;&darr;</a>
   </div>
 </section>
