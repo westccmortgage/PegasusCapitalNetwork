@@ -487,11 +487,15 @@ Pegasus.boot(async function () {
 
     '<div class="pp-flow">'+
 
+      /* 1. Businesses & Projects — compact logo TILE strip near the top
+         (populated async). No full cards/buttons here — tiles are clickable. */
+      '<div id="pp-biz-strip" style="display:none;margin-bottom:24px"></div>'+
+
       /* Network Signals — left column, directly under the hero, for all viewers
-         (visibility-safe). Owner controls live only in the hero top-right. */
+         (visibility-safe). Owner controls live only in the floating Manage menu. */
       '<div id="pp-active-members" class="pp-active-panel"></div>'+
 
-      /* 1. CURRENT FOCUS — main column, top */
+      /* 2. CURRENT FOCUS — main column, top */
       (p.current_focus?
         '<div class="pp-focus">'+
           '<div class="pp-focus-label">Current Focus</div>'+
@@ -499,10 +503,7 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
-      /* 2. BUSINESSES & PROJECTS full section (populated async) */
-      '<section class="pp-sec" id="pp-biz-section" style="display:none"></section>'+
-
-      /* 4. ABOUT */
+      /* 3. ABOUT */
       (p.bio?
         '<section class="pp-sec">'+
           '<div class="pp-sec-label">About</div>'+
@@ -634,55 +635,31 @@ Pegasus.boot(async function () {
       var r=await sb.rpc('get_profile_business_pages_by_slug', { p_profile_slug: bslug });
       if(r.error){ console.warn('[profile] business pages:', r.error.message); return; }
       var list=r.data||[]; if(!list.length) return;
-      var sec=document.getElementById('pp-biz-section');
-      var strip=document.getElementById('pp-biz-strip');
-      var cards=list.map(function(b){
-        var url=Pegasus.presencePath(b.presence_type, b.slug);
-        var meta=[ACT_TL[b.presence_type]||b.presence_type, b.category, [b.location,b.market].filter(Boolean).join(' · ')].filter(Boolean).join(' · ');
-        /* Hide empty/placeholder descriptions from visitors (e.g. test text like
-           "Solly"); only show a real description. Owner sees a prompt instead. */
-        var rawDesc=(b.short_description||b.tagline||'').trim();
-        var validDesc = rawDesc.length>=12 ? rawDesc : '';
-        var descHtml = validDesc
-          ? '<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-top:7px;max-width:560px">'+esc(validDesc)+'</div>'
-          : (b.can_manage ? '<div style="font-size:11.5px;color:var(--text4);margin-top:7px">Add a short business description. <a href="/my-presences.html" style="color:var(--blue)">Add →</a></div>' : '');
-        var manage=b.can_manage ? ' <button class="btn btn-ghost btn-sm" onclick="ppBizCopy(\''+esc(b.presence_type)+'\',\''+esc(b.slug)+'\')">Copy Link</button> <a class="btn btn-ghost btn-sm" href="/my-presences.html">Manage</a>' : '';
-        return '<div class="pp-card"><div class="pp-card-body" style="display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
-          '<div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">'+
-            bizLogo(b.name,b.logo_url,44)+
-            '<div style="min-width:0">'+
-              '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(b.name)+'</div>'+
-              '<div style="font-size:11px;color:var(--text3);margin-top:3px">'+esc(meta)+'</div>'+
-              descHtml+
-            '</div>'+
-          '</div>'+
-          '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start"><a class="btn btn-pri btn-sm" href="'+url+'">View Business Page</a>'+manage+'</div>'+
-        '</div></div>';
-      }).join('');
-      if(sec){ sec.innerHTML='<div class="pp-sec-label">Businesses &amp; Projects</div>'+
-        '<div style="font-size:12.5px;color:var(--text3);margin:-6px 0 14px;max-width:620px">Companies, projects, and professional identities connected to this Pegasus member.</div>'+
-        cards; sec.style.display=''; }
+      var strip=document.getElementById('pp-biz-strip'); if(!strip) return;
+      var anyOwn = list.some(function(b){ return b.can_manage; });
 
-      /* Compact hero strip — up to 5 clickable logo chips */
-      if(strip){
-        var tiles=list.slice(0,5).map(function(b){
-          var u=Pegasus.presencePath(b.presence_type,b.slug);
-          return '<a href="'+u+'" title="'+esc(b.name)+'" style="display:flex;flex-direction:column;align-items:center;gap:9px;width:108px;text-decoration:none">'+
-            bizLogo(b.name,b.logo_url,84)+
-            '<div style="text-align:center;width:100%">'+
-              '<div style="font-size:11.5px;font-weight:600;color:var(--text);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(b.name)+'</div>'+
-              '<div style="font-size:9.5px;color:var(--text3);margin-top:3px">'+esc(ACT_TL[b.presence_type]||b.presence_type)+'</div>'+
-            '</div></a>';
-        }).join('');
-        var more = list.length>5
-          ? '<a href="#pp-biz-section" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:108px;text-decoration:none">'+
-              '<div style="width:84px;height:84px;border-radius:14px;border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:600;font-size:13px">+'+(list.length-5)+'</div>'+
-              '<div style="font-size:11px;color:var(--blue)">View all</div></a>'
-          : '';
-        strip.innerHTML='<div style="font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin:0 0 14px">Businesses &amp; Projects</div>'+
-          '<div style="display:flex;flex-wrap:wrap;gap:20px 18px;align-items:flex-start">'+tiles+more+'</div>';
-        strip.style.display='';
-      }
+      /* Logo TILES only — clickable identity badges, no full cards/buttons/
+         descriptions on the personal profile. Show 5; reveal the rest via View all. */
+      var tiles=list.map(function(b,i){
+        var u=Pegasus.presencePath(b.presence_type,b.slug);
+        var hidden = i>=5 ? ' data-xtra="1" style="display:none;flex-direction:column;align-items:center;gap:9px;width:108px;text-decoration:none"' : ' style="display:flex;flex-direction:column;align-items:center;gap:9px;width:108px;text-decoration:none"';
+        return '<a href="'+u+'" title="'+esc(b.name)+'"'+hidden+'>'+
+          bizLogo(b.name,b.logo_url,84)+
+          '<div style="text-align:center;width:100%">'+
+            '<div style="font-size:11.5px;font-weight:600;color:var(--text);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(b.name)+'</div>'+
+            '<div style="font-size:9.5px;color:var(--text3);margin-top:3px">'+esc(ACT_TL[b.presence_type]||b.presence_type)+'</div>'+
+          '</div></a>';
+      }).join('');
+      var more = list.length>5
+        ? '<button onclick="this.parentNode.querySelectorAll(\'[data-xtra]\').forEach(function(t){t.style.display=\'flex\'});this.style.display=\'none\'" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:108px;background:none;border:none;cursor:pointer;font:inherit">'+
+            '<div style="width:84px;height:84px;border-radius:14px;border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:600;font-size:13px">+'+(list.length-5)+'</div>'+
+            '<div style="font-size:11px;color:var(--blue)">View all</div></button>'
+        : '';
+      var manageLink = anyOwn ? '<a href="/my-presences.html" style="font-size:11px;color:var(--blue);text-decoration:none">Manage Businesses →</a>' : '';
+      strip.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 16px">'+
+          '<span style="font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--text3)">Businesses &amp; Projects</span>'+manageLink+'</div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:20px 18px;align-items:flex-start">'+tiles+more+'</div>';
+      strip.style.display='';
     }catch(e){ /* non-fatal */ }
   })();
 
