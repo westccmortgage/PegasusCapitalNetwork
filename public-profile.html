@@ -313,9 +313,10 @@ Pegasus.boot(async function () {
     (p.markets&&p.markets.length?'<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+p.markets.length+'</span><span class="pp-stat-l">markets</span></div>':'')+
     '<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+new Date(p.created_at||Date.now()).getFullYear()+'</span><span class="pp-stat-l">member since</span></div>';
 
-  /* ── Action buttons ── */
+  /* ── Action buttons — subtle owner controls (do not dominate the hero) ── */
   var actions = route.isOwner
-    ? '<a class="btn btn-pri" href="/ai-assistant.html" style="background:rgba(34,113,195,0.85);border-color:rgba(58,143,232,0.4)">✦ Capital Assistant</a>'
+    ? '<a class="btn btn-ghost" href="/profile-edit.html" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.22)">Edit Profile</a>'+
+      '<button class="btn btn-ghost" onclick="Pegasus.copyProfileLink()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.22)">Copy Link</button>'
     : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
       '<a class="btn btn-ghost" href="/members.html" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)">Browse Network</a>';
 
@@ -324,9 +325,12 @@ Pegasus.boot(async function () {
     ? '<img src="'+esc(p.avatar_url)+'" alt="'+esc(name)+'">'
     : initials(name)||'?';
 
-  /* ── Banner style ── */
+  /* ── Banner style — show an uploaded banner elegantly: cover-positioned with a
+     dark gradient scrim so it reads as an intentional backdrop, never a cropped
+     image fighting the identity text. ── */
   var bannerExtra = p.banner_url
-    ? '<img src="'+esc(p.banner_url)+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35">'
+    ? '<img src="'+esc(p.banner_url)+'" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.30">'+
+      '<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,17,28,0.55) 0%,rgba(8,17,28,0.72) 100%);pointer-events:none"></div>'
     : '';
 
   /* ── Signal strip (markets + specialties as live intelligence) ── */
@@ -461,7 +465,7 @@ Pegasus.boot(async function () {
     '<section class="pp-hero">'+
       '<div class="pp-hero-grid"></div>'+ bannerExtra +
       '<a href="/members.html" class="pp-back" style="position:absolute;top:14px;left:40px;z-index:3;color:rgba(255,255,255,.75);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em">\u2190 Member Network</a>'+
-      '<div class="pp-hero-wm" aria-hidden="true">'+esc((p.company_name||name||'').toUpperCase()||'P')+'</div>'+
+      (p.banner_url ? '' : '<div class="pp-hero-wm" aria-hidden="true">'+esc(((p.company_name||name||'P').split(/\s+/)[0]||'P').toUpperCase())+'</div>')+
       '<div class="pp-hero-c">'+
         '<div class="pp-av">'+avHtml+'</div>'+
         '<div>'+
