@@ -71,6 +71,25 @@
   }catch(e){}
 }());
 </script>
+<!-- Returning-member gateway: a logged-in visitor should land on their own
+     profile/workspace, not the public marketing homepage. Synchronous
+     localStorage check (no flash). Anonymous visitors fall through to the
+     public gateway below. Honors ?next= for protected-route return. -->
+<script>
+(function(){
+  try{
+    var qs=new URLSearchParams(location.search||'');
+    var raw=localStorage.getItem('pegasus.auth'); if(!raw) return;        // anonymous → gateway
+    var pj=null; try{ pj=JSON.parse(raw); }catch(e){}
+    var tok=pj && (pj.access_token||(pj.currentSession&&pj.currentSession.access_token));
+    if(!tok) return;                                                       // anonymous → gateway
+    var nxt=qs.get('next');
+    if(nxt && /^\/[A-Za-z0-9][A-Za-z0-9\/_?=&.\-]*$/.test(nxt)){ location.replace(nxt); return; }
+    var slug=null; try{ slug=localStorage.getItem('peg_slug'); }catch(e){}
+    location.replace(slug ? ('/u/'+slug) : '/dashboard.html');            // member → profile or workspace
+  }catch(e){}
+})();
+</script>
 <!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
 <script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
 
@@ -89,9 +108,11 @@
     <p class="cin-lead cin-r3">Pegasus is a private ecosystem where capital, real estate, business growth, and professional relationships move through curated visibility, trusted introductions, and protected collaboration.</p>
     <p class="cin-micro cin-r3">No cold outreach. No random noise. No public marketplace chaos.</p>
     <div class="hero-cta cin-r4">
-      <a class="btn btn-pri btn-lg hero-cta-pri" href="/explore.html">Explore the Ecosystem →</a>
-      <a class="btn btn-ghost btn-lg" href="/signup.html" style="margin-left:10px">Build Your Presence</a>
+      <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create Free Profile →</a>
+      <a class="btn btn-ghost btn-lg" href="/signin.html" style="margin-left:10px">Sign In</a>
+      <a class="btn btn-ghost btn-lg" href="/explore.html" style="margin-left:10px">Explore the Ecosystem</a>
     </div>
+    <p class="cin-micro cin-r5" style="margin-top:14px">Already a member? <a href="/signin.html" style="color:var(--gold);text-decoration:underline">Sign in</a> to continue to your profile and workspace.</p>
     <a class="cin-scroll cin-r6" href="#why-matters">Why this matters&nbsp;&nbsp;&darr;</a>
   </div>
 </section>

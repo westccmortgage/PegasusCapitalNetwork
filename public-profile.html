@@ -535,21 +535,10 @@ Pegasus.boot(async function () {
         '</div>'+
       '</section>'+
 
-      /* 6. SECONDARY — featured work */
-      (function(){
-        var fm=(p.featured_modules||[]).filter(function(m){return m&&m.kind!=='update';});
-        if(!fm.length && !route.isOwner) return '';
-        return '<section class="pp-sec">'+
-          '<div class="pp-sec-label">Featured'+(route.isOwner?' <a class="pp-card-action" href="/profile-edit.html">+ Add</a>':'')+'</div>'+
-          (fm.length? fm.map(function(m){
-            return '<a href="'+esc(m.href||'#')+'" class="pp-feat">'+
-              '<div class="pp-feat-kind">'+esc(m.kind||'Featured')+'</div>'+
-              '<div class="pp-feat-title">'+esc(m.title||'')+'</div>'+
-              (m.note?'<div class="pp-feat-note">'+esc(m.note)+'</div>':'')+
-            '</a>';
-          }).join('') : '<div style="font-size:12.5px;color:var(--text3)">Feature a Deal Room, market report, or pitch deck.</div>')+
-        '</section>';
-      })()+
+      /* Featured Opportunities intentionally NOT shown on the personal profile.
+         Opportunities / deals / listings belong to a business or project page,
+         not the person. (See Businesses & Projects above.) */
+      ''+
 
     '</div>'+
 

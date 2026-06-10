@@ -96,7 +96,7 @@
     return `<a href="#maincontent" class="skip-link" onclick="var m=document.getElementById('maincontent')||document.querySelector('main,section,.section,.auth-wrap,.ar-wrap,.view');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</a><nav class="pub-nav">
       <a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a>
       <div class="pub-links"><a href="/explore.html" class="${active==='Explore'?'on':''}">Explore</a><a href="/how-it-works.html" class="${active==='Platform'?'on':''}">Platform</a><a href="/members.html" class="${active==='Members'?'on':''}">Member Network</a><a href="/growth-capital.html" class="${active==='Growth'?'on':''}">Growth Capital</a>${rwa}${learn}${company}<a href="https://pegasusevents.net/" target="_blank" rel="noopener noreferrer">Events</a></div>
-      <div class="nav-cta" id="pub-nav-cta"><a class="btn btn-ghost" id="nav-signin-btn" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" id="nav-create-btn" href="/signup.html">Create Profile</a></div>
+      <div class="nav-cta" id="pub-nav-cta"><a class="btn btn-ghost" id="nav-signin-btn" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" id="nav-create-btn" href="/signup.html">Create Free Profile</a></div>
       <button class="mob-menu-btn" id="mobMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
     </nav>
     <div class="mob-overlay" id="mobOverlay"></div>
@@ -165,7 +165,7 @@
         <div class="tier-chip" style="background:${t==='gold'?'var(--gold-dim)':'var(--blue-dim)'};color:${t==='gold'?'var(--gold)':'var(--blue-lt)'};border:1px solid ${t==='gold'?'rgba(170,137,38,0.25)':'rgba(34,113,195,0.25)'}"><span class="dot" style="background:${meta.dot}"></span>${meta.name}<span class="tier-layer"> · ${meta.layer}</span></div>
         <div style="position:relative"><button class="tb-icon" aria-label="${unread?('Notifications, '+unread+' unread'):'Notifications'}" onclick="Pegasus.toggleNotif(event)">🔔${unread?`<span style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:8px;font-family:var(--mono);min-width:14px;height:14px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px">${unread}</span>`:''}</button><div id="notifPanel"></div></div>
         <div style="position:relative">
-          <button class="tb-icon" title="Account" aria-label="Account menu" onclick="Pegasus.toggleAccount(event)">${esc(S.initials)||'◉'}</button>
+          <button class="tb-icon" title="My Account" aria-label="My Account" onclick="Pegasus.toggleAccount(event)">${esc(S.initials)||"◉"} ▾</button>
           <div id="acctMenu"></div>
         </div>
       </div></div>`;
@@ -350,10 +350,16 @@
     var rows=[
       ['\u25C9','My Profile','/profile.html'],
       ['\u270E','Edit Profile','/profile-edit.html'],
-      ['\u25A6','Dashboard','/dashboard.html'],
+      ['\u25EB','Business Pages','/my-presences.html'],
+      ['\u2795','Create Free Business Page','/my-presences.html'],
+      ['\u25A6','My Workspace','/dashboard.html'],
       ['\u25A4','Billing & Plan','/membership.html'],
     ];
-    if(isAdm) rows.push(['\u26E8','Admin Console','/admin.html']);
+    if(isAdm){
+      rows.push(['\u26E8','Admin Console','/admin.html']);
+      rows.push(['\u25C7','Admin \u00B7 Requests','/admin-requests.html']);
+      rows.push(['\u25C8','Admin \u00B7 Trust','/admin-trust-reviews.html']);
+    }
     m.innerHTML='<div class="acct-menu">'
       + rows.map(function(r){return '<a class="acct-item" href="'+r[2]+'"><span class="acct-ic">'+r[0]+'</span>'+r[1]+'</a>';}).join('')
       + '<div class="acct-sep"></div>'
@@ -415,11 +421,11 @@
         ctaEl.innerHTML =
           '<button class="btn btn-ghost" onclick="Pegasus.copyProfileLink()" style="font-size:13px">\u29C9 Copy My Address</button>' +
           '<a class="btn btn-ghost" href="/profile-edit.html" style="font-size:13px">\u270E Edit Profile</a>' +
-          '<a class="btn btn-pri nav-create" href="/dashboard.html">My Dashboard \u2192</a>';
+          '<a class="btn btn-pri nav-create" href="/dashboard.html">My Workspace \u2192</a>';
       } else {
         ctaEl.innerHTML =
           (slug ? '<a class="btn btn-ghost" href="/u/'+slug+'" style="font-size:13px">My Profile</a>' : '') +
-          '<a class="btn btn-pri nav-create" href="/dashboard.html">My Dashboard \u2192</a>';
+          '<a class="btn btn-pri nav-create" href="/dashboard.html">My Workspace \u2192</a>';
       }
       ctaEl.style.visibility = '';
     }
@@ -433,7 +439,7 @@
 
     /* Swap hero "Create My Profile" → "Open My Dashboard" */
     document.querySelectorAll('a[href="/signup.html"].btn-pri, a[href="/signup.html"].hero-cta-pri').forEach(function(btn){
-      btn.textContent = 'Open My Dashboard \u2192';
+      btn.textContent = 'Open My Workspace \u2192';
       btn.href = '/dashboard.html';
     });
   }
