@@ -33,6 +33,17 @@
 .ah-card p{font-size:11.5px;color:var(--text2);line-height:1.55;margin:0}
 @media(max-width:900px){.areas-home-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.how-grid{grid-template-columns:1fr}.how-works{padding:18px 20px 28px}.sessions-soon{padding:20px 20px 40px}.sessions-card{padding:34px 22px}}
+/* ── Cinematic hero video background ── */
+.cin{position:relative;overflow:hidden}
+.cin-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center right;z-index:0;pointer-events:none}
+/* Darker on the left (where the headline sits), lighter on the right (the
+   Pegasus visual) so motion supports the copy and never hurts readability. */
+.cin-video-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(8,17,28,.86) 0%,rgba(8,17,28,.62) 42%,rgba(8,17,28,.30) 72%,rgba(8,17,28,.20) 100%),
+             linear-gradient(180deg,rgba(8,17,28,.30) 0%,rgba(8,17,28,0) 30%,rgba(8,17,28,.55) 100%)}
+#cinCanvas{display:none}                 /* the video is now the hero motion */
+.cin-in{position:relative;z-index:2}
+@media(max-width:760px){.cin-video-scrim{background:linear-gradient(180deg,rgba(8,17,28,.55),rgba(8,17,28,.78))}}
 /* ── Hook refinement ── */
 .cin-q-accent{color:var(--gold,#CDA748)}
 .cin-micro{font-size:12.5px;font-family:var(--mono);letter-spacing:0.02em;color:var(--text3);margin-top:-6px;margin-bottom:6px;opacity:0.9}
@@ -96,6 +107,10 @@
 <div class="ticker"><div class="ticker-label"><span class="dot" style="background:var(--green);animation:pulse 2s infinite"></span>NETWORK LIVE</div><div class="ticker-track"><div class="ticker-inner" id="tk"></div></div></div>
 <div id="nav"></div>
 <section class="cin">
+  <video class="cin-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="/assets/brand/pegasus-hero.mp4" type="video/mp4">
+  </video>
+  <div class="cin-video-scrim" aria-hidden="true"></div>
   <canvas id="cinCanvas" class="cin-canvas" aria-hidden="true"></canvas>
   <div class="cin-focus" aria-hidden="true"></div>
   <div class="cin-presence" aria-hidden="true"></div>
