@@ -26,7 +26,38 @@
 <script src="/js/activation.js"></script>
 <script>
 Pegasus.boot((st)=>{
-  const v=Pegasus.mountApp({active:'Dashboard',title:'Dashboard',sub:'Operational overview'});
+  const v=Pegasus.mountApp({active:'Dashboard',title:'My Workspace',sub:'Your private operations'});
+
+  /* ── Your Network Signals — curated ecosystem movement (people, businesses,
+     opportunities). Safe, visibility-aware via get_recent_network_activity. ── */
+  v.insertAdjacentHTML('beforeend','<div id="ws-signals"></div>');
+  (async function loadWsSignals(){
+    try{
+      var sb=await window.PegSB.ready;
+      var r=await sb.rpc('get_recent_network_activity');
+      var items=(r && !r.error && r.data) ? r.data : [];
+      var host=document.getElementById('ws-signals'); if(!host) return;
+      if(!items.length){ host.innerHTML=''; return; }
+      var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+      function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+      var rows=items.slice(0,6).map(function(a){
+        var isPerson=a.kind==='person';
+        var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
+        var kind=TL[a.kind]||a.kind;
+        var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
+        var ini=(a.name||'—').split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('');
+        return '<a href="'+e(href)+'" style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);text-decoration:none">'+
+          '<div style="width:34px;height:34px;border-radius:'+(isPerson?'50%':'9px')+';background:var(--blue-dim);border:1px solid rgba(58,143,232,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+e(ini)+'</div>'+
+          '<div style="min-width:0;flex:1">'+
+            '<div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt)">'+e(kind)+'</div>'+
+            '<div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e(a.name||'—')+'</div>'+
+            (sub?'<div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e(sub)+'</div>':'')+
+          '</div></a>';
+      }).join('');
+      host.innerHTML='<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title">Your Network Signals</div><span class="link" onclick="location.href=\'/explore.html\'">Explore →</span></div><div class="card-body" style="padding-top:2px">'+rows+
+        '<div style="font-size:11px;color:var(--text3);margin-top:12px">Complete your business page and add what you\'re looking for to receive better introductions.</div></div></div>';
+    }catch(err){ /* non-fatal */ }
+  })();
 
   /* ── Billing upgrade success handler ── */
   (async function handleUpgradeSuccess(){

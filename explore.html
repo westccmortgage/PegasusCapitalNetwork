@@ -131,6 +131,7 @@
       <div class="xp-signals-bar"><span class="xp-live-dot"></span>NETWORK LIVE</div>
       <div class="xp-signals" id="signals"></div>
     </div>
+    <div id="xp-network-signals" style="margin-top:26px"></div>
   </section>
 
   <!-- How it works -->
@@ -203,6 +204,33 @@
 <script>
 Pegasus.mountPublic('Explore');
 document.getElementById('footer').outerHTML=Pegasus.footer();
+
+/* ── What's moving inside Pegasus — real, visibility-safe Network Signals
+   (people + business/project pages) via get_recent_network_activity. ── */
+(async function(){
+  try{
+    var host=document.getElementById('xp-network-signals'); if(!host) return;
+    var sb=await window.PegSB.ready;
+    var r=await sb.rpc('get_recent_network_activity');
+    var items=(r && !r.error && r.data) ? r.data : [];
+    if(!items.length) return;
+    var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+    function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    var cards=items.slice(0,8).map(function(a){
+      var isPerson=a.kind==='person';
+      var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
+      var kind=TL[a.kind]||a.kind;
+      var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
+      return '<a href="'+e(href)+'" style="display:block;background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:16px 18px;text-decoration:none;transition:border-color .15s,transform .15s" onmouseover="this.style.borderColor=\'var(--border2)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">'+
+        '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:7px">'+e(kind)+'</div>'+
+        '<div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.25">'+e(a.name||'—')+'</div>'+
+        (sub?'<div style="font-size:12px;color:var(--text2);margin-top:5px">'+e(sub)+'</div>':'')+
+      '</a>';
+    }).join('');
+    host.innerHTML='<div class="xp-section-head" style="margin-bottom:16px"><div class="eyebrow" style="justify-content:center">Network Signals</div><h2>What\'s moving inside Pegasus</h2><p>Live movement from people, businesses, capital, and opportunities inside Pegasus.</p></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px">'+cards+'</div>';
+  }catch(err){ /* non-fatal */ }
+})();
 
 /* 8 ecosystem areas */
 var AREAS=[
