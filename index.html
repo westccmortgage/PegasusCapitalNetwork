@@ -43,10 +43,12 @@
              linear-gradient(180deg,rgba(8,17,28,.30) 0%,rgba(8,17,28,0) 30%,rgba(8,17,28,.55) 100%)}
 #cinCanvas{display:none}                 /* the video is now the hero motion */
 .cin-in{position:relative;z-index:2}
-/* Refined hero height — premium website hero, not a full-screen splash wall.
-   Lands ~74vh so the next section peeks at the bottom of the viewport. */
-.cin{height:74vh;min-height:620px;max-height:900px}
-@media(max-width:760px){.cin{height:auto;min-height:0;padding:72px 0 56px}}
+/* Refined hero height — premium cinematic entry, not a full-screen splash wall.
+   Lands ~70vh so the next section clearly peeks below and invites scrolling. */
+.cin{height:70vh;min-height:560px;max-height:840px}
+@media(max-width:760px){.cin{height:auto;min-height:0;padding:64px 0 52px}}
+/* Soft bottom transition so the hero hands off naturally into the next section. */
+.cin::after{content:"";position:absolute;left:0;right:0;bottom:0;height:110px;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(8,17,28,0) 0%,var(--bg,#fff) 100%)}
 .cin-motto{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold,#CDA748);opacity:.8;margin-top:16px}
 .cin-scroll{display:inline-flex;align-items:center;gap:7px}
 .cin-scroll::after{content:"";width:1px;height:16px;background:linear-gradient(rgba(154,123,34,.9),transparent);animation:cinScroll 1.8s ease-in-out infinite}
@@ -130,15 +132,8 @@
   <div class="cin-in cin-convert">
     <div class="cin-eyebrow cin-r1">Pegasus Capital Network</div>
     <h1 class="cin-q cin-r2">Stop chasing the right people.<br><span class="cin-q-accent">Become visible to them.</span></h1>
-    <p class="cin-lead cin-r3">Pegasus is a private ecosystem where capital, real estate, business growth, and professional relationships move through curated visibility, trusted introductions, and protected collaboration.</p>
-    <p class="cin-micro cin-r3">No cold outreach. No random noise. No public marketplace chaos.</p>
-    <div class="hero-cta cin-r4">
-      <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Start Here →</a>
-      <a class="btn btn-ghost btn-lg" href="/explore.html" style="margin-left:10px">Explore the Ecosystem</a>
-    </div>
-    <p class="cin-micro cin-r5" style="margin-top:14px">Already a member? <a href="/signin.html" style="color:var(--gold);text-decoration:underline">Sign In</a></p>
-    <div class="cin-motto cin-r5">We rise. We build. We fly.</div>
-    <a class="cin-scroll cin-r6" href="#why-matters">Why this matters&nbsp;&nbsp;&darr;</a>
+    <p class="cin-lead cin-r3">A private ecosystem where capital, real estate, business growth, and professional relationships move through curated visibility, trusted introductions, and protected collaboration.</p>
+    <a class="cin-scroll cin-r4" href="#why-matters">Scroll to explore&nbsp;&nbsp;&darr;</a>
   </div>
 </section>
 
