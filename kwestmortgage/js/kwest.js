@@ -171,6 +171,19 @@
     });
   });
 
+  /* ---------------- Hero video ---------------- */
+  /* Reveal a hero video only once it can actually play; otherwise the
+     animated coastal gradient remains as a graceful fallback. */
+  $all("[data-hero-video]").forEach(function (v) {
+    var reveal = function () { v.classList.add("is-ready"); };
+    if (v.readyState >= 3) reveal();
+    v.addEventListener("canplay", reveal, { once: true });
+    v.addEventListener("loadeddata", reveal, { once: true });
+    // Best-effort autoplay (some browsers need an explicit call)
+    var p = v.play && v.play();
+    if (p && typeof p.catch === "function") p.catch(function () {});
+  });
+
   /* ---------------- Year stamp ---------------- */
   $all("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
 })();

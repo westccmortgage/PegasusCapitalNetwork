@@ -70,6 +70,10 @@ Static — no build step. On Netlify, set **base directory** to `kwestmortgage`.
 - **Phone** — currently `(888) 656-1256` (shared CaliforniaMTG business line); replace if K West gets its own number.
 - **Email** — `info@kwestmortgage.com` placeholder.
 - **Sun Coast Capital Mortgage / Florida licensing** details (footer + `disclosures.html`).
+- **Hero videos** — drop two files into `assets/`:
+  - `assets/hero-desktop.mp4` — horizontal ocean/sunset clip (desktop background)
+  - `assets/hero-mobile.mp4` — vertical moon/ocean clip (mobile background)
+  Both autoplay/loop/muted/playsInline with `object-fit: cover` and a navy overlay. Until they're added, the animated coastal gradient shows as a graceful fallback.
 - **OG image** — `assets/og-image.svg` is a placeholder; swap for a 1200×630 photo/render.
 - **Form endpoint** — set `FORM_ENDPOINT` in `js/kwest.js`.
 

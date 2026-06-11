@@ -43,13 +43,11 @@
     <nav class="nav" aria-label="Primary">
       <a class="brand" href="index.html">
         <span class="brand__name">K <b>West</b> Mortgage</span>
-        <span class="brand__tag">Key West Mortgage Concierge</span>
       </a>
       <ul class="nav__links">
         <li><a href="concierge.html">Concierge</a></li>
-        <li><a href="jumbo-vs-conforming.html">Jumbo vs Conforming</a></li>
+        <li><a href="jumbo-vs-conforming.html">Conforming</a></li>
         <li><a href="loan-options.html">Loan Options</a></li>
-        <li><a href="rates.html">Rates &amp; Payments</a></li>
         <li><a href="education.html">Education</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
@@ -64,9 +62,8 @@
 </header>
 <div class="mobile-menu" aria-label="Mobile">
   <a href="concierge.html">Concierge</a>
-  <a href="jumbo-vs-conforming.html">Jumbo vs Conforming</a>
+  <a href="jumbo-vs-conforming.html">Conforming</a>
   <a href="loan-options.html">Loan Options</a>
-  <a href="rates.html">Rates &amp; Payments</a>
   <a href="education.html">Education</a>
   <a href="about.html">About</a>
   <a href="contact.html">Contact</a>
@@ -78,29 +75,52 @@
 <!-- ================= HERO ================= -->
 <section class="hero">
   <div class="hero__bg" aria-hidden="true">
+    <!-- Animated gradient = graceful fallback shown until/if videos load -->
     <div class="coastal-bg"></div>
     <div class="coastal-bg__grad"></div>
-    <div class="sheen"></div>
-    <div class="waves">
-      <svg viewBox="0 0 2880 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path class="wave-layer wave-3" fill="#bfe0ec" d="M0,180 C360,120 720,240 1440,180 C2160,120 2520,240 2880,180 L2880,320 L0,320 Z"></path>
-        <path class="wave-layer wave-2" fill="#8fc4d8" d="M0,210 C360,160 720,260 1440,210 C2160,160 2520,260 2880,210 L2880,320 L0,320 Z"></path>
-        <path class="wave-layer wave-1" fill="#dff1f6" d="M0,240 C360,200 720,290 1440,240 C2160,200 2520,290 2880,240 L2880,320 L0,320 Z"></path>
+    <!-- Desktop: ocean/sunset video · Mobile: vertical moon/ocean video.
+         Drop your files into /assets as hero-desktop.mp4 and hero-mobile.mp4 -->
+    <video class="hero__video hero__video--desktop" autoplay loop muted playsinline preload="auto" data-hero-video>
+      <source src="assets/hero-desktop.mp4" type="video/mp4">
+    </video>
+    <video class="hero__video hero__video--mobile" autoplay loop muted playsinline preload="auto" data-hero-video>
+      <source src="assets/hero-mobile.mp4" type="video/mp4">
+    </video>
+    <div class="hero__overlay"></div>
+    <div class="waves waves--subtle">
+      <svg viewBox="0 0 2880 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="wave-layer wave-2" fill="#dff1f6" d="M0,130 C480,90 960,160 1440,130 C1920,100 2400,160 2880,130 L2880,200 L0,200 Z"></path>
+        <path class="wave-layer wave-1" fill="#eaf6f9" d="M0,150 C480,120 960,180 1440,150 C1920,125 2400,180 2880,150 L2880,200 L0,200 Z"></path>
       </svg>
     </div>
   </div>
-  <div class="wrap hero__inner">
-    <span class="hero__label">Key West Mortgage Concierge</span>
-    <h1>Buying in Key West? Don’t Assume It Has to Be Jumbo.</h1>
-    <p class="hero__sub">Explore high-balance conforming, jumbo, VA, FHA, DSCR, bank statement, and self-employed mortgage options for Key West and Monroe County buyers — before you write the offer.</p>
-    <p class="hero__trust">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-      No credit check to start. No pressure. No full application required.
-    </p>
-    <div class="hero__cta">
-      <a class="btn btn--primary btn--lg" href="concierge.html">Review My Key West Scenario</a>
-      <a class="btn btn--light btn--lg" href="jumbo-vs-conforming.html">Compare Jumbo vs Conforming</a>
+
+  <div class="wrap hero__inner hero__grid">
+    <div class="hero__copy">
+      <span class="hero__label">Key West Mortgage Concierge</span>
+      <h1>Buying in Key West? Don’t Assume It Has to Be Jumbo.</h1>
+      <p class="hero__sub">High-balance conforming, jumbo, VA, FHA, DSCR, and self-employed options for Key West and Monroe County — explored with care, before you write the offer.</p>
+      <p class="hero__trust">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        No credit check to start. No pressure. No full application required.
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--primary btn--lg" href="concierge.html">Review My Key West Scenario</a>
+        <a class="btn btn--light btn--lg" href="jumbo-vs-conforming.html">Compare Jumbo vs Conforming</a>
+      </div>
     </div>
+
+    <aside class="hero-card" aria-label="Scenario preview">
+      <span class="hero-card__label">Scenario Preview</span>
+      <p class="hero-card__quote">“I’m buying in Key West at $1.15M with 20% down. Do I really need jumbo?”</p>
+      <div class="hero-card__review">
+        <span class="hero-card__rk">Suggested review</span>
+        <span class="hero-card__rv">High-Balance Conforming Review
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </div>
+      <p class="hero-card__foot">Based on purchase price, down payment, occupancy, property type, and current Monroe County loan limits.</p>
+    </aside>
   </div>
 </section>
 
@@ -332,9 +352,8 @@
         <h4>Explore</h4>
         <ul>
           <li><a href="concierge.html">Concierge</a></li>
-          <li><a href="jumbo-vs-conforming.html">Jumbo vs Conforming</a></li>
-          <li><a href="loan-options.html">Loan Options</a></li>
-          <li><a href="rates.html">Rates &amp; Payments</a></li>
+          <li><a href="jumbo-vs-conforming.html">Conforming</a></li>
+          <li><a href="loan-options.html">Loan Options</a></li><li><a href="rates.html">Rates &amp; Payments</a></li>
         </ul>
       </div>
       <div>

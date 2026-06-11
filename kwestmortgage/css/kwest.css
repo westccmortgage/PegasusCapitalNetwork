@@ -322,3 +322,90 @@ table.compare td:last-child { font-weight:600; color:var(--ocean); }
 .breadcrumb a { color:#dceaf0; }
 .skip-link { position:absolute; left:-9999px; top:0; background:#fff; padding:10px 16px; z-index:999; }
 .skip-link:focus { left:8px; top:8px; }
+
+/* ============================================================
+   HERO + HEADER REFINEMENTS (premium pass)
+   ============================================================ */
+
+/* --- Cleaner, premium logo (single line, no stacked tag) --- */
+.brand { flex-direction: row; align-items: baseline; }
+.brand__name { white-space: nowrap; font-size: 1.5rem; letter-spacing: .002em; }
+.brand__name b { font-weight: 600; }
+@media (max-width: 380px){ .brand__name { font-size: 1.3rem; } }
+
+/* --- Hero video background --- */
+.hero__video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0; opacity: 0;
+  transition: opacity 1.4s var(--ease);
+}
+.hero__video.is-ready { opacity: 1; }
+.hero__video--mobile { display: none; }
+@media (max-width: 760px) {
+  .hero__video--desktop { display: none; }
+  .hero__video--mobile { display: block; }
+}
+
+/* Navy gradient overlay for readability (replaces the old ::after) */
+.hero__bg::after { display: none; }
+.hero__overlay {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(8,26,40,.60) 0%, rgba(8,26,40,.38) 40%, rgba(8,26,40,.80) 100%),
+    linear-gradient(105deg, rgba(8,26,40,.58) 0%, rgba(8,26,40,.12) 52%, rgba(8,26,40,0) 75%);
+}
+
+/* --- Subtler, premium bottom waves --- */
+.waves--subtle { height: 22vh; min-height: 120px; z-index: 2; opacity: .9; }
+.waves--subtle .wave-1 { opacity: .12; animation-duration: 56s; }
+.waves--subtle .wave-2 { opacity: .08; animation-duration: 72s; }
+
+/* --- Two-column hero layout --- */
+.hero__inner { z-index: 3; }
+.hero__grid {
+  display: grid; grid-template-columns: 1.12fr .88fr;
+  gap: clamp(40px, 5vw, 72px); align-items: center;
+}
+.hero__copy h1 { max-width: 15ch; }
+.hero__copy .hero__sub { max-width: 46ch; }
+@media (max-width: 980px) {
+  .hero__grid { grid-template-columns: 1fr; gap: 36px; }
+  .hero__copy h1, .hero__copy .hero__sub { max-width: 22ch; }
+  .hero__copy .hero__sub { max-width: 52ch; }
+}
+
+/* --- Floating premium scenario card --- */
+.hero-card {
+  position: relative; max-width: 430px; margin-left: auto; width: 100%;
+  background: linear-gradient(160deg, rgba(255,255,255,.16), rgba(255,255,255,.07));
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 22px; padding: 30px 30px 26px;
+  box-shadow: 0 30px 70px rgba(6,22,34,.45), inset 0 1px 0 rgba(255,255,255,.25);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  color: #fff; animation: cardFloat 7s ease-in-out infinite;
+}
+@keyframes cardFloat { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-9px); } }
+@media (prefers-reduced-motion: reduce){ .hero-card{ animation: none; } }
+.hero-card__label {
+  display: inline-block; font-size: .68rem; font-weight: 600;
+  letter-spacing: .2em; text-transform: uppercase; color: #cfe6f0;
+  padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.18); margin-bottom: 18px;
+}
+.hero-card__quote {
+  font-family: var(--font-display); font-size: 1.32rem; line-height: 1.38;
+  color: #fff; margin: 0 0 22px;
+}
+.hero-card__review {
+  display: flex; flex-direction: column; gap: 5px;
+  background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18);
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;
+}
+.hero-card__rk { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: #aecbd9; }
+.hero-card__rv {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 1.02rem; color: #eaf6fb;
+}
+.hero-card__rv svg { color: var(--ocean-light); flex: 0 0 auto; }
+.hero-card__foot { font-size: .8rem; line-height: 1.55; color: #b9cdd8; margin: 0; }
+@media (max-width: 980px){ .hero-card { margin: 0 auto; } }
