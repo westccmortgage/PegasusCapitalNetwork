@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <!-- Open Graph social-share placeholder. Replace with a 1200x630 photo/render before launch. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E7FA6"/>
+      <stop offset="0.5" stop-color="#14506e"/>
+      <stop offset="1" stop-color="#0E2A3B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <path d="M0 470c160-50 260 50 420 0s260-50 420 0 200 50 360 0v160H0z" fill="#bfe0ec" opacity=".22"/>
+  <path d="M0 520c160-50 260 50 420 0s260-50 420 0 200 50 360 0v110H0z" fill="#dff1f6" opacity=".18"/>
+  <text x="80" y="210" font-family="Georgia, 'Times New Roman', serif" font-size="40" fill="#cfe6f0" letter-spacing="4">K WEST MORTGAGE · KEY WEST CONCIERGE</text>
+  <text x="80" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-weight="600" fill="#ffffff">Don’t Assume It Has</text>
+  <text x="80" y="380" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-weight="600" fill="#ffffff">to Be Jumbo.</text>
+  <text x="80" y="450" font-family="Arial, sans-serif" font-size="30" fill="#dceaf0">Check your high-balance conforming options first · Monroe County, FL</text>
+</svg>

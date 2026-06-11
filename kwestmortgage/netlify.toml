@@ -1,0 +1,61 @@
+# K West Mortgage — KWestMortgage.com
+# Standalone static site. Deploy with base directory = "kwestmortgage".
+# (This project is intentionally separate from CaliforniaMTG.com and the
+#  PegasusCapitalNetwork site — do not merge build settings.)
+
+[build]
+  publish = "."
+  # No build step required — static HTML/CSS/JS.
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Clean URLs (optional): /concierge -> /concierge.html
+[[redirects]]
+  from = "/concierge"
+  to = "/concierge.html"
+  status = 200
+[[redirects]]
+  from = "/jumbo-vs-conforming"
+  to = "/jumbo-vs-conforming.html"
+  status = 200
+[[redirects]]
+  from = "/loan-options"
+  to = "/loan-options.html"
+  status = 200
+[[redirects]]
+  from = "/rates"
+  to = "/rates.html"
+  status = 200
+[[redirects]]
+  from = "/education"
+  to = "/education.html"
+  status = 200
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 200
