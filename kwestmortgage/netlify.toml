@@ -1,7 +1,7 @@
 # K West Mortgage — KWestMortgage.com
-# Standalone static site. Deploy with base directory = "kwestmortgage".
-# (This project is intentionally separate from CaliforniaMTG.com and the
-#  PegasusCapitalNetwork site — do not merge build settings.)
+# Standalone static site (this IS the repo root). No base directory needed.
+# Intentionally separate from CaliforniaMTG.com and PegasusCapitalNetwork —
+# do not merge build settings.
 
 [build]
   publish = "."
