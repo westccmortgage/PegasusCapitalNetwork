@@ -1,0 +1,30 @@
+# Netlify configuration for BeforeJumboLoan.com
+# Deploy this as its OWN Netlify site with the base directory set to
+# `beforejumboloan` (this folder). Static files live in src/, functions in
+# netlify/functions/. Nothing here touches any other site in the repo.
+
+[build]
+  publish = "src"
+  functions = "netlify/functions"
+  # No build step required — static ES modules served as-is.
+  command = "echo 'No build step — static site'"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Pretty routes
+[[redirects]]
+  from = "/studio"
+  to = "/studio.html"
+  status = 200
+
+# SPA-style fallback is NOT used; this is a multi-page static site.
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"

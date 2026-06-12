@@ -1,0 +1,23 @@
+{
+  "name": "beforejumboloan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BeforeJumboLoan.com — a premium interactive mortgage strategy engine.",
+  "scripts": {
+    "dev": "netlify dev",
+    "serve": "npx --yes serve src -l 8080",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mortgage",
+    "dscr",
+    "jumbo",
+    "rate-buydown",
+    "strategy-engine"
+  ],
+  "license": "UNLICENSED"
+}
