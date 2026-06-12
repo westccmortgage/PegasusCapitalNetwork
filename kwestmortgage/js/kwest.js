@@ -131,10 +131,50 @@
   }
   ensureVisitorId();
 
-  /* ---------------- Forms ----------------
-     Lead forms are native Netlify Forms (data-netlify) that POST directly to
-     Netlify and redirect to /thank-you.html. No JS submission handling is used,
-     so there is no external/fake endpoint. */
+  /* ---------------- Netlify Forms (AJAX submit) ----------------
+     Forms stay as real Netlify forms in the HTML (data-netlify="true" +
+     hidden form-name + honeypot) so Netlify detects them at deploy and the
+     native POST still works with JS disabled. With JS on, we submit via a
+     urlencoded fetch POST to "/" (the most reliable Netlify method on
+     statically-hosted sites), then redirect to the thank-you page. */
+  $all('form[data-netlify]').forEach(function (form) {
+    form.addEventListener("submit", function (ev) {
+      // Let the browser enforce required fields with its native UI first.
+      if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+        ev.preventDefault();
+        return;
+      }
+      ev.preventDefault();
+
+      var btn = $("button[type=submit]", form);
+      var redirect = form.getAttribute("action") || "/thank-you.html";
+
+      // Build url-encoded body from the form (includes hidden form-name + bot-field).
+      var data = new FormData(form);
+      var encoded = new URLSearchParams();
+      data.forEach(function (value, key) { encoded.append(key, value); });
+      // Guarantee form-name is present even if the hidden field is ever missing.
+      if (!encoded.has("form-name")) {
+        encoded.append("form-name", form.getAttribute("name") || "key-west-scenario-review");
+      }
+
+      if (btn) { btn.dataset.label = btn.textContent; btn.disabled = true; btn.textContent = "Sending…"; }
+
+      fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encoded.toString()
+      }).then(function (res) {
+        if (!res.ok) throw new Error("Bad status " + res.status);
+        window.location.href = redirect;
+      }).catch(function () {
+        // Network/processing fallback: let the browser do a normal native POST,
+        // which Netlify also accepts and will redirect to the action page.
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || "Submit"; }
+        form.submit();
+      });
+    });
+  });
 
   /* ---------------- Hero video ---------------- */
   /* Reveal a hero video only once it can actually play; otherwise the
