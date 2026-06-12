@@ -466,3 +466,29 @@ p { line-height: 1.7; }
 
 /* Section eyebrows a touch smaller/cleaner */
 .eyebrow { font-size: .74rem; letter-spacing: .2em; }
+
+/* ============================================================
+   MOBILE HERO + HEADER POLISH
+   ============================================================ */
+
+/* Header: on mobile, the hamburger holds the CTAs — hide the inline buttons
+   so the logo + menu icon never get crowded / cut off. */
+@media (max-width: 1024px) {
+  .nav__cta .btn { display: none; }
+  .nav { gap: 12px; }
+}
+
+/* Hero: don't force full-viewport height on phones, so the headline and
+   subhead lead instead of scrolling off above the scenario card. */
+@media (max-width: 760px) {
+  .hero { min-height: auto; }
+  .hero__inner { padding: 104px 0 56px; }
+  .hero__grid { gap: 26px; }
+  .hero h1 { font-size: clamp(1.95rem, 8vw, 2.35rem); line-height: 1.2; }
+  .hero__sub { font-size: 1.02rem; }
+  .hero__cta { gap: 12px; }
+  .hero__cta .btn { width: 100%; }            /* full-width, stacked, calmer */
+  .hero-card { padding: 22px 22px 20px; border-radius: 18px; }
+  .hero-card__quote { font-size: 1.18rem; }
+  .waves--subtle { height: 14vh; min-height: 80px; }
+}
