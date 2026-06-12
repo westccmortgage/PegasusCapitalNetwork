@@ -63,3 +63,7 @@
   from = "/contact"
   to = "/contact.html"
   status = 200
+[[redirects]]
+  from = "/scenario-studio"
+  to = "/scenario-studio.html"
+  status = 200

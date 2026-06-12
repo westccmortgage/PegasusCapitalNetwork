@@ -189,6 +189,60 @@
     if (p && typeof p.catch === "function") p.catch(function () {});
   });
 
+  /* ---------------- Hero "Before Jumbo Quick Check" ---------------- */
+  var qc = $("[data-quickcheck]");
+  if (qc && window.KW) {
+    var priceEl = $("[data-qc-price]", qc);
+    var downEl = $("[data-qc-down]", qc);
+    var occBtns = $all("[data-qc-occ]", qc);
+    var priceOut = $("[data-qc-price-out]", qc);
+    var downOut = $("[data-qc-down-out]", qc);
+    var downPct = $("[data-qc-down-pct]", qc);
+    var loanOut = $("[data-qc-loan]", qc);
+    var pathOut = $("[data-qc-path]", qc);
+    var fill = $("[data-qc-fill]", qc);
+    var tick1 = $("[data-qc-tick1]", qc);
+    var tick2 = $("[data-qc-tick2]", qc);
+    var insight = $("[data-qc-insight]", qc);
+    var cont = $("[data-qc-continue]", qc);
+    var occ = "Primary";
+
+    var renderQC = function () {
+      var price = window.KW.parseNum(priceEl.value);
+      var pct = window.KW.parseNum(downEl.value);
+      var down = Math.round(price * pct / 100);
+      var loan = Math.max(0, price - down);
+      priceOut.textContent = window.KW.fmtCurrency(price);
+      downOut.textContent = window.KW.fmtCurrency(down);
+      downPct.textContent = pct + "%";
+      loanOut.textContent = window.KW.fmtCurrency(loan);
+      pathOut.textContent = window.KW.heroPath(loan, occ);
+      var m = window.KW.meter(loan);
+      fill.style.width = m.pct + "%";
+      qc.setAttribute("data-zone", m.zone);
+      if (tick1) tick1.style.left = m.tick1 + "%";
+      if (tick2) tick2.style.left = m.tick2 + "%";
+      if (insight) insight.textContent = window.KW.heroInsight(loan, occ);
+      // Persist non-PII scenario for the Studio + pass via URL.
+      var data = { price: price, down: down, downPct: pct, occ: occ, loan: loan };
+      try { localStorage.setItem("kw_scenario", JSON.stringify(data)); } catch (e) {}
+      if (cont) {
+        cont.setAttribute("href", "/scenario-studio?price=" + price + "&downpct=" + pct + "&occ=" + encodeURIComponent(occ));
+      }
+    };
+
+    if (priceEl) priceEl.addEventListener("input", renderQC);
+    if (downEl) downEl.addEventListener("input", renderQC);
+    occBtns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        occ = b.getAttribute("data-qc-occ");
+        occBtns.forEach(function (x) { x.classList.toggle("is-on", x === b); x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        renderQC();
+      });
+    });
+    renderQC();
+  }
+
   /* ---------------- Year stamp ---------------- */
   $all("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
 })();

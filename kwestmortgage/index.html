@@ -110,20 +110,49 @@
       </div>
     </div>
 
-    <aside class="hero-card" aria-label="How it works">
-      <h2 class="hero-card__title">How It Works</h2>
-      <ol class="hiw">
-        <li><span class="hiw__n">1</span><span class="hiw__t">Share your Key West scenario</span></li>
-        <li><span class="hiw__n">2</span><span class="hiw__t">Licensed mortgage review</span></li>
-        <li><span class="hiw__n">3</span><span class="hiw__t">Compare high-balance conforming, jumbo, VA, FHA, DSCR &amp; bank statement options</span></li>
-        <li><span class="hiw__n">4</span><span class="hiw__t">Know your path before you write the offer</span></li>
-      </ol>
-      <ul class="hero-card__trust">
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>No credit check to start</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>No full application required</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>Reviewed by licensed mortgage professionals</li>
-      </ul>
-      <a class="btn btn--light btn--block" href="#builder">Start My Key West Scenario</a>
+    <aside class="hero-card qc" data-quickcheck aria-label="Before Jumbo Quick Check">
+      <h2 class="hero-card__title">Before Jumbo Quick Check</h2>
+      <p class="qc__mini">Adjust the numbers and see which review path your scenario may need.</p>
+
+      <div class="qc__field">
+        <label for="qc-price">Purchase price <strong class="qc__out" data-qc-price-out>$1,150,000</strong></label>
+        <input id="qc-price" type="range" min="300000" max="4000000" step="10000" value="1150000" data-qc-price aria-describedby="qc-loan-out">
+      </div>
+
+      <div class="qc__field">
+        <label for="qc-down">Down payment <span class="qc__pct" data-qc-down-pct>20%</span> <strong class="qc__out" data-qc-down-out>$230,000</strong></label>
+        <input id="qc-down" type="range" min="0" max="50" step="1" value="20" data-qc-down>
+      </div>
+
+      <div class="qc__field">
+        <span class="qc__lbl">Occupancy</span>
+        <div class="qc__seg" role="group" aria-label="Occupancy">
+          <button type="button" class="qc__seg-btn is-on" data-qc-occ="Primary" aria-pressed="true">Primary</button>
+          <button type="button" class="qc__seg-btn" data-qc-occ="Second home" aria-pressed="false">Second home</button>
+          <button type="button" class="qc__seg-btn" data-qc-occ="Investment" aria-pressed="false">Investment</button>
+        </div>
+      </div>
+
+      <div class="qc__result">
+        <div class="qc__loan">
+          <span>Estimated loan amount</span>
+          <strong id="qc-loan-out" data-qc-loan aria-live="polite">$920,000</strong>
+        </div>
+        <span class="qc__badge" data-qc-path aria-live="polite">High-Balance Conforming Review</span>
+        <div class="qc__meter">
+          <div class="qc__meter-track">
+            <span class="qc__meter-fill" data-qc-fill></span>
+            <span class="qc__tick" data-qc-tick1></span>
+            <span class="qc__tick" data-qc-tick2></span>
+          </div>
+          <div class="qc__meter-labels"><span>Conforming</span><span>High-Balance</span><span>Jumbo</span></div>
+        </div>
+      </div>
+
+      <p class="qc__insight" data-qc-insight>A higher down payment may help keep the loan amount inside a high-balance review range.</p>
+      <p class="qc__ref">Based on current configured Monroe County loan limit reference. Final eligibility depends on borrower, property, occupancy, and lender guidelines.</p>
+
+      <a class="btn btn--light btn--block" data-qc-continue href="/scenario-studio">Continue in Strategy Studio →</a>
     </aside>
   </div>
 </section>
@@ -354,7 +383,7 @@
         <ul>
           <li><a href="concierge.html">Concierge</a></li>
           <li><a href="jumbo-vs-conforming.html">Conforming</a></li>
-          <li><a href="loan-options.html">Loan Options</a></li><li><a href="rates.html">Rates &amp; Payments</a></li>
+          <li><a href="loan-options.html">Loan Options</a></li><li><a href="rates.html">Rates &amp; Payments</a></li><li><a href="/scenario-studio">Strategy Studio</a></li>
         </ul>
       </div>
       <div>
@@ -400,6 +429,7 @@
   </div>
 </div>
 
+<script src="js/market-config.js?v=2" defer></script>
 <script src="js/kwest.js?v=2" defer></script>
 </body>
 </html>
