@@ -129,7 +129,7 @@ p  { margin: 0 0 1.1em; color: var(--ink); }
 .nav__toggle.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 
 @media (max-width: 1024px) {
-  .nav__links, .nav__cta .btn--ghost { display: none; }
+  .nav__links, .nav__cta .btn { display: none; }   /* both CTAs collapse into the menu */
   .nav__toggle { display: block; }
   .mobile-menu { display: block; }
 }
@@ -491,4 +491,42 @@ p { line-height: 1.7; }
   .hero-card { padding: 22px 22px 20px; border-radius: 18px; }
   .hero-card__quote { font-size: 1.18rem; }
   .waves--subtle { height: 14vh; min-height: 80px; }
+}
+
+/* ============================================================
+   HERO "HOW IT WORKS" TRUST CARD (replaces scenario preview)
+   ============================================================ */
+.hero-card__title {
+  font-family: var(--font-display); font-weight: 500; font-size: 1.32rem;
+  color: #fff; margin: 0 0 18px; padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.18); letter-spacing: -0.005em;
+}
+.hiw { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 15px; }
+.hiw li { display: flex; gap: 14px; align-items: flex-start; }
+.hiw__n {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-body); font-weight: 600; font-size: .82rem; color: #fff;
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.32);
+}
+.hiw__t { color: #e9f2f6; font-size: .98rem; line-height: 1.46; padding-top: 3px; }
+
+.hero-card__trust {
+  list-style: none; margin: 20px 0 22px; padding: 18px 0 0;
+  border-top: 1px solid rgba(255,255,255,.18);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hero-card__trust li { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: #cfe0e8; }
+.hero-card__trust li svg { color: var(--ocean-light); flex: 0 0 auto; }
+
+/* CTA inside the card scrolls to the full scenario form (#builder) */
+.hero-card .btn--light { margin-top: 2px; }
+
+/* ---------- Mobile hero polish ---------- */
+@media (max-width: 760px) {
+  .hero { min-height: auto; }
+  .hero__inner { padding: 104px 0 60px; }
+  .hero__cta { gap: 12px; }
+  .hero__cta .btn { width: 100%; }          /* full-width, stacked CTAs */
+  .hero-card { margin-top: 30px; padding: 26px 22px 24px; }
 }
