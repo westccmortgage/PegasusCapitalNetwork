@@ -223,6 +223,17 @@
       if (tick1) tick1.style.left = m.tick1 + "%";
       if (tick2) tick2.style.left = m.tick2 + "%";
       if (insight) insight.textContent = window.KW.heroInsight(loan, occ);
+      // Estimated P&I (program rate assumption) + mini purchase structure bar
+      if (window.KW.rateFor && window.KW.monthlyPI) {
+        var ra = window.KW.rateFor({ loan: loan, occupancy: occ });
+        var pi = window.KW.monthlyPI(loan, ra.rate, 30);
+        var piEl = $("[data-qc-pi]", qc); if (piEl) piEl.textContent = window.KW.fmtCurrency(pi) + "/mo";
+        var piRate = $("[data-qc-pi-rate]", qc); if (piRate) piRate.textContent = "@ " + ra.rate + "% / 30 yr (assumption)";
+        var sd = $("[data-qc-sd]", qc), sl = $("[data-qc-sl]", qc), sr = $("[data-qc-sr]", qc);
+        if (sd) sd.style.width = (price > 0 ? Math.max(0, Math.min(100, down / price * 100)) : 0) + "%";
+        if (sl) sl.style.width = (price > 0 ? Math.max(0, Math.min(100, loan / price * 100)) : 0) + "%";
+        if (sr) sr.style.left = (price > 0 ? Math.max(0, Math.min(100, window.KW.config.countyConformingLimitOneUnit / price * 100)) : 0) + "%";
+      }
       // Persist non-PII scenario for the Studio + pass via URL.
       var data = { price: price, down: down, downPct: pct, occ: occ, loan: loan };
       try { localStorage.setItem("kw_scenario", JSON.stringify(data)); } catch (e) {}

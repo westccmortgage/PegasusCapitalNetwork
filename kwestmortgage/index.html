@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/kwest.css?v=3">
+<link rel="stylesheet" href="css/kwest.css?v=4">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
 <script type="application/ld+json">
@@ -147,10 +147,12 @@
           </div>
           <div class="qc__meter-labels"><span>Conforming</span><span>High-Balance</span><span>Jumbo</span></div>
         </div>
+        <div class="qc__pstruct" aria-hidden="true"><span class="d" data-qc-sd></span><span class="l" data-qc-sl></span><span class="r" data-qc-sr></span></div>
+        <div class="qc__pi"><span>Estimated P&amp;I <em data-qc-pi-rate></em></span><strong data-qc-pi>—</strong></div>
       </div>
 
       <p class="qc__insight" data-qc-insight>A higher down payment may help keep the loan amount inside a high-balance review range.</p>
-      <p class="qc__ref">Based on current configured Monroe County loan limit reference. Final eligibility depends on borrower, property, occupancy, and lender guidelines.</p>
+      <p class="qc__ref">Estimated P&amp;I only — taxes, insurance, flood, HOA not included. Add taxes, insurance, flood, HOA, rent, and buydown assumptions in the Strategy Studio. Based on a configured Monroe County loan-limit reference; not a rate quote.</p>
 
       <a class="btn btn--light btn--block" data-qc-continue href="/scenario-studio">Continue in Strategy Studio →</a>
       <a class="qc__send" data-qc-send href="#builder">Send This Scenario for Review</a>
@@ -430,7 +432,7 @@
   </div>
 </div>
 
-<script src="js/market-config.js?v=3" defer></script>
-<script src="js/kwest.js?v=3" defer></script>
+<script src="js/market-config.js?v=4" defer></script>
+<script src="js/kwest.js?v=4" defer></script>
 </body>
 </html>

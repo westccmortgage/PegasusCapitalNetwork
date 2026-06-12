@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/kwest.css?v=3">
+<link rel="stylesheet" href="css/kwest.css?v=4">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -296,6 +296,8 @@
             </div>
             <div class="qc__meter-labels"><span>Conforming</span><span>High-Balance</span><span>Jumbo</span></div>
           </div>
+          <div class="pstruct" data-pstruct aria-hidden="true"></div>
+          <p class="pstruct__note" data-pstruct-note></p>
           <div class="snap__cx">
             <span class="snap__k">Scenario complexity</span>
             <span class="cx-badge" data-snap-cx>Simple Review</span>
@@ -321,6 +323,102 @@
     <p class="studio__compliance">
       This tool is for education and scenario organization only. It is not a loan application, loan approval, rate quote, underwriting decision, or commitment to lend. Final review is completed by a licensed mortgage professional. No credit check is performed to start. All loan options are subject to borrower qualification, property eligibility, underwriting approval, and current program guidelines.
     </p>
+  </div>
+</section>
+
+<!-- ============ KEY WEST STRATEGY DASHBOARD ============ -->
+<section class="section section--sand studio-dash" id="dashboard">
+  <div class="wrap">
+    <div class="section-head center"><span class="eyebrow">Your Key West Strategy Dashboard</span><h2>Estimates Update As You Build Your Scenario</h2></div>
+
+    <div class="dash-cards" data-dash-cards></div>
+
+    <div class="dash-2col">
+      <!-- Payment stack -->
+      <div class="glass dash-block">
+        <h3 class="snap__title">Estimated Monthly Housing Cost (PITIA)</h3>
+        <div class="paystack" data-paystack></div>
+        <div class="paystack__total">Estimated monthly housing cost <strong data-pitia-total>—</strong></div>
+        <p class="qc__ref">Educational estimate only. Not a rate quote, APR, loan estimate, approval, or commitment to lend. Rate assumption: <span data-rate-assump>—</span> · assumptions last updated <span data-rate-updated>—</span>.</p>
+      </div>
+
+      <!-- Assumptions -->
+      <div class="glass dash-block">
+        <details class="adv" open>
+          <summary>Assumptions (editable)</summary>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="field"><label for="a-rate">Interest rate assumption (%)</label><input id="a-rate" data-a="rate" type="text" inputmode="decimal" placeholder="(auto by program)"></div>
+            <div class="field"><label for="a-term">Loan term (years)</label><input id="a-term" data-a="term" type="text" inputmode="numeric" placeholder="30"></div>
+            <div class="field"><label for="a-tax">Property tax (annual)</label><input id="a-tax" data-a="taxAnnual" type="text" inputmode="numeric" placeholder="$"></div>
+            <div class="field"><label for="a-hoi">Homeowners / wind (annual)</label><input id="a-hoi" data-a="homeownersAnnual" type="text" inputmode="numeric" placeholder="$"></div>
+            <div class="field"><label for="a-flood">Flood insurance (annual)</label><input id="a-flood" data-a="floodAnnual" type="text" inputmode="numeric" placeholder="$"></div>
+            <div class="field"><label for="a-hoa">HOA (monthly)</label><input id="a-hoa" data-a="hoaMonthly" type="text" inputmode="numeric" placeholder="$"></div>
+            <div class="field"><label for="a-mi">Mortgage insurance (monthly)</label><input id="a-mi" data-a="miMonthly" type="text" inputmode="numeric" placeholder="$"></div>
+            <div class="field"><label for="a-other">Other monthly cost</label><input id="a-other" data-a="otherMonthly" type="text" inputmode="numeric" placeholder="$"></div>
+            <div class="field full"><label for="a-rent">Estimated monthly rent (investment / DSCR)</label><input id="a-rent" data-a="monthlyRent" type="text" inputmode="numeric" placeholder="$"></div>
+          </div>
+          <p class="qc__ref">Key West insurance, flood, taxes, HOA, and condo costs can vary significantly by property. These assumptions are for scenario planning only.</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- DSCR (investment / DSCR concern only) -->
+    <div class="glass dash-block" data-dscr-block hidden>
+      <h3 class="snap__title">DSCR Math Illustration</h3>
+      <div class="dscr" data-dscr></div>
+      <p class="qc__ref">DSCR math illustration only. Lender DSCR requirements vary by program, property, credit, reserves, and guidelines. Not approval or qualification. Add an estimated monthly rent in Assumptions to view DSCR math.</p>
+    </div>
+
+    <!-- Rate Buydown Strategy -->
+    <div class="glass dash-block">
+      <h3 class="snap__title">Rate Buydown Strategy</h3>
+      <div class="bd-tabs" role="tablist">
+        <button type="button" class="bd-tab is-on" data-bd-tab="perm" aria-selected="true">Permanent</button>
+        <button type="button" class="bd-tab" data-bd-tab="temp" aria-selected="false">Temporary</button>
+      </div>
+
+      <div data-bd-pane="perm">
+        <div class="form-grid">
+          <div class="field"><label for="bd-cur">Current rate assumption (%)</label><input id="bd-cur" data-bd="bdCurrentRate" type="text" inputmode="decimal" placeholder="(auto)"></div>
+          <div class="field"><label for="bd-bd">Buydown rate assumption (%)</label><input id="bd-bd" data-bd="bdBuydownRate" type="text" inputmode="decimal" placeholder="(auto −0.5)"></div>
+          <div class="field"><label for="bd-pts">Buydown cost (points)</label><input id="bd-pts" data-bd="bdPoints" type="text" inputmode="decimal" placeholder="1.5"></div>
+        </div>
+        <div class="bd-grid" data-bd-perm></div>
+        <div class="bd-hold">
+          <label for="bd-hold">Expected time in home / loan: <strong data-bd-hold-out>5 years</strong></label>
+          <input id="bd-hold" type="range" min="1" max="10" step="1" value="5" data-bd-hold>
+        </div>
+        <div class="bd-timeline" data-bd-timeline></div>
+        <p class="bd-verdict" data-bd-verdict></p>
+      </div>
+
+      <div data-bd-pane="temp" hidden>
+        <div class="form-grid">
+          <div class="field"><label for="bd-type">Temporary buydown</label><select id="bd-type" data-bd="bdTempType"><option value="2-1">2-1 Buydown</option><option value="1-0">1-0 Buydown</option><option value="custom">Custom</option></select></div>
+          <div class="field"><label for="bd-note">Note rate assumption (%)</label><input id="bd-note" data-bd="bdNoteRate" type="text" inputmode="decimal" placeholder="(auto)"></div>
+          <div class="field"><label for="bd-fund">Funding source</label><select id="bd-fund" data-bd="bdFunding"><option value="">Select…</option><option>Seller credit</option><option>Builder credit</option><option>Lender credit</option><option>Borrower funds</option><option>Not sure</option></select></div>
+        </div>
+        <p class="qc__ref">A temporary buydown usually lowers the payment for an initial period while the note rate remains the actual loan rate. The subsidy is typically funded upfront by an approved source, subject to program guidelines.</p>
+        <div class="bd-ladder" data-bd-ladder></div>
+        <div class="bd-subsidy" data-bd-subsidy></div>
+      </div>
+
+      <div class="bd-compare">
+        <div class="bd-ccard"><h4>Permanent Buydown</h4><ul><li>Lower rate for the life of the loan</li><li>Higher upfront cost</li><li>Break-even depends on how long you keep the loan</li></ul></div>
+        <div class="bd-ccard"><h4>Temporary Buydown</h4><ul><li>Lower payment for the first 1–2 years</li><li>Note rate does not permanently change</li><li>Often depends on seller / builder / lender credit availability</li></ul></div>
+      </div>
+
+      <p class="bd-insight" data-bd-insight></p>
+      <p class="qc__ref">Rates, points, credits, and buydown structures are assumptions for educational scenario planning only. They are not rate quotes, APRs, locked rates, approvals, or commitments to lend. Final terms depend on borrower qualification, property eligibility, market conditions, lender pricing, seller credits, program rules, underwriting approval, and current guidelines.</p>
+    </div>
+
+    <!-- Smart explanation -->
+    <div class="glass dash-block">
+      <h3 class="snap__title">Smart Scenario Explanation</h3>
+      <div class="explain" data-explain></div>
+    </div>
+
+    <p class="qc__ref" data-limit-note style="text-align:center;max-width:80ch;margin:18px auto 0"></p>
   </div>
 </section>
 </main>
@@ -377,8 +475,8 @@
   <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
 </div>
 
-<script src="js/market-config.js?v=3" defer></script>
-<script src="js/kwest.js?v=3" defer></script>
-<script src="js/studio.js?v=3" defer></script>
+<script src="js/market-config.js?v=4" defer></script>
+<script src="js/kwest.js?v=4" defer></script>
+<script src="js/studio.js?v=4" defer></script>
 </body>
 </html>

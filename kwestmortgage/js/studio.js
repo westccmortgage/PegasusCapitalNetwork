@@ -30,7 +30,11 @@
     property_location: "", occupancy: "", property_type: "",
     income_situation: "", main_concern: "",
     name: "", email: "", phone: "", preferred_contact_method: "", message: "",
-    timeline: "", preapproval: "", realtor: "", rental_income: "", veteran: "", funds_source: "", under_contract: ""
+    timeline: "", preapproval: "", realtor: "", rental_income: "", veteran: "", funds_source: "", under_contract: "",
+    // payment assumptions (blank = use program rate / no extras)
+    rate: "", term: "", taxAnnual: "", homeownersAnnual: "", floodAnnual: "", hoaMonthly: "", miMonthly: "", otherMonthly: "", monthlyRent: "",
+    // buydown assumptions
+    bdCurrentRate: "", bdBuydownRate: "", bdPoints: "", bdHoldYears: 5, bdTempType: "2-1", bdNoteRate: "", bdFunding: "", bdY1Rate: "", bdY2Rate: ""
   };
 
   /* ---------- prefill from hero (URL + non-PII localStorage) ---------- */
@@ -135,8 +139,142 @@
     var ins = KW.insights(S), insWrap = $("[data-snap-insights]");
     if (insWrap) { insWrap.innerHTML = ""; ins.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; insWrap.appendChild(li); }); }
 
-    renderWhatIf(); renderPathCards();
+    renderWhatIf(); renderPathCards(); renderDashboard();
   }
+
+  /* ---------- Strategy Dashboard: payment stack, structure, DSCR, buydown, explain ---------- */
+  function bar(amt, max) { return Math.max(0, Math.min(100, max > 0 ? (amt / max * 100) : 0)); }
+  function renderDashboard() {
+    var o = KW.strategySummary(S);
+    var pb = o.payment;
+
+    // Rate assumption line + limit note
+    set("[data-rate-assump]", pb.rateLabel + " · " + pb.rate + "% / " + pb.term + " yr");
+    set("[data-rate-updated]", KW.rates.lastUpdated);
+    var BASE = CFG.baselineConformingLimitOneUnit, HIBAL = CFG.countyConformingLimitOneUnit;
+    set("[data-limit-note]", "Configured reference only — verify current FHFA / Fannie Mae / HUD limits before launch. Baseline " +
+      KW.fmtCurrency(BASE) + " · high-balance " + KW.fmtCurrency(HIBAL) + " (" + CFG.countyName + ", " + CFG.year + ").");
+
+    // Payment stack
+    var ps = $("[data-paystack]");
+    if (ps) {
+      var segs = pb.segments, maxSeg = pb.total || 1;
+      ps.innerHTML = segs.map(function (sg) {
+        var added = sg.amt > 0;
+        return '<div class="payrow"><span class="payrow__k">' + esc(sg.label) + '</span>' +
+          '<span class="payrow__bar"><span style="width:' + bar(sg.amt, maxSeg) + '%"></span></span>' +
+          '<span class="payrow__v">' + (added ? KW.fmtCurrency(sg.amt) + "/mo" : "Not added") + '</span></div>';
+      }).join("");
+    }
+    set("[data-pitia-total]", KW.fmtCurrency(pb.total) + "/mo");
+
+    // Purchase structure bar (down vs loan, reference line)
+    var pst = $("[data-pstruct]");
+    if (pst) {
+      var price = S.price || 1, loan = S.loan || 0, down = Math.max(0, price - loan);
+      var HIBAL2 = CFG.countyConformingLimitOneUnit;
+      var refPct = Math.max(0, Math.min(100, (HIBAL2 / price) * 100));
+      pst.innerHTML =
+        '<span class="pstruct__down" style="width:' + bar(down, price) + '%" title="Down payment / equity"></span>' +
+        '<span class="pstruct__loan" style="width:' + bar(loan, price) + '%" title="Estimated loan amount"></span>' +
+        '<span class="pstruct__ref" style="left:' + refPct + '%" title="High-balance reference"></span>';
+      var over = loan - HIBAL2;
+      set("[data-pstruct-note]", "Down " + KW.fmtCurrency(down) + " · Loan " + KW.fmtCurrency(loan) + " · Reference " + KW.fmtCurrency(HIBAL2) +
+        (over > 0 ? " — about " + KW.fmtCurrency(over) + " above the high-balance reference" : " — within the high-balance reference"));
+    }
+
+    // DSCR block
+    var dblock = $("[data-dscr-block]"), occ = KW.occShort(S.occupancy);
+    var showDscr = occ === "Investment" || /dscr|rental/i.test(S.main_concern || "");
+    if (dblock) {
+      dblock.hidden = !showDscr;
+      if (showDscr) {
+        var d = o.dscr, dd = $("[data-dscr]");
+        if (dd) {
+          if (!d.has) {
+            dd.innerHTML = '<p class="qc__ref">Add an estimated monthly rent in Assumptions to view DSCR math.</p>';
+          } else {
+            var ratio = d.ratio, pos = Math.max(2, Math.min(100, (ratio / 1.5) * 100));
+            var band = ratio < 1 ? "Below 1.00x" : ratio < 1.05 ? "Around 1.00x" : ratio < 1.15 ? "≈1.10x" : ratio < 1.25 ? "≈1.20x" : "1.25x+";
+            dd.innerHTML =
+              '<div class="dscr__top"><span>Rent ' + KW.fmtCurrency(d.rent) + '/mo</span><span>Housing ' + KW.fmtCurrency(d.pitia) + '/mo</span>' +
+              '<strong>DSCR ' + ratio.toFixed(2) + 'x</strong></div>' +
+              '<div class="dscr__meter"><span class="dscr__fill" style="width:' + pos + '%"></span><span class="dscr__one" title="1.00x"></span></div>' +
+              '<div class="dscr__band">' + band + ' — math illustration only</div>';
+          }
+        }
+      }
+    }
+
+    // Buydown — permanent
+    var bpEl = $("[data-bd-perm]"), p = o.buydownPermanent;
+    if (bpEl) {
+      bpEl.innerHTML =
+        cell("Rate before", p.curRate + "%") + cell("Rate after", p.bdRate + "%") +
+        cell("P&I before", KW.fmtCurrency(p.piCur) + "/mo") + cell("P&I after", KW.fmtCurrency(p.piBd) + "/mo") +
+        cell("Monthly savings", KW.fmtCurrency(p.monthlySavings) + "/mo") + cell("Buydown cost", KW.fmtCurrency(p.cost)) +
+        cell("Break-even", p.breakEvenMonths != null ? (Math.round(p.breakEvenMonths) + " mo / " + p.breakEvenYears.toFixed(1) + " yr") : "n/a");
+    }
+    // break-even timeline + verdict vs hold
+    var tl = $("[data-bd-timeline]"), hold = KW.parseNum(S.bdHoldYears) || 5;
+    if (tl) {
+      if (p.breakEvenMonths != null && p.monthlySavings > 0) {
+        var horizon = Math.max(p.breakEvenMonths, hold * 12) * 1.1;
+        var bePos = Math.min(100, p.breakEvenMonths / horizon * 100), holdPos = Math.min(100, hold * 12 / horizon * 100);
+        tl.innerHTML = '<div class="bd-tl"><span class="bd-tl__be" style="left:' + bePos + '%" title="Break-even"></span>' +
+          '<span class="bd-tl__hold" style="left:' + holdPos + '%" title="Your time horizon"></span></div>' +
+          '<div class="bd-tl__labels"><span>Month 0</span><span>Break-even ' + Math.round(p.breakEvenMonths) + ' mo</span><span>Long-term</span></div>';
+      } else { tl.innerHTML = ""; }
+    }
+    set("[data-bd-hold-out]", hold + " year" + (hold === 1 ? "" : "s"));
+    var verdict = $("[data-bd-verdict]");
+    if (verdict) {
+      if (p.breakEvenMonths != null && p.monthlySavings > 0) {
+        verdict.textContent = (hold * 12 < p.breakEvenMonths)
+          ? "Based on these assumptions, the buydown may take longer to recover than your expected time horizon. Math illustration only."
+          : "Based on these assumptions, the buydown may recover before your expected time horizon. Math illustration only.";
+      } else {
+        verdict.textContent = "At these assumptions there is no monthly savings to recover. Math illustration only.";
+      }
+    }
+
+    // Buydown — temporary
+    var t = o.buydownTemporary, ladder = $("[data-bd-ladder]");
+    if (ladder) {
+      ladder.innerHTML =
+        '<div class="bd-rung"><span>Year 1 @ ' + t.y1 + '%</span><strong>' + KW.fmtCurrency(t.piY1) + '/mo</strong></div>' +
+        (t.type === "1-0" ? "" : '<div class="bd-rung"><span>Year 2 @ ' + t.y2 + '%</span><strong>' + KW.fmtCurrency(t.piY2) + '/mo</strong></div>') +
+        '<div class="bd-rung bd-rung--note"><span>Year 3+ @ ' + t.note + '% (note rate)</span><strong>' + KW.fmtCurrency(t.piNote) + '/mo</strong></div>';
+    }
+    set("[data-bd-subsidy]", "Estimated subsidy needed: " + KW.fmtCurrency(t.subsidy) + (t.fundingSource ? " · funding: " + t.fundingSource : ""));
+
+    // Buydown insight
+    var bi = $("[data-bd-insight]");
+    if (bi) bi.textContent = KW.buydownInsight(S).join("  ");
+
+    // Dashboard metric cards
+    var cards = $("[data-dash-cards]");
+    if (cards) {
+      var items = [
+        ["Estimated loan amount", KW.fmtCurrency(S.loan)],
+        ["Estimated P&I", KW.fmtCurrency(pb.pi) + "/mo"],
+        ["Est. monthly housing cost", KW.fmtCurrency(pb.total) + "/mo"],
+        ["Review path", o.primaryReviewPath],
+        ["Before-jumbo gap", o.whatIfBeforeJumbo.state === "over" ? KW.fmtCurrency(o.whatIfBeforeJumbo.extra) + " over" : "Within range"],
+        ["Scenario complexity", o.complexityLevel]
+      ];
+      if (showDscr && o.dscr.has) items.push(["DSCR coverage", o.dscr.ratio.toFixed(2) + "x"]);
+      if (p.breakEvenMonths != null && p.monthlySavings > 0) items.push(["Buydown break-even", Math.round(p.breakEvenMonths) + " mo"]);
+      cards.innerHTML = items.map(function (it) {
+        return '<div class="dash-card"><span class="dash-card__k">' + esc(it[0]) + '</span><span class="dash-card__v">' + esc(it[1]) + '</span></div>';
+      }).join("");
+    }
+
+    // Smart explanation
+    var ex = $("[data-explain]");
+    if (ex) ex.innerHTML = o.explanation.map(function (para) { return "<p>" + esc(para) + "</p>"; }).join("");
+  }
+  function cell(k, v) { return '<div class="bd-cell"><span class="bd-cell__k">' + esc(k) + '</span><span class="bd-cell__v">' + esc(v) + '</span></div>'; }
 
   function renderWhatIf() {
     var wi = KW.whatIf(S), body = $("[data-whatif-body]"), note = $("[data-whatif-note]");
@@ -222,6 +360,26 @@
       var k = el.getAttribute("data-adv"); S[k] = el.value;
       if (k === "timeline") S.under_contract = /under contract/i.test(el.value) ? "Yes" : "No";
       renderSnapshot();
+    });
+  });
+
+  /* ---------- payment assumptions + buydown inputs (live) ---------- */
+  $$("[data-a]").forEach(function (el) {
+    el.addEventListener("input", function () { S[el.getAttribute("data-a")] = el.value.trim(); renderDashboard(); });
+  });
+  $$("[data-bd]").forEach(function (el) {
+    el.addEventListener("input", function () { S[el.getAttribute("data-bd")] = el.value.trim(); renderDashboard(); });
+    el.addEventListener("change", function () { S[el.getAttribute("data-bd")] = el.value.trim(); renderDashboard(); });
+  });
+  var holdEl = $("[data-bd-hold]");
+  if (holdEl) holdEl.addEventListener("input", function () { S.bdHoldYears = KW.parseNum(holdEl.value); renderDashboard(); });
+  $$("[data-bd-tab]").forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      var which = tab.getAttribute("data-bd-tab");
+      $$("[data-bd-tab]").forEach(function (t) { var on = t === tab; t.classList.toggle("is-on", on); t.setAttribute("aria-selected", on ? "true" : "false"); });
+      var perm = $('[data-bd-pane="perm"]'), temp = $('[data-bd-pane="temp"]');
+      if (perm) perm.hidden = which !== "perm";
+      if (temp) temp.hidden = which !== "temp";
     });
   });
 
