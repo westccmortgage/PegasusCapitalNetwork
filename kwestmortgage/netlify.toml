@@ -15,20 +15,24 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
+# CSS/JS share the same filename across deploys, so they must always be
+# revalidated — otherwise a manual redeploy serves stale styles/scripts.
+# (Cache-busting query strings like kwest.css?v=N are bumped when needed.)
 [[headers]]
   for = "/css/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/js/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
+# Media (videos, images) rarely change — cache for a day.
 [[headers]]
   for = "/assets/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=86400"
 
 # Clean URLs (optional): /concierge -> /concierge.html
 [[redirects]]
