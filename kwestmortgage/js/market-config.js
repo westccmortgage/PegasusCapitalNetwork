@@ -37,6 +37,17 @@
     recipient: "info@kwestmortgages.com" // configured in Netlify notifications
   };
 
+  /* Rate ASSUMPTIONS — education only. Edit in ONE place. Not a rate quote. */
+  var RATE_CONFIG = {
+    lastUpdated: "2026-06-12",
+    sourceLabel: "Public national mortgage rate averages; update before launch",
+    conforming30: 6.58,
+    jumbo30: 6.84,
+    fha30: 6.14,
+    va30: 6.16,
+    note: "Rates shown are assumptions for education only. They are not rate quotes, APRs, locked rates, or commitments to lend."
+  };
+
   /* ---------- formatting / parsing ---------- */
   function fmtCurrency(n) {
     n = Math.max(0, Math.round(Number(n) || 0));
@@ -266,6 +277,139 @@
     return tags.filter(function (t, i, a) { return a.indexOf(t) === i; });
   }
 
+  /* ---------- rate assumption selection (by path/program) ---------- */
+  function rateFor(s) {
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var county = MARKET_CONFIG.countyConformingLimitOneUnit;
+    var con = s.main_concern || "";
+    if (/va/i.test(con)) return { rate: RATE_CONFIG.va30, label: "VA 30-yr assumption" };
+    if (/fha/i.test(con)) return { rate: RATE_CONFIG.fha30, label: "FHA 30-yr assumption" };
+    if (county && loan > county) return { rate: RATE_CONFIG.jumbo30, label: "Jumbo 30-yr assumption" };
+    return { rate: RATE_CONFIG.conforming30, label: "Conforming 30-yr assumption" };
+  }
+
+  /* ---------- payment estimator (deterministic amortization) ---------- */
+  function monthlyPI(loan, ratePct, termYears) {
+    loan = Number(loan) || 0; termYears = Number(termYears) || 30;
+    var r = (Number(ratePct) || 0) / 100 / 12, n = termYears * 12;
+    if (loan <= 0) return 0;
+    if (r === 0) return loan / n;
+    return loan * r / (1 - Math.pow(1 + r, -n));
+  }
+  function paymentBreakdown(s) {
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var ra = rateFor(s);
+    var rate = (s.rate != null && s.rate !== "") ? parseNum(s.rate) : ra.rate;
+    var term = s.term ? parseNum(s.term) : 30;
+    var pi = monthlyPI(loan, rate, term);
+    var tax = parseNum(s.taxAnnual) / 12;
+    var hoi = parseNum(s.homeownersAnnual) / 12;
+    var flood = parseNum(s.floodAnnual) / 12;
+    var hoa = parseNum(s.hoaMonthly);
+    var miOther = parseNum(s.miMonthly) + parseNum(s.otherMonthly);
+    var extrasEntered = (tax + hoi + flood + hoa + miOther) > 0;
+    var total = pi + tax + hoi + flood + hoa + miOther;
+    return {
+      rate: rate, rateLabel: ra.label, term: term, pi: pi,
+      tax: tax, hoi: hoi, flood: flood, hoa: hoa, miOther: miOther,
+      total: total, extrasEntered: extrasEntered,
+      segments: [
+        { key: "pi", label: "Principal & Interest", amt: pi },
+        { key: "tax", label: "Property Taxes", amt: tax },
+        { key: "hoi", label: "Homeowners / Wind", amt: hoi },
+        { key: "flood", label: "Flood Insurance", amt: flood },
+        { key: "hoa", label: "HOA", amt: hoa },
+        { key: "other", label: "Mortgage Insurance / Other", amt: miOther }
+      ]
+    };
+  }
+  function dscr(s) {
+    var rent = parseNum(s.monthlyRent), pb = paymentBreakdown(s), pitia = pb.total;
+    if (rent <= 0 || pitia <= 0) return { has: false, pitia: pitia };
+    return { has: true, rent: rent, pitia: pitia, ratio: rent / pitia };
+  }
+
+  /* ---------- Rate Buydown — math illustrations only (deterministic) ---------- */
+  function permanentBuydown(s) {
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var term = s.term ? parseNum(s.term) : 30;
+    var curRate = (s.bdCurrentRate != null && s.bdCurrentRate !== "") ? parseNum(s.bdCurrentRate) : rateFor(s).rate;
+    var bdRate = (s.bdBuydownRate != null && s.bdBuydownRate !== "") ? parseNum(s.bdBuydownRate) : Math.max(0, curRate - 0.5);
+    var points = (s.bdPoints != null && s.bdPoints !== "") ? parseNum(s.bdPoints) : 1.5;
+    var piCur = monthlyPI(loan, curRate, term);
+    var piBd = monthlyPI(loan, bdRate, term);
+    var monthlySavings = piCur - piBd;
+    var cost = loan * points / 100;
+    var beMonths = monthlySavings > 0 ? cost / monthlySavings : null;
+    return {
+      loan: loan, term: term, curRate: curRate, bdRate: bdRate, points: points, cost: cost,
+      piCur: piCur, piBd: piBd, monthlySavings: monthlySavings,
+      breakEvenMonths: beMonths, breakEvenYears: beMonths != null ? beMonths / 12 : null
+    };
+  }
+  function temporaryBuydown(s) {
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var term = s.term ? parseNum(s.term) : 30;
+    var note = (s.bdNoteRate != null && s.bdNoteRate !== "") ? parseNum(s.bdNoteRate) : rateFor(s).rate;
+    var type = s.bdTempType || "2-1";
+    var y1, y2;
+    if (type === "1-0") { y1 = note - 1; y2 = note; }
+    else if (type === "custom") { y1 = (s.bdY1Rate !== "" && s.bdY1Rate != null) ? parseNum(s.bdY1Rate) : note - 2; y2 = (s.bdY2Rate !== "" && s.bdY2Rate != null) ? parseNum(s.bdY2Rate) : note - 1; }
+    else { y1 = note - 2; y2 = note - 1; } // 2-1
+    y1 = Math.max(0, y1); y2 = Math.max(0, y2);
+    var piNote = monthlyPI(loan, note, term), piY1 = monthlyPI(loan, y1, term), piY2 = monthlyPI(loan, y2, term);
+    var subsidy = (piNote - piY1) * 12 + (type === "1-0" ? 0 : (piNote - piY2) * 12);
+    return {
+      type: type, loan: loan, term: term, note: note, y1: y1, y2: y2,
+      piNote: piNote, piY1: piY1, piY2: piY2,
+      y1Savings: piNote - piY1, y2Savings: type === "1-0" ? 0 : (piNote - piY2),
+      subsidy: subsidy, fundingSource: s.bdFunding || ""
+    };
+  }
+  function buydownInsight(s) {
+    var pb = permanentBuydown(s), tb = temporaryBuydown(s), hold = s.bdHoldYears ? parseNum(s.bdHoldYears) : 5;
+    var out = [];
+    if (pb.monthlySavings > 0 && pb.breakEvenMonths != null) {
+      var t = "At the current assumptions, the permanent buydown costs approximately " + fmtCurrency(pb.cost) +
+        " and reduces estimated P&I by " + fmtCurrency(pb.monthlySavings) + " per month. The math break-even is approximately " +
+        Math.round(pb.breakEvenMonths) + " months (" + pb.breakEvenYears.toFixed(1) + " years). ";
+      t += (hold * 12 < pb.breakEvenMonths)
+        ? "If you expect to refinance or sell in about " + hold + " years, the buydown may take longer to recover."
+        : "If you expect to keep the loan about " + hold + " years, the buydown may recover before your time horizon.";
+      out.push(t);
+    } else {
+      out.push("At the current assumptions, the buydown rate is not lower than the current rate, so there is no monthly savings to recover. Adjust the assumptions to compare.");
+    }
+    out.push("The temporary " + tb.type + " buydown lowers the estimated payment in the early years, but the note-rate payment begins after the buydown period. Final availability depends on program guidelines and an approved funding source (seller, builder, or lender credit).");
+    return out;
+  }
+
+  /* ---------- rule-based "smart" explanation (no AI, no invented numbers) ---------- */
+  function explain(s) {
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var cfg = MARKET_CONFIG, county = cfg.countyConformingLimitOneUnit, base = cfg.baselineConformingLimitOneUnit;
+    var occ = occShort(s.occupancy), r = reviewPaths(s);
+    var p1 = "Your estimated loan amount is " + fmtCurrency(loan) + " on a " + fmtCurrency(parseNum(s.price)) +
+      " " + ((isRefi(s) || s.mode === "refi") ? "refinance" : "purchase") + ". The current review path is " + r.primary + ".";
+    var p2;
+    if (county && loan > county) {
+      p2 = "Your estimated loan amount is above the configured " + cfg.countyName + " high-balance reference range, so the scenario may need a jumbo comparison. Increasing down payment or adjusting purchase price may change the review path.";
+    } else if (county && loan > base) {
+      p2 = "Your estimated loan amount is within the configured high-balance reference range, so a high-balance conforming review may fit. Adjusting down payment can move the scenario.";
+    } else {
+      p2 = "Your estimated loan amount is within the baseline conforming reference range. Final review still depends on full guidelines.";
+    }
+    var extras = [];
+    if (occ === "Investment") extras.push("because this is marked as an investment property, the scenario may also need investor or DSCR review");
+    if (occ === "Second home") extras.push("second-home rules may differ from primary residence rules");
+    if (/self-?employed|business owner|mixed/i.test(s.income_situation || "")) extras.push("self-employed income may need alternative documentation review");
+    if (/condo/i.test(s.property_type || "")) extras.push("condo project, HOA, insurance, and reserves may matter");
+    if (/2.?4 unit|2–4/i.test(s.property_type || "")) extras.push("2–4 unit limits and program rules may differ");
+    if (extras.length) p2 += " Also, " + extras.join("; ") + ".";
+    var p3 = "Final review should include income documentation, property type, insurance, flood, HOA, reserves, and current lender guidelines. A licensed mortgage professional can confirm which options may fit.";
+    return [p1, p2, p3];
+  }
+
   /* ---------- structured strategy object (single source for UI + form) ---------- */
   function strategySummary(s) {
     var cfg = MARKET_CONFIG;
@@ -296,6 +440,13 @@
       keyInsights: insights(s),
       attentionItems: attentionItems(s),
       whatIfBeforeJumbo: whatIf(s),
+      rateAssumption: rateFor(s),
+      payment: paymentBreakdown(s),
+      dscr: dscr(s),
+      explanation: explain(s),
+      buydownPermanent: permanentBuydown(s),
+      buydownTemporary: temporaryBuydown(s),
+      buydownHoldYears: s.bdHoldYears ? parseNum(s.bdHoldYears) : 5,
       leadIntentLevel: leadIntent(s),
       leadTags: leadTags(s),
       complianceNote: "Educational scenario only. Not a loan approval, rate quote, underwriting decision, or commitment to lend."
@@ -356,6 +507,38 @@
       L.push("  Pending — adjust scenario.");
     }
     L.push("");
+    L.push("Rate assumptions (NOT a quote):");
+    L.push("  Assumption used: " + o.payment.rateLabel + " — " + o.payment.rate + "% / " + o.payment.term + " yr");
+    L.push("  Rate assumptions last updated: " + RATE_CONFIG.lastUpdated);
+    L.push("");
+    L.push("Payment assumptions (estimates only):");
+    L.push("  Estimated P&I: " + fmtCurrency(o.payment.pi) + "/mo");
+    L.push("  Property taxes: " + fmtCurrency(o.payment.tax) + "/mo");
+    L.push("  Homeowners / wind: " + fmtCurrency(o.payment.hoi) + "/mo");
+    L.push("  Flood: " + fmtCurrency(o.payment.flood) + "/mo");
+    L.push("  HOA: " + fmtCurrency(o.payment.hoa) + "/mo");
+    L.push("  Mortgage insurance / other: " + fmtCurrency(o.payment.miOther) + "/mo");
+    L.push("  Estimated monthly housing cost (PITIA): " + fmtCurrency(o.payment.total) + "/mo");
+    if (o.dscr.has) {
+      L.push("");
+      L.push("DSCR math illustration:");
+      L.push("  Estimated monthly rent: " + fmtCurrency(o.dscr.rent));
+      L.push("  Estimated monthly housing cost: " + fmtCurrency(o.dscr.pitia));
+      L.push("  DSCR: " + o.dscr.ratio.toFixed(2) + "x (lender DSCR requirements vary by program, property, credit, reserves, and guidelines)");
+    }
+    var bp = o.buydownPermanent, bt = o.buydownTemporary;
+    L.push("");
+    L.push("Rate Buydown Illustration (NOT a quote):");
+    L.push("  Current rate assumption: " + bp.curRate + "%");
+    L.push("  Permanent buydown rate: " + bp.bdRate + "% at " + bp.points + " pts (" + fmtCurrency(bp.cost) + ")");
+    L.push("  Est. P&I before buydown: " + fmtCurrency(bp.piCur) + "/mo");
+    L.push("  Est. P&I after buydown: " + fmtCurrency(bp.piBd) + "/mo");
+    L.push("  Est. monthly savings: " + fmtCurrency(bp.monthlySavings) + "/mo");
+    L.push("  Break-even: " + (bp.breakEvenMonths != null ? (Math.round(bp.breakEvenMonths) + " months (" + bp.breakEvenYears.toFixed(1) + " yrs)") : "n/a at these assumptions"));
+    L.push("  Expected hold period: " + o.buydownHoldYears + " years");
+    L.push("  Temporary buydown option: " + bt.type + " — est. subsidy " + fmtCurrency(bt.subsidy) + (bt.fundingSource ? " (funding: " + bt.fundingSource + ")" : ""));
+    L.push("  Note: Rate buydown figures are educational math illustrations only and are not rate quotes, APRs, locked terms, approvals, or commitments to lend.");
+    L.push("");
     L.push("Scenario complexity: " + o.complexityLevel);
     L.push("Lead intent: " + o.leadIntentLevel);
     L.push("Lead tags: " + (o.leadTags.join(", ") || "—"));
@@ -374,9 +557,19 @@
 
   global.MARKET_CONFIG = MARKET_CONFIG;
   global.BRAND_CONFIG = BRAND_CONFIG;
+  global.RATE_CONFIG = RATE_CONFIG;
   global.KW = {
     config: MARKET_CONFIG,
     brand: BRAND_CONFIG,
+    rates: RATE_CONFIG,
+    rateFor: rateFor,
+    monthlyPI: monthlyPI,
+    paymentBreakdown: paymentBreakdown,
+    dscr: dscr,
+    explain: explain,
+    permanentBuydown: permanentBuydown,
+    temporaryBuydown: temporaryBuydown,
+    buydownInsight: buydownInsight,
     fmtCurrency: fmtCurrency,
     parseNum: parseNum,
     occShort: occShort,
