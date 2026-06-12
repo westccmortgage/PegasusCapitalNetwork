@@ -262,4 +262,13 @@
 
   /* ---------------- Year stamp ---------------- */
   $all("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
+
+  /* ---------------- Contact email (single source: engine FORM_CONFIG/BRAND_CONFIG) ---------------- */
+  var recipient = (window.BRAND_CONFIG && window.BRAND_CONFIG.recipient) || "";
+  if (recipient) {
+    $all("[data-recipient-email]").forEach(function (a) {
+      a.setAttribute("href", "mailto:" + recipient);
+      a.textContent = recipient;
+    });
+  }
 })();

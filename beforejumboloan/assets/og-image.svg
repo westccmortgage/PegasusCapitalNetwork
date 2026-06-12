@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Before Jumbo Loan — Compare your review path before you go jumbo">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#163A4E"/>
+      <stop offset="1" stop-color="#0E2A3B"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E0C690"/>
+      <stop offset="1" stop-color="#C8A86B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <!-- coastal horizon lines -->
+  <g opacity="0.5" fill="none" stroke="#2E7FA6" stroke-width="3" stroke-linecap="round">
+    <path d="M0 470 q150 -36 300 0 t300 0 t300 0 t300 0"/>
+    <path d="M0 520 q150 -28 300 0 t300 0 t300 0 t300 0" opacity="0.6"/>
+  </g>
+  <!-- eyebrow -->
+  <text x="90" y="180" font-family="Inter, Arial, sans-serif" font-size="26" letter-spacing="6"
+        fill="#C8A86B" font-weight="600">BEFORE JUMBO STRATEGY STUDIO</text>
+  <!-- wordmark -->
+  <text x="86" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="600" fill="#FBFAF7">
+    Before <tspan fill="url(#gold)">Jumbo</tspan> Loan
+  </text>
+  <!-- tagline -->
+  <text x="90" y="372" font-family="Inter, Arial, sans-serif" font-size="34" fill="#D9D2C5">
+    Compare your review path before you write the offer.
+  </text>
+  <!-- footnote -->
+  <text x="90" y="560" font-family="Inter, Arial, sans-serif" font-size="22" fill="#8FA6B2">
+    Educational scenario tool — not a rate quote, approval, or commitment to lend.
+  </text>
+</svg>

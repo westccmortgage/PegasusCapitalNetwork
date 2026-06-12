@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Market routes are 200 rewrites to /scenario-studio.html (see netlify.toml).
+     Keep this list in sync with the MARKETS registry in js/engine.js. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://beforejumboloan.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://beforejumboloan.com/key-west</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://beforejumboloan.com/palm-beach</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://beforejumboloan.com/miami-dade</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://beforejumboloan.com/california</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://beforejumboloan.com/orange-county</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://beforejumboloan.com/los-angeles</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+</urlset>
