@@ -33,7 +33,7 @@
   --maxw: 1180px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-display: "Lora", Georgia, "Times New Roman", serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -45,8 +45,9 @@ body {
   font-family: var(--font-body);
   color: var(--ink);
   background: var(--white);
-  line-height: 1.65;
-  font-size: 17px;
+  line-height: 1.7;
+  font-size: 16.5px;
+  letter-spacing: 0.002em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -54,12 +55,12 @@ body {
 img, svg, video { max-width: 100%; display: block; }
 a { color: var(--ocean); text-decoration: none; transition: color .2s var(--ease); }
 a:hover { color: var(--navy); }
-h1,h2,h3,h4 { font-family: var(--font-display); font-weight: 500; line-height: 1.12; color: var(--navy); letter-spacing: -0.01em; margin: 0 0 .5em; }
-h1 { font-size: clamp(2.3rem, 5.2vw, 4rem); }
-h2 { font-size: clamp(1.8rem, 3.6vw, 2.7rem); }
-h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
+h1,h2,h3,h4 { font-family: var(--font-display); font-weight: 500; line-height: 1.2; color: var(--navy); letter-spacing: -0.005em; margin: 0 0 .5em; }
+h1 { font-size: clamp(2.1rem, 4.2vw, 3.3rem); line-height: 1.16; }
+h2 { font-size: clamp(1.7rem, 3.1vw, 2.4rem); }
+h3 { font-size: clamp(1.2rem, 1.8vw, 1.42rem); }
 p  { margin: 0 0 1.1em; color: var(--ink); }
-.lead { font-size: 1.18rem; color: var(--muted); line-height: 1.7; }
+.lead { font-size: 1.135rem; color: var(--muted); line-height: 1.72; letter-spacing: 0; }
 
 /* ---------- Layout ---------- */
 .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
@@ -409,3 +410,57 @@ table.compare td:last-child { font-weight:600; color:var(--ocean); }
 .hero-card__rv svg { color: var(--ocean-light); flex: 0 0 auto; }
 .hero-card__foot { font-size: .8rem; line-height: 1.55; color: #b9cdd8; margin: 0; }
 @media (max-width: 980px){ .hero-card { margin: 0 auto; } }
+
+/* ============================================================
+   TYPOGRAPHY POLISH (Lora display + Inter UI) — premium/calm
+   ============================================================ */
+
+/* Display face: Lora reads calmer with a touch more weight + tight tracking */
+h1, h2 { font-weight: 500; }
+h3, h4 { font-weight: 600; }
+
+/* Hero headline — smaller, calmer, balanced */
+.hero h1 {
+  font-size: clamp(2.05rem, 3.6vw, 3.05rem);
+  line-height: 1.18;
+  letter-spacing: -0.012em;
+  font-weight: 500;
+  text-shadow: 0 2px 26px rgba(0,0,0,.22);
+}
+.hero__sub {
+  font-size: clamp(1.02rem, 1.3vw, 1.16rem);
+  line-height: 1.66;
+  letter-spacing: 0;
+  color: #e8f1f4;
+  margin: 1.1em 0 1.05em;
+}
+
+/* Eyebrow / label — clean, letter-spaced, premium (Inter) */
+.eyebrow, .hero__label, .card__tag, .hero-card__label, .hero-card__rk {
+  font-family: var(--font-body);
+}
+.hero__label { letter-spacing: .2em; font-weight: 600; }
+
+/* Body copy — refined rhythm */
+.card p { line-height: 1.66; }
+p { line-height: 1.7; }
+
+/* Buttons — consistent modern UI type */
+.btn { font-family: var(--font-body); font-weight: 600; font-size: .95rem; letter-spacing: .006em; }
+.btn--lg { font-size: 1.02rem; }
+
+/* Navigation + forms stay on Inter (already), tighten weights */
+.nav__links a { font-weight: 500; letter-spacing: .004em; }
+.field label { font-family: var(--font-body); letter-spacing: .004em; }
+.field input, .field select, .field textarea { font-family: var(--font-body); }
+
+/* Logo — cleaner, single line, calm tracking */
+.brand__name { font-family: var(--font-display); font-weight: 600; letter-spacing: 0; }
+.brand__name b { font-weight: 600; }
+
+/* Hero scenario card + rotating card quotes use Lora now — keep them measured */
+.hero-card__quote { font-weight: 500; letter-spacing: -0.005em; line-height: 1.42; }
+.scenario-card .quote { font-weight: 500; letter-spacing: -0.005em; }
+
+/* Section eyebrows a touch smaller/cleaner */
+.eyebrow { font-size: .74rem; letter-spacing: .2em; }
