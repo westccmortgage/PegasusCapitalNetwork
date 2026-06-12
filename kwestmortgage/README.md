@@ -68,7 +68,7 @@ Static — no build step. On Netlify, set **base directory** to `kwestmortgage`.
 ## Before launch (placeholders to replace)
 
 - **Phone** — currently `(888) 656-1256` (shared CaliforniaMTG business line); replace if K West gets its own number.
-- **Email** — `info@kwestmortgage.com` placeholder.
+- **Email** — `info@kwestmortgages.com` placeholder.
 - **Sun Coast Capital Mortgage / Florida licensing** details (footer + `disclosures.html`).
 - **Hero videos** — drop two files into `assets/`:
   - `assets/hero-desktop.mp4` — horizontal ocean/sunset clip (desktop background)
