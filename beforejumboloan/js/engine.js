@@ -23,55 +23,59 @@
        (set equal to baseline for non-high-cost counties).
      ============================================================ */
   var DEFAULT_MARKET = "key-west";
-  var LIMIT_YEAR = 2025;
+  var LIMIT_YEAR = 2026;
   var VERIFY = "VERIFY BEFORE LAUNCH (FHFA / Fannie Mae / HUD)";
+  // FHFA 2026 Conforming Loan Limit Values (effective 2026-01-01):
+  //   baseline 1-unit $832,750 · high-cost ceiling 1-unit $1,249,125.
+  // County values below reflect FHFA's published 2026 1-unit limits.
+  var VERIFIED = "FHFA 2026 CLL — verified 2026-06-12";
 
   var MARKETS = {
     "key-west": {
       marketSlug: "key-west", marketName: "Key West / Monroe County", countyName: "Monroe County", state: "FL",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 929200, fhaLimit: null,
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 990150, fhaLimit: null,
       localDisclaimer: "Monroe County is a high-cost area; coastal insurance, flood, condo, and HOA factors can significantly affect Key West scenarios.",
       marketHeroCopy: "Buying in Key West? Don’t assume it has to be jumbo — compare your review path before you write the offer.",
-      lastVerifiedDate: VERIFY
+      lastVerifiedDate: VERIFIED
     },
     "palm-beach": {
       marketSlug: "palm-beach", marketName: "Palm Beach County", countyName: "Palm Beach County", state: "FL",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 806500, fhaLimit: null,
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 832750, fhaLimit: null,
       localDisclaimer: "Palm Beach County generally uses the baseline conforming limit; insurance, flood, and HOA factors can affect scenarios.",
       marketHeroCopy: "Buying in Palm Beach County? Compare conforming, jumbo, and other review paths before you write the offer.",
-      lastVerifiedDate: VERIFY
+      lastVerifiedDate: VERIFIED
     },
     "miami-dade": {
       marketSlug: "miami-dade", marketName: "Miami-Dade County", countyName: "Miami-Dade County", state: "FL",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 806500, fhaLimit: null,
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 832750, fhaLimit: null,
       localDisclaimer: "Miami-Dade County generally uses the baseline conforming limit; condo project, insurance, and HOA review can matter.",
       marketHeroCopy: "Buying in Miami-Dade? Compare conforming, jumbo, condo, and investor review paths before you write the offer.",
-      lastVerifiedDate: VERIFY
+      lastVerifiedDate: VERIFIED
     },
     "california": {
       marketSlug: "california", marketName: "California (high-cost)", countyName: "California", state: "CA",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 1209750, fhaLimit: null,
-      localDisclaimer: "California conforming limits vary by county; the configured value is the high-cost-area ceiling. Verify the specific county before launch.",
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 1249125, fhaLimit: null,
+      localDisclaimer: "California conforming limits vary by county; the configured value is the 2026 high-cost-area ceiling. Verify the specific county before launch.",
       marketHeroCopy: "Buying in California? Don’t assume it has to be jumbo — compare your review path before you write the offer.",
       lastVerifiedDate: VERIFY
     },
     "orange-county": {
       marketSlug: "orange-county", marketName: "Orange County, CA", countyName: "Orange County", state: "CA",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 1209750, fhaLimit: null,
-      localDisclaimer: "Orange County is a high-cost area; verify the current high-cost ceiling before launch.",
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 1249125, fhaLimit: null,
+      localDisclaimer: "Orange County is a high-cost area; the configured value is the 2026 high-cost ceiling.",
       marketHeroCopy: "Buying in Orange County? Compare high-balance conforming vs jumbo before you write the offer.",
-      lastVerifiedDate: VERIFY
+      lastVerifiedDate: VERIFIED
     },
     "los-angeles": {
       marketSlug: "los-angeles", marketName: "Los Angeles County, CA", countyName: "Los Angeles County", state: "CA",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 1209750, fhaLimit: null,
-      localDisclaimer: "Los Angeles County is a high-cost area; verify the current high-cost ceiling before launch.",
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 1249125, fhaLimit: null,
+      localDisclaimer: "Los Angeles County is a high-cost area; the configured value is the 2026 high-cost ceiling.",
       marketHeroCopy: "Buying in Los Angeles? Compare high-balance conforming vs jumbo before you write the offer.",
-      lastVerifiedDate: VERIFY
+      lastVerifiedDate: VERIFIED
     },
     "custom": {
       marketSlug: "custom", marketName: "Your Market", countyName: "Your County", state: "US",
-      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 806500, highBalanceLimit: 806500, fhaLimit: null,
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 832750, fhaLimit: null,
       localDisclaimer: "Configure this market in MARKETS['custom'] before launch.",
       marketHeroCopy: "Don’t assume it has to be jumbo — compare your review path before you write the offer.",
       lastVerifiedDate: VERIFY

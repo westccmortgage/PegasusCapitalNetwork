@@ -42,7 +42,7 @@ complianceFooter, recipient`.
 ```js
 MARKETS["broward"] = {
   marketSlug:"broward", marketName:"Broward County", countyName:"Broward County", state:"FL",
-  loanLimitYear:2025, baselineConformingLimit:806500, highBalanceLimit:806500, fhaLimit:null,
+  loanLimitYear:2026, baselineConformingLimit:832750, highBalanceLimit:832750, fhaLimit:null,
   localDisclaimer:"…", marketHeroCopy:"…", lastVerifiedDate:"VERIFY BEFORE LAUNCH"
 };
 ```
