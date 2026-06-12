@@ -231,15 +231,32 @@
       }
     };
 
-    if (priceEl) priceEl.addEventListener("input", renderQC);
-    if (downEl) downEl.addEventListener("input", renderQC);
+    var track = function (n) { try { (window.dataLayer = window.dataLayer || []).push({ event: n }); if (typeof window.gtag === "function") window.gtag("event", n); } catch (e) {} };
+    var onInput = function () { renderQC(); track("quick_check_changed"); };
+    if (priceEl) priceEl.addEventListener("input", onInput);
+    if (downEl) downEl.addEventListener("input", onInput);
     occBtns.forEach(function (b) {
       b.addEventListener("click", function () {
         occ = b.getAttribute("data-qc-occ");
         occBtns.forEach(function (x) { x.classList.toggle("is-on", x === b); x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-        renderQC();
+        renderQC(); track("quick_check_changed");
       });
     });
+
+    // Secondary action: prefill the simple form (#builder) with the current numbers.
+    var sendLink = $("[data-qc-send]", qc);
+    if (sendLink) sendLink.addEventListener("click", function () {
+      var f = document.querySelector('form[name="key-west-scenario-review"]');
+      if (f) {
+        var price = window.KW.parseNum(priceEl.value), pct = window.KW.parseNum(downEl.value);
+        var setv = function (n, v) { var el = f.querySelector('[name="' + n + '"]'); if (el && "value" in el) el.value = v; };
+        setv("purchase_price", window.KW.fmtCurrency(price));
+        setv("estimated_down_payment", window.KW.fmtCurrency(Math.round(price * pct / 100)));
+        var occMap = { "Primary": "Primary residence", "Second home": "Second home", "Investment": "Investment property" };
+        setv("occupancy", occMap[occ] || "");
+      }
+    });
+
     renderQC();
   }
 

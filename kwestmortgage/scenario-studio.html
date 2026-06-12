@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/kwest.css?v=2">
+<link rel="stylesheet" href="css/kwest.css?v=3">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -204,6 +204,24 @@
             <div class="field"><label for="st-contact">Preferred contact method</label><select id="st-contact" data-c="preferred_contact_method"><option value="">Select…</option><option>Phone</option><option>Email</option><option>Text</option></select></div>
             <div class="field full"><label for="st-msg">Message / notes</label><textarea id="st-msg" data-c="message" placeholder="Anything else we should know about your Key West purchase…"></textarea></div>
           </div>
+
+          <details class="adv">
+            <summary>Advanced details (optional)</summary>
+            <div class="form-grid" style="margin-top:16px">
+              <div class="field"><label for="st-timeline">Timeline</label><select id="st-timeline" data-adv="timeline"><option value="">Select…</option><option>Already under contract</option><option>Making an offer soon</option><option>0–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just researching</option></select></div>
+              <div class="field"><label for="st-preapproval">Need a pre-approval letter?</label><select id="st-preapproval" data-adv="preapproval"><option value="">Select…</option><option>Yes, soon</option><option>Not yet</option></select></div>
+              <div class="field"><label for="st-realtor">Working with a realtor?</label><select id="st-realtor" data-adv="realtor"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+              <div class="field"><label for="st-rental">Expect to use rental income?</label><select id="st-rental" data-adv="rental_income"><option value="">Select…</option><option>Yes</option><option>No</option><option>Not sure</option></select></div>
+              <div class="field"><label for="st-veteran">Veteran (want VA review)?</label><select id="st-veteran" data-adv="veteran"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+              <div class="field"><label for="st-funds">Using funds from another sale / 1031 / gift?</label><select id="st-funds" data-adv="funds_source"><option value="">Select…</option><option>Sale proceeds</option><option>1031 exchange</option><option>Gift funds</option><option>None of these</option></select></div>
+            </div>
+          </details>
+
+          <label class="consent">
+            <input type="checkbox" data-consent>
+            <span>By submitting, I agree to be contacted by a licensed mortgage professional by phone, email, or text regarding my mortgage scenario. Message and data rates may apply. I understand this is not a loan application, loan approval, rate quote, underwriting decision, or commitment to lend.</span>
+          </label>
+          <p class="st__hint" style="margin-top:8px">No credit check is performed to start.</p>
         </div>
 
         <!-- Result -->
@@ -216,8 +234,12 @@
               <span class="snap__k">Suggested review paths</span>
               <div class="chiprow" data-result-paths></div>
             </div>
+            <div class="result-attention" data-result-attention-wrap hidden>
+              <span class="snap__k">Attention items</span>
+              <ul class="snap__insights" data-result-attention></ul>
+            </div>
           </div>
-          <p class="st__sub">Based on what you shared, a licensed mortgage professional can review whether your scenario may fit one or more available mortgage options.</p>
+          <p class="st__sub">Based on what you shared, a licensed mortgage professional can review whether your scenario may fit one or more available mortgage options. Jumbo may be the right path for some buyers — the goal is to compare whether conforming, high-balance conforming, jumbo, or another option should be reviewed.</p>
           <div class="result-actions">
             <button type="button" class="btn btn--primary btn--lg" data-st-send>Send My Scenario for Licensed Review</button>
             <button type="button" class="btn btn--ghost" data-st-edit>Edit My Scenario</button>
@@ -229,9 +251,17 @@
         <!-- Thank-you (after submit) -->
         <div class="st-thanks" data-thanks hidden>
           <div class="form-success__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
-          <h2 class="st__q">Thank you.</h2>
-          <p class="lead">Your Key West mortgage scenario has been received. A licensed mortgage professional will review your information and contact you.</p>
-          <p class="form-note">This is not a loan approval or commitment to lend.</p>
+          <h2 class="st__q">Your scenario has been sent for licensed review.</h2>
+          <p class="lead">Thank you. A licensed mortgage professional will review your information and contact you.</p>
+          <div class="next-steps">
+            <span class="snap__k">What happens next</span>
+            <ol>
+              <li>We review the scenario details</li>
+              <li>We compare possible loan paths</li>
+              <li>We contact you with next steps</li>
+            </ol>
+          </div>
+          <p class="form-note">This is not a loan approval or commitment to lend. No credit check is performed to start.</p>
           <a class="btn btn--ghost" href="index.html">Back to Home</a>
         </div>
 
@@ -317,6 +347,8 @@
   <textarea name="suggested_review_paths"></textarea>
   <input name="scenario_complexity" />
   <input name="what_if_additional_down_payment" />
+  <input name="lead_intent_level" />
+  <input name="lead_tags" />
   <textarea name="scenario_summary"></textarea>
   <input name="name" />
   <input name="email" />
@@ -345,8 +377,8 @@
   <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
 </div>
 
-<script src="js/market-config.js?v=2" defer></script>
-<script src="js/kwest.js?v=2" defer></script>
-<script src="js/studio.js?v=2" defer></script>
+<script src="js/market-config.js?v=3" defer></script>
+<script src="js/kwest.js?v=3" defer></script>
+<script src="js/studio.js?v=3" defer></script>
 </body>
 </html>

@@ -215,40 +215,160 @@
     return out.slice(0, 3);
   }
 
-  /* ---------- text summary (for copy + form) ---------- */
-  function summaryText(s) {
+  /* ---------- attention items (show only the relevant 1–5) ---------- */
+  function attentionItems(s) {
+    var cfg = MARKET_CONFIG;
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var county = cfg.countyConformingLimitOneUnit;
+    var occ = occShort(s.occupancy);
+    var out = [];
+    if (county && loan > county) out.push("Loan amount may need jumbo comparison.");
+    if (!isRefi(s) && county && loan > cfg.baselineConformingLimitOneUnit) out.push("Down payment may affect whether high-balance review is possible.");
+    if (/condo/i.test(s.property_type || "")) out.push("Condo project review may matter.");
+    if (s.property_type) out.push("Insurance and flood requirements may affect the final file.");
+    if (/self-?employed|business owner|mixed/i.test(s.income_situation || "")) out.push("Self-employed income may require additional documentation review.");
+    if (occ === "Investment") out.push("Investment occupancy may require investor or DSCR review.");
+    if (occ === "Second home") out.push("Second-home rules may differ from primary residence rules.");
+    if (/2.?4 unit|2–4/i.test(s.property_type || "")) out.push("2–4 unit scenarios may have different loan limits and program requirements.");
+    return out.slice(0, 5);
+  }
+
+  /* ---------- lead intent + tags (for routing; no PII) ---------- */
+  function leadIntent(s) {
+    if (/yes/i.test(s.under_contract || "")) return "Under Contract";
+    if (/soon/i.test(s.preapproval || "")) return "Urgent Review";
+    var t = s.timeline || "";
+    if (/offer soon/i.test(t)) return "Making Offer Soon";
+    if (/0.?3 months|0–3/i.test(t)) return "Planning";
+    if (/3.?6|6.?12/i.test(t)) return "Planning";
+    if (/researching/i.test(t)) return "Browsing";
+    return "Planning";
+  }
+  function leadTags(s) {
+    var cfg = MARKET_CONFIG;
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var county = cfg.countyConformingLimitOneUnit;
+    var occ = occShort(s.occupancy);
+    var inc = s.income_situation || "", con = s.main_concern || "";
+    var tags = [];
+    var pp = primaryPath(loan).label;
+    if (/high-balance/i.test(pp)) tags.push("high_balance_review");
+    if (county && loan > county) tags.push("jumbo_comparison");
+    if (/self-?employed|business owner|mixed/i.test(inc)) { tags.push("self_employed"); tags.push("bank_statement"); }
+    if (occ === "Investment" || /dscr/i.test(con) || /investor|rental/i.test(inc)) { tags.push("dscr"); tags.push("investor"); }
+    if (occ === "Second home") tags.push("second_home");
+    if (/condo/i.test(s.property_type || "")) tags.push("condo_review");
+    if (/va/i.test(con) || /yes/i.test(s.veteran || "")) tags.push("va_review");
+    if (/fha/i.test(con)) tags.push("fha_review");
+    if (/yes/i.test(s.realtor || "")) tags.push("realtor_involved");
+    var intent = leadIntent(s);
+    if (intent === "Under Contract" || intent === "Urgent Review" || intent === "Making Offer Soon") tags.push("urgent");
+    return tags.filter(function (t, i, a) { return a.indexOf(t) === i; });
+  }
+
+  /* ---------- structured strategy object (single source for UI + form) ---------- */
+  function strategySummary(s) {
     var cfg = MARKET_CONFIG;
     var loan = s.loan != null ? s.loan : estimatedLoan(s);
     var refi = isRefi(s) || s.mode === "refi";
-    var cx = complexity(s);
+    var r = reviewPaths(s);
+    var secondary = r.paths.filter(function (p) { return p !== r.primary; });
+    return {
+      market: cfg.marketName,
+      county: cfg.countyName,
+      year: cfg.year,
+      purchasePurpose: s.intent || "",
+      propertyLocation: s.property_location || "",
+      mode: refi ? "refinance" : "purchase",
+      purchasePrice: parseNum(s.price),
+      downPaymentAmount: refi ? parseNum(s.equity) : parseNum(s.down),
+      downPaymentPercent: refi ? null : parseNum(s.downPct),
+      currentLoanBalance: refi ? parseNum(s.balance) : null,
+      cashOut: refi ? parseNum(s.cashout) : null,
+      estimatedLoanAmount: loan,
+      occupancy: s.occupancy || "",
+      propertyType: s.property_type || "",
+      incomeSituation: s.income_situation || "",
+      mainConcern: s.main_concern || "",
+      primaryReviewPath: r.primary,
+      secondaryReviewPaths: secondary,
+      complexityLevel: complexity(s).label,
+      keyInsights: insights(s),
+      attentionItems: attentionItems(s),
+      whatIfBeforeJumbo: whatIf(s),
+      leadIntentLevel: leadIntent(s),
+      leadTags: leadTags(s),
+      complianceNote: "Educational scenario only. Not a loan approval, rate quote, underwriting decision, or commitment to lend."
+    };
+  }
+
+  /* ---------- clean, human-readable email body ---------- */
+  function summaryText(s) {
+    var cfg = MARKET_CONFIG;
+    var o = strategySummary(s);
     var L = [];
-    L.push(BRAND_CONFIG.brandName + " — Before Jumbo Strategy Studio");
-    L.push("Scenario summary");
+    L.push(BRAND_CONFIG.brandName + " — Before Jumbo Strategy Studio Lead");
     L.push("");
-    if (s.intent) L.push("Goal: " + s.intent);
-    L.push("Market: " + cfg.marketName + " (" + cfg.state + ", " + cfg.year + " reference)");
-    if (s.property_location) L.push("Location: " + s.property_location);
-    if (refi) {
-      L.push("Estimated property value: " + fmtCurrency(s.price));
-      L.push("Current loan balance: " + fmtCurrency(s.balance));
-      L.push("Desired cash-out: " + fmtCurrency(s.cashout));
+    L.push("Lead Source:");
+    L.push("  " + BRAND_CONFIG.leadSource);
+    L.push("");
+    L.push("Market:");
+    L.push("  " + o.market + " (" + cfg.state + ", " + o.year + " reference)");
+    L.push("");
+    L.push("Scenario:");
+    if (o.purchasePurpose) L.push("  Goal: " + o.purchasePurpose);
+    if (o.propertyLocation) L.push("  Location: " + o.propertyLocation);
+    if (o.mode === "refinance") {
+      L.push("  Estimated value: " + fmtCurrency(o.purchasePrice));
+      L.push("  Current loan balance: " + fmtCurrency(o.currentLoanBalance));
+      L.push("  Desired cash-out: " + fmtCurrency(o.cashOut));
     } else {
-      L.push("Purchase price / value: " + fmtCurrency(s.price));
-      L.push("Down payment / equity: " + fmtCurrency(s.down) + " (" + (parseNum(s.downPct)).toFixed(0) + "%)");
+      L.push("  Purchase price: " + fmtCurrency(o.purchasePrice));
+      L.push("  Down payment: " + fmtCurrency(o.downPaymentAmount) + " / " + (o.downPaymentPercent || 0).toFixed(0) + "%");
     }
-    L.push("Estimated loan amount: " + fmtCurrency(loan));
-    if (s.occupancy) L.push("Occupancy: " + s.occupancy);
-    if (s.property_type) L.push("Property type: " + s.property_type);
-    if (s.income_situation) L.push("Income situation: " + s.income_situation);
-    if (s.main_concern) L.push("Main concern: " + s.main_concern);
-    L.push("Scenario complexity: " + cx.label);
-    L.push("Suggested review paths: " + suggested(s).join(", "));
-    var wi = whatIf(s);
-    if (wi.state === "over") {
-      L.push("Before-jumbo illustration: ~" + fmtCurrency(wi.extra) + " additional down payment could bring the estimated loan amount to the configured " + cfg.countyName + " high-balance reference limit (target down ~" + wi.pct.toFixed(0) + "%). Math illustration only.");
+    L.push("  Estimated loan amount: " + fmtCurrency(o.estimatedLoanAmount));
+    if (o.occupancy) L.push("  Occupancy: " + o.occupancy);
+    if (o.propertyType) L.push("  Property type: " + o.propertyType);
+    if (o.incomeSituation) L.push("  Income situation: " + o.incomeSituation);
+    if (o.mainConcern) L.push("  Main concern: " + o.mainConcern);
+    L.push("");
+    L.push("Primary review path:");
+    L.push("  " + o.primaryReviewPath);
+    if (o.secondaryReviewPaths.length) {
+      L.push("");
+      L.push("Secondary review paths:");
+      o.secondaryReviewPaths.forEach(function (p) { L.push("  " + p); });
+    }
+    if (o.attentionItems.length) {
+      L.push("");
+      L.push("Attention items:");
+      o.attentionItems.forEach(function (a) { L.push("  - " + a); });
     }
     L.push("");
-    L.push("Educational only — not a loan approval, rate quote, underwriting decision, or commitment to lend.");
+    L.push("What-if before jumbo:");
+    if (o.whatIfBeforeJumbo.state === "over") {
+      L.push("  ~" + fmtCurrency(o.whatIfBeforeJumbo.extra) + " additional down payment could bring the estimated loan amount to the configured " + o.county + " high-balance reference limit (target down ~" + o.whatIfBeforeJumbo.pct.toFixed(0) + "%). Math illustration only.");
+    } else if (o.whatIfBeforeJumbo.state === "highbalance") {
+      L.push("  Estimated loan amount appears within configured high-balance reference range.");
+    } else if (o.whatIfBeforeJumbo.state === "baseline") {
+      L.push("  Estimated loan amount appears within baseline conforming reference range.");
+    } else {
+      L.push("  Pending — adjust scenario.");
+    }
+    L.push("");
+    L.push("Scenario complexity: " + o.complexityLevel);
+    L.push("Lead intent: " + o.leadIntentLevel);
+    L.push("Lead tags: " + (o.leadTags.join(", ") || "—"));
+    L.push("");
+    L.push("Contact:");
+    L.push("  Name: " + (s.name || ""));
+    L.push("  Email: " + (s.email || ""));
+    L.push("  Phone: " + (s.phone || ""));
+    L.push("  Preferred contact: " + (s.preferred_contact_method || ""));
+    if (s.message) { L.push("  Notes: " + s.message); }
+    L.push("");
+    L.push("Compliance:");
+    L.push("  " + o.complianceNote);
     return L.join("\n");
   }
 
@@ -271,6 +391,10 @@
     complexity: complexity,
     whatIf: whatIf,
     insights: insights,
+    attentionItems: attentionItems,
+    leadIntent: leadIntent,
+    leadTags: leadTags,
+    strategySummary: strategySummary,
     summaryText: summaryText
   };
 })(typeof window !== "undefined" ? window : globalThis);
