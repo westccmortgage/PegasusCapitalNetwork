@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/kwest.css?v=4">
+<link rel="stylesheet" href="css/kwest.css?v=5">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -331,35 +331,35 @@
   <div class="wrap">
     <div class="section-head center"><span class="eyebrow">Your Key West Strategy Dashboard</span><h2>Estimates Update As You Build Your Scenario</h2></div>
 
+    <!-- Assumptions FIRST — a few inputs make the payment estimate more accurate -->
+    <div class="glass dash-block dash-assume">
+      <h3 class="snap__title">Start With a Few Assumptions</h3>
+      <p class="st__sub" style="margin-top:-6px">Add your estimated rate, taxes, insurance, flood, and HOA below — the more you add, the more accurate your estimated monthly housing cost becomes. Leave blank to start with Principal &amp; Interest only.</p>
+      <details class="adv" open>
+        <summary>Assumptions (editable)</summary>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="field"><label for="a-rate">Interest rate assumption (%)</label><input id="a-rate" data-a="rate" type="text" inputmode="decimal" placeholder="(auto by program)"></div>
+          <div class="field"><label for="a-term">Loan term (years)</label><input id="a-term" data-a="term" type="text" inputmode="numeric" placeholder="30"></div>
+          <div class="field"><label for="a-tax">Property tax (annual)</label><input id="a-tax" data-a="taxAnnual" type="text" inputmode="numeric" placeholder="$"></div>
+          <div class="field"><label for="a-hoi">Homeowners / wind (annual)</label><input id="a-hoi" data-a="homeownersAnnual" type="text" inputmode="numeric" placeholder="$"></div>
+          <div class="field"><label for="a-flood">Flood insurance (annual)</label><input id="a-flood" data-a="floodAnnual" type="text" inputmode="numeric" placeholder="$"></div>
+          <div class="field"><label for="a-hoa">HOA (monthly)</label><input id="a-hoa" data-a="hoaMonthly" type="text" inputmode="numeric" placeholder="$"></div>
+          <div class="field"><label for="a-mi">Mortgage insurance (monthly)</label><input id="a-mi" data-a="miMonthly" type="text" inputmode="numeric" placeholder="$"></div>
+          <div class="field"><label for="a-other">Other monthly cost</label><input id="a-other" data-a="otherMonthly" type="text" inputmode="numeric" placeholder="$"></div>
+          <div class="field full"><label for="a-rent">Estimated monthly rent (investment / DSCR)</label><input id="a-rent" data-a="monthlyRent" type="text" inputmode="numeric" placeholder="$"></div>
+        </div>
+        <p class="qc__ref">Key West insurance, flood, taxes, HOA, and condo costs can vary significantly by property. These assumptions are for scenario planning only.</p>
+      </details>
+    </div>
+
     <div class="dash-cards" data-dash-cards></div>
 
-    <div class="dash-2col">
-      <!-- Payment stack -->
-      <div class="glass dash-block">
-        <h3 class="snap__title">Estimated Monthly Housing Cost (PITIA)</h3>
-        <div class="paystack" data-paystack></div>
-        <div class="paystack__total">Estimated monthly housing cost <strong data-pitia-total>—</strong></div>
-        <p class="qc__ref">Educational estimate only. Not a rate quote, APR, loan estimate, approval, or commitment to lend. Rate assumption: <span data-rate-assump>—</span> · assumptions last updated <span data-rate-updated>—</span>.</p>
-      </div>
-
-      <!-- Assumptions -->
-      <div class="glass dash-block">
-        <details class="adv" open>
-          <summary>Assumptions (editable)</summary>
-          <div class="form-grid" style="margin-top:14px">
-            <div class="field"><label for="a-rate">Interest rate assumption (%)</label><input id="a-rate" data-a="rate" type="text" inputmode="decimal" placeholder="(auto by program)"></div>
-            <div class="field"><label for="a-term">Loan term (years)</label><input id="a-term" data-a="term" type="text" inputmode="numeric" placeholder="30"></div>
-            <div class="field"><label for="a-tax">Property tax (annual)</label><input id="a-tax" data-a="taxAnnual" type="text" inputmode="numeric" placeholder="$"></div>
-            <div class="field"><label for="a-hoi">Homeowners / wind (annual)</label><input id="a-hoi" data-a="homeownersAnnual" type="text" inputmode="numeric" placeholder="$"></div>
-            <div class="field"><label for="a-flood">Flood insurance (annual)</label><input id="a-flood" data-a="floodAnnual" type="text" inputmode="numeric" placeholder="$"></div>
-            <div class="field"><label for="a-hoa">HOA (monthly)</label><input id="a-hoa" data-a="hoaMonthly" type="text" inputmode="numeric" placeholder="$"></div>
-            <div class="field"><label for="a-mi">Mortgage insurance (monthly)</label><input id="a-mi" data-a="miMonthly" type="text" inputmode="numeric" placeholder="$"></div>
-            <div class="field"><label for="a-other">Other monthly cost</label><input id="a-other" data-a="otherMonthly" type="text" inputmode="numeric" placeholder="$"></div>
-            <div class="field full"><label for="a-rent">Estimated monthly rent (investment / DSCR)</label><input id="a-rent" data-a="monthlyRent" type="text" inputmode="numeric" placeholder="$"></div>
-          </div>
-          <p class="qc__ref">Key West insurance, flood, taxes, HOA, and condo costs can vary significantly by property. These assumptions are for scenario planning only.</p>
-        </details>
-      </div>
+    <!-- Payment stack (full width) -->
+    <div class="glass dash-block">
+      <h3 class="snap__title">Estimated Monthly Housing Cost (PITIA)</h3>
+      <div class="paystack" data-paystack></div>
+      <div class="paystack__total">Estimated monthly housing cost <strong data-pitia-total>—</strong></div>
+      <p class="qc__ref">Educational estimate only. Not a rate quote, APR, loan estimate, approval, or commitment to lend. Rate assumption: <span data-rate-assump>—</span> · assumptions last updated <span data-rate-updated>—</span>.</p>
     </div>
 
     <!-- DSCR (investment / DSCR concern only) -->
@@ -475,8 +475,8 @@
   <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
 </div>
 
-<script src="js/market-config.js?v=4" defer></script>
-<script src="js/kwest.js?v=4" defer></script>
-<script src="js/studio.js?v=4" defer></script>
+<script src="js/market-config.js?v=5" defer></script>
+<script src="js/kwest.js?v=5" defer></script>
+<script src="js/studio.js?v=5" defer></script>
 </body>
 </html>

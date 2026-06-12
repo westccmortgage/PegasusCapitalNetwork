@@ -811,3 +811,7 @@ input[type="range"]:focus-visible{ box-shadow:0 0 0 3px rgba(46,127,166,.3); }
 .qc__pstruct{ position:relative; display:flex; height:12px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.16); margin:6px 0 4px; }
 .qc__pstruct .d{ background:var(--gold); } .qc__pstruct .l{ background:var(--ocean-light); }
 .qc__pstruct .r{ position:absolute; top:-3px; bottom:-3px; width:2px; background:#fff; }
+
+/* Assumptions-first block (top of dashboard) */
+.dash-assume{ border-left:4px solid var(--ocean); }
+.dash-assume .st__sub{ margin-bottom:8px; }
