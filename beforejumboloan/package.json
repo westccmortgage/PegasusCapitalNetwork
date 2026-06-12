@@ -1,23 +1,18 @@
 {
   "name": "beforejumboloan",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "BeforeJumboLoan.com — a premium interactive mortgage strategy engine.",
+  "description": "BeforeJumboLoan.com — multi-market mortgage Strategy Studio with an AI Strategy Explainer.",
   "scripts": {
     "dev": "netlify dev",
-    "serve": "npx --yes serve src -l 8080",
-    "test": "node --test"
+    "serve": "npx --yes serve . -l 8080",
+    "test:e2e": "node tests/e2e.verify.cjs"
   },
   "engines": {
     "node": ">=18"
   },
-  "keywords": [
-    "mortgage",
-    "dscr",
-    "jumbo",
-    "rate-buydown",
-    "strategy-engine"
-  ],
-  "license": "UNLICENSED"
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1"
+  }
 }

@@ -1,134 +1,134 @@
-# BeforeJumboLoan.com — Mortgage Strategy Engine
+# Before Jumbo Loan — Multi-Market Strategy Studio
 
-A premium, interactive mortgage **strategy engine** — not a generic mortgage
-website. Buyers and investors model a real scenario and watch the math react:
-the payment stack, the *before-jumbo gap*, DSCR, and rate buydowns, all in their
-local market.
+One reusable, market-config-driven engine for **BeforeJumboLoan.com** (and any market).
+Same calculator as KWestMortgage.com, refactored so the market is selected by route.
 
-This is a **clean, standalone project**. It does not touch, import, or reuse
-KWestMortgages.com, CaliforniaMTG.com, or any other site in the parent repo.
+## How it works
+- `js/engine.js` holds a **`MARKETS` registry** + `BRAND_CONFIG` + `FORM_CONFIG` + the
+  full calculation engine (review paths, payment/PITIA, DSCR, rate buydown, complexity,
+  attention items, smart explanation, summary).
+- The **active market** is resolved at page load from the **URL path slug** (`/key-west`,
+  `/palm-beach`, …) or `?market=slug`, falling back to `DEFAULT_MARKET`.
+- One page (`scenario-studio.html`) renders any market. Hero copy, market name, and the
+  local disclaimer are injected from the active market config.
 
----
-
-## Phase 1 — what's built
-
-| Capability | Where |
-|---|---|
-| Landing page (config-driven copy, live engine preview) | `src/index.html`, `src/js/landing.js` |
-| Market selector (per-county conforming/high-balance limits) | `src/js/marketSelector.js`, `src/config/markets.js` |
-| Strategy Studio (reactive workspace) | `src/studio.html`, `src/js/studio.js` |
-| Payment stack (P&I, taxes, insurance, HOA, MI) | `src/js/engine/paymentStack.js` |
-| DSCR math (ratio, tiers, qualification) | `src/js/engine/dscr.js` |
-| Rate buydown math (permanent points + 2-1 / 3-2-1) | `src/js/engine/buydown.js` |
-| Before-jumbo gap (tier + dollars to stay conforming) | `src/js/engine/jumboGap.js` |
-| Engine aggregator → one structured snapshot | `src/js/engine/index.js` |
-| Clean lead submission (client + serverless) | `src/js/leadSubmission.js`, `netlify/functions/submit-lead.js` |
-| Config-driven architecture | `src/config/*` |
-| AI seam (prepared, **inert**) | `src/js/ai/explainer.js`, `netlify/functions/explain-strategy.js` |
-
-No build step. No framework. Native ES modules — readable, debuggable, fast.
-
----
-
-## Architecture at a glance
-
+## Routes (configured in `netlify.toml`)
 ```
-Config  (src/config/*)        defaults · markets · products · copy
-   │  injected into
-   ▼
-Engine  (src/js/engine/*)     pure functions → ONE structured snapshot
-   │  consumed by
-   ├─► UI        (studio.js / landing.js)   renders the snapshot
-   ├─► Leads     (leadSubmission.js)         attaches snapshot to the lead
-   └─► AI seam   (ai/explainer.js)           Phase 2 reads snapshot.aiContext
+/key-west       /palm-beach     /miami-dade
+/california     /orange-county  /los-angeles
+```
+Each is a 200 rewrite to `/scenario-studio.html`; the path stays visible so the engine
+reads the slug. `index.html` is a market picker. `?market=slug` also works (handy locally).
+
+Secondary domain: `beforejumboloans.com → beforejumboloan.com` (301; also add both
+domains in Netlify domain settings).
+
+## Configure before launch (`js/engine.js`)
+**MARKETS** — per market: `marketSlug, marketName, countyName, state, loanLimitYear,
+baselineConformingLimit, highBalanceLimit, fhaLimit, localDisclaimer, marketHeroCopy,
+lastVerifiedDate`. **Verify every limit** (FHFA / Fannie Mae / HUD). For non-high-cost
+counties, set `highBalanceLimit = baselineConformingLimit` (no separate high-balance band).
+
+**BRAND_CONFIG** — `brandName, domain, logoText, primaryCTA, poweredByText,
+complianceFooter, recipient`.
+
+**FORM_CONFIG** — `formName` (must match the Netlify form + the hidden form in
+`scenario-studio.html`), `leadSource`, `notificationEmail`. Set `recipient`/
+`notificationEmail` to your real lead inbox.
+
+**RATE_CONFIG** — rate assumptions (education only; update `lastUpdated`).
+
+## Add a new market
+```js
+MARKETS["broward"] = {
+  marketSlug:"broward", marketName:"Broward County", countyName:"Broward County", state:"FL",
+  loanLimitYear:2025, baselineConformingLimit:806500, highBalanceLimit:806500, fhaLimit:null,
+  localDisclaimer:"…", marketHeroCopy:"…", lastVerifiedDate:"VERIFY BEFORE LAUNCH"
+};
+```
+Then add a `/broward → /scenario-studio.html` 200 rewrite in `netlify.toml`. Done.
+
+## Netlify Forms
+Hidden static form name = **`before-jumbo-strategy-studio`** (matches `FORM_CONFIG.formName`).
+After deploy: enable form detection → redeploy → add an email notification to your inbox.
+Submissions POST to `/` (url-encoded) and include: selected **market_name + market_slug**,
+**domain**, **page_url**, configured limits/year, payment + DSCR + buydown assumptions,
+suggested review paths, complexity, lead intent/tags, and contact — plus a clean
+`scenario_summary` text block.
+
+## Files
+```
+index.html            # market picker landing
+scenario-studio.html  # the studio (renders any market)
+js/engine.js          # MARKETS registry + BRAND/FORM config + engine
+js/studio.js          # studio UI controller (reads active market)
+js/site.js            # nav / cookie / hero quick-check behavior
+css/studio.css        # design system + studio styles
+netlify.toml          # market routes + secondary-domain redirect + cache headers
 ```
 
-**The core idea:** every input change calls `runStrategy(scenario, ctx)` which
-returns a single deterministic `snapshot`. The UI, the lead payload, and the
-future AI explainer all consume that same object. Add a market or a strategy by
-editing config — not code.
+## Compliance
+Review path / may fit / math illustration only. No rate quotes, APRs, payments-as-fact,
+approvals, or eligibility promises. Required consent + “no credit check to start” on submit.
+Verify loan limits and rate assumptions before public launch.
 
-See `ARCHITECTURE.md` for the full contract and the `aiContext` shape.
+## Note on KWestMortgage.com
+The live KWest site is unchanged and keeps its own single-market config. This package is the
+portable multi-market version; KWest can be migrated onto it later by adding a `key-west`
+route (already in the registry).
 
----
+## AI Strategy Explainer (Phase 2)
 
-## Run it locally
+The result page includes an **AI Strategy Explainer** — an on-demand, plain-English
+walkthrough of the scenario the buyer built (review path, before-jumbo math, DSCR /
+buydown notes, attention items). It is **button-triggered**, not auto-run, so it never
+calls the API on every keystroke.
 
-Static site — any static server works. From this folder (`beforejumboloan/`):
+- **Client:** `js/studio.js` builds a compact, **PII-free** context from
+  `KW.strategySummary(S)` and POSTs it to the function. The contact fields
+  (name/email/phone) are never sent.
+- **Server:** `netlify/functions/explain-strategy.js` calls Claude
+  (`@anthropic-ai/sdk`) with a compliance-aware system prompt — review-path framing,
+  no rate/payment/APR guarantees, fair-lending safe — and returns the narration.
+  The API key stays server-side.
+- **Graceful fallback:** if the function is unavailable (no key, offline, error), the
+  panel automatically shows the engine's built-in rule-based explanation
+  (`KW.explain(S)`) and badges it "Offline summary". The result page is always useful.
 
+### Environment variables (Netlify → Site settings → Environment)
+```
+ANTHROPIC_API_KEY   required — enables the live explainer
+ANTHROPIC_MODEL     optional — defaults to claude-opus-4-8
+                    (e.g. claude-haiku-4-5 / claude-sonnet-4-6 for lower cost/latency)
+```
+Without `ANTHROPIC_API_KEY` the function returns 503 and the UI falls back — safe to
+deploy before the key is set.
+
+## Run locally
 ```bash
-# Option A — quick static preview (no serverless functions)
-npm run serve            # serves src/ at http://localhost:8080
+# Static only (AI button falls back to the rule-based summary):
+npm run serve            # http://localhost:8080  -> /scenario-studio.html?market=california
 
-# Option B — full local stack WITH Netlify Functions (lead submission)
-npx netlify-cli dev      # serves src/ + functions at http://localhost:8888
-# or, if you have the CLI installed globally:  netlify dev
+# Full stack incl. the AI function (needs the Netlify CLI + a key):
+export ANTHROPIC_API_KEY=sk-ant-...
+npx netlify-cli dev      # http://localhost:8888
+
+# Tests:
+npm run test:e2e         # Playwright: drives the wizard + AI explainer
+node --test tests/function.test.mjs   # function guard/validation paths
 ```
-
-Run the math test suite:
-
-```bash
-npm test                 # node --test → tests/engine.test.mjs (11 tests)
-```
-
-> With `npm run serve` the lead form will report that the endpoint isn't
-> configured locally — that's expected; the static server has no functions.
-> Use `netlify dev` to exercise `submit-lead`.
-
----
 
 ## Deploy to Netlify
+Deploy this folder (`beforejumboloan`) as its own Netlify site. `netlify.toml` already
+sets `publish = "."`, `functions = "netlify/functions"`, the market routes, and the
+secondary-domain redirect. Steps: connect the repo → base directory `beforejumboloan`
+→ deploy → enable Netlify **form detection** and redeploy (for lead capture) → add
+`ANTHROPIC_API_KEY` in the site environment to turn the AI explainer live.
 
-Deploy this folder as **its own Netlify site** (independent of the other sites
-in the repo).
-
-1. **New site** → connect this Git repo.
-2. **Base directory:** `beforejumboloan`
-3. **Publish directory:** `src` (set automatically by `netlify.toml`)
-4. **Functions directory:** `netlify/functions` (set automatically)
-5. **Build command:** none required (static).
-6. **Environment variables** (optional, for lead routing):
-   - `LEAD_WEBHOOK_URL` — POST each lead JSON to your CRM/Zapier/Slack webhook.
-   - `LEAD_NOTIFY_EMAIL` — informational in Phase 1.
-7. Deploy. Add the custom domain `BeforeJumboLoan.com`.
-
-`netlify.toml` in this folder already pins publish/functions dirs, a `/studio`
-redirect, and baseline security headers.
-
-CLI alternative:
-
-```bash
-cd beforejumboloan
-npx netlify-cli deploy --build --prod
+## Files added for Phase 2
 ```
-
----
-
-## Ready for Phase 2 — AI Strategy Explainer
-
-The seam is in place and intentionally **off**:
-
-- The engine already emits `snapshot.aiContext` — a compact, model-friendly set
-  of facts (strategy, market, loan amount, LTV, jumbo tier, DSCR ratio, buydown
-  break-even). No prose, no formatting — ready to hand to a model.
-- `src/js/ai/explainer.js` defines the stable `explainStrategy(snapshot, opts)`
-  contract and returns a placeholder while `DEFAULTS.ai.enabled === false`.
-- `netlify/functions/explain-strategy.js` is routed and returns `501` until
-  Phase 2 — it already accepts the snapshot contract.
-- The Studio renders a visible **"AI Strategy Explainer — Phase 2"** panel fed
-  by the placeholder, so the UI slot exists.
-
-**To turn it on in Phase 2:** implement the model call in the function (secrets
-via env, e.g. `ANTHROPIC_API_KEY`), flip `DEFAULTS.ai.enabled` to `true`, and
-set `explainStrategy`'s live branch. No engine or UI rebuild required.
-
----
-
-## Compliance note
-
-All figures are illustrative estimates for educational purposes — not a loan
-commitment, pre-approval, or offer to lend. Pricing assumptions (rates, point
-costs, MI, tax rates, county limits) live in `src/config/` and must be reviewed
-and updated by a licensed professional before production use. Add the correct
-NMLS ID in `src/config/defaults.js`.
+netlify/functions/explain-strategy.js   # Claude-backed explainer (key stays server-side)
+package.json                            # @anthropic-ai/sdk dependency + dev scripts
+tests/e2e.verify.cjs                    # wizard + explainer end-to-end (Playwright)
+tests/function.test.mjs                 # function guard/validation tests
 ```

@@ -1,30 +1,59 @@
-# Netlify configuration for BeforeJumboLoan.com
-# Deploy this as its OWN Netlify site with the base directory set to
-# `beforejumboloan` (this folder). Static files live in src/, functions in
-# netlify/functions/. Nothing here touches any other site in the repo.
-
+# Before Jumbo Loan — multi-market Strategy Studio
+# One engine (js/engine.js, MARKETS registry) served per route.
 [build]
-  publish = "src"
+  publish = "."
   functions = "netlify/functions"
-  # No build step required — static ES modules served as-is.
-  command = "echo 'No build step — static site'"
 
 [functions]
   node_bundler = "esbuild"
 
-# Pretty routes
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Market routes → same page; the engine resolves the slug from the path.
 [[redirects]]
-  from = "/studio"
-  to = "/studio.html"
+  from = "/key-west"
+  to = "/scenario-studio.html"
+  status = 200
+[[redirects]]
+  from = "/palm-beach"
+  to = "/scenario-studio.html"
+  status = 200
+[[redirects]]
+  from = "/miami-dade"
+  to = "/scenario-studio.html"
+  status = 200
+[[redirects]]
+  from = "/california"
+  to = "/scenario-studio.html"
+  status = 200
+[[redirects]]
+  from = "/orange-county"
+  to = "/scenario-studio.html"
+  status = 200
+[[redirects]]
+  from = "/los-angeles"
+  to = "/scenario-studio.html"
+  status = 200
+[[redirects]]
+  from = "/scenario-studio"
+  to = "/scenario-studio.html"
   status = 200
 
-# SPA-style fallback is NOT used; this is a multi-page static site.
-
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+# Secondary domain → primary (configure both domains on the Netlify site).
+[[redirects]]
+  from = "https://beforejumboloans.com/*"
+  to = "https://beforejumboloan.com/:splat"
+  status = 301
+  force = true
+[[redirects]]
+  from = "https://www.beforejumboloans.com/*"
+  to = "https://beforejumboloan.com/:splat"
+  status = 301
+  force = true
