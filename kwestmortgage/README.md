@@ -30,31 +30,25 @@ kwestmortgage/
 └── netlify.toml             # Standalone deploy config (base dir = kwestmortgage)
 ```
 
-## Connecting the lead forms
+## Lead forms — Netlify Forms
 
-Forms are ready to connect to a database / webhook / email. Open `js/kwest.js` and set:
+The scenario forms (homepage `#builder`, `concierge.html`, and `contact.html`) are native
+**Netlify Forms** — no JavaScript, no external endpoint. Each form has:
 
-```js
-var CONFIG = {
-  FORM_ENDPOINT: "https://your-endpoint",  // Netlify function, Zapier, webhook, etc.
-};
-```
+- `name="key-west-scenario-review"`, `method="POST"`, `action="/thank-you.html"`
+- `data-netlify="true"` + hidden `<input name="form-name" value="key-west-scenario-review">`
+- `netlify-honeypot="bot-field"` honeypot (a hidden `bot-field`) for spam protection
+- Field names: `purchase_price`, `estimated_down_payment`, `property_location`, `occupancy`,
+  `property_type`, `income_type`, `avoid_jumbo`, `working_with_realtor`, `timeline_to_purchase`,
+  `preferred_contact_method`, `name`, `phone`, `email` (contact form also has `message`)
 
-Submissions POST a JSON payload:
+On submit, Netlify records the submission and redirects to **`/thank-you.html`**.
 
-```json
-{
-  "brand": "K West Mortgage",
-  "formName": "key-west-scenario",
-  "submittedAt": "ISO-8601",
-  "page": "/concierge.html",
-  "visitorId": "kw_… (only if consent granted)",
-  "referrer": "…",
-  "fields": { "purchase_price": "…", "name": "…", "email": "…", "...": "…" }
-}
-```
-
-Until an endpoint is set, submissions still show the thank-you message and are queued in `localStorage` (`kw_leads`) so no lead is lost during setup.
+### Required after first deploy
+Netlify only registers forms once a deploy contains them. After deploying:
+**Netlify Dashboard → your site → Forms** — confirm `key-west-scenario-review` is listed,
+then **Forms → Form notifications → Add notification → Email notification** to
+**info@kwestmortgages.com**.
 
 ## Privacy / consent
 
@@ -75,7 +69,7 @@ Static — no build step. On Netlify, set **base directory** to `kwestmortgage`.
   - `assets/hero-mobile.mp4` — vertical moon/ocean clip (mobile background)
   Both autoplay/loop/muted/playsInline with `object-fit: cover` and a navy overlay. Until they're added, the animated coastal gradient shows as a graceful fallback.
 - **OG image** — `assets/og-image.svg` is a placeholder; swap for a 1200×630 photo/render.
-- **Form endpoint** — set `FORM_ENDPOINT` in `js/kwest.js`.
+- **Form notifications** — after deploy, add the email notification to `info@kwestmortgages.com` (see "Lead forms" above).
 
 ## Compliance notes (built in)
 

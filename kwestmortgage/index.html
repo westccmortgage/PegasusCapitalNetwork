@@ -163,7 +163,9 @@
     </div>
 
     <div class="form-shell reveal">
-      <form data-lead-form="key-west-scenario" novalidate>
+      <form name="key-west-scenario-review" method="POST" action="/thank-you.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="key-west-scenario-review" />
+        <p hidden aria-hidden="true"><label>Don’t fill this out if you’re human: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
         <div class="form-grid">
           <div class="field">
             <label>Purchase price <span class="req">*</span></label>
@@ -171,11 +173,11 @@
           </div>
           <div class="field">
             <label>Estimated down payment</label>
-            <input name="down_payment" type="text" inputmode="numeric" placeholder="$230,000">
+            <input name="estimated_down_payment" type="text" inputmode="numeric" placeholder="$230,000">
           </div>
           <div class="field">
             <label>Property location</label>
-            <select name="location">
+            <select name="property_location">
               <option value="">Select…</option>
               <option>Key West</option><option>Stock Island</option><option>Big Pine Key</option>
               <option>Marathon</option><option>Other Monroe County</option>
@@ -211,21 +213,21 @@
           </div>
           <div class="field">
             <label>Already working with a realtor?</label>
-            <select name="has_realtor">
+            <select name="working_with_realtor">
               <option value="">Select…</option>
               <option>Yes</option><option>No</option><option>Still interviewing agents</option>
             </select>
           </div>
           <div class="field">
             <label>Timeline to purchase</label>
-            <select name="timeline">
+            <select name="timeline_to_purchase">
               <option value="">Select…</option>
               <option>0–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just researching</option>
             </select>
           </div>
           <div class="field">
             <label>Preferred contact method</label>
-            <select name="contact_method">
+            <select name="preferred_contact_method">
               <option value="">Select…</option>
               <option>Phone</option><option>Email</option><option>Text</option>
             </select>
@@ -246,11 +248,6 @@
         <button type="submit" class="btn btn--primary btn--lg btn--block" style="margin-top:24px">Review My Key West Scenario</button>
         <p class="form-note">By submitting, you agree to be contacted by a licensed mortgage professional. This is not a loan application, approval, or commitment to lend. No credit check is performed to start.</p>
       </form>
-      <div class="form-success">
-        <div class="form-success__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
-        <h3>Thank you.</h3>
-        <p class="lead">Your Key West mortgage scenario has been received. A licensed mortgage professional can review whether your situation may fit conforming, high-balance conforming, jumbo, VA, FHA, DSCR, bank statement, or another available mortgage option.</p>
-      </div>
     </div>
   </div>
 </section>

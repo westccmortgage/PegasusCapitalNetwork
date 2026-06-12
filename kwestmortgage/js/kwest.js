@@ -131,45 +131,10 @@
   }
   ensureVisitorId();
 
-  /* ---------------- Forms ---------------- */
-  $all("form[data-lead-form]").forEach(function (form) {
-    form.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-      var btn = $("button[type=submit]", form);
-      var data = {};
-      new FormData(form).forEach(function (v, k) { data[k] = v; });
-      var payload = {
-        brand: CONFIG.BRAND,
-        formName: form.getAttribute("data-lead-form") || "scenario",
-        submittedAt: new Date().toISOString(),
-        page: location.pathname,
-        visitorId: ensureVisitorId(),
-        referrer: document.referrer || "",
-        fields: data
-      };
-
-      if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = "Sending…"; }
-
-      var finish = function () {
-        var success = $(".form-success", form.closest(".form-shell") || form.parentNode) || $(".form-success", form);
-        if (success) { form.style.display = "none"; success.classList.add("show"); success.scrollIntoView({ behavior: "smooth", block: "center" }); }
-        else { form.reset(); if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || "Submitted"; } }
-        // Local fallback store so no lead is lost before endpoint is wired.
-        try {
-          var q = JSON.parse(localStorage.getItem("kw_leads") || "[]");
-          q.push(payload); localStorage.setItem("kw_leads", JSON.stringify(q));
-        } catch (e) {}
-      };
-
-      if (CONFIG.FORM_ENDPOINT) {
-        fetch(CONFIG.FORM_ENDPOINT, {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-        }).then(finish).catch(finish);
-      } else {
-        window.setTimeout(finish, 500);
-      }
-    });
-  });
+  /* ---------------- Forms ----------------
+     Lead forms are native Netlify Forms (data-netlify) that POST directly to
+     Netlify and redirect to /thank-you.html. No JS submission handling is used,
+     so there is no external/fake endpoint. */
 
   /* ---------------- Hero video ---------------- */
   /* Reveal a hero video only once it can actually play; otherwise the

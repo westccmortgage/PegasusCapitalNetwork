@@ -72,18 +72,20 @@
       <div class="note-strip" style="margin-top:24px">No credit check to start. No pressure. No full application required. This is not a commitment to lend.</div>
     </div>
     <div class="form-shell reveal">
-      <form data-lead-form="key-west-scenario" novalidate>
+      <form name="key-west-scenario-review" method="POST" action="/thank-you.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="key-west-scenario-review" />
+        <p hidden aria-hidden="true"><label>Leave this field empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
         <div class="form-grid">
           <div class="field"><label>Purchase price <span class="req">*</span></label><input name="purchase_price" type="text" inputmode="numeric" placeholder="$1,150,000" required></div>
-          <div class="field"><label>Estimated down payment</label><input name="down_payment" type="text" inputmode="numeric" placeholder="$230,000"></div>
-          <div class="field"><label>Property location</label><select name="location"><option value="">Select…</option><option>Key West</option><option>Stock Island</option><option>Big Pine Key</option><option>Marathon</option><option>Other Monroe County</option></select></div>
+          <div class="field"><label>Estimated down payment</label><input name="estimated_down_payment" type="text" inputmode="numeric" placeholder="$230,000"></div>
+          <div class="field"><label>Property location</label><select name="property_location"><option value="">Select…</option><option>Key West</option><option>Stock Island</option><option>Big Pine Key</option><option>Marathon</option><option>Other Monroe County</option></select></div>
           <div class="field"><label>Occupancy</label><select name="occupancy"><option value="">Select…</option><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
           <div class="field"><label>Property type</label><select name="property_type"><option value="">Select…</option><option>Single-family</option><option>Condo</option><option>2–4 unit</option><option>Townhome</option></select></div>
           <div class="field"><label>Income type</label><select name="income_type"><option value="">Select…</option><option>W2</option><option>Self-employed</option><option>Retired</option><option>Investor</option><option>Other</option></select></div>
           <div class="field"><label>Trying to avoid jumbo if possible?</label><select name="avoid_jumbo"><option value="">Select…</option><option>Yes, if possible</option><option>No preference</option><option>Not sure</option></select></div>
-          <div class="field"><label>Already working with a realtor?</label><select name="has_realtor"><option value="">Select…</option><option>Yes</option><option>No</option><option>Still interviewing agents</option></select></div>
-          <div class="field"><label>Timeline to purchase</label><select name="timeline"><option value="">Select…</option><option>0–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just researching</option></select></div>
-          <div class="field"><label>Preferred contact method</label><select name="contact_method"><option value="">Select…</option><option>Phone</option><option>Email</option><option>Text</option></select></div>
+          <div class="field"><label>Already working with a realtor?</label><select name="working_with_realtor"><option value="">Select…</option><option>Yes</option><option>No</option><option>Still interviewing agents</option></select></div>
+          <div class="field"><label>Timeline to purchase</label><select name="timeline_to_purchase"><option value="">Select…</option><option>0–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just researching</option></select></div>
+          <div class="field"><label>Preferred contact method</label><select name="preferred_contact_method"><option value="">Select…</option><option>Phone</option><option>Email</option><option>Text</option></select></div>
           <div class="field"><label>Name <span class="req">*</span></label><input name="name" type="text" placeholder="Your name" required></div>
           <div class="field"><label>Phone <span class="req">*</span></label><input name="phone" type="tel" placeholder="(000) 000-0000" required></div>
           <div class="field full"><label>Email <span class="req">*</span></label><input name="email" type="email" placeholder="you@email.com" required></div>
@@ -91,11 +93,6 @@
         <button type="submit" class="btn btn--primary btn--lg btn--block" style="margin-top:24px">Review My Key West Scenario</button>
         <p class="form-note">By submitting, you agree to be contacted by a licensed mortgage professional. This is not a loan application, approval, or commitment to lend.</p>
       </form>
-      <div class="form-success">
-        <div class="form-success__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
-        <h3>Thank you.</h3>
-        <p class="lead">Your Key West mortgage scenario has been received. A licensed mortgage professional can review whether your situation may fit conforming, high-balance conforming, jumbo, VA, FHA, DSCR, bank statement, or another available mortgage option.</p>
-      </div>
     </div>
   </div>
 </section>

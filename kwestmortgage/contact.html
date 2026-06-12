@@ -67,14 +67,16 @@
     </div>
 
     <div class="form-shell reveal">
-      <form data-lead-form="contact-scenario" novalidate>
+      <form name="key-west-scenario-review" method="POST" action="/thank-you.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="key-west-scenario-review" />
+        <p hidden aria-hidden="true"><label>Leave this field empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
         <div class="form-grid">
           <div class="field"><label>Name <span class="req">*</span></label><input name="name" type="text" placeholder="Your name" required></div>
           <div class="field"><label>Phone <span class="req">*</span></label><input name="phone" type="tel" placeholder="(000) 000-0000" required></div>
           <div class="field full"><label>Email <span class="req">*</span></label><input name="email" type="email" placeholder="you@email.com" required></div>
-          <div class="field"><label>Preferred contact method</label><select name="contact_method"><option value="">Select…</option><option>Phone</option><option>Email</option><option>Text</option></select></div>
+          <div class="field"><label>Preferred contact method</label><select name="preferred_contact_method"><option value="">Select…</option><option>Phone</option><option>Email</option><option>Text</option></select></div>
           <div class="field"><label>Purchase price</label><input name="purchase_price" type="text" inputmode="numeric" placeholder="$1,150,000"></div>
-          <div class="field"><label>Down payment</label><input name="down_payment" type="text" inputmode="numeric" placeholder="$230,000"></div>
+          <div class="field"><label>Down payment</label><input name="estimated_down_payment" type="text" inputmode="numeric" placeholder="$230,000"></div>
           <div class="field"><label>Occupancy</label><select name="occupancy"><option value="">Select…</option><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
           <div class="field full"><label>Property type</label><select name="property_type"><option value="">Select…</option><option>Single-family</option><option>Condo</option><option>2–4 unit</option><option>Townhome</option></select></div>
           <div class="field full"><label>Message</label><textarea name="message" placeholder="Tell us a little about your Key West purchase…"></textarea></div>
@@ -82,11 +84,6 @@
         <button type="submit" class="btn btn--primary btn--lg btn--block" style="margin-top:24px">Submit My Scenario</button>
         <p class="form-note">By submitting, you agree to be contacted by a licensed mortgage professional. This is not a loan application, approval, or commitment to lend.</p>
       </form>
-      <div class="form-success">
-        <div class="form-success__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
-        <h3>Thank you.</h3>
-        <p class="lead">Your Key West mortgage scenario has been received. A licensed mortgage professional can review whether your situation may fit conforming, high-balance conforming, jumbo, VA, FHA, DSCR, bank statement, or another available mortgage option.</p>
-      </div>
     </div>
   </div>
 </section>
