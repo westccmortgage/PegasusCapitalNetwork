@@ -72,3 +72,34 @@ test('committed dataset matches its own record_count + carries provenance', () =
   assert.ok(fhfa.imported_at && fhfa.source_name);
   assert.match(fhfa.compliance, /verify current FHFA\/Fannie\/Freddie\/HUD limits before launch/);
 });
+
+import { FHFA_MIN_OFFICIAL } from '../scripts/import-fhfa-limits.mjs';
+
+test('dataset_type = "sample" for a small file, "official_full" past the threshold', () => {
+  const small = buildFhfaDataset([
+    ['FIPS', 'County Name', 'State', 'One-Unit Limit', 'Two-Unit Limit', 'Three-Unit Limit', 'Four-Unit Limit'],
+    ['12099', 'Palm Beach County', 'FL', '832750', '1066250', '1288800', '1601750'],
+  ]);
+  assert.equal(small.dataset_type, 'sample');
+
+  const rows = [['FIPS', 'County Name', 'State', 'One-Unit Limit', 'Two-Unit Limit', 'Three-Unit Limit', 'Four-Unit Limit']];
+  for (let i = 0; i < FHFA_MIN_OFFICIAL; i++) {
+    rows.push([String(10000 + i), 'Test' + i + ' County', 'TX', '832750', '1066250', '1288800', '1601750']);
+  }
+  const big = buildFhfaDataset(rows);
+  assert.equal(big.dataset_type, 'official_full');
+  assert.ok(big.record_count >= FHFA_MIN_OFFICIAL);
+});
+
+test('production gate FAILS (exit 1) while the committed sample is installed', () => {
+  let failed = false, output = '';
+  try {
+    execFileSync('node', [join(root, 'scripts/validate-loan-limits.mjs')], { stdio: 'pipe' });
+  } catch (e) {
+    failed = true;
+    output = String(e.stdout || '') + String(e.stderr || '');
+  }
+  assert.ok(failed, 'validate:loan-limits must exit non-zero on sample data');
+  assert.match(output, /NOT PRODUCTION READY/);
+  assert.match(output, /dataset_type is "sample"/);
+});

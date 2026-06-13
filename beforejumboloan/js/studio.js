@@ -201,7 +201,11 @@
     var limEl = $("[data-snap-countylimit]"), deltaEl = $("[data-snap-limitdelta]"), noteEl = $("[data-snap-limitnote]"), fhaEl = $("[data-snap-fha]");
     var county = loc && loc.countyConformingLimit;
     if (limEl) {
-      limEl.textContent = county ? (KW.fmtCurrency(county) + (loc.highCost ? " · high-cost" : "") + (loc.specialArea ? " · special area" : "")) : "—";
+      limEl.textContent = county
+        ? (KW.fmtCurrency(county) + (loc.needsVerification ? " · Needs official verification"
+            : ((loc.highCost ? " · high-cost" : "") + (loc.specialArea ? " · special area" : ""))))
+        : "—";
+      limEl.setAttribute("data-verify", loc && loc.needsVerification ? "yes" : "no");
     }
     if (deltaEl) {
       if (county && S.loan > 0) {
@@ -218,7 +222,14 @@
         fhaEl.textContent = "FHA reference (" + units + "-unit): " + KW.fmtCurrency(loc.fhaLimit);
       } else { fhaEl.hidden = true; fhaEl.textContent = ""; }
     }
-    if (noteEl) noteEl.textContent = (loc && loc.warning ? (loc.warning + " ") : "") + COMPLIANCE_REF;
+    if (noteEl) {
+      // While only a sample dataset is installed, use finalization language and
+      // never imply full nationwide live coverage.
+      var base = (loc && loc.datasetType === "sample")
+        ? "County limit database is being finalized. " + COMPLIANCE_REF
+        : COMPLIANCE_REF;
+      noteEl.textContent = (loc && loc.warning ? (loc.warning + " ") : "") + base;
+    }
   }
 
   var stateSel = $('[data-loc="state"]'), countySel = $('[data-loc="county"]');

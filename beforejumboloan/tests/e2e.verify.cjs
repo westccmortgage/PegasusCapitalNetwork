@@ -31,7 +31,11 @@ function serve() {
   const page = await browser.newPage();
   const errors = [];
   const noise = (t) => /ERR_CERT_AUTHORITY_INVALID|Failed to load resource|favicon|fonts\.g/i.test(t);
-  page.on('console', (m) => { if (m.type() === 'error' && !noise(m.text())) errors.push('console: ' + m.text()); });
+  const warnings = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error' && !noise(m.text())) errors.push('console: ' + m.text());
+    if (m.type() === 'warning') warnings.push(m.text());
+  });
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 
   let failures = 0;
@@ -75,6 +79,15 @@ function serve() {
   await page.waitForSelector('#st-county-free:not([hidden])', { timeout: 3000 });
   check(await page.isVisible('#st-county-free'), 'unseeded state (TX) falls back to free-text county input');
   check(/isn’t imported yet/i.test(await page.textContent('[data-loc-note]')), 'free-text fallback shows import warning');
+
+  // A county not in the dataset must be labeled — never silently treated as verified.
+  await page.fill('#st-county-free', 'Travis County');
+  await page.waitForFunction(
+    () => /Needs official verification/i.test(document.querySelector('[data-snap-countylimit]')?.textContent || ''),
+    { timeout: 3000 }
+  );
+  check(true, 'unseeded county labeled "Needs official verification"');
+  check(/being finalized/i.test(await page.textContent('[data-snap-limitnote]')), 'sample dataset shows "database is being finalized" note');
 
   // Back to FL, pick a baseline county → limit updates to $832,750.
   await page.selectOption('#st-state', 'FL');
@@ -134,6 +147,8 @@ function serve() {
   const fallbackText = await page.textContent('[data-ai-body]');
   check(fallbackParas >= 1, `fallback renders rule-based explanation (${fallbackParas} paragraphs)`);
   check(/estimated loan amount|review path/i.test(fallbackText), 'fallback text is the engine explanation');
+
+  check(warnings.some((w) => /Sample loan-limit dataset installed/i.test(w)), 'developer console warns about the sample dataset');
 
   console.log('\nconsole/page errors: ' + (errors.length ? '\n  ' + errors.join('\n  ') : 'none'));
   check(errors.length === 0, 'no runtime console/page errors');

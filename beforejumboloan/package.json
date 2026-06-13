@@ -12,7 +12,8 @@
     "import:fhfa": "node scripts/import-fhfa-limits.mjs",
     "import:fha": "node scripts/import-fha-limits.mjs",
     "build:geo": "node scripts/build-geo.mjs",
-    "import:all": "npm run import:fhfa && npm run import:fha && npm run build:geo"
+    "import:all": "npm run import:fhfa && npm run import:fha && npm run build:geo",
+    "validate:loan-limits": "node scripts/validate-loan-limits.mjs"
   },
   "engines": {
     "node": ">=18"

@@ -1,10 +1,11 @@
 {
   "schema": "fhfa-conforming",
+  "dataset_type": "sample",
   "source_name": "FHFA Conforming Loan Limit Values",
   "source_url_or_label": "https://www.fhfa.gov/data/conforming-loan-limit (full county flat file)",
   "effective_year": 2026,
-  "imported_at": "2026-06-13T00:33:52.053Z",
-  "verified_at": "2026-06-12",
+  "imported_at": "2026-06-13T00:46:29.158Z",
+  "verified_at": null,
   "record_count": 5,
   "year": 2026,
   "source": "FHFA Conforming Loan Limit Values",
@@ -35,7 +36,7 @@
       "high_cost": true,
       "special_area": false,
       "source": "FHFA 2026 CLL",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     },
     {
       "state_name": "California",
@@ -50,7 +51,7 @@
       "high_cost": true,
       "special_area": false,
       "source": "FHFA 2026 CLL",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     },
     {
       "state_name": "Florida",
@@ -65,7 +66,7 @@
       "high_cost": false,
       "special_area": false,
       "source": "FHFA 2026 CLL",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     },
     {
       "state_name": "Florida",
@@ -80,7 +81,7 @@
       "high_cost": true,
       "special_area": false,
       "source": "FHFA 2026 CLL",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     },
     {
       "state_name": "Florida",
@@ -95,7 +96,7 @@
       "high_cost": false,
       "special_area": false,
       "source": "FHFA 2026 CLL",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     }
   ]
 }

@@ -1,10 +1,11 @@
 {
   "schema": "fha-forward",
+  "dataset_type": "sample",
   "source_name": "HUD FHA Forward Mortgage Limits",
-  "source_url_or_label": "https://entp.hud.gov/idapp/html/hicostlook.cfm (county forward limits)",
+  "source_url_or_label": "https://www.hud.gov/program_offices/housing/sfh/lender/origination/mortgage_limits (CHUMS full file)",
   "effective_year": 2026,
-  "imported_at": "2026-06-13T00:33:52.156Z",
-  "verified_at": "2026-06-12",
+  "imported_at": "2026-06-13T00:46:29.341Z",
+  "verified_at": null,
   "record_count": 2,
   "year": 2026,
   "source": "HUD FHA Forward Mortgage Limits",
@@ -29,7 +30,7 @@
       "fha_four_unit": 2402625,
       "special_area": false,
       "source": "HUD FHA 2026 forward limits",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     },
     {
       "state_name": "California",
@@ -44,7 +45,7 @@
       "fha_four_unit": 2402625,
       "special_area": false,
       "source": "HUD FHA 2026 forward limits",
-      "verified_at": "2026-06-12"
+      "verified_at": null
     }
   ]
 }

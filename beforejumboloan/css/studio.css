@@ -805,3 +805,4 @@ input[type="range"]:focus-visible{ box-shadow:0 0 0 3px rgba(46,127,166,.3); }
 [data-snap-location] { font-weight: 600; }
 #st-county-free { margin-top: 8px; }
 .snap__fha { margin-top: 4px; font-size: 0.82rem; color: var(--ocean); font-weight: 600; }
+.snap__limitval[data-verify="yes"] { color: #b5651d; }

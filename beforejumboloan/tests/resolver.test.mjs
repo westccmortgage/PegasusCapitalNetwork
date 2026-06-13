@@ -136,3 +136,28 @@ test('County suffix optional both ways', () => {
   assert.equal(withSuffix.countyConformingLimit, without.countyConformingLimit);
   assert.equal(without.found, true);
 });
+
+/* ---- coverage guard: dataset_type + needsVerification ---- */
+test('sourceMeta carries dataset_type and resolver exposes datasetType', () => {
+  const r = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County' }, db);
+  assert.equal(r.datasetType, db.conforming.dataset_type);
+  assert.equal(r.sourceMeta.dataset_type, db.conforming.dataset_type);
+});
+
+test('county not in dataset → needsVerification true, baseline only, not silently treated as verified', () => {
+  const r = API.resolveLoanLimits({ state: 'TX', county: 'Travis County' }, db);
+  assert.equal(r.found, false);
+  assert.equal(r.needsVerification, true);
+  assert.equal(r.countyConformingLimit, db.conforming.baseline.one_unit);
+  assert.match(r.warning, /needs official verification/i);
+});
+
+test('seeded county for the available unit does not need verification', () => {
+  const r = API.resolveLoanLimits({ state: 'CA', county: 'Los Angeles County', units: 1 }, db);
+  assert.equal(r.needsVerification, false);
+});
+
+test('seeded county, unimported unit → needsVerification true', () => {
+  const r = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: 2 }, db);
+  assert.equal(r.needsVerification, true);
+});

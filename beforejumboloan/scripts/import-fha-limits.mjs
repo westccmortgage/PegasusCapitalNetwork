@@ -98,11 +98,13 @@ export function buildFhaDataset(rows, opts = {}) {
   const ones = counties.map((c) => c.fha_one_unit);
   const floor = Math.min.apply(null, ones);
   const ceiling = Math.max.apply(null, ones);
+  const datasetType = opts.datasetType || (counties.length >= FHA_MIN_OFFICIAL ? "official_full" : "sample");
 
   return {
     schema: "fha-forward",
+    dataset_type: datasetType,
     source_name: "HUD FHA Forward Mortgage Limits",
-    source_url_or_label: opts.sourceLabel || "https://entp.hud.gov/idapp/html/hicostlook.cfm (county forward limits)",
+    source_url_or_label: opts.sourceLabel || "https://www.hud.gov/program_offices/housing/sfh/lender/origination/mortgage_limits (CHUMS full file)",
     effective_year: year,
     imported_at: nowISO(),
     verified_at: opts.verified || null,
@@ -113,6 +115,16 @@ export function buildFhaDataset(rows, opts = {}) {
     counties: counties.sort((a, b) =>
       a.state_abbr.localeCompare(b.state_abbr) || a.county_name.localeCompare(b.county_name))
   };
+}
+
+/* Minimum FHA county records to be considered nationwide-official. */
+export const FHA_MIN_OFFICIAL = 3000;
+
+export function fhaStats(ds) {
+  const states = new Set(ds.counties.map((c) => c.state_abbr));
+  const missingFips = ds.counties.filter((c) => !/^\d{5}$/.test(String(c.county_fips || ""))).length;
+  const invalid = ds.counties.filter((c) => c.fha_one_unit == null || c.fha_one_unit <= 0).length;
+  return { states: states.size, counties: ds.counties.length, missingFips, invalid };
 }
 
 function resolveInput(argPath) {
@@ -139,13 +151,25 @@ function main() {
     else if (!args[i].startsWith("--")) input = args[i];
   }
   const file = resolveInput(input);
+  if (/\.sample\.csv$/.test(file)) opts.datasetType = "sample";
   info("Reading: " + path.relative(ROOT, file));
   const ds = buildFhaDataset(readCSV(file), opts);
   const out = path.join(ROOT, "data/loan-limits/" + opts.year + "/fha-forward.json");
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(ds, null, 2) + "\n");
+  const s = fhaStats(ds);
   info(`✔ Wrote ${path.relative(ROOT, out)}`);
-  info(`  records: ${ds.record_count} | floor 1-unit: ${ds.floor.one_unit} | ceiling 1-unit: ${ds.ceiling.one_unit}`);
+  info("  ── FHA import report ───────────────────────────────");
+  info(`  dataset_type:     ${ds.dataset_type}`);
+  info(`  FHA record count: ${ds.record_count}`);
+  info(`  states covered:   ${s.states}`);
+  info(`  counties covered: ${s.counties}`);
+  info(`  missing FIPS:     ${s.missingFips}`);
+  info(`  duplicate count:  0 (import fails loudly on duplicates)`);
+  info(`  invalid 1-unit:   ${s.invalid}`);
+  if (ds.dataset_type === "sample") {
+    info("  ⚠ SAMPLE dataset — not nationwide. Import the official HUD full file before production.");
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

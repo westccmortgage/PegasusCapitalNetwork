@@ -127,8 +127,12 @@ export function buildFhfaDataset(rows, opts = {}) {
     four_unit: repCeiling ? repCeiling.conforming_four_unit : null
   };
 
+  // Sample vs official_full. Explicit override wins; otherwise infer from size.
+  const datasetType = opts.datasetType || (counties.length >= FHFA_MIN_OFFICIAL ? "official_full" : "sample");
+
   return {
     schema: "fhfa-conforming",
+    dataset_type: datasetType,
     source_name: "FHFA Conforming Loan Limit Values",
     source_url_or_label: opts.sourceLabel || "https://www.fhfa.gov/data/conforming-loan-limit (full county flat file)",
     effective_year: year,
@@ -142,6 +146,19 @@ export function buildFhfaDataset(rows, opts = {}) {
     counties: counties.sort((a, b) =>
       a.state_abbr.localeCompare(b.state_abbr) || a.county_name.localeCompare(b.county_name))
   };
+}
+
+/* Minimum FHFA county records to be considered nationwide-official (~3,234). */
+export const FHFA_MIN_OFFICIAL = 3000;
+
+/* Coverage stats for the import report. */
+export function fhfaStats(ds) {
+  const states = new Set(ds.counties.map((c) => c.state_abbr));
+  const missingFips = ds.counties.filter((c) => !/^\d{5}$/.test(String(c.county_fips || ""))).length;
+  const invalid = ds.counties.filter((c) => c.conforming_one_unit == null || c.conforming_one_unit <= 0).length;
+  const missingUnits = ds.counties.filter((c) =>
+    c.conforming_two_unit == null || c.conforming_three_unit == null || c.conforming_four_unit == null).length;
+  return { states: states.size, counties: ds.counties.length, missingFips, invalid, missingUnits };
 }
 
 /* ---- CLI ---- */
@@ -169,14 +186,28 @@ function main() {
     else if (!args[i].startsWith("--")) input = args[i];
   }
   const file = resolveInput(input);
+  if (/\.sample\.csv$/.test(file)) opts.datasetType = "sample"; // committed seed → never "official_full"
   info("Reading: " + path.relative(ROOT, file));
   const ds = buildFhfaDataset(readCSV(file), opts);
   const out = path.join(ROOT, "data/loan-limits/" + opts.year + "/fhfa-conforming.json");
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(ds, null, 2) + "\n");
+  const s = fhfaStats(ds);
   const hc = ds.counties.filter((c) => c.high_cost).length;
   info(`✔ Wrote ${path.relative(ROOT, out)}`);
-  info(`  records: ${ds.record_count} | baseline 1-unit: ${ds.baseline.one_unit} | ceiling 1-unit: ${ds.ceiling.one_unit} | high-cost counties: ${hc}`);
+  info("  ── FHFA import report ──────────────────────────────");
+  info(`  dataset_type:      ${ds.dataset_type}`);
+  info(`  FHFA record count: ${ds.record_count}`);
+  info(`  states covered:    ${s.states}`);
+  info(`  counties covered:  ${s.counties}`);
+  info(`  missing FIPS:      ${s.missingFips}`);
+  info(`  duplicate count:   0 (import fails loudly on duplicates)`);
+  info(`  invalid 1-unit:    ${s.invalid}`);
+  info(`  counties missing 2–4 unit: ${s.missingUnits}`);
+  info(`  baseline 1-unit:   ${ds.baseline.one_unit} | ceiling 1-unit: ${ds.ceiling.one_unit} | high-cost counties: ${hc}`);
+  if (ds.dataset_type === "sample") {
+    info("  ⚠ SAMPLE dataset — not nationwide. Import the official full file before production.");
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

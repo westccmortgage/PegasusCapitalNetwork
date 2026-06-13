@@ -60,7 +60,10 @@
       fhaLimit: null,
       source: conf ? (conf.source || conf.source_name) : null,
       verifiedAt: conf ? conf.verified_at : null,
+      datasetType: conf ? (conf.dataset_type || null) : null,
+      needsVerification: false,
       sourceMeta: conf ? {
+        dataset_type: conf.dataset_type || null,
         source_name: conf.source_name || conf.source || null,
         source_url_or_label: conf.source_url_or_label || null,
         effective_year: conf.effective_year || conf.year || null,
@@ -93,10 +96,14 @@
     });
 
     if (!rec) {
+      // County not in the dataset: keep the scenario usable on the national
+      // baseline, but flag it loudly — never silently treat baseline as the
+      // county's verified limit.
       out.countyConformingLimit = baseline != null ? baseline : null;
+      out.needsVerification = true;
       out.warning =
         "“" + (input.county || "") + ", " + normState(input.state) +
-        "” is not in the loan-limit dataset yet — showing the national baseline. Import/verify the county limit before use.";
+        "” is not in the loan-limit dataset yet — limit needs official verification. Showing the national baseline only.";
       return out;
     }
 
@@ -115,9 +122,10 @@
     } else {
       out.countyConformingLimit = baseline != null ? baseline : null;
       out.highCost = !!rec.high_cost;
+      out.needsVerification = true;
       out.warning =
         rec.county_name + " " + UNIT_KEY[units] +
-        "-unit limit isn’t imported yet — using the national baseline. Verify before use.";
+        "-unit limit isn’t imported yet — needs official verification. Using the national baseline only.";
     }
 
     // FHA (optional)
@@ -171,6 +179,14 @@
         DB.fha = res[1];
         DB.geo = res[2];
         DB.loaded = true;
+        // Developer/admin warning — not shown to end users.
+        if (DB.conforming && DB.conforming.dataset_type === "sample" && global.console && global.console.warn) {
+          global.console.warn(
+            "[BeforeJumboLoan] Sample loan-limit dataset installed (" +
+            (DB.conforming.record_count || 0) +
+            " FHFA records). Import official full FHFA/HUD files before production nationwide launch. See data/loan-limits/IMPORT.md."
+          );
+        }
         fire("bjl:limits-ready");
         return DB;
       })
