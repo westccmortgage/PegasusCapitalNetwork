@@ -1,5 +1,5 @@
 /* ============================================================
-   K West Mortgage — Site behavior
+   BeforeJumboLoan.com — Site behavior
    Nav, scenario rotation, scroll reveal, accordion,
    forms (webhook/email ready), cookie consent + visitor ID.
    ============================================================ */
@@ -12,7 +12,7 @@
      locally and the success message still shows.                     */
   var CONFIG = {
     FORM_ENDPOINT: "", // e.g. "/.netlify/functions/lead" or a webhook URL
-    BRAND: "K West Mortgage"
+    BRAND: "BeforeJumboLoan.com"
   };
 
   /* ---------------- Helpers ---------------- */
@@ -263,9 +263,13 @@
   /* ---------------- Year stamp ---------------- */
   $all("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
 
-  /* ---------------- Contact email (single source: engine FORM_CONFIG/BRAND_CONFIG) ---------------- */
+  /* ---------------- Contact email (single source: engine FORM_CONFIG/BRAND_CONFIG) ----------------
+     Only upgrade the contact link to a mailto when a REAL address is configured.
+     Until then the markup default ("Send your scenario" → the Strategy Studio)
+     stays in place, so no placeholder email is ever exposed on the live site. */
   var recipient = (window.BRAND_CONFIG && window.BRAND_CONFIG.recipient) || "";
-  if (recipient) {
+  var validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient) && !/REPLACE|SET_/i.test(recipient);
+  if (validEmail) {
     $all("[data-recipient-email]").forEach(function (a) {
       a.setAttribute("href", "mailto:" + recipient);
       a.textContent = recipient;

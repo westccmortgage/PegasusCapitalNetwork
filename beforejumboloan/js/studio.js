@@ -469,7 +469,11 @@
         trackEvent("lead_form_error");
         sendBtn.disabled = false; sendBtn.textContent = "Send My Scenario for Licensed Review";
         if (sendNote) {
-          sendNote.innerHTML = "We couldn’t submit the scenario automatically. Your details are still here — please use <strong>Copy Scenario Summary</strong> and email it to <a href=\"mailto:" + BRAND.recipient + "\">" + BRAND.recipient + "</a>, or call (561) 956-8866.";
+          var rec = BRAND.recipient || "";
+          var validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rec) && !/REPLACE|SET_/i.test(rec);
+          sendNote.innerHTML = validEmail
+            ? "We couldn’t submit the scenario automatically. Your details are still here — please use <strong>Copy Scenario Summary</strong> and email it to <a href=\"mailto:" + rec + "\">" + rec + "</a>."
+            : "We couldn’t submit the scenario automatically. Your details are still here — please use <strong>Copy Scenario Summary</strong> and try again in a moment.";
         }
       });
   });

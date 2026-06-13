@@ -1,7 +1,7 @@
 # Before Jumbo Loan — Multi-Market Strategy Studio
 
 One reusable, market-config-driven engine for **BeforeJumboLoan.com** (and any market).
-Same calculator as KWestMortgage.com, refactored so the market is selected by route.
+The active market is selected by route, so one engine serves every market.
 
 ## How it works
 - `js/engine.js` holds a **`MARKETS` registry** + `BRAND_CONFIG` + `FORM_CONFIG` + the
@@ -72,10 +72,10 @@ Review path / may fit / math illustration only. No rate quotes, APRs, payments-a
 approvals, or eligibility promises. Required consent + “no credit check to start” on submit.
 Verify loan limits and rate assumptions before public launch.
 
-## Note on KWestMortgage.com
-The live KWest site is unchanged and keeps its own single-market config. This package is the
-portable multi-market version; KWest can be migrated onto it later by adding a `key-west`
-route (already in the registry).
+## Standalone
+BeforeJumboLoan.com is a standalone project. This package is the portable multi-market
+version of the Strategy Studio; any market can be added via the `MARKETS` registry and a
+matching route. Key West / Monroe County is included only as a market/location.
 
 ## AI Strategy Explainer (Phase 2)
 

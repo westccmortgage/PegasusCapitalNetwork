@@ -89,13 +89,13 @@
     primaryCTA: "Review My Scenario",
     poweredByText: "Powered by licensed mortgage professionals.",
     complianceFooter: "Educational scenario-organization tool. Not a loan application, approval, rate quote, underwriting decision, or commitment to lend. Subject to borrower qualification, property eligibility, underwriting approval, and current program guidelines.",
-    recipient: "SET_RECIPIENT_EMAIL@beforejumboloan.com"
+    recipient: "REPLACE_WITH_PRODUCTION_LEAD_EMAIL"
   };
 
   var FORM_CONFIG = {
     formName: "before-jumbo-strategy-studio",
     leadSource: "Before Jumbo Strategy Studio",
-    notificationEmail: "SET_RECIPIENT_EMAIL@beforejumboloan.com"
+    notificationEmail: "REPLACE_WITH_PRODUCTION_LEAD_EMAIL"
   };
 
   /* Resolve active market from ?market=slug, URL path slug, or default. */
