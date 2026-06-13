@@ -27,7 +27,8 @@
     intent: "", mode: "purchase",
     price: 1150000, downPct: 20, down: 230000,
     balance: 700000, cashout: 0, equity: 0, loan: 920000,
-    property_location: "", occupancy: "", property_type: "",
+    property_location: "", property_state: "", property_county: "", property_zip: "",
+    occupancy: "", property_type: "",
     income_situation: "", main_concern: "",
     name: "", email: "", phone: "", preferred_contact_method: "", message: "",
     timeline: "", preapproval: "", realtor: "", rental_income: "", veteran: "", funds_source: "", under_contract: ""
@@ -118,6 +119,7 @@
     set("[data-snap-occ]", S.occupancy || "—");
     set("[data-snap-type]", S.property_type || "—");
     set("[data-snap-income]", S.income_situation || "—");
+    renderLocation();
 
     var path = KW.heroPath(S.loan, KW.occShort(S.occupancy));
     set("[data-snap-path]", path);
@@ -180,6 +182,114 @@
     r.notes.forEach(function (t) { var p = document.createElement("p"); p.className = "pathnote"; p.textContent = t; notesWrap.appendChild(p); });
   }
 
+  /* ---------- property location selector + national loan-limit resolver ---------- */
+  var COMPLIANCE_REF = (window.BJLLimits && window.BJLLimits.COMPLIANCE) ||
+    "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.";
+
+  function applyLocation() {
+    if (KW.applyLocation) {
+      KW.applyLocation(S.property_state, S.property_county, S.property_zip, 1);
+    }
+    S.property_location = (S.property_county ? (S.property_county + ", ") : "") + (S.property_state || "");
+    S.property_location = S.property_location.replace(/^,\s*|,\s*$/g, "").trim();
+  }
+
+  function renderLocation() {
+    var loc = KW.lastLocation;
+    set("[data-snap-location]", S.property_location || "Select a county →");
+    var limEl = $("[data-snap-countylimit]"), deltaEl = $("[data-snap-limitdelta]"), noteEl = $("[data-snap-limitnote]");
+    var county = loc && loc.countyConformingLimit;
+    if (limEl) {
+      limEl.textContent = county ? (KW.fmtCurrency(county) + (loc.highCost ? " · high-cost" : "")) : "—";
+    }
+    if (deltaEl) {
+      if (county && S.loan > 0) {
+        var diff = S.loan - county;
+        deltaEl.textContent = diff > 0
+          ? KW.fmtCurrency(diff) + " above county limit"
+          : KW.fmtCurrency(-diff) + " below county limit";
+        deltaEl.setAttribute("data-over", diff > 0 ? "yes" : "no");
+      } else { deltaEl.textContent = ""; deltaEl.removeAttribute("data-over"); }
+    }
+    if (noteEl) noteEl.textContent = (loc && loc.warning ? (loc.warning + " ") : "") + COMPLIANCE_REF;
+  }
+
+  var stateSel = $('[data-loc="state"]'), countySel = $('[data-loc="county"]');
+  var countyFree = $('[data-loc="countyFree"]'), zipInput = $('[data-loc="zip"]');
+  var locNote = $("[data-loc-note]");
+
+  function populateStates() {
+    if (!stateSel || !window.BJLLimits) return;
+    var states = window.BJLLimits.getStates();
+    if (!states.length) return;
+    var cur = stateSel.value;
+    stateSel.innerHTML = '<option value="">Select state…</option>' +
+      states.map(function (s) { return '<option value="' + s.abbr + '">' + esc(s.name) + "</option>"; }).join("");
+    if (cur) stateSel.value = cur;
+  }
+
+  function populateCounties(stateAbbr, keep) {
+    if (!countySel) return;
+    var counties = (window.BJLLimits && window.BJLLimits.getCounties(stateAbbr)) || [];
+    if (counties.length) {
+      countySel.hidden = false; countySel.disabled = false;
+      if (countyFree) { countyFree.hidden = true; countyFree.value = ""; }
+      countySel.innerHTML = '<option value="">Select county…</option>' +
+        counties.map(function (c) { return '<option value="' + esc(c.name) + '">' + esc(c.name) + "</option>"; }).join("");
+      if (keep) countySel.value = keep;
+      if (locNote) locNote.textContent = "You confirm the property’s location — we don’t guess it from your device.";
+    } else {
+      // No county list imported for this state yet — free-text fallback.
+      countySel.hidden = true; countySel.disabled = true;
+      if (countyFree) { countyFree.hidden = false; countyFree.value = keep || ""; }
+      if (locNote) locNote.textContent = "County list for this state isn’t imported yet — type the county name; the limit will be verified manually.";
+    }
+  }
+
+  function onLocationChange() {
+    var st = stateSel ? stateSel.value : "";
+    var cty = "";
+    if (countySel && !countySel.hidden) cty = countySel.value;
+    else if (countyFree && !countyFree.hidden) cty = countyFree.value.trim();
+    S.property_state = st;
+    S.property_county = cty;
+    S.property_zip = zipInput ? zipInput.value.trim() : "";
+    applyLocation();
+    renderSnapshot();
+  }
+
+  var locBound = false;
+  function initLocation() {
+    if (!stateSel) return;
+    populateStates();
+    var preset = KW.locationPreset ? KW.locationPreset() : { state: "", county: "" };
+    if (preset.state && !S.property_state) {
+      stateSel.value = preset.state;
+      populateCounties(preset.state, preset.county);
+      S.property_state = preset.state;
+      if (preset.county) S.property_county = preset.county;
+    } else if (S.property_state) {
+      stateSel.value = S.property_state;
+      populateCounties(S.property_state, S.property_county);
+    }
+    // Re-resolve with whatever data is currently loaded (preset on first run,
+    // real dataset once "bjl:limits-ready" fires).
+    if (S.property_state) { applyLocation(); S.property_location = (S.property_county ? S.property_county + ", " : "") + S.property_state; }
+    if (locBound) return;
+    locBound = true;
+    stateSel.addEventListener("change", function () {
+      S.property_county = "";
+      populateCounties(stateSel.value, "");
+      onLocationChange();
+    });
+    if (countySel) countySel.addEventListener("change", onLocationChange);
+    if (countyFree) countyFree.addEventListener("input", onLocationChange);
+    if (zipInput) zipInput.addEventListener("input", onLocationChange);
+  }
+
+  // The dataset loads asynchronously; (re)hydrate the selector when it's ready.
+  window.addEventListener("bjl:limits-ready", function () { initLocation(); renderSnapshot(); });
+
   /* ---------- mode ---------- */
   function applyMode() {
     S.mode = /refinance|cash-out/i.test(S.intent) ? "refi" : "purchase";
@@ -231,7 +341,7 @@
   if (controls && controls.parentNode) controls.parentNode.insertBefore(nbqEl, controls);
   var NBQ = {
     1: "Are you trying to keep the loan amount before jumbo?",
-    2: "Where in the Keys are you focused?",
+    2: "Select the state and county where the property is located.",
     3: "Are you trying to keep the loan amount before jumbo? Try adjusting the price.",
     4: "A higher down payment may change the review path — try adjusting it.",
     5: "Will this be a primary home, second home, or rental/investment property?",
@@ -445,6 +555,12 @@
       down_payment_percentage: o.downPaymentPercent == null ? "" : (o.downPaymentPercent + "%"),
       estimated_loan_amount: KW.fmtCurrency(o.estimatedLoanAmount),
       property_location: o.propertyLocation,
+      property_state: S.property_state || "",
+      property_county: S.property_county || "",
+      property_zip: S.property_zip || "",
+      county_loan_limit_reference: (KW.lastLocation && KW.lastLocation.countyConformingLimit)
+        ? KW.fmtCurrency(KW.lastLocation.countyConformingLimit) + " (configured reference — verify before launch)"
+        : "",
       occupancy: o.occupancy,
       property_type: o.propertyType,
       income_situation: o.incomeSituation,
@@ -527,6 +643,7 @@
 
   /* ---------- init ---------- */
   preselect();
+  initLocation();
   applyMode();
   goTo(1);
   trackEvent("strategy_studio_started");

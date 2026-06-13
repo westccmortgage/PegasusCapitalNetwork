@@ -70,12 +70,17 @@
         <div class="st" data-step="2" hidden>
           <span class="eyebrow">Step 2</span>
           <h2 class="st__q">Where is the property?</h2>
-          <div class="opt-grid" role="group" aria-label="Location">
-            <button type="button" class="opt" data-field="property_location" data-value="Primary county / metro">Primary county / metro</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Nearby county">Nearby county</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Other area in state">Other area in state</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Not sure yet">Not sure yet</button>
+          <p class="st__sub">Loan limits are set by the property’s county. Choose the state and county where the property is located.</p>
+          <div class="form-grid">
+            <div class="field"><label for="st-state">State</label>
+              <select id="st-state" data-loc="state"><option value="">Select state…</option></select></div>
+            <div class="field"><label for="st-county">County</label>
+              <select id="st-county" data-loc="county" disabled><option value="">Select a state first…</option></select>
+              <input id="st-county-free" data-loc="countyFree" type="text" placeholder="Type the county name" hidden></div>
+            <div class="field full"><label for="st-zip">ZIP or city (optional)</label>
+              <input id="st-zip" data-loc="zip" type="text" placeholder="ZIP code or city" autocomplete="postal-code"></div>
           </div>
+          <p class="st__hint" data-loc-note>You confirm the property’s location — we don’t guess it from your device.</p>
         </div>
 
         <!-- Step 3 -->
@@ -275,6 +280,7 @@
         <div class="snap glass">
           <h3 class="snap__title">Live Scenario Snapshot</h3>
           <dl class="snap__list">
+            <div class="snap__row"><dt>Property location</dt><dd data-snap-location>Select a county →</dd></div>
             <div class="snap__row"><dt>Purchase price / value</dt><dd data-snap-price>$1,150,000</dd></div>
             <div class="snap__row"><dt>Down payment / equity</dt><dd data-snap-down>$230,000 (20%)</dd></div>
             <div class="snap__row"><dt>Estimated loan amount</dt><dd data-snap-loan>$920,000</dd></div>
@@ -293,6 +299,11 @@
               <span class="qc__tick" data-snap-tick2></span>
             </div>
             <div class="qc__meter-labels"><span>Conforming</span><span>High-Balance</span><span>Jumbo</span></div>
+          </div>
+          <div class="snap__limit">
+            <span class="snap__k">County loan limit reference</span>
+            <div class="snap__limitline"><span class="snap__limitval" data-snap-countylimit>—</span><span class="snap__delta" data-snap-limitdelta></span></div>
+            <p class="snap__refnote" data-snap-limitnote>Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.</p>
           </div>
           <div class="snap__cx">
             <span class="snap__k">Scenario complexity</span>
@@ -340,6 +351,10 @@
   <input name="down_payment_percentage" />
   <input name="estimated_loan_amount" />
   <input name="property_location" />
+  <input name="property_state" />
+  <input name="property_county" />
+  <input name="property_zip" />
+  <input name="county_loan_limit_reference" />
   <input name="occupancy" />
   <input name="property_type" />
   <input name="income_situation" />
@@ -378,6 +393,7 @@
   <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
 </div>
 
+<script src="js/loan-limits.js" defer></script>
 <script src="js/engine.js" defer></script>
 <script src="js/site.js" defer></script>
 <script src="js/studio.js" defer></script>

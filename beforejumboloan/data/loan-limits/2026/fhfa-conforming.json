@@ -1,0 +1,45 @@
+{
+  "year": 2026,
+  "source": "FHFA 2026 Conforming Loan Limit Values (fhfa.gov)",
+  "verified_at": "2026-06-12",
+  "note": "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch. Seeded with the route-preset counties; import the full national county list per data/loan-limits/IMPORT.md (do not hardcode limits in UI components).",
+  "baseline": { "one_unit": 832750, "two_unit": 1066250, "three_unit": 1288800, "four_unit": 1601750 },
+  "ceiling":  { "one_unit": 1249125, "two_unit": 1599375, "three_unit": 1933200, "four_unit": 2402625 },
+  "counties": [
+    {
+      "state_name": "Florida", "state_abbr": "FL", "county_name": "Monroe County", "county_fips": "12087",
+      "year": 2026,
+      "conforming_one_unit": 990150, "conforming_two_unit": null, "conforming_three_unit": null, "conforming_four_unit": null,
+      "high_cost": true,
+      "source": "FHFA 2026 CLL", "verified_at": "2026-06-12"
+    },
+    {
+      "state_name": "Florida", "state_abbr": "FL", "county_name": "Palm Beach County", "county_fips": "12099",
+      "year": 2026,
+      "conforming_one_unit": 832750, "conforming_two_unit": 1066250, "conforming_three_unit": 1288800, "conforming_four_unit": 1601750,
+      "high_cost": false,
+      "source": "FHFA 2026 CLL (baseline)", "verified_at": "2026-06-12"
+    },
+    {
+      "state_name": "Florida", "state_abbr": "FL", "county_name": "Miami-Dade County", "county_fips": "12086",
+      "year": 2026,
+      "conforming_one_unit": 832750, "conforming_two_unit": 1066250, "conforming_three_unit": 1288800, "conforming_four_unit": 1601750,
+      "high_cost": false,
+      "source": "FHFA 2026 CLL (baseline)", "verified_at": "2026-06-12"
+    },
+    {
+      "state_name": "California", "state_abbr": "CA", "county_name": "Orange County", "county_fips": "06059",
+      "year": 2026,
+      "conforming_one_unit": 1249125, "conforming_two_unit": 1599375, "conforming_three_unit": 1933200, "conforming_four_unit": 2402625,
+      "high_cost": true,
+      "source": "FHFA 2026 CLL (high-cost ceiling)", "verified_at": "2026-06-12"
+    },
+    {
+      "state_name": "California", "state_abbr": "CA", "county_name": "Los Angeles County", "county_fips": "06037",
+      "year": 2026,
+      "conforming_one_unit": 1249125, "conforming_two_unit": 1599375, "conforming_three_unit": 1933200, "conforming_four_unit": 2402625,
+      "high_cost": true,
+      "source": "FHFA 2026 CLL (high-cost ceiling)", "verified_at": "2026-06-12"
+    }
+  ]
+}

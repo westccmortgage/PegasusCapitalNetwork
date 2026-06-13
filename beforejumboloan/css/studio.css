@@ -791,3 +791,16 @@ input[type="range"]:focus-visible{ box-shadow:0 0 0 3px rgba(46,127,166,.3); }
 .page-stub__body p { color: var(--ink); line-height: 1.7; margin: 0 0 12px; }
 .page-stub__body ul { color: var(--ink); line-height: 1.8; padding-left: 20px; }
 .page-stub__body a { color: var(--ocean); }
+
+/* ============================================================
+   Property location selector + county loan-limit reference
+   ============================================================ */
+.snap__limit { margin: 14px 0 4px; padding-top: 14px; border-top: 1px solid var(--line); }
+.snap__limitline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.snap__limitval { font-family: var(--font-display); font-size: 1.15rem; color: var(--navy); font-weight: 600; }
+.snap__delta { font-size: 0.82rem; font-weight: 600; color: var(--ocean); }
+.snap__delta[data-over="yes"] { color: #b5651d; }
+.snap__delta[data-over="no"] { color: #3a7d44; }
+.snap__refnote { margin: 8px 0 0; font-size: 0.72rem; line-height: 1.5; color: var(--muted); }
+[data-snap-location] { font-weight: 600; }
+#st-county-free { margin-top: 8px; }

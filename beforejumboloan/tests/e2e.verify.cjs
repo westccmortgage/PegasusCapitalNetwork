@@ -39,11 +39,29 @@ function serve() {
   const base = `http://localhost:${PORT}`;
 
   // Deterministic market via query param.
-  await page.goto(`${base}/scenario-studio.html?market=california`, { waitUntil: 'networkidle' });
+  await page.goto(`${base}/scenario-studio.html?market=key-west`, { waitUntil: 'networkidle' });
 
   // Market-aware copy applied from config.
   const marketName = await page.textContent('[data-market-name]');
-  check(/California/i.test(marketName), `market config drives copy (${marketName.trim()})`);
+  check(/Key West|Monroe/i.test(marketName), `market config drives copy (${marketName.trim()})`);
+
+  // National loan-limit dataset loads asynchronously and populates the selector.
+  await page.waitForFunction(() => {
+    const s = document.querySelector('#st-state');
+    return s && s.options.length > 5;
+  }, { timeout: 6000 });
+
+  // Route preset preselects FL / Monroe County and resolves the county limit.
+  const presetState = await page.inputValue('#st-state');
+  const presetCounty = await page.inputValue('#st-county');
+  check(presetState === 'FL', `route preset preselects state FL (${presetState})`);
+  check(/Monroe/i.test(presetCounty), `route preset preselects Monroe County (${presetCounty})`);
+  const countyLimit0 = await page.textContent('[data-snap-countylimit]');
+  check(/990,150/.test(countyLimit0), `county limit reference resolves to $990,150 (${countyLimit0.trim()})`);
+  const limitNote = await page.textContent('[data-snap-limitnote]');
+  check(/verify current FHFA\/Fannie\/Freddie\/HUD limits before launch/.test(limitNote), 'county limit carries the compliance line');
+  const snapLoc = await page.textContent('[data-snap-location]');
+  check(/Monroe County, FL/i.test(snapLoc), `dashboard shows property location (${snapLoc.trim()})`);
 
   const opt = (field, value) => `.opt[data-field="${field}"][data-value="${value}"]`;
   const stepVisible = (n) => page.waitForSelector(`.st[data-step="${n}"]:not([hidden])`, { timeout: 4000 });
@@ -51,7 +69,24 @@ function serve() {
   // Walk the 9-step wizard.
   await page.click(opt('intent', 'Buy a primary home'));         // step 1 → auto-advance
   await stepVisible(2);
-  await page.click(opt('property_location', 'Primary county / metro')); // 2 → auto
+
+  // Step 2 — property location selector. Unseeded state falls back to free text.
+  await page.selectOption('#st-state', 'TX');
+  await page.waitForSelector('#st-county-free:not([hidden])', { timeout: 3000 });
+  check(await page.isVisible('#st-county-free'), 'unseeded state (TX) falls back to free-text county input');
+  check(/isn’t imported yet/i.test(await page.textContent('[data-loc-note]')), 'free-text fallback shows import warning');
+
+  // Back to FL, pick a baseline county → limit updates to $832,750.
+  await page.selectOption('#st-state', 'FL');
+  await page.waitForFunction(() => {
+    const c = document.querySelector('#st-county');
+    return c && !c.disabled && c.options.length > 1;
+  }, { timeout: 3000 });
+  await page.selectOption('#st-county', 'Palm Beach County');
+  await page.waitForFunction(() => /832,750/.test(document.querySelector('[data-snap-countylimit]')?.textContent || ''), { timeout: 3000 });
+  check(true, 'selecting Palm Beach County resolves to $832,750');
+
+  await page.click('[data-st-next]');                            // 2 (selector) → next
   await stepVisible(3);
   await page.click('[data-st-next]');                            // 3 (slider) → next
   await stepVisible(4);

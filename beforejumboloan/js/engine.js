@@ -130,6 +130,50 @@
     return MARKET_CONFIG;
   }
 
+  var COMPLIANCE_REF = "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.";
+
+  /* Resolve loan limits for a selected property location via the national
+     resolver (js/loan-limits.js) and fold them into the active MARKET_CONFIG
+     so ALL existing engine math (primaryPath, meter, whatIf, payment, …)
+     reuses them with no rewrite. Returns the full resolution object. */
+  function applyLocation(state, county, zip, units) {
+    var res = null;
+    if (global.BJLLimits && typeof global.BJLLimits.resolveLoanLimits === "function") {
+      res = global.BJLLimits.resolveLoanLimits({ state: state, county: county, zip: zip, units: units });
+    }
+    if (res) {
+      if (res.conformingBaseline != null) MARKET_CONFIG.baselineConformingLimit = res.conformingBaseline;
+      if (res.countyConformingLimit != null) MARKET_CONFIG.highBalanceLimit = res.countyConformingLimit;
+      if (res.year != null) { MARKET_CONFIG.year = res.year; MARKET_CONFIG.loanLimitYear = res.year; }
+    }
+    if (state) MARKET_CONFIG.state = String(state).toUpperCase();
+    if (county) MARKET_CONFIG.countyName = county;
+    global.MARKET_CONFIG = MARKET_CONFIG;
+    var stored = res || {
+      state: state || null, county: county || null, zip: zip || null, units: units || 1,
+      year: MARKET_CONFIG.year,
+      conformingBaseline: MARKET_CONFIG.baselineConformingLimit,
+      countyConformingLimit: MARKET_CONFIG.highBalanceLimit,
+      highCost: MARKET_CONFIG.highBalanceLimit > MARKET_CONFIG.baselineConformingLimit,
+      fhaLimit: null, source: "Route preset", verifiedAt: null,
+      compliance: COMPLIANCE_REF,
+      warning: "Loan-limit dataset not loaded — using the route preset. Verify before use.",
+      found: false
+    };
+    if (global.KW) global.KW.lastLocation = stored;
+    return stored;
+  }
+
+  /* Route-preset location for preselecting the selector (state abbr + concrete
+     county only; placeholder county names like "California"/"Your County" are
+     treated as "state only, pick a county"). */
+  function locationPreset() {
+    var st = MARKET_CONFIG.state || "";
+    var cty = MARKET_CONFIG.countyName || "";
+    if (/^(your county|california)$/i.test(cty)) cty = "";
+    return { state: st, county: cty };
+  }
+
   /* Rate ASSUMPTIONS — education only. Edit in ONE place. Not a rate quote. */
   var RATE_CONFIG = {
     lastUpdated: "2026-06-12",
@@ -665,6 +709,10 @@
     form: FORM_CONFIG,
     activeSlug: function () { return ACTIVE_SLUG; },
     setMarket: setMarket,
+    applyLocation: applyLocation,
+    locationPreset: locationPreset,
+    lastLocation: null,
+    COMPLIANCE_REF: COMPLIANCE_REF,
     config: MARKET_CONFIG,
     brand: BRAND_CONFIG,
     rates: RATE_CONFIG,
