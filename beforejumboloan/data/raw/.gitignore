@@ -1,0 +1,7 @@
+# Official source files are large and are NOT committed. Drop them here and run
+# the import scripts. The small *.sample.csv files (format references / seed)
+# ARE committed so the pipeline runs out of the box.
+*.xlsx
+*.xls
+*.csv
+!*.sample.csv

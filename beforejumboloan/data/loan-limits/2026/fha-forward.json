@@ -1,9 +1,50 @@
 {
+  "schema": "fha-forward",
+  "source_name": "HUD FHA Forward Mortgage Limits",
+  "source_url_or_label": "https://entp.hud.gov/idapp/html/hicostlook.cfm (county forward limits)",
+  "effective_year": 2026,
+  "imported_at": "2026-06-13T00:33:52.156Z",
+  "verified_at": "2026-06-12",
+  "record_count": 2,
   "year": 2026,
-  "source": "HUD FHA 2026 Forward Mortgage Limits (hud.gov) — TODO import",
-  "verified_at": null,
-  "note": "Configured reference only — verify current HUD FHA limits before launch. FHA forward limits are set by HUD per county (greater of the national floor or 115% of area median, capped at the ceiling) and must be imported separately. floor/ceiling below are 2026 references; per-county values pending import (see data/loan-limits/IMPORT.md).",
-  "floor":   { "one_unit": 541288, "two_unit": 693063, "three_unit": 837720, "four_unit": 1041138 },
-  "ceiling": { "one_unit": 1249125, "two_unit": 1599375, "three_unit": 1933200, "four_unit": 2402625 },
-  "counties": []
+  "source": "HUD FHA Forward Mortgage Limits",
+  "compliance": "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.",
+  "floor": {
+    "one_unit": 1249125
+  },
+  "ceiling": {
+    "one_unit": 1249125
+  },
+  "counties": [
+    {
+      "state_name": "California",
+      "state_abbr": "CA",
+      "county_name": "Los Angeles County",
+      "county_fips": "06037",
+      "msa": "Los Angeles-Long Beach-Anaheim",
+      "year": 2026,
+      "fha_one_unit": 1249125,
+      "fha_two_unit": 1599375,
+      "fha_three_unit": 1933200,
+      "fha_four_unit": 2402625,
+      "special_area": false,
+      "source": "HUD FHA 2026 forward limits",
+      "verified_at": "2026-06-12"
+    },
+    {
+      "state_name": "California",
+      "state_abbr": "CA",
+      "county_name": "Orange County",
+      "county_fips": "06059",
+      "msa": "Los Angeles-Long Beach-Anaheim",
+      "year": 2026,
+      "fha_one_unit": 1249125,
+      "fha_two_unit": 1599375,
+      "fha_three_unit": 1933200,
+      "fha_four_unit": 2402625,
+      "special_area": false,
+      "source": "HUD FHA 2026 forward limits",
+      "verified_at": "2026-06-12"
+    }
+  ]
 }

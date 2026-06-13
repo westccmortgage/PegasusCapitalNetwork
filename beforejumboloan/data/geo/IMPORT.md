@@ -1,20 +1,19 @@
-# Importing the full US county list
+# State → County selector data (`us-counties.json`)
 
-`us-counties.json` drives the State → County selector in the Strategy Studio.
+`us-counties.json` drives the Strategy Studio's State → County dropdown.
 
-- `states[]` is **complete** (50 states + DC). Add territories (PR, GU, VI) if needed.
-- `counties{}` is keyed by state abbreviation and **seeded** only for the route-preset
-  markets. States without a county list fall back to a free-text county field plus a
-  "verify manually" warning — the site stays usable nationwide before the full import.
+- `states[]` is complete (50 states + DC). Add territories (PR, GU, VI) if needed.
+- `counties{}` is **derived from the official FHFA county list** by
+  `scripts/build-geo.mjs` — do not hand-edit it.
 
-## To import every county
+## Rebuild
+```bash
+npm run build:geo -- --year 2026
+```
+Run this after `npm run import:fhfa`. It reads
+`data/loan-limits/<YEAR>/fhfa-conforming.json` and writes one
+`{ name, fips }` entry per county, grouped and sorted by state. With the full
+FHFA file imported, every U.S. county appears in the dropdown automatically.
 
-1. Use a public Census/FIPS county source (e.g. Census Bureau county FIPS list) or
-   reuse the county names + FIPS already present in
-   `data/loan-limits/2026/fhfa-conforming.json` (one entry per county nationwide).
-2. Populate `counties["XX"] = [{ "name": "<County> County", "fips": "<5-digit>" }, …]`
-   for each state, sorted by name.
-
-Keep county `name` and `fips` **identical** to the records in
-`fhfa-conforming.json` so the resolver matches them (matching is case/space
-insensitive and ignores a trailing "County", but FIPS should still line up).
+States without a county list fall back to a free-text county field plus a
+"verify manually" warning, so the studio stays usable before a full import.

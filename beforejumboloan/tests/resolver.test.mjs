@@ -80,3 +80,59 @@ test('geo: states complete (51) and seeded counties present', () => {
   assert.ok(db.geo.counties.FL.some((c) => c.name === 'Monroe County'));
   assert.ok(db.geo.counties.CA.some((c) => c.name === 'Orange County'));
 });
+
+/* ---- units 1–4 coverage (driven by the imported dataset) ---- */
+const U = [null, 'one', 'two', 'three', 'four'];
+const expect = {
+  'Los Angeles County': { st: 'CA', v: [null, 1249125, 1599375, 1933200, 2402625] },
+  'Orange County': { st: 'CA', v: [null, 1249125, 1599375, 1933200, 2402625] },
+  'Miami-Dade County': { st: 'FL', v: [null, 832750, 1066250, 1288800, 1601750] },
+};
+for (const [county, { st, v }] of Object.entries(expect)) {
+  test(`${county} resolves all units 1–4`, () => {
+    for (let u = 1; u <= 4; u++) {
+      const r = API.resolveLoanLimits({ state: st, county, units: u }, db);
+      assert.equal(r.found, true);
+      assert.equal(r.units, u);
+      assert.equal(r.countyConformingLimit, v[u], `${county} ${u}-unit`);
+    }
+  });
+}
+
+test('Monroe County: 1-unit verified; 2–4 fall back to baseline with a warning', () => {
+  const r1 = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: 1 }, db);
+  assert.equal(r1.countyConformingLimit, 990150);
+  assert.equal(r1.highCost, true);
+  for (let u = 2; u <= 4; u++) {
+    const r = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: u }, db);
+    assert.equal(r.countyConformingLimit, db.conforming.baseline[U[u] + '_unit']);
+    assert.match(r.warning, /isn’t imported yet/);
+  }
+});
+
+test('changing units 1 → 4 changes the resolved limit', () => {
+  const u1 = API.resolveLoanLimits({ state: 'CA', county: 'Los Angeles County', units: 1 }, db);
+  const u4 = API.resolveLoanLimits({ state: 'CA', county: 'Los Angeles County', units: 4 }, db);
+  assert.notEqual(u1.countyConformingLimit, u4.countyConformingLimit);
+  assert.equal(u4.countyConformingLimit, 2402625);
+});
+
+test('FHA limit returned per-unit when present (LA), null when absent (Monroe)', () => {
+  const la = API.resolveLoanLimits({ state: 'CA', county: 'Los Angeles County', units: 2 }, db);
+  assert.equal(la.fhaLimit, 1599375);
+  const monroe = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: 1 }, db);
+  assert.equal(monroe.fhaLimit, null);
+});
+
+test('resolver surfaces sourceMeta provenance', () => {
+  const r = API.resolveLoanLimits({ state: 'FL', county: 'Miami-Dade County' }, db);
+  assert.ok(r.sourceMeta && r.sourceMeta.source_name && r.sourceMeta.imported_at);
+  assert.equal(r.sourceMeta.effective_year, 2026);
+});
+
+test('County suffix optional both ways', () => {
+  const withSuffix = API.resolveLoanLimits({ state: 'FL', county: 'Miami-Dade County' }, db);
+  const without = API.resolveLoanLimits({ state: 'FL', county: 'miami-dade' }, db);
+  assert.equal(withSuffix.countyConformingLimit, without.countyConformingLimit);
+  assert.equal(without.found, true);
+});

@@ -131,6 +131,7 @@
   }
 
   var COMPLIANCE_REF = "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.";
+  var LAST_LOCATION = null;
 
   /* Resolve loan limits for a selected property location via the national
      resolver (js/loan-limits.js) and fold them into the active MARKET_CONFIG
@@ -148,6 +149,7 @@
     }
     if (state) MARKET_CONFIG.state = String(state).toUpperCase();
     if (county) MARKET_CONFIG.countyName = county;
+    MARKET_CONFIG.units = (res && res.units) || units || 1;
     global.MARKET_CONFIG = MARKET_CONFIG;
     var stored = res || {
       state: state || null, county: county || null, zip: zip || null, units: units || 1,
@@ -160,6 +162,7 @@
       warning: "Loan-limit dataset not loaded — using the route preset. Verify before use.",
       found: false
     };
+    LAST_LOCATION = stored;
     if (global.KW) global.KW.lastLocation = stored;
     return stored;
   }
@@ -517,7 +520,7 @@
     } else {
       out.push("At the current assumptions, the buydown rate is not lower than the current rate, so there is no monthly savings to recover. Adjust the assumptions to compare.");
     }
-    out.push("The temporary " + tb.type + " buydown lowers the estimated payment in the early years, but the note-rate payment begins after the buydown period. Final availability depends on program guidelines and an approved funding source (seller, builder, or lender credit).");
+    out.push("The temporary " + tb.type + " buydown lowers the estimated payment in the early years, but the note-rate payment begins after the buydown period. Final availability depends on program guidelines and an eligible funding source (seller, builder, or lender credit).");
     return out;
   }
 
@@ -609,6 +612,20 @@
     L.push("  " + o.market + " [" + o.marketSlug + "] (" + cfg.state + ", " + o.year + " reference)");
     L.push("  Configured limits: baseline " + fmtCurrency(o.baselineConformingLimit) + " / high-balance " + fmtCurrency(o.highBalanceLimit));
     L.push("  Domain: " + o.domain);
+    L.push("");
+    L.push("Property location & loan-limit reference:");
+    var loc = LAST_LOCATION;
+    var u = (loc && loc.units) || cfg.units || 1;
+    L.push("  Location: " + ((loc && loc.county) || cfg.countyName || "—") + ", " + ((loc && loc.state) || cfg.state || "—"));
+    L.push("  Units: " + u + (u === 1 ? " unit" : " units"));
+    if (loc && loc.countyConformingLimit != null) {
+      L.push("  County conforming/high-balance reference (" + u + "-unit): " + fmtCurrency(loc.countyConformingLimit) +
+        (loc.highCost ? " (high-cost)" : "") + " — configured reference only, verify before launch");
+    }
+    if (loc && loc.fhaLimit != null) {
+      L.push("  FHA reference (" + u + "-unit): " + fmtCurrency(loc.fhaLimit) + " — configured reference only, verify before launch");
+    }
+    if (loc && loc.source) L.push("  Source: " + loc.source + (loc.verifiedAt ? " (verified " + loc.verifiedAt + ")" : ""));
     L.push("");
     L.push("Scenario:");
     if (o.purchasePurpose) L.push("  Goal: " + o.purchasePurpose);

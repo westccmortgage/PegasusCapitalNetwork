@@ -51,13 +51,23 @@
       county: input.county || null,
       zip: input.zip || null,
       units: units,
-      year: conf ? conf.year : null,
+      year: conf ? (conf.year || conf.effective_year) : null,
       conformingBaseline: null,
       countyConformingLimit: null,
-      highCost: false,
+      highCost: false,         // high-cost / high-balance area
+      highBalance: false,      // alias of highCost
+      specialArea: false,      // statutory special-exception area (AK/HI/GU/VI)
       fhaLimit: null,
-      source: conf ? conf.source : null,
+      source: conf ? (conf.source || conf.source_name) : null,
       verifiedAt: conf ? conf.verified_at : null,
+      sourceMeta: conf ? {
+        source_name: conf.source_name || conf.source || null,
+        source_url_or_label: conf.source_url_or_label || null,
+        effective_year: conf.effective_year || conf.year || null,
+        imported_at: conf.imported_at || null,
+        verified_at: conf.verified_at || null,
+        record_count: conf.record_count != null ? conf.record_count : (conf.counties ? conf.counties.length : null)
+      } : null,
       compliance: COMPLIANCE,
       warning: null,
       found: false
@@ -95,7 +105,8 @@
     out.county = rec.county_name;
     out.fips = rec.county_fips || null;
     out.verifiedAt = rec.verified_at || conf.verified_at || null;
-    out.source = rec.source || conf.source;
+    out.source = rec.source || conf.source || conf.source_name;
+    out.specialArea = !!rec.special_area;
 
     var cc = rec["conforming_" + UNIT_KEY[units] + "_unit"];
     if (cc != null) {
@@ -120,6 +131,7 @@
       }
     }
 
+    out.highBalance = out.highCost;
     return out;
   }
 

@@ -77,7 +77,14 @@
             <div class="field"><label for="st-county">County</label>
               <select id="st-county" data-loc="county" disabled><option value="">Select a state first…</option></select>
               <input id="st-county-free" data-loc="countyFree" type="text" placeholder="Type the county name" hidden></div>
-            <div class="field full"><label for="st-zip">ZIP or city (optional)</label>
+            <div class="field"><label for="st-units">Units</label>
+              <select id="st-units" data-loc="units">
+                <option value="1">1 unit</option>
+                <option value="2">2 units</option>
+                <option value="3">3 units</option>
+                <option value="4">4 units</option>
+              </select></div>
+            <div class="field"><label for="st-zip">ZIP or city (optional)</label>
               <input id="st-zip" data-loc="zip" type="text" placeholder="ZIP code or city" autocomplete="postal-code"></div>
           </div>
           <p class="st__hint" data-loc-note>You confirm the property’s location — we don’t guess it from your device.</p>
@@ -303,6 +310,7 @@
           <div class="snap__limit">
             <span class="snap__k">County loan limit reference</span>
             <div class="snap__limitline"><span class="snap__limitval" data-snap-countylimit>—</span><span class="snap__delta" data-snap-limitdelta></span></div>
+            <div class="snap__fha" data-snap-fha hidden></div>
             <p class="snap__refnote" data-snap-limitnote>Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.</p>
           </div>
           <div class="snap__cx">
@@ -354,7 +362,9 @@
   <input name="property_state" />
   <input name="property_county" />
   <input name="property_zip" />
+  <input name="property_units" />
   <input name="county_loan_limit_reference" />
+  <input name="fha_limit_reference" />
   <input name="occupancy" />
   <input name="property_type" />
   <input name="income_situation" />

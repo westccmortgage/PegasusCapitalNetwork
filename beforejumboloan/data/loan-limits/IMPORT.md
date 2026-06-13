@@ -1,39 +1,53 @@
-# Importing the full national loan-limit dataset
+# Importing the national loan-limit dataset
 
-These files are **seeded** with the route-preset counties only. The architecture
-(resolver + selector) already supports nationwide data — you just need to import
-the full county list. Nothing here is hardcoded in UI components; the UI reads
-only the resolver, which reads these files.
+The JSON files in `data/loan-limits/<YEAR>/` are **build artifacts of the import
+scripts** — never hand-edit limits. Place the official source files in
+`data/raw/<YEAR>/` (see `data/raw/2026/README.md`) and run the importers.
 
-## FHFA conforming (`2026/fhfa-conforming.json`)
+## Commands
+```bash
+# 1. FHFA conforming / high-balance (all counties)
+npm run import:fhfa -- --year 2026 --verified 2026-12-01
+#    → writes data/loan-limits/2026/fhfa-conforming.json
 
-Source of truth: **FHFA Conforming Loan Limit Values** (annual).
-- News release + data: https://www.fhfa.gov/data/conforming-loan-limit
-- Full county list (flat file): `fullcountyloanlimitlist<YEAR>_hera-based_final_flat.xlsx`
+# 2. HUD / FHA forward limits
+npm run import:fha  -- --year 2026 --verified 2026-12-01
+#    → writes data/loan-limits/2026/fha-forward.json
 
-Steps:
-1. Download the FHFA full county `.xlsx` for the year.
-2. Map columns → one record per county in `counties[]`:
-   - `state_name`, `state_abbr`, `county_name`, `county_fips` (5-digit, zero-padded)
-   - `conforming_one_unit` … `conforming_four_unit`
-   - `high_cost`: `true` when `conforming_one_unit > baseline.one_unit`
-   - `source`, `verified_at` (ISO date you confirmed the values)
-3. Keep the top-level `baseline` and `ceiling` blocks in sync for the year.
-4. Re-run the tests (`node --test`) — the resolver test will pass on any county
-   present in the file.
+# 3. Rebuild the State→County dropdown from the official FHFA county list
+npm run build:geo   -- --year 2026
+#    → writes data/geo/us-counties.json
 
-A new year = a new folder: `data/loan-limits/<YEAR>/` with the same shape. The
-resolver reads `year` from the file, so point the loader at the new folder.
+# Or all three:
+npm run import:all
+```
+Each script prints the record count and fails loudly (non-zero exit) on a
+missing required column, a duplicate state/county or FIPS, or a missing/invalid
+one-unit limit. Nothing is invented.
 
-## FHA forward (`2026/fha-forward.json`)
+## Source files (official only)
+- **FHFA**: full-county flat file from https://www.fhfa.gov/data/conforming-loan-limit
+  (`fullcountyloanlimitlist<YEAR>_hera-based_final_flat.xlsx`). Save As CSV to
+  `data/raw/<YEAR>/fhfa-conforming-<YEAR>.csv`.
+- **HUD/FHA**: county forward limits from https://entp.hud.gov/idapp/html/hicostlook.cfm.
+  Save As CSV to `data/raw/<YEAR>/fha-forward-<YEAR>.csv`.
 
-Source of truth: **HUD FHA Mortgage Limits** (set by HUD, not FHFA).
-- Lookup: https://entp.hud.gov/idapp/html/hicostlook.cfm
-- FHA county limit = greater of the national **floor** or 115% of area median,
-  capped at the **ceiling**. Populate `counties[]` with `fha_one_unit` …
-  `fha_four_unit`. The resolver returns `fhaLimit` only when a county record exists.
+Header names are matched flexibly (see `COLS` in each script). Required:
+- FHFA — County Name, State (2-letter), One-Unit Limit, and FIPS (combined or
+  State+County). Two/Three/Four-Unit optional.
+- FHA — State, County Name, One-Family. Two/Three/Four-Family + County Code optional.
 
-## Compliance
+## Output metadata (each JSON carries provenance)
+`source_name`, `source_url_or_label`, `effective_year`, `imported_at`,
+`verified_at`, `record_count`, plus the `compliance` line. The resolver surfaces
+these as `sourceMeta`.
 
-Every imported value remains a **configured reference**. The UI always shows:
-"Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch."
+## Seed / sample
+Committed `data/raw/2026/*.sample.csv` files (FHFA-verified seed counties only)
+let the pipeline run out of the box. The current committed JSON was produced from
+them: **5 FHFA county records, 2 FHA county records.** Replace the samples with
+the official full files (git-ignored) and re-run to import the whole nation.
+
+## Next year
+`data/raw/<YEAR>/` + the same commands with `--year <YEAR>`. Point the studio
+loader (`js/loan-limits.js`) at the new year's folder.

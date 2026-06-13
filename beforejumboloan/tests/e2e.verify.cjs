@@ -84,7 +84,13 @@ function serve() {
   }, { timeout: 3000 });
   await page.selectOption('#st-county', 'Palm Beach County');
   await page.waitForFunction(() => /832,750/.test(document.querySelector('[data-snap-countylimit]')?.textContent || ''), { timeout: 3000 });
-  check(true, 'selecting Palm Beach County resolves to $832,750');
+  check(true, 'selecting Palm Beach County resolves to $832,750 (1-unit)');
+
+  // Units selector: 1 → 4 updates the county limit reference live.
+  await page.selectOption('#st-units', '4');
+  await page.waitForFunction(() => /1,601,750/.test(document.querySelector('[data-snap-countylimit]')?.textContent || ''), { timeout: 3000 });
+  check(true, 'changing units 1 → 4 updates the county limit to $1,601,750');
+  await page.selectOption('#st-units', '1'); // reset for the rest of the flow
 
   await page.click('[data-st-next]');                            // 2 (selector) → next
   await stepVisible(3);

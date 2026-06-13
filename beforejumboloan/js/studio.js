@@ -27,7 +27,7 @@
     intent: "", mode: "purchase",
     price: 1150000, downPct: 20, down: 230000,
     balance: 700000, cashout: 0, equity: 0, loan: 920000,
-    property_location: "", property_state: "", property_county: "", property_zip: "",
+    property_location: "", property_state: "", property_county: "", property_zip: "", units: 1,
     occupancy: "", property_type: "",
     income_situation: "", main_concern: "",
     name: "", email: "", phone: "", preferred_contact_method: "", message: "",
@@ -188,7 +188,7 @@
 
   function applyLocation() {
     if (KW.applyLocation) {
-      KW.applyLocation(S.property_state, S.property_county, S.property_zip, 1);
+      KW.applyLocation(S.property_state, S.property_county, S.property_zip, S.units);
     }
     S.property_location = (S.property_county ? (S.property_county + ", ") : "") + (S.property_state || "");
     S.property_location = S.property_location.replace(/^,\s*|,\s*$/g, "").trim();
@@ -196,11 +196,12 @@
 
   function renderLocation() {
     var loc = KW.lastLocation;
-    set("[data-snap-location]", S.property_location || "Select a county →");
-    var limEl = $("[data-snap-countylimit]"), deltaEl = $("[data-snap-limitdelta]"), noteEl = $("[data-snap-limitnote]");
+    var units = (loc && loc.units) || S.units || 1;
+    set("[data-snap-location]", (S.property_location || "Select a county →") + (S.property_location ? " · " + units + (units === 1 ? "-unit" : "-unit") : ""));
+    var limEl = $("[data-snap-countylimit]"), deltaEl = $("[data-snap-limitdelta]"), noteEl = $("[data-snap-limitnote]"), fhaEl = $("[data-snap-fha]");
     var county = loc && loc.countyConformingLimit;
     if (limEl) {
-      limEl.textContent = county ? (KW.fmtCurrency(county) + (loc.highCost ? " · high-cost" : "")) : "—";
+      limEl.textContent = county ? (KW.fmtCurrency(county) + (loc.highCost ? " · high-cost" : "") + (loc.specialArea ? " · special area" : "")) : "—";
     }
     if (deltaEl) {
       if (county && S.loan > 0) {
@@ -211,11 +212,17 @@
         deltaEl.setAttribute("data-over", diff > 0 ? "yes" : "no");
       } else { deltaEl.textContent = ""; deltaEl.removeAttribute("data-over"); }
     }
+    if (fhaEl) {
+      if (loc && loc.fhaLimit != null) {
+        fhaEl.hidden = false;
+        fhaEl.textContent = "FHA reference (" + units + "-unit): " + KW.fmtCurrency(loc.fhaLimit);
+      } else { fhaEl.hidden = true; fhaEl.textContent = ""; }
+    }
     if (noteEl) noteEl.textContent = (loc && loc.warning ? (loc.warning + " ") : "") + COMPLIANCE_REF;
   }
 
   var stateSel = $('[data-loc="state"]'), countySel = $('[data-loc="county"]');
-  var countyFree = $('[data-loc="countyFree"]'), zipInput = $('[data-loc="zip"]');
+  var countyFree = $('[data-loc="countyFree"]'), zipInput = $('[data-loc="zip"]'), unitsSel = $('[data-loc="units"]');
   var locNote = $("[data-loc-note]");
 
   function populateStates() {
@@ -254,6 +261,7 @@
     S.property_state = st;
     S.property_county = cty;
     S.property_zip = zipInput ? zipInput.value.trim() : "";
+    S.units = unitsSel ? (parseInt(unitsSel.value, 10) || 1) : 1;
     applyLocation();
     renderSnapshot();
   }
@@ -285,6 +293,7 @@
     if (countySel) countySel.addEventListener("change", onLocationChange);
     if (countyFree) countyFree.addEventListener("input", onLocationChange);
     if (zipInput) zipInput.addEventListener("input", onLocationChange);
+    if (unitsSel) unitsSel.addEventListener("change", onLocationChange);
   }
 
   // The dataset loads asynchronously; (re)hydrate the selector when it's ready.
@@ -558,8 +567,12 @@
       property_state: S.property_state || "",
       property_county: S.property_county || "",
       property_zip: S.property_zip || "",
+      property_units: String(S.units || 1),
       county_loan_limit_reference: (KW.lastLocation && KW.lastLocation.countyConformingLimit)
-        ? KW.fmtCurrency(KW.lastLocation.countyConformingLimit) + " (configured reference — verify before launch)"
+        ? KW.fmtCurrency(KW.lastLocation.countyConformingLimit) + " (" + (S.units || 1) + "-unit; configured reference — verify before launch)"
+        : "",
+      fha_limit_reference: (KW.lastLocation && KW.lastLocation.fhaLimit)
+        ? KW.fmtCurrency(KW.lastLocation.fhaLimit) + " (" + (S.units || 1) + "-unit; configured reference — verify before launch)"
         : "",
       occupancy: o.occupancy,
       property_type: o.propertyType,
