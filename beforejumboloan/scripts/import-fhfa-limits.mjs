@@ -173,8 +173,12 @@ export function fhfaStats(ds) {
 /* ---- CLI ---- */
 function resolveInput(argPath) {
   if (argPath) return argPath;
+  // Official FHFA all-county flat file (bundle name), then the generic name,
+  // then the committed sample.
+  const official = path.join(ROOT, "data/raw/2026/fhfa-conforming-all-counties-2026.csv");
   const real = path.join(ROOT, "data/raw/2026/fhfa-conforming-2026.csv");
   const sample = path.join(ROOT, "data/raw/2026/fhfa-conforming-2026.sample.csv");
+  if (fs.existsSync(official)) return official;
   if (fs.existsSync(real)) return real;
   if (fs.existsSync(sample)) {
     info("⚠ Using the committed SAMPLE file (seeded counties only). Drop the official FHFA");

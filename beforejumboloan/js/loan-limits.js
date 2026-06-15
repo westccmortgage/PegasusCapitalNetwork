@@ -163,6 +163,27 @@
     for (var i = 0; i < st.length; i++) if (st[i].abbr === abbr) return st[i].name;
     return null;
   }
+  function lookupCountyByFips(db, fips) {
+    var cs = (db.conforming && db.conforming.counties) || [];
+    for (var i = 0; i < cs.length; i++) {
+      if (String(cs[i].county_fips) === String(fips)) {
+        return { county_name: cs[i].county_name, state_abbr: cs[i].state_abbr, state_name: cs[i].state_name };
+      }
+    }
+    return null;
+  }
+  // A ZIP record may be a compact {f, r}, a FIPS string, or a full object.
+  function normalizeZipRec(r, db) {
+    if (typeof r === "string") r = { county_fips: r };
+    var fips = r.county_fips || r.f || null;
+    var ratio = (r.ratio != null ? r.ratio : (r.res_ratio != null ? r.res_ratio : (r.r != null ? r.r : null)));
+    var name = r.county_name, sa = r.state_abbr, sn = r.state_name;
+    if ((!name || !sa) && fips) {
+      var c = lookupCountyByFips(db, fips);
+      if (c) { name = name || c.county_name; sa = sa || c.state_abbr; sn = sn || c.state_name; }
+    }
+    return { county_fips: fips, county_name: name, state_abbr: sa, state_name: sn, ratio: ratio };
+  }
   function buildCountyIndex(db) {
     var idx = [], seen = {};
     function add(sa, sn, cn, fp) {
@@ -185,13 +206,14 @@
     var raw = String(query == null ? "" : query).trim();
     var q = normName(raw);
     var out = {
-      query: raw, matched_by: null, confidence: "none",
+      query: raw, status: "unresolved", matched_by: null, confidence: "none",
       state_name: null, state_abbr: null, county_name: null, county_fips: null,
-      possible_matches: [], needs_confirmation: true, warning: null,
+      possible_matches: [], needs_confirmation: true, most_common: null, warning: null,
       source: {
         coverage: (db.places && db.places.coverage) || (db.zips && db.zips.coverage) || "partial-seed",
         places: (db.places && db.places.source_name) || null,
-        zips: (db.zips && db.zips.source_name) || null
+        zips: (db.zips && db.zips.source_name) || null,
+        zips_dataset_type: (db.zips && db.zips.dataset_type) || null
       }
     };
     if (!q) { out.warning = "Enter a ZIP, city, county, or property location."; return out; }
@@ -200,6 +222,7 @@
       return {
         state_abbr: rec.state_abbr, state_name: rec.state_name || stateName(rec.state_abbr),
         county_name: rec.county_name, county_fips: rec.county_fips, matched_by: by,
+        ratio: rec.ratio != null ? rec.ratio : null,
         label: rec.city ? (rec.city + ", " + rec.state_abbr + " — " + rec.county_name + ", " + rec.state_abbr)
           : (rec.county_name + ", " + rec.state_abbr)
       };
@@ -208,29 +231,55 @@
       out.possible_matches = matches;
       if (matches.length === 1) {
         var m = matches[0];
-        out.matched_by = by; out.confidence = "high";
+        out.status = "resolved"; out.matched_by = by; out.confidence = "high";
         out.state_abbr = m.state_abbr; out.state_name = m.state_name;
         out.county_name = m.county_name; out.county_fips = m.county_fips;
         out.needs_confirmation = true; // always confirm the property county
       } else if (matches.length > 1) {
-        out.matched_by = by; out.confidence = "ambiguous"; out.needs_confirmation = true;
+        out.status = "ambiguous"; out.matched_by = by; out.confidence = "ambiguous"; out.needs_confirmation = true;
         out.warning = "Multiple locations match — confirm the property county.";
       }
       return out;
     }
 
-    // 1) ZIP — only when an OFFICIAL ZCTA→county file is imported. The seed
-    //    must never pretend ZIP intelligence works (no defaulting to a county).
+    // 1) ZIP — only when an OFFICIAL ZIP→county file is imported. Two tiers:
+    //    "official" (HUD-USPS crosswalk, with ratios) and "starter" (HUD CHUMS
+    //    ZIP file, no ratios). The seed must never pretend ZIP works.
     if (/^\d{5}$/.test(q)) {
-      var zipsOfficial = db.zips && (db.zips.coverage === "official" || db.zips.official === true);
-      if (!zipsOfficial) {
-        out.matched_by = "zip"; out.confidence = "none"; out.needs_confirmation = true;
-        out.warning = "ZIP-to-county intelligence requires the official ZCTA/county file. Enter city + state or property county.";
+      out.matched_by = "zip";
+      var zipCov = db.zips && (db.zips.coverage || db.zips.dataset_type);
+      var zipsUsable = db.zips && (zipCov === "official" || zipCov === "official_starter" || zipCov === "starter" || db.zips.official === true);
+      var hasRatioConfidence = db.zips && (db.zips.has_ratio_confidence === true || zipCov === "official");
+      if (!zipsUsable) {
+        out.status = "unresolved"; out.confidence = "none"; out.needs_confirmation = true;
+        out.warning = "ZIP-to-county intelligence requires the official ZIP/county file. Enter city + state or property county.";
         return out;
       }
       var z = db.zips.zips && db.zips.zips[q];
-      if (z) return finalize([mk(z, "zip")], "zip");
-      out.warning = "ZIP " + raw + " isn’t in the official ZIP set — enter city + state or property county.";
+      var arr = z == null ? [] : (Array.isArray(z) ? z : [z]);
+      if (!arr.length) {
+        out.status = "unresolved"; out.confidence = "none";
+        out.warning = "I could not match this ZIP to a property county yet. Enter city + state or property county.";
+        return out;
+      }
+      // Records are compact ({f, r} or a FIPS string) to keep the ZIP file small;
+      // county/state names are resolved from the authoritative conforming data.
+      arr = arr.map(function (r) { return normalizeZipRec(r, db); });
+      // With ratios, rank most-common first. Without (starter), keep a stable
+      // order and never imply ranked confidence.
+      if (hasRatioConfidence) {
+        arr = arr.slice().sort(function (a, b) { return (b.ratio || 0) - (a.ratio || 0); });
+      }
+      var matches = arr.map(function (r) {
+        return mk({ state_abbr: r.state_abbr, state_name: r.state_name, county_name: r.county_name, county_fips: r.county_fips, ratio: r.ratio }, "zip");
+      });
+      var multi = matches.length > 1;
+      if (multi && hasRatioConfidence) {
+        out.most_common = matches[0].label; // ratio-based hint — only with the crosswalk
+        matches[0].label = matches[0].label + " · most common";
+      }
+      finalize(matches, "zip");
+      if (multi) out.warning = "This ZIP may be in more than one county. Which county is the property in?";
       return out;
     }
 
@@ -239,25 +288,34 @@
     var mst = q.match(/^(.+?)[ ,]+([a-z]{2})$/);
     if (mst && STATE_ABBRS[mst[2].toUpperCase()]) { namePart = mst[1].trim(); stateAbbr = mst[2].toUpperCase(); }
 
-    // 2) alias
+    // 2) alias — an authoritative shortcut; resolves directly.
     var al = db.aliases && db.aliases.aliases && db.aliases.aliases[namePart];
     if (al && (!stateAbbr || stateAbbr === al.state_abbr)) return finalize([mk(al, "alias")], "alias");
 
-    // 3) county
-    var countyIdx = buildCountyIndex(db);
-    var cm = countyIdx.filter(function (c) {
-      return baseCounty(c.county_name) === baseCounty(namePart) && (!stateAbbr || c.state_abbr === stateAbbr);
+    // 3+4) Accumulate county AND city candidates, de-duped by FIPS. With the
+    //      full official county list, a name like "Austin" can be both a county
+    //      (Austin County, TX) and a city (Austin → Travis County) — we surface
+    //      every distinct county and let the user confirm. Never auto-pick.
+    var candidates = [], seenFips = {};
+    function addCand(m) {
+      var k = m.state_abbr + "|" + m.county_fips;
+      if (m.county_fips && seenFips[k]) return;
+      if (m.county_fips) seenFips[k] = true;
+      candidates.push(m);
+    }
+    var wantCounty = baseCounty(namePart);
+    buildCountyIndex(db).forEach(function (c) {
+      if (baseCounty(c.county_name) === wantCounty && (!stateAbbr || c.state_abbr === stateAbbr)) addCand(mk(c, "county"));
     });
-    if (cm.length) return finalize(cm.map(function (c) { return mk(c, "county"); }), "county");
+    ((db.places && db.places.places) || []).forEach(function (p) {
+      if (p.type === "city" && normName(p.name) === namePart && (!stateAbbr || p.state_abbr === stateAbbr)) addCand(mk(p, "city"));
+    });
+
+    if (candidates.length) return finalize(candidates, candidates[0].matched_by);
     if (/ (county|parish|borough)$/.test(namePart)) {
       out.warning = "County “" + raw + "” isn’t in the configured data yet — enter state + county, or import the official county list.";
       return out;
     }
-
-    // 4) city
-    var places = (db.places && db.places.places) || [];
-    var pm = places.filter(function (p) { return p.type === "city" && normName(p.name) === namePart && (!stateAbbr || p.state_abbr === stateAbbr); });
-    if (pm.length) return finalize(pm.map(function (p) { return mk(p, "city"); }), "city");
 
     out.warning = "Couldn’t resolve “" + raw + "”. Enter the property’s state and county.";
     return out;

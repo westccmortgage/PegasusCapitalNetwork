@@ -58,6 +58,14 @@
       }
       if (qs.get("current_payoff")) S.balance = KW.parseNum(qs.get("current_payoff"));
       if (qs.get("cash_out_requested")) S.cashout = KW.parseNum(qs.get("cash_out_requested"));
+      // Property-location status from the homepage cockpit.
+      if (qs.get("property_query")) S.property_query = qs.get("property_query");
+      S.property_location_status = qs.get("property_location_status") || "";
+      S.needs_property_location = qs.get("needs_property_location") === "true";
+      // Never carry a default/unconfirmed county into the studio.
+      if (S.needs_property_location || S.property_location_status === "example" || S.property_location_status === "unresolved") {
+        S.property_state = ""; S.property_county = ""; S.property_county_fips = "";
+      }
     } catch (e) {}
     try {
       var saved = JSON.parse(localStorage.getItem("kw_scenario") || "null");
@@ -691,6 +699,8 @@
   preselect();
   initLocation();
   applyMode();
-  goTo(1);
+  // If the homepage couldn't confirm a property county, open at the property-
+  // location step so the user confirms it before any county-line math.
+  goTo(S.needs_property_location ? 2 : 1);
   trackEvent("strategy_studio_started");
 })();

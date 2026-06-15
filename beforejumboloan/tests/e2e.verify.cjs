@@ -74,20 +74,17 @@ function serve() {
   await page.click(opt('intent', 'Buy a primary home'));         // step 1 → auto-advance
   await stepVisible(2);
 
-  // Step 2 — property location selector. Unseeded state falls back to free text.
+  // Step 2 — property location selector. With the OFFICIAL full dataset every
+  // state's counties are populated (no free-text fallback needed).
   await page.selectOption('#st-state', 'TX');
-  await page.waitForSelector('#st-county-free:not([hidden])', { timeout: 3000 });
-  check(await page.isVisible('#st-county-free'), 'unseeded state (TX) falls back to free-text county input');
-  check(/isn’t imported yet/i.test(await page.textContent('[data-loc-note]')), 'free-text fallback shows import warning');
-
-  // A county not in the dataset must be labeled — never silently treated as verified.
-  await page.fill('#st-county-free', 'Travis County');
-  await page.waitForFunction(
-    () => /Needs official verification/i.test(document.querySelector('[data-snap-countylimit]')?.textContent || ''),
-    { timeout: 3000 }
-  );
-  check(true, 'unseeded county labeled "Needs official verification"');
-  check(/being finalized/i.test(await page.textContent('[data-snap-limitnote]')), 'sample dataset shows "database is being finalized" note');
+  await page.waitForFunction(() => {
+    const c = document.querySelector('#st-county');
+    return c && !c.disabled && c.options.length > 50; // TX has 254 counties
+  }, { timeout: 4000 });
+  check((await page.$$('#st-county option')).length > 200, 'official data: TX county dropdown is fully populated (254 counties)');
+  await page.selectOption('#st-county', 'Travis County');
+  await page.waitForFunction(() => /832,750/.test(document.querySelector('[data-snap-countylimit]')?.textContent || ''), { timeout: 3000 });
+  check(!/Needs official verification/i.test(await page.textContent('[data-snap-countylimit]')), 'Travis County resolves to its official line (not "needs verification")');
 
   // Back to FL, pick a baseline county → limit updates to $832,750.
   await page.selectOption('#st-state', 'FL');
@@ -148,7 +145,8 @@ function serve() {
   check(fallbackParas >= 1, `fallback renders rule-based explanation (${fallbackParas} paragraphs)`);
   check(/estimated loan amount|review path/i.test(fallbackText), 'fallback text is the engine explanation');
 
-  check(warnings.some((w) => /Sample loan-limit dataset installed/i.test(w)), 'developer console warns about the sample dataset');
+  // With official_full data installed there must be NO sample-dataset warning.
+  check(!warnings.some((w) => /Sample loan-limit dataset installed/i.test(w)), 'no sample-dataset warning (official full data installed)');
 
   console.log('\nconsole/page errors: ' + (errors.length ? '\n  ' + errors.join('\n  ') : 'none'));
   check(errors.length === 0, 'no runtime console/page errors');

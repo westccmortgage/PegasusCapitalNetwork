@@ -19,8 +19,16 @@ import {
   readCSV, normHeader, pickColumn, parseAmount, pad, titleCase,
   fail, info, nowISO, COMPLIANCE, SPECIAL_AREAS, STATE_NAME
 } from "./lib/import-utils.mjs";
+import { parseChumsForward, fipsNameIndex } from "./lib/chums.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+/* Load the imported FHFA dataset (if present) for untruncated county names. */
+function loadFhfaNames(year) {
+  const p = path.join(ROOT, "data/loan-limits/" + year + "/fhfa-conforming.json");
+  if (fs.existsSync(p)) { try { return fipsNameIndex(JSON.parse(fs.readFileSync(p, "utf8"))); } catch (e) { /* ignore */ } }
+  return {};
+}
 
 const COLS = {
   fips5:   ["countycode", "fips", "fips5", "countyfips", "geoid", "statecountycode"],
@@ -130,8 +138,12 @@ export function fhaStats(ds) {
 
 function resolveInput(argPath) {
   if (argPath) return argPath;
+  // Official HUD CHUMS forward-limits fixed-width file (preferred), then a CSV,
+  // then the committed sample.
+  const chums = path.join(ROOT, "data/raw/2026/hud-fha-forward-limits-2026.txt");
   const real = path.join(ROOT, "data/raw/2026/fha-forward-2026.csv");
   const sample = path.join(ROOT, "data/raw/2026/fha-forward-2026.sample.csv");
+  if (fs.existsSync(chums)) return chums;
   if (fs.existsSync(real)) return real;
   if (fs.existsSync(sample)) {
     info("⚠ Using the committed SAMPLE file (a few counties only). Drop the official HUD FHA");
@@ -155,7 +167,17 @@ function main() {
   if (/\.sample\.csv$/.test(file)) opts.datasetType = "sample";
   opts.sourceFile = path.basename(file);
   info("Reading: " + path.relative(ROOT, file));
-  const ds = buildFhaDataset(readCSV(file), opts);
+  // HUD CHUMS forward-limits files are fixed-width .txt; everything else is CSV.
+  let rows;
+  if (/\.txt$/i.test(file)) {
+    const fipsName = loadFhfaNames(opts.year);
+    if (!Object.keys(fipsName).length) info("  ⚠ FHFA dataset not found — FHA county names will use the (truncated) CHUMS names. Run import:fhfa first for full names.");
+    rows = parseChumsForward(fs.readFileSync(file, "utf8"), { fipsName });
+    opts.sourceLabel = opts.sourceLabel || "HUD CHUMS CY2026 FHA Forward Limits (full file)";
+  } else {
+    rows = readCSV(file);
+  }
+  const ds = buildFhaDataset(rows, opts);
   const out = path.join(ROOT, "data/loan-limits/" + opts.year + "/fha-forward.json");
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(ds, null, 2) + "\n");

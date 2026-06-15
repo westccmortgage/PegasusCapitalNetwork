@@ -5,3 +5,6 @@
 *.xls
 *.csv
 !*.sample.csv
+# The CY2026 official FHFA flat file IS committed so `npm run import:all`
+# reproduces the official dataset (the HUD CHUMS .txt sources are committed too).
+!fhfa-conforming-all-counties-2026.csv

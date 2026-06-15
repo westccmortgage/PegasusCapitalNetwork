@@ -87,6 +87,7 @@
     S.isExample = false; S.confirmed = false;
     show(E.scenario, false); show(E.confirmed, false); show(E.exampleBanner, false);
     set('[data-ho="nextlever"]', "Confirm a property county to scan the structure.");
+    updateContinue(); // flip CTA to needs_property_location (no default county)
   }
 
   function populateStates(sel) {
@@ -125,16 +126,17 @@
       });
       show(E.resolve, true); show(E.choicesWrap, true);
     } else {
-      // UNRESOLVED (incl. ZIP before the official ZCTA file): never calculate
-      // on a default county — ask for state + property county.
+      // UNRESOLVED (incl. ZIP before the official ZIP/county file): never
+      // calculate on a default county — ask for state + property county.
       var msg = $("[data-needcty] .needcty__msg");
       if (msg) {
         msg.textContent = (r.matched_by === "zip" && r.warning)
-          ? r.warning                                   // ZIP needs official ZCTA file
-          : "I need the property county to calculate the county line.";
+          ? r.warning                                   // ZIP not matched / needs official file
+          : "Property county required to calculate the county line.";
       }
       populateStates($("#hs-mstate"));
       show(E.needcty, true);
+      updateContinue(); // CTA carries needs_property_location=true
     }
   }
 
@@ -219,7 +221,7 @@
       delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ, pi: pi, rate: ra,
       dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier
     });
-    updateContinue(loan, ltv);
+    updateContinue();
   }
 
   function render(o) {
@@ -244,7 +246,9 @@
 
     var ltvRow = $("[data-ho-ltv-row]");
     if (ltvRow) {
-      var showLtv = o.ltv != null && isFinite(o.ltv);
+      // LTV is shown for refinance / cash-out / investment scenarios.
+      var ltvRelevant = (S.scenarioType === "rate_term" || S.scenarioType === "cash_out" || S.scenarioType === "investment");
+      var showLtv = ltvRelevant && o.ltv != null && isFinite(o.ltv);
       ltvRow.hidden = !showLtv;
       if (showLtv) {
         var pct = Math.round(o.ltv * 1000) / 10;
@@ -357,15 +361,18 @@
       investment: "Investment / DSCR", second_home: "Second home", unknown: "Not yet specified" })[t] || t;
   }
 
-  function updateContinue(loan, ltv) {
+  function updateContinue() {
     var a = $("[data-ho-continue]"); if (!a) return;
+    read();
+    var ll = loanAndLtv();
+    var confirmedReal = S.confirmed && !S.isExample;
+    var status = confirmedReal ? "resolved" : (S.isExample ? "example" : "unresolved");
+
     var q = new URLSearchParams();
     q.set("scenario_type", S.scenarioType);
-    if (S.query) q.set("q", S.query);
-    if (S.state) q.set("state", S.state);
-    if (S.county) q.set("county", S.county);
-    if (S.county_fips) q.set("county_fips", S.county_fips);
-    if (S.units) q.set("units", String(S.units));
+    q.set("property_location_status", status);
+    if (S.query && !S.isExample) q.set("property_query", S.query);
+    q.set("units", String(S.units));
     q.set("occ", occFor(S.scenarioType).toLowerCase());
     q.set("estimated_property_value", String(S.value));
     if (S.scenarioType === "purchase" || S.scenarioType === "second_home") {
@@ -374,9 +381,24 @@
     }
     if (isRefi()) q.set("current_payoff", String(S.payoff));
     if (S.scenarioType === "cash_out") q.set("cash_out_requested", String(S.cashOut));
-    q.set("estimated_loan_amount", String(loan));
-    if (ltv != null && isFinite(ltv)) q.set("ltv", String(Math.round(ltv * 1000) / 1000));
+    q.set("estimated_loan_amount", String(ll.loan));
+    if (ll.ltv != null && isFinite(ll.ltv)) q.set("ltv", String(Math.round(ll.ltv * 1000) / 1000));
     q.set("price", String(S.value)); // back-compat with the studio prefill
+
+    if (confirmedReal) {
+      // Only a CONFIRMED real property county is carried into the Studio.
+      if (S.state) q.set("state", S.state);
+      if (S.county) q.set("county", S.county);
+      if (S.county_fips) q.set("county_fips", S.county_fips);
+      a.removeAttribute("data-needs-loc");
+      a.textContent = "Continue Into Full Strategy Studio →";
+    } else {
+      // No confirmed property (example or unresolved): never pass a default
+      // county. Flag the Studio to open at property-location confirmation.
+      q.set("needs_property_location", "true");
+      a.setAttribute("data-needs-loc", "yes");
+      a.textContent = "Continue — confirm property location in the Studio →";
+    }
     a.setAttribute("href", "scenario-studio.html?" + q.toString());
   }
 
@@ -407,6 +429,7 @@
     if (E.change) E.change.addEventListener("click", function () {
       S.confirmed = false; S.isExample = false;
       show(E.confirmed, false); show(E.scenario, false); show(E.resolve, false); show(E.needcty, false);
+      updateContinue();
       if (E.q) { E.q.value = ""; E.q.focus(); }
     });
     [E.value, E.down, E.payoff, E.newloan, E.cashout, E.loanamt, E.rent].forEach(function (el) {

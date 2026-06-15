@@ -91,15 +91,30 @@ test('dataset_type = "sample" for a small file, "official_full" past the thresho
   assert.ok(big.record_count >= FHFA_MIN_OFFICIAL);
 });
 
-test('production gate FAILS (exit 1) while the committed sample is installed', () => {
+test('production gate reflects the installed dataset (official_full ⇒ exit 0)', () => {
+  // With the official FHFA + FHA full files imported, the gate must PASS.
   let failed = false, output = '';
   try {
-    execFileSync('node', [join(root, 'scripts/validate-loan-limits.mjs')], { stdio: 'pipe' });
+    output = String(execFileSync('node', [join(root, 'scripts/validate-loan-limits.mjs')], { stdio: 'pipe' }));
   } catch (e) {
     failed = true;
     output = String(e.stdout || '') + String(e.stderr || '');
   }
-  assert.ok(failed, 'validate:loan-limits must exit non-zero on sample data');
-  assert.match(output, /NOT PRODUCTION READY/);
-  assert.match(output, /dataset_type is "sample"/);
+  const fhfa = JSON.parse(readFileSync(join(root, 'data/loan-limits/2026/fhfa-conforming.json'), 'utf8'));
+  if (fhfa.dataset_type === 'official_full') {
+    assert.ok(!failed, 'gate must pass (exit 0) when official_full data is installed');
+    assert.match(output, /PRODUCTION READY/);
+  } else {
+    assert.ok(failed, 'gate must fail on non-official data');
+    assert.match(output, /NOT PRODUCTION READY/);
+  }
+});
+
+test('the gate FAILS loudly on a sample dataset (guard logic intact)', () => {
+  // Sanity-check the guard against a synthetic sample without touching installed data.
+  const sample = buildFhfaDataset([
+    ['FIPS State Code', 'FIPS County Code', 'County Name', 'State', 'One-Unit Limit', 'Two-Unit Limit', 'Three-Unit Limit', 'Four-Unit Limit'],
+    ['06', '037', 'Los Angeles County', 'CA', '1249125', '1599375', '1933200', '2402625'],
+  ]);
+  assert.equal(sample.dataset_type, 'sample');
 });

@@ -55,22 +55,39 @@ function serve() {
   check(/\$62,875 above the selected county line/.test(await txt(page, '[data-hero]')), 'HERO result shows the dominant county-line gap');
   check(/\$1,249,125/.test(await txt(page, '[data-ho="limit"]')) && /high-cost/.test(await txt(page, '[data-ho="limit"]')), 'county limit + correct tier label (high-cost)');
   check(/Estimated P&I preview/.test(await txt(page, '[data-ho="rate"]')), 'payment label is "Estimated P&I preview"');
+  // the page-load example must NOT pass a default county into the Studio
+  const exHref = await page.getAttribute('[data-ho-continue]', 'href');
+  check(/needs_property_location=true/.test(exHref) && !/[?&]state=/.test(exHref) && !/county_fips=/.test(exHref),
+    'example Continue carries needs_property_location=true and NO default county');
 
   // ---- TRUST RULE: typing into search clears the example; no default calculation ----
-  await page.fill('#hs-q', '90210');
-  await page.press('#hs-q', 'Enter');
-  await page.waitForSelector('[data-needcty]:not([hidden])', { timeout: 3000 });
-  check(!(await page.isVisible('[data-scenario]')), 'unresolved ZIP: scenario/output is NOT shown (no default-county calculation)');
-  check(!(await page.isVisible('[data-example-banner]')), 'typing into the property search removes the example');
-  check(/official ZCTA\/county file/i.test(await txt(page, '[data-needcty] .needcty__msg')), 'ZIP is gated until the official ZCTA file — directs to city+state/county');
-
-  // unresolved non-ZIP → "I need the property county..."
   await page.fill('#hs-q', 'Nowhereville');
   await page.press('#hs-q', 'Enter');
   await page.waitForSelector('[data-needcty]:not([hidden])', { timeout: 3000 });
-  check(/I need the property county to calculate the county line/.test(await txt(page, '[data-needcty] .needcty__msg')), 'unresolved location asks for the property county before calculating');
+  check(!(await page.isVisible('[data-scenario]')), 'unresolved: scenario/output is NOT shown (no default-county calculation)');
+  check(!(await page.isVisible('[data-example-banner]')), 'typing into the property search removes the example');
+  check(/Property county required to calculate the county line/.test(await txt(page, '[data-needcty] .needcty__msg')), 'unresolved location asks for the property county before calculating');
 
-  // ---- confident city+state → confirm → calculate ----
+  // ---- ZIP-first: single-county ZIP auto-detects (official HUD CHUMS starter) ----
+  await page.fill('#hs-q', '90210');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
+  check(/Detected: Los Angeles County, CA/.test(await txt(page, '[data-detected]')) && /matched by zip/i.test(await txt(page, '[data-detected]')), 'ZIP 90210 auto-detects Los Angeles County (matched by zip)');
+  check(!(await page.isVisible('[data-scenario]')), 'ZIP detection still requires confirmation before calculating');
+
+  // ---- ZIP crosses county lines → choices, no auto-select ----
+  await page.fill('#hs-q', '10463');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-resolve-choices]:not([hidden])', { timeout: 3000 });
+  check((await page.$$('[data-choices] .choice')).length >= 2, 'multi-county ZIP 10463 lists county choices (no silent guess)');
+
+  // ---- ZIP not found → ask for city/state or county, no calculation ----
+  await page.fill('#hs-q', '00000');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-needcty]:not([hidden])', { timeout: 3000 });
+  check(/could not match this ZIP/i.test(await txt(page, '[data-needcty] .needcty__msg')), 'unknown ZIP is not defaulted to a county');
+
+  // ---- confident city+state → confirm → calculate (official full data) ----
   await page.fill('#hs-q', 'Newport Beach CA');
   await page.press('#hs-q', 'Enter');
   await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
@@ -78,22 +95,19 @@ function serve() {
   check(!(await page.isVisible('[data-scenario]')), 'still no calculation until the county is CONFIRMED');
   await page.click('[data-confirm]');
   await page.waitForFunction(() => /Orange County, CA/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
-  check(/\$1,249,125/.test(await txt(page, '[data-ho="limit"]')), 'after confirming Orange County, its county line is used');
-  check(/LTV/i.test(await txt(page, '[data-ho-ltv-row]')) && /%/.test(await txt(page, '[data-ho="ltv"]')), 'LTV is shown');
+  check(/\$1,249,125/.test(await txt(page, '[data-ho="limit"]')), 'after confirming Orange County, its official county line is used');
 
-  // ---- ambiguous city → choices ----
-  await page.fill('#hs-q', 'Beverly Hills');
-  await page.press('#hs-q', 'Enter');
-  await page.waitForSelector('[data-resolve-choices]:not([hidden])', { timeout: 3000 });
-  check((await page.$$('[data-choices] .choice')).length >= 2, 'ambiguous "Beverly Hills" offers multiple counties to confirm');
-
-  // ---- county not in dataset → honest "needs official county data" ----
+  // ---- ambiguous "Austin TX" (Austin County vs city of Austin → Travis) → choices ----
   await page.fill('#hs-q', 'Austin TX');
   await page.press('#hs-q', 'Enter');
-  await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
-  await page.click('[data-confirm]');
+  await page.waitForSelector('[data-resolve-choices]:not([hidden])', { timeout: 3000 });
+  const austinChoices = await page.$$eval('[data-choices] .choice', (els) => els.map((e) => e.textContent));
+  check(austinChoices.some((t) => /Austin County/.test(t)) && austinChoices.some((t) => /Travis County/.test(t)),
+    'ambiguous "Austin TX" surfaces Austin County AND Travis County to confirm');
+  // confirm Travis (the city of Austin) and verify a real official line is used
+  await page.click('xpath=//*[@data-choices]//button[contains(., "Travis County")]');
   await page.waitForFunction(() => /Travis County, TX/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
-  check(/Needs official county data/i.test(await txt(page, '[data-hero]')), 'county outside the dataset is flagged, never given a fabricated line');
+  check(/\$832,750/.test(await txt(page, '[data-ho="limit"]')) && /baseline/.test(await txt(page, '[data-ho="limit"]')), 'Travis County resolves to its official baseline county line');
 
   // ---- scenario classifier: cash-out refinance changes the input model ----
   await page.fill('#hs-q', 'Newport Beach CA');
@@ -106,6 +120,7 @@ function serve() {
   check(/Estimated property value/.test(await txt(page, '[data-value-label]')), 'cash-out refi relabels the value input to "Estimated property value"');
   check(await page.isVisible('#hs-payoff') && await page.isVisible('#hs-cashout'), 'cash-out refi reveals payoff + cash-out inputs');
   check(!(await page.isVisible('#hs-down')), 'cash-out refi hides the purchase down-payment input');
+  check(!(await page.isVisible('[data-ho-ltv-row][hidden]')) && /%/.test(await txt(page, '[data-ho="ltv"]')), 'cash-out refi shows LTV');
 
   // ---- investment shows DSCR ----
   await page.click('[data-purpose-opt="investment"]');

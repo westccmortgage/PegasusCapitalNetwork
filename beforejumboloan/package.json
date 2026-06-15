@@ -11,8 +11,9 @@
     "test:e2e": "node tests/e2e.verify.cjs",
     "import:fhfa": "node scripts/import-fhfa-limits.mjs",
     "import:fha": "node scripts/import-fha-limits.mjs",
+    "import:zip": "node scripts/import-zip-county-crosswalk.mjs",
     "build:geo": "node scripts/build-geo.mjs",
-    "import:all": "npm run import:fhfa && npm run import:fha && npm run build:geo",
+    "import:all": "npm run import:fhfa && npm run import:fha && npm run import:zip && npm run build:geo",
     "validate:loan-limits": "node scripts/validate-loan-limits.mjs"
   },
   "engines": {
