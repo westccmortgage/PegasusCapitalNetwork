@@ -234,7 +234,9 @@
         out.status = "resolved"; out.matched_by = by; out.confidence = "high";
         out.state_abbr = m.state_abbr; out.state_name = m.state_name;
         out.county_name = m.county_name; out.county_fips = m.county_fips;
-        out.needs_confirmation = true; // always confirm the property county
+        // A clear single-county ZIP auto-detects (Phase 2.1). City/county/alias
+        // matches still ask for a quick confirm (a "Change" affordance covers ZIP).
+        out.needs_confirmation = (by !== "zip");
       } else if (matches.length > 1) {
         out.status = "ambiguous"; out.matched_by = by; out.confidence = "ambiguous"; out.needs_confirmation = true;
         out.warning = "Multiple locations match — confirm the property county.";

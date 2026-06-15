@@ -94,6 +94,16 @@ function serve() {
   check(!/Key West|Monroe/i.test(await un.textContent('[data-market-name]')), 'unresolved: no Key West leakage');
   await un.close();
 
+  // 4b) Ambiguous ZIP → Studio opens at the location step, carries possible_matches, no default county.
+  const amb = await browser.newPage();
+  const pm = encodeURIComponent(JSON.stringify([{ state_abbr: 'NY', county_name: 'Bronx County', county_fips: '36005' }, { state_abbr: 'NY', county_name: 'New York County', county_fips: '36061' }]));
+  await amb.goto(`${base}/scenario-studio.html?scenario_type=purchase&needs_property_location=true&property_location_status=ambiguous&possible_matches=${pm}&estimated_property_value=1600000`, { waitUntil: 'networkidle' });
+  await amb.waitForTimeout(400);
+  check(await amb.isVisible('.st[data-step="2"]'), 'ambiguous: studio opens at the property-location step');
+  check(/—|Select a county/i.test(await amb.textContent('[data-snap-countylimit]')), 'ambiguous: no default county line shown');
+  check(!/Key West|Monroe/i.test(await amb.textContent('[data-market-name]')), 'ambiguous: no Key West / default leakage');
+  await amb.close();
+
   // 5) Genuine /key-west route still shows Key West (allowed).
   const kw = await browser.newPage();
   await kw.goto(`${base}/key-west`, { waitUntil: 'networkidle' });

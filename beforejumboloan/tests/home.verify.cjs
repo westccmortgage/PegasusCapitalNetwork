@@ -68,12 +68,13 @@ function serve() {
   check(!(await page.isVisible('[data-example-banner]')), 'typing into the property search removes the example');
   check(/Property county required to calculate the county line/.test(await txt(page, '[data-needcty] .needcty__msg')), 'unresolved location asks for the property county before calculating');
 
-  // ---- ZIP-first: single-county ZIP auto-detects (official HUD CHUMS starter) ----
+  // ---- ZIP-first: single-county ZIP auto-detects AND calculates (Phase 2.1) ----
   await page.fill('#hs-q', '90210');
   await page.press('#hs-q', 'Enter');
-  await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
-  check(/Detected: Los Angeles County, CA/.test(await txt(page, '[data-detected]')) && /matched by zip/i.test(await txt(page, '[data-detected]')), 'ZIP 90210 auto-detects Los Angeles County (matched by zip)');
-  check(!(await page.isVisible('[data-scenario]')), 'ZIP detection still requires confirmation before calculating');
+  await page.waitForFunction(() => /Los Angeles County, CA/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  check(/Detected:/.test(await txt(page, '[data-confirmed-county]')) && /matched by zip/i.test(await txt(page, '[data-confirmed-county]')), 'ZIP 90210 auto-detects Los Angeles County (Detected · matched by zip)');
+  check(await page.isVisible('[data-scenario]') && /\$1,249,125/.test(await txt(page, '[data-ho="limit"]')), 'single-county ZIP proceeds straight to the county-line calculation');
+  check(await page.isVisible('[data-change]'), 'auto-detected ZIP still offers a Change affordance');
 
   // ---- ZIP crosses county lines → choices, no auto-select ----
   await page.fill('#hs-q', '10463');

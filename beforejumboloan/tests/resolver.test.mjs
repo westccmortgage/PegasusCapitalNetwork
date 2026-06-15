@@ -177,13 +177,23 @@ test('baseline/high-cost labeling: limit above baseline ⇒ high-cost tier', () 
    ============================================================ */
 
 /* ---- ZIP: official HUD CHUMS starter (single-county auto-resolve; multi-county asks) ---- */
-test('ZIP → one county → auto-detect + resolved status (official HUD CHUMS starter)', () => {
+test('ZIP → one county → auto-detect (needs_confirmation=false) + resolved status', () => {
   const r = API.resolvePropertyLocation('90210', db);
   assert.equal(r.status, 'resolved');
   assert.equal(r.matched_by, 'zip');
+  assert.equal(r.needs_confirmation, false, 'a clear single-county ZIP auto-detects');
   assert.equal(r.possible_matches.length, 1);
   assert.equal(r.county_fips, '06037');
   assert.equal(r.county_name, 'Los Angeles County');
+});
+
+test('city/county single match still asks for a quick confirm (needs_confirmation=true)', () => {
+  const city = API.resolvePropertyLocation('Newport Beach CA', db);
+  assert.equal(city.status, 'resolved');
+  assert.equal(city.matched_by, 'city');
+  assert.equal(city.needs_confirmation, true, 'city resolve still confirms');
+  const county = API.resolvePropertyLocation('Miami-Dade County, FL', db);
+  assert.equal(county.needs_confirmation, true, 'county resolve still confirms');
 });
 
 test('ZIP → multiple counties (CHUMS, no ratios) → ambiguous, no auto-select, NO ratio hint', () => {

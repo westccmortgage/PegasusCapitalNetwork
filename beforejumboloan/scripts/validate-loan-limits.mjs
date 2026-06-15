@@ -93,10 +93,32 @@ if (fha) {
   if (noOne.length) note(fails, `FHA: ${noOne.length} counties missing/invalid one-family limit`);
 }
 
+/* ---- ZIP → county dataset (reported; does not gate the loan-limit data) ---- */
+const zips = load(`data/geo/us-zips.json`);
+let zipStatus = "MISSING", zipOfficialFull = false;
+if (zips) {
+  const type = zips.dataset_type || "unknown";
+  const cov = zips.coverage || "unknown";
+  const recs = zips.record_count || (zips.zips ? Object.keys(zips.zips).length : 0);
+  const multi = zips.multi_county_zips != null ? zips.multi_county_zips
+    : (zips.zips ? Object.values(zips.zips).filter((v) => Array.isArray(v) && v.length > 1).length : 0);
+  zipStatus = `${type} (coverage: ${cov}), ${recs} ZIPs, ${multi} multi-county`;
+  if (type === "official" || type === "official_full") {
+    zipOfficialFull = true; // full HUD-USPS crosswalk with ratios
+  } else if (type === "official_starter" || cov === "starter") {
+    note(warns, "ZIP/county dataset is a STARTER (HUD CHUMS ZIP, no residential ratios). ZIP intelligence is PARTIAL — import the HUD-USPS ZIP_COUNTY crosswalk (with RES_RATIO/TOT_RATIO) for full multi-county confidence. Keep the package labeled engine-preview for ZIP.");
+  } else {
+    note(warns, `ZIP/county dataset is "${type}" — not an official ZIP source. Import the HUD-USPS ZIP_COUNTY crosswalk.`);
+  }
+} else {
+  note(warns, "ZIP/county dataset (data/geo/us-zips.json) is MISSING — ZIP resolution is disabled. Import the HUD-USPS ZIP_COUNTY crosswalk or the HUD CHUMS ZIP file.");
+}
+
 /* ---- report ---- */
 console.log("Loan-limit production readiness — year " + YEAR);
 console.log("  FHFA: " + (fhfa ? `${fhfa.dataset_type}, ${fhfa.record_count} records` : "MISSING"));
 console.log("  FHA:  " + (fha ? `${fha.dataset_type}, ${fha.record_count} records` : "MISSING"));
+console.log("  ZIP:  " + zipStatus + (zipOfficialFull ? " — official_full" : " — partial/starter"));
 warns.forEach((w) => console.log("  ⚠ " + w));
 
 if (fails.length) {
@@ -105,4 +127,7 @@ if (fails.length) {
   console.error("\nInstall the official full files (see data/loan-limits/IMPORT.md) and re-run.\n");
   process.exit(1);
 }
-console.log("\n✔ PRODUCTION READY: official nationwide loan-limit data installed.\n");
+console.log("\n✔ LOAN LIMITS PRODUCTION READY: official nationwide FHFA + HUD/FHA data installed.");
+console.log(zipOfficialFull
+  ? "✔ ZIP intelligence: official_full (HUD-USPS crosswalk with ratios).\n"
+  : "ℹ ZIP intelligence: partial/starter — import the HUD-USPS ZIP_COUNTY crosswalk for full multi-county ratio confidence; keep the build labeled engine-preview for ZIP.\n");

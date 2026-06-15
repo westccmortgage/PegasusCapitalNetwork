@@ -111,13 +111,26 @@
     show(E.resolve, false); show(E.confident, false); show(E.choicesWrap, false);
     show(E.needcty, false);
 
-    if (r.confidence === "high" && r.possible_matches.length === 1) {
+    S.locStatus = r.status || (r.confidence === "high" ? "resolved" : (r.confidence === "ambiguous" ? "ambiguous" : "unresolved"));
+    S.possibleMatches = r.possible_matches || [];
+
+    if (r.status === "resolved" && r.possible_matches.length === 1) {
       var m = r.possible_matches[0];
-      E.detected.textContent = "Detected: " + m.county_name + ", " + m.state_abbr +
-        (m.matched_by ? "  ·  matched by " + m.matched_by : "");
-      E.confirm.onclick = function () { confirmCounty(m); };
-      show(E.resolve, true); show(E.confident, true);
-    } else if (r.confidence === "ambiguous") {
+      if (r.needs_confirmation === false) {
+        // Clear single-county ZIP (Phase 2.1): auto-detect AND calculate.
+        confirmCounty(m, true);
+      } else {
+        // City / county / alias: quick confirm step.
+        E.detected.textContent = "Detected: " + m.county_name + ", " + m.state_abbr +
+          (m.matched_by ? "  ·  matched by " + m.matched_by : "");
+        E.confirm.onclick = function () { confirmCounty(m); };
+        show(E.resolve, true); show(E.confident, true);
+      }
+    } else if (r.status === "ambiguous") {
+      var k = $("[data-resolve-choices] .resolve__k");
+      if (k) k.textContent = (r.matched_by === "zip")
+        ? "This ZIP may be in more than one county. Which county is the property in?"
+        : "More than one match — which property county?";
       E.choices.innerHTML = "";
       r.possible_matches.forEach(function (m) {
         var b = document.createElement("button");
@@ -126,6 +139,7 @@
         E.choices.appendChild(b);
       });
       show(E.resolve, true); show(E.choicesWrap, true);
+      updateContinue(); // CTA carries needs_property_location + possible_matches
     } else {
       // UNRESOLVED (incl. ZIP before the official ZIP/county file): never
       // calculate on a default county — ask for state + property county.
@@ -141,12 +155,16 @@
     }
   }
 
-  function confirmCounty(m) {
+  function confirmCounty(m, autoDetected) {
     S.state = m.state_abbr; S.county = m.county_name; S.county_fips = m.county_fips || null;
     S.confirmed = true; S.isExample = false;
+    S.locStatus = "resolved"; S.matchedBy = m.matched_by || null;
     show(E.resolve, false); show(E.needcty, false); show(E.exampleBanner, false);
     show(E.confirmed, true);
-    if (E.confirmedCounty) E.confirmedCounty.textContent = S.county + ", " + S.state;
+    if (E.confirmedCounty) {
+      E.confirmedCounty.textContent = (autoDetected ? "Detected: " : "") + S.county + ", " + S.state +
+        (autoDetected && S.matchedBy ? " · matched by " + S.matchedBy : "");
+    }
     show(E.scenario, true);
     compute();
   }
@@ -392,7 +410,7 @@
     read();
     var ll = loanAndLtv();
     var confirmedReal = S.confirmed && !S.isExample;
-    var status = confirmedReal ? "resolved" : (S.isExample ? "example" : "unresolved");
+    var status = confirmedReal ? "resolved" : (S.isExample ? "example" : (S.locStatus === "ambiguous" ? "ambiguous" : "unresolved"));
 
     var q = new URLSearchParams();
     q.set("scenario_type", S.scenarioType);
@@ -429,9 +447,17 @@
       a.removeAttribute("data-needs-loc");
       a.textContent = "Continue Into Full Strategy Studio →";
     } else {
-      // No confirmed property (example or unresolved): never pass a default
-      // county. Flag the Studio to open at property-location confirmation.
+      // No confirmed property (example / unresolved / ambiguous): never pass a
+      // default county. Flag the Studio to open at property-location confirmation.
       q.set("needs_property_location", "true");
+      // Carry ambiguous candidates so the Studio can offer the same choices.
+      if (status === "ambiguous" && S.possibleMatches && S.possibleMatches.length) {
+        try {
+          q.set("possible_matches", JSON.stringify(S.possibleMatches.map(function (m) {
+            return { state_abbr: m.state_abbr, county_name: m.county_name, county_fips: m.county_fips };
+          })));
+        } catch (e) {}
+      }
       a.setAttribute("data-needs-loc", "yes");
       a.textContent = "Continue — confirm property location in the Studio →";
     }

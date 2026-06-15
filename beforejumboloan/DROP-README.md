@@ -1,6 +1,14 @@
-# BeforeJumboLoan.com — Netlify drop (v7)
+# BeforeJumboLoan.com — engine preview (v9)
 
-Official 2026 loan-limit data is imported. `npm run validate:loan-limits` **passes**.
+Official 2026 **loan-limit** data is imported and `npm run validate:loan-limits`
+reports LOAN LIMITS PRODUCTION READY. **ZIP intelligence is official-starter**
+(HUD CHUMS ZIP, no residential ratios), so this build stays an **engine preview
+for ZIP** until the HUD-USPS ZIP_COUNTY crosswalk is imported.
+
+ZIP behaviour: a clear single-county ZIP **auto-detects and calculates**
+("Detected: County, ST · matched by zip", with a Change affordance); a
+multi-county ZIP shows county **choices** (no calc until you pick); an unknown
+ZIP asks for **city + state or property county**. No default Los Angeles / Key West.
 
 ## Data status
 | Layer | Source | Status |
