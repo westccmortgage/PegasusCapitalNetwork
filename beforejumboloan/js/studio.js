@@ -41,6 +41,10 @@
       if (qs.get("price")) S.price = KW.parseNum(qs.get("price"));
       if (qs.get("downpct")) S.downPct = KW.parseNum(qs.get("downpct"));
       if (qs.get("occ")) S.occupancy = mapOcc(qs.get("occ"));
+      // Carry the homepage Jumbo Gap Scanner location/units into the studio.
+      if (qs.get("state")) S.property_state = String(qs.get("state")).toUpperCase();
+      if (qs.get("county")) S.property_county = qs.get("county");
+      if (qs.get("units")) S.units = parseInt(qs.get("units"), 10) || 1;
     } catch (e) {}
     try {
       var saved = JSON.parse(localStorage.getItem("kw_scenario") || "null");
@@ -280,6 +284,7 @@
   var locBound = false;
   function initLocation() {
     if (!stateSel) return;
+    if (unitsSel && S.units) unitsSel.value = String(S.units); // carry units from homepage
     populateStates();
     var preset = KW.locationPreset ? KW.locationPreset() : { state: "", county: "" };
     if (preset.state && !S.property_state) {

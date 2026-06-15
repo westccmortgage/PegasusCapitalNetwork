@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BeforeJumboLoan.com — Before You Go Jumbo, See What the Structure Says</title>
-<meta name="description" content="A premium mortgage strategy studio. Organize a scenario — county limits, down payment, payment stack, DSCR, and buydown assumptions — before accepting that a loan has to be jumbo. Educational only.">
+<title>BeforeJumboLoan.com — The structure may tell a different story</title>
+<meta name="description" content="A live mortgage strategy engine. Run a scenario against the county line, payment stack, rent coverage, and buydown math before accepting a jumbo path. Educational only.">
 <link rel="canonical" href="https://beforejumboloan.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="BeforeJumboLoan.com — Before You Go Jumbo, See What the Structure Says">
-<meta property="og:description" content="A premium mortgage strategy studio. See what the structure says before you go jumbo. Educational only — not a rate quote, loan estimate, or commitment to lend.">
+<meta property="og:title" content="BeforeJumboLoan.com — The structure may tell a different story">
+<meta property="og:description" content="Run the loan amount against the county line, payment stack, rent coverage, and buydown math. Educational structure estimate only.">
 <meta property="og:url" content="https://beforejumboloan.com/">
 <meta property="og:image" content="https://beforejumboloan.com/assets/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
@@ -28,7 +28,7 @@
     <li><a href="education.html">Education</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
-  <div class="nav__cta"><a class="btn btn--primary" href="scenario-studio.html">Open Strategy Studio</a>
+  <div class="nav__cta"><a class="btn btn--primary" href="scenario-studio.html">Continue Into Full Strategy Studio</a>
     <button class="nav__toggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
 </nav></div></header>
@@ -37,151 +37,139 @@
   <a href="jumbo-vs-conforming.html">Jumbo vs Conforming</a>
   <a href="education.html">Education</a>
   <a href="contact.html">Contact</a>
-  <a class="btn btn--primary btn--block" href="scenario-studio.html">Open Strategy Studio</a>
+  <a class="btn btn--primary btn--block" href="scenario-studio.html">Continue Into Full Strategy Studio</a>
 </div>
 
 <main id="main">
 
-  <!-- ============ HERO ============ -->
-  <section class="bjl-hero">
-    <div class="wrap bjl-hero__grid">
-      <div class="bjl-hero__copy">
-        <p class="bjl-hero__eyebrow">Mortgage Strategy Studio</p>
+  <!-- ============ ABOVE THE FOLD: INTRO + LIVE SCANNER ============ -->
+  <section class="cockpit">
+    <div class="wrap cockpit__grid">
+
+      <!-- LEFT -->
+      <div class="cockpit__intro">
+        <p class="cockpit__eyebrow">Mortgage Strategy Engine</p>
         <h1>
-          <span class="ln">Before You Go <span class="gold">Jumbo,</span></span>
-          <span class="ln">See What the Structure Says.</span>
+          <span class="ln">The bank may call it jumbo.</span>
+          <span class="ln muted-ln">The structure may tell a different story.</span>
         </h1>
-        <p class="bjl-hero__brandline">Before You Go Jumbo, Run the Numbers First.</p>
-        <p class="bjl-hero__sub">A purchase price is only the beginning. County limits, down payment, property taxes, insurance, HOA, rent, DSCR, and buydown assumptions can change the way a scenario should be reviewed.</p>
-        <div class="bjl-hero__cta">
-          <a class="btn btn--primary btn--lg" href="scenario-studio.html">Open Strategy Studio</a>
-          <a class="btn btn--ghost btn--lg" href="scenario-studio.html#main">Start With Property Location</a>
+        <p class="cockpit__sub">Before you accept a jumbo path, run the loan amount against the county line, payment stack, rent coverage, and buydown math.</p>
+        <div class="cockpit__lever-callout">
+          <span class="cockpit__lever-k">Next best lever</span>
+          <span class="cockpit__lever-v" data-ho="nextlever">Adjust the scenario to scan the structure.</span>
         </div>
+        <a class="btn btn--primary btn--lg" data-ho-continue href="scenario-studio.html">Continue Into Full Strategy Studio →</a>
+        <p class="cockpit__hint">Live, deterministic engine. You confirm the property location — we don’t guess it from your device.</p>
       </div>
 
-      <!-- Loan Structure Compass -->
-      <aside class="compass" aria-label="Example loan structure">
-        <div class="compass__head">
-          <h2 class="compass__title">Loan Structure Compass</h2>
-          <span class="compass__tag">Illustration</span>
+      <!-- RIGHT: live Jumbo Gap Scanner -->
+      <aside class="scanner" data-scanner aria-label="Jumbo Gap Scanner">
+        <div class="scanner__head">
+          <h2 class="scanner__title">Jumbo Gap Scanner</h2>
+          <span class="scanner__live"><i></i>live</span>
         </div>
-        <p class="compass__sub">Example · Los Angeles County, CA</p>
-        <ul class="compass__rows">
-          <li><span class="compass__k">Purchase Price</span><span class="compass__v">$1,600,000</span></li>
-          <li><span class="compass__k">Down Payment</span><span class="compass__v">$288,000 · 18%</span></li>
-          <li><span class="compass__k">Estimated Loan Amount</span><span class="compass__v">$1,312,000</span></li>
-          <li><span class="compass__k">County Limit Reference</span><span class="compass__v">$1,249,125</span></li>
-          <li class="compass__row--gap"><span class="compass__k">Before-Jumbo Gap</span><span class="compass__v">$62,875 over</span></li>
-        </ul>
-        <div class="compass__bar">
-          <div class="compass__track">
-            <span class="compass__seg compass__seg--loan" style="left:18%;width:82%"></span>
-            <span class="compass__seg compass__seg--down" style="left:0;width:18%"></span>
-            <span class="compass__line" style="left:96%"></span>
-          </div>
-          <div class="compass__scale"><span>$0</span><span>Purchase price</span></div>
-          <div class="compass__legend">
-            <span><i style="background:var(--champagne)"></i>Down payment</span>
-            <span><i style="background:var(--ocean)"></i>Loan amount</span>
-            <span><i style="background:var(--navy)"></i>County limit line</span>
-          </div>
+
+        <div class="scanner__inputs">
+          <div class="ig"><label for="hs-state">State</label>
+            <select id="hs-state"><option value="CA">California</option></select></div>
+          <div class="ig"><label for="hs-county">County</label>
+            <select id="hs-county"><option value="Los Angeles County">Los Angeles County</option></select>
+            <input id="hs-county-free" type="text" placeholder="Type the county" hidden></div>
+          <div class="ig"><label for="hs-units">Units</label>
+            <select id="hs-units"><option value="1">1 unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select></div>
+          <div class="ig"><label for="hs-occ">Occupancy</label>
+            <select id="hs-occ"><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
+          <div class="ig ig--full"><label for="hs-price">Purchase price <b id="hs-price-out">$1,600,000</b></label>
+            <input id="hs-price" type="range" min="200000" max="5000000" step="10000" value="1600000"></div>
+          <div class="ig ig--full"><label for="hs-down">Down payment <b id="hs-down-out">18%</b></label>
+            <input id="hs-down" type="range" min="0" max="60" step="1" value="18"></div>
         </div>
-        <p class="compass__note">Illustration only. Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch. A larger down payment may move a scenario toward or below the county line.</p>
+
+        <!-- structure bar -->
+        <div class="scanner__bar">
+          <div class="sbar__track">
+            <span class="sbar__seg sbar__seg--loan" data-ho-bar-loan></span>
+            <span class="sbar__seg sbar__seg--down" data-ho-bar-down></span>
+            <span class="sbar__line" data-ho-bar-line></span>
+          </div>
+          <div class="sbar__legend"><span><i class="dot-down"></i>Down</span><span><i class="dot-loan"></i>Loan</span><span><i class="dot-line"></i>County line</span></div>
+        </div>
+
+        <!-- live outputs -->
+        <dl class="scanner__out">
+          <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
+          <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
+          <div class="so"><dt>Vs. county line</dt><dd class="so__delta" data-ho="delta">—</dd></div>
+          <div class="so"><dt>Before-jumbo gap</dt><dd data-ho="gap">—</dd></div>
+          <div class="so"><dt>Payment stack preview</dt><dd data-ho="pi">—</dd></div>
+        </dl>
+        <p class="scanner__rate" data-ho="rate"></p>
+        <p class="scanner__note" data-ho-note></p>
       </aside>
     </div>
-
-    <!-- County ticker -->
-    <div class="bjl-ticker">
-      <div class="wrap">
-        <div class="bjl-ticker__mask" aria-hidden="true">
-          <div class="bjl-ticker__track">
-            <span>Los Angeles County<span class="dot">·</span>Orange County<span class="dot">·</span>Miami-Dade<span class="dot">·</span>Palm Beach<span class="dot">·</span>Monroe County<span class="dot">·</span>San Diego<span class="dot">·</span>Santa Clara<span class="dot">·</span>King County<span class="dot">·</span>Clark County<span class="dot">·</span>Maricopa County<span class="dot">·</span>Cook County<span class="dot">·</span>Harris County<span class="dot">·</span></span>
-            <span>Los Angeles County<span class="dot">·</span>Orange County<span class="dot">·</span>Miami-Dade<span class="dot">·</span>Palm Beach<span class="dot">·</span>Monroe County<span class="dot">·</span>San Diego<span class="dot">·</span>Santa Clara<span class="dot">·</span>King County<span class="dot">·</span>Clark County<span class="dot">·</span>Maricopa County<span class="dot">·</span>Cook County<span class="dot">·</span>Harris County<span class="dot">·</span></span>
-          </div>
-        </div>
-        <p class="bjl-ticker__note">County-by-county strategy framework. Official full loan-limit database must be imported before production nationwide launch.</p>
-      </div>
-    </div>
   </section>
 
-  <!-- ============ WHAT THE STUDIO CHECKS ============ -->
-  <section class="home-section">
+  <!-- ============ LOAN PATH MAP ============ -->
+  <section class="engine-row">
     <div class="wrap">
-      <div class="home-section__head">
-        <span class="home-section__eyebrow">The Studio</span>
-        <h2>What the Strategy Studio Checks</h2>
-        <p>Four lenses on the same scenario — organized before a licensed review, never presented as an approval.</p>
+      <div class="erow__head"><h2>Loan Path Map</h2><p>The review path the current scenario maps to. Review path only — not eligibility or approval.</p></div>
+      <div class="pathmap" role="img" aria-label="Loan path map">
+        <div class="pathmap__node" data-node="conforming"><span class="pathmap__dot"></span><span class="pathmap__lbl">Conforming</span></div>
+        <span class="pathmap__arrow">→</span>
+        <div class="pathmap__node" data-node="high-balance"><span class="pathmap__dot"></span><span class="pathmap__lbl">High-Balance</span></div>
+        <span class="pathmap__arrow">→</span>
+        <div class="pathmap__node" data-node="jumbo"><span class="pathmap__dot"></span><span class="pathmap__lbl">Jumbo</span></div>
+        <span class="pathmap__arrow">→</span>
+        <div class="pathmap__node" data-node="dscr"><span class="pathmap__dot"></span><span class="pathmap__lbl">DSCR</span></div>
+        <span class="pathmap__arrow">→</span>
+        <div class="pathmap__node" data-node="bank-statement"><span class="pathmap__dot"></span><span class="pathmap__lbl">Bank Statement</span></div>
+        <span class="pathmap__arrow">→</span>
+        <div class="pathmap__node pathmap__node--final" data-node="licensed-review"><span class="pathmap__dot"></span><span class="pathmap__lbl">Licensed Review</span></div>
       </div>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="feature-card__ico">◧</div>
-          <h3>County Limit Line</h3>
-          <p>Where the estimated loan sits against the county’s conforming and high-balance reference for the selected units.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-card__ico">▦</div>
-          <h3>Payment Stack</h3>
-          <p>Principal &amp; interest with property taxes, insurance, flood, HOA, and mortgage insurance — the real monthly picture, estimated.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-card__ico">⟁</div>
-          <h3>DSCR / Investment Coverage</h3>
-          <p>For investment scenarios, how estimated rent compares to the estimated housing cost as a coverage ratio.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-card__ico">⇲</div>
-          <h3>Buydown Break-Even</h3>
-          <p>Permanent points vs. temporary structures — cost, estimated savings, and the break-even against your expected hold period.</p>
-        </div>
-      </div>
+      <p class="erow__note">All paths end in licensed review. Educational review-path map only — not an eligibility or approval decision.</p>
     </div>
   </section>
 
-  <!-- ============ SMALL CHANGES ============ -->
-  <section class="home-section home-section--tint">
-    <div class="wrap">
-      <div class="home-section__head">
-        <span class="home-section__eyebrow">Why it matters</span>
-        <h2>Small Changes Can Move the Review Path</h2>
-        <p>The same purchase can land on a different review path depending on a few inputs. These are educational illustrations — not approvals or eligibility decisions.</p>
+  <!-- ============ STRATEGY LEVERS + ENGINE INSIGHT ============ -->
+  <section class="engine-row engine-row--tint">
+    <div class="wrap engine-2col">
+
+      <div class="panel">
+        <div class="panel__head"><h2>Strategy Levers</h2><span class="panel__tag">adjust above</span></div>
+        <ul class="levers">
+          <li><div class="lever__main"><strong>Down payment</strong><span>Moves the loan toward or past the county line.</span></div>
+            <div class="lever__chips"><button type="button" class="chip" data-lever-action="down+5">+5%</button><button type="button" class="chip" data-lever-action="down-5">−5%</button></div></li>
+          <li><div class="lever__main"><strong>County</strong><span>Sets the conforming / high-balance reference line.</span></div></li>
+          <li><div class="lever__main"><strong>Units</strong><span>1–4 units change the county limit reference.</span></div>
+            <div class="lever__chips"><button type="button" class="chip" data-lever-action="units1">1</button><button type="button" class="chip" data-lever-action="units2">2</button></div></li>
+          <li><div class="lever__main"><strong>Occupancy</strong><span>Investment can shift the review toward DSCR.</span></div>
+            <div class="lever__chips"><button type="button" class="chip" data-lever-action="primary">Primary</button><button type="button" class="chip" data-lever-action="invest">Investment</button></div></li>
+          <li><div class="lever__main"><strong>Taxes / insurance</strong><span>Property taxes, insurance, flood, HOA, MI change the monthly picture.</span></div></li>
+          <li><div class="lever__main"><strong>Rent / DSCR</strong><span>Rent vs. payment drives investment-property coverage.</span></div></li>
+          <li><div class="lever__main"><strong>Buydown / hold period</strong><span>Cost, monthly savings, and how long you hold the loan.</span></div></li>
+        </ul>
+        <p class="panel__foot">Taxes, insurance, rent, and buydown levers open in the full Strategy Studio.</p>
       </div>
-      <ul class="move-list">
-        <li><strong>A different county</strong> can change the reference line, since limits are set county by county.</li>
-        <li><strong>A larger down payment</strong> can move the estimated loan closer to — or below — the county line.</li>
-        <li><strong>Taxes, insurance, flood, HOA, and mortgage insurance</strong> can change the real estimated monthly picture.</li>
-        <li><strong>Estimated rent</strong> can affect DSCR coverage on an investment scenario.</li>
-        <li><strong>Buydown math</strong> depends on the cost, the estimated monthly savings, and how long you expect to hold the loan.</li>
-        <li><strong>Occupancy and property type</strong> may change which review path should be considered.</li>
-      </ul>
+
+      <div class="panel">
+        <div class="panel__head"><h2>Engine Insight</h2><span class="panel__tag">deterministic</span></div>
+        <ul class="insights" data-ho-insights><li>Adjust the scanner to generate insights.</li></ul>
+        <p class="panel__foot">Generated from the deterministic engine — not AI, and nothing here is sent anywhere.</p>
+      </div>
+
     </div>
   </section>
 
-  <!-- ============ START WITH LOCATION ============ -->
-  <section class="home-section">
-    <div class="wrap">
-      <div class="loc-teaser">
-        <span class="home-section__eyebrow">Begin here</span>
-        <h2>Start With Property Location</h2>
-        <p style="color:var(--muted);max-width:600px;margin:8px auto 0">Loan limits are set by the property’s county. Choose a market to open the Strategy Studio with the location pre-filled.</p>
-        <div class="loc-pills">
-          <a class="loc-pill" href="/los-angeles">Los Angeles County</a>
-          <a class="loc-pill" href="/orange-county">Orange County</a>
-          <a class="loc-pill" href="/miami-dade">Miami-Dade</a>
-          <a class="loc-pill" href="/palm-beach">Palm Beach</a>
-          <a class="loc-pill" href="/key-west">Monroe / Key West</a>
-          <a class="loc-pill" href="/california">California high-cost counties</a>
-        </div>
-        <a class="btn btn--primary btn--lg" href="scenario-studio.html">Open Strategy Studio</a>
-        <p class="loc-teaser__note">County-by-county strategy framework. Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch. Official full loan-limit database must be imported before production nationwide launch.</p>
-      </div>
-    </div>
-  </section>
+  <!-- ============ COMPLIANCE STRIP ============ -->
+  <section class="compliance-strip"><div class="wrap">
+    <p>Educational structure estimate only. Not approval, qualification, rate quote, APR, loan estimate, or commitment to lend. Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch. Official full loan-limit database must be imported before production nationwide launch.</p>
+  </div></section>
 
 </main>
 
 <footer class="site-footer"><div class="wrap">
   <div class="footer-grid">
-    <div class="footer-brand"><span class="brand__name">Before <b>Jumbo</b> Loan</span><p>BeforeJumboLoan.com — an educational mortgage strategy resource. See what the structure says before you go jumbo.</p><p class="footer-powered">Licensed mortgage review provided only where properly licensed and authorized.</p></div>
+    <div class="footer-brand"><span class="brand__name">Before <b>Jumbo</b> Loan</span><p>BeforeJumboLoan.com — an educational mortgage strategy resource. Run the structure before you go jumbo.</p><p class="footer-powered">Licensed mortgage review provided only where properly licensed and authorized.</p></div>
     <div><h4>Explore</h4><ul><li><a href="loan-options.html">Loan Options</a></li><li><a href="jumbo-vs-conforming.html">Jumbo vs Conforming</a></li><li><a href="rates.html">Rates &amp; Payments</a></li><li><a href="scenario-studio.html">Strategy Studio</a></li></ul></div>
     <div><h4>Learn</h4><ul><li><a href="education.html">Education</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="disclosures.html">Disclosures</a></li></ul></div>
     <div><h4>Contact</h4><ul><li><a data-recipient-email href="scenario-studio.html">Send your scenario</a></li><li>BeforeJumboLoan.com</li></ul></div>
@@ -189,13 +177,15 @@
   <div class="footer-legal"><!-- centralized by js/compliance.js --></div>
 </div></footer>
 
-<div class="cookie-bar" role="dialog" aria-label="Cookie consent">
-  <p>We use cookies and a first-party visitor ID to understand site usage and improve your experience. Analytics and tracking run only with your consent. See our <a href="privacy.html">Privacy Policy</a>.</p>
-  <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
+<div class="cookie-bar cookie-bar--mini" role="dialog" aria-label="Cookie consent">
+  <p>We use cookies and a first-party visitor ID, with your consent, to understand site usage. <a href="privacy.html">Privacy</a>.</p>
+  <div class="cookie-actions"><button class="btn btn--primary btn--sm" data-consent-accept>Accept</button><button class="btn btn--ghost btn--sm" data-consent-decline>Decline</button></div>
 </div>
 
+<script src="js/loan-limits.js" defer></script>
 <script src="js/engine.js" defer></script>
 <script src="js/site.js" defer></script>
 <script src="js/compliance.js" defer></script>
+<script src="js/home.js" defer></script>
 </body>
 </html>
