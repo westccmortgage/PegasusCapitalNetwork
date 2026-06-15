@@ -58,10 +58,10 @@
   var stage = $("[data-scenarios]");
   if (stage) {
     var scenarios = [
-      { q: "“I’m buying in Key West at $1.15M with 20% down. Do I really need jumbo?”", next: "High-Balance Review", href: "jumbo-vs-conforming.html" },
-      { q: "“I’m self-employed and buying a second home in Key West.”", next: "Self-Employed / Second Home Review", href: "loan-options.html" },
-      { q: "“I’m buying an investment property in the Florida Keys and want to compare DSCR vs conventional.”", next: "Investor Review", href: "loan-options.html" },
-      { q: "“I’m a veteran buying in Monroe County. Can VA work in Key West?”", next: "VA Review", href: "loan-options.html" }
+      { q: "“I’m buying at $1.15M with 20% down in a high-cost county. Do I really need jumbo?”", next: "High-Balance Review", href: "jumbo-vs-conforming.html" },
+      { q: "“I’m self-employed and buying a second home. What changes?”", next: "Self-Employed / Second Home Review", href: "loan-options.html" },
+      { q: "“I’m buying an investment property and want to compare DSCR vs conventional.”", next: "Investor Review", href: "loan-options.html" },
+      { q: "“I’m a veteran buying in a high-cost county. How does VA fit?”", next: "VA Review", href: "loan-options.html" }
     ];
     var quoteEl = $(".scenario-card .quote", stage);
     var nextEl = $(".scenario-card .next span", stage);

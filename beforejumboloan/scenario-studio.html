@@ -321,6 +321,33 @@
           <ul class="snap__insights" data-snap-insights aria-live="polite"></ul>
         </div>
 
+        <div class="snap glass" data-payment-panel>
+          <h3 class="snap__title">Payment &amp; Buydown Intelligence</h3>
+          <dl class="snap__list">
+            <div class="snap__row"><dt>Payment mode</dt><dd data-pp-mode>Principal &amp; Interest</dd></div>
+            <div class="snap__row"><dt>Estimated P&amp;I preview</dt><dd data-pp-pi>—</dd></div>
+            <div class="snap__row"><dt>Estimated interest-only preview</dt><dd data-pp-io>—</dd></div>
+            <div class="snap__row"><dt>Interest-only vs amortizing</dt><dd data-pp-iodiff>—</dd></div>
+          </dl>
+          <p class="snap__refnote" data-pp-ionote></p>
+          <div class="snap__limit">
+            <span class="snap__k">Permanent buydown (illustration)</span>
+            <dl class="snap__list">
+              <div class="snap__row"><dt>P&amp;I before → after</dt><dd data-pp-bd-pi>—</dd></div>
+              <div class="snap__row"><dt>Monthly savings</dt><dd data-pp-bd-savings>—</dd></div>
+              <div class="snap__row"><dt>Estimated cost</dt><dd data-pp-bd-cost>—</dd></div>
+              <div class="snap__row"><dt>Break-even</dt><dd data-pp-bd-be>—</dd></div>
+            </dl>
+            <span class="snap__k">Temporary 2-1 buydown (illustration)</span>
+            <dl class="snap__list">
+              <div class="snap__row"><dt>Year 1 / Year 2 / Standard</dt><dd data-pp-tb>—</dd></div>
+              <div class="snap__row"><dt>Estimated subsidy</dt><dd data-pp-tb-sub>—</dd></div>
+            </dl>
+            <ul class="snap__insights" data-pp-bd-insight></ul>
+            <p class="snap__refnote" data-pp-bd-note></p>
+          </div>
+        </div>
+
         <div class="whatif glass" data-whatif aria-live="polite">
           <h3 class="snap__title">What If I Want to Stay Before Jumbo?</h3>
           <div data-whatif-body></div>
@@ -375,6 +402,14 @@
   <input name="lead_intent_level" />
   <input name="lead_tags" />
   <textarea name="scenario_summary"></textarea>
+  <input name="scenario_type" />
+  <input name="property_location_status" />
+  <input name="payment_mode" />
+  <input name="estimated_pi_payment" />
+  <input name="estimated_interest_only_payment" />
+  <input name="interest_only_difference" />
+  <textarea name="interest_only_note"></textarea>
+  <input name="rate_assumption" />
   <input name="name" />
   <input name="email" />
   <input name="phone" />
@@ -403,6 +438,7 @@
   <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
 </div>
 
+<script src="js/rate-config.js" defer></script>
 <script src="js/loan-limits.js" defer></script>
 <script src="js/engine.js" defer></script>
 <script src="js/site.js" defer></script>

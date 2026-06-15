@@ -95,6 +95,12 @@ body.home { background: var(--ivory); }
 /* example banner — page-load demo only */
 .example-banner { font-size: 0.74rem; font-weight: 600; color: #8a4b13; background: #fff8ee; border: 1px dashed var(--champagne-soft); border-radius: 10px; padding: 9px 12px; margin: 0 0 14px; }
 
+/* ---------- Payment mode toggle ---------- */
+.paymode { display: flex; align-items: center; gap: 6px; margin: 4px 0 12px; flex-wrap: wrap; }
+.paymode__k { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--champagne); margin-right: 2px; }
+.paymode__opt { border: 1px solid var(--line-strong); background: #fff; color: var(--navy); border-radius: 999px; padding: 6px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all .16s var(--ease); }
+.paymode__opt.is-sel { background: var(--navy); color: #fff; border-color: var(--navy); }
+
 /* ---------- Command input: "Where is the property?" ---------- */
 .cmd { margin-bottom: 14px; }
 .cmd__label { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; color: var(--navy); margin-bottom: 6px; }

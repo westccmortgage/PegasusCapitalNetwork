@@ -127,6 +127,15 @@ function serve() {
   await page.waitForFunction(() => document.querySelector('[data-purpose-opt="investment"]')?.classList.contains('is-sel'), { timeout: 2000 });
   check(await page.isVisible('[data-ho-dscr-row]') && /×|rent/.test(await txt(page, '[data-ho="dscr"]')), 'investment / DSCR shows a DSCR preview');
 
+  // ---- interest-only payment option (Phase 4) ----
+  check(/\/mo/.test(await txt(page, '[data-ho="pi"]')) && /\/mo/.test(await txt(page, '[data-ho="io"]')), 'cockpit shows both P&I and interest-only previews');
+  check(/lower than amortizing/i.test(await txt(page, '[data-ho="iodiff"]')), 'cockpit shows interest-only vs amortizing difference');
+  await page.click('[data-paymode="io"]');
+  await page.waitForFunction(() => /interest-only preview/i.test(document.querySelector('[data-ho="rate"]')?.textContent || ''), { timeout: 2000 });
+  check(/selected/.test(await txt(page, '[data-ho="io"]')), 'selecting Interest Only marks it selected');
+  check(/educational payment illustration only/i.test(await txt(page, '[data-ho-ionote]')), 'interest-only note shown');
+  await page.click('[data-paymode="pi"]');
+
   // footer compliance
   const footer = await txt(page, '.footer-legal');
   check(/West Coast Capital Mortgage Inc\., NMLS #2817729/.test(footer) && /Anatoliy Kanevsky, NMLS #2775380/.test(footer), 'footer: entity + individual NMLS from config');

@@ -45,7 +45,8 @@
     units: 1,
     value: 1600000, downPct: 18,
     payoff: 900000, newLoan: 900000, cashOut: 150000, includeCosts: false,
-    loanAmt: 1200000, rent: 7500
+    loanAmt: 1200000, rent: 7500,
+    paymentMode: "pi"
   };
 
   var E = {
@@ -212,13 +213,18 @@
     else if (hasData && baseline != null && loan > baseline) zone = "high-balance";
     var node = !hasData ? null : (occ === "Investment" ? "dscr" : zone);
 
-    var ra = KW.rateFor ? KW.rateFor({ loan: loan, main_concern: "" }) : { rate: 6.84, label: "30-yr assumption" };
-    var pi = KW.monthlyPI ? KW.monthlyPI(loan, ra.rate, 30) : 0;
-    var dscr = (S.scenarioType === "investment" && S.rent > 0 && pi > 0) ? (S.rent / pi) : null;
+    var io = S.paymentMode === "io";
+    var pp = KW.paymentPreview
+      ? KW.paymentPreview({ loan: loan, scenario_type: S.scenarioType, occupancy: occ === "Investment" ? "Investment property" : (occ === "Second home" ? "Second home" : "Primary"), payment_mode: io ? "interest-only" : "pi" })
+      : { pi: KW.monthlyPI ? KW.monthlyPI(loan, 6.84, 30) : 0, interestOnly: 0, difference: 0, rate: 6.84, rateLabel: "30-yr assumption", rateKey: "jumbo" };
+    var dscrBasis = io ? pp.interestOnly : pp.pi;
+    var dscr = (S.scenarioType === "investment" && S.rent > 0 && dscrBasis > 0) ? (S.rent / dscrBasis) : null;
 
     render({
       loan: loan, ltv: ltv, baseline: baseline, countyLimit: countyLimit, hasData: hasData,
-      delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ, pi: pi, rate: ra,
+      delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ,
+      pi: pp.pi, io: pp.interestOnly, iodiff: pp.difference, paymentMode: S.paymentMode,
+      rate: { rate: pp.rate, label: pp.rateLabel, key: pp.rateKey },
       dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier
     });
     updateContinue();
@@ -271,8 +277,12 @@
       }
     }
 
-    set('[data-ho="pi"]', fmt(o.pi) + "/mo");
-    set('[data-ho="rate"]', "Estimated P&I preview · " + o.rate.rate + "% " + (o.rate.label || "assumption") + " · taxes, insurance, HOA, flood & MI added in the Studio");
+    set('[data-ho="pi"]', fmt(o.pi) + "/mo" + (o.paymentMode === "pi" ? " · selected" : ""));
+    set('[data-ho="io"]', fmt(o.io) + "/mo" + (o.paymentMode === "io" ? " · selected" : ""));
+    set('[data-ho="iodiff"]', "Interest-only is " + fmt(o.iodiff) + "/mo lower than amortizing");
+    set('[data-ho="rate"]', "Estimated " + (o.paymentMode === "io" ? "interest-only" : "P&I") + " preview · " + o.rate.rate + "% " + (o.rate.label || "assumption") + " · taxes, insurance, HOA, flood & MI added in the Studio");
+    var ioNote = $("[data-ho-ionote]");
+    if (ioNote) ioNote.textContent = (KW.IO_NOTE || "Interest-only options vary by lender, loan purpose, occupancy, property type, borrower profile, and market. This is an educational payment illustration only.");
 
     // County Line Meter.
     var meter = $("[data-meter]");
@@ -342,7 +352,22 @@
   function renderSees(o) {
     var ul = $("[data-ho-insights]"); if (!ul) return;
     var lines = [];
-    lines.push("Structuring: " + label(S.scenarioType) + ".");
+    // Scenario-type aware (Phase 7).
+    if (S.scenarioType === "purchase" || S.scenarioType === "second_home") {
+      lines.push("This scenario is being structured as a " + (S.scenarioType === "second_home" ? "second-home purchase" : "purchase") + ".");
+      lines.push("Down payment changes the estimated loan amount.");
+    } else if (S.scenarioType === "rate_term") {
+      lines.push("This scenario is being structured as a refinance.");
+      lines.push("LTV and current payoff drive the new loan amount.");
+    } else if (S.scenarioType === "cash_out") {
+      lines.push("This scenario is being structured as a cash-out refinance.");
+      lines.push("Cash-out amount increases the estimated new loan amount and LTV.");
+    } else if (S.scenarioType === "investment") {
+      lines.push("This scenario is being structured as an investment / DSCR loan.");
+      lines.push("Investment occupancy can introduce rent and DSCR review.");
+    } else {
+      lines.push("Scenario type not set yet — pick a structure to sharpen the analysis.");
+    }
     lines.push("Property county confirmed: " + S.county + ", " + S.state + ".");
     if (!o.hasData) {
       lines.push("This county’s line is not in the configured data — import the official full FHFA database to calculate it.");
@@ -352,8 +377,9 @@
       lines.push("Estimated loan amount is at or below the selected county reference line.");
     }
     if (o.ltv != null && isFinite(o.ltv)) lines.push("Estimated LTV is about " + Math.round(o.ltv * 100) + "% (loan ÷ value).");
-    if (S.scenarioType === "investment") lines.push("Investment occupancy can introduce rent and DSCR review.");
+    if (S.paymentMode === "io") lines.push("Interest-only lowers the initial payment illustration but does not reduce principal during the interest-only period.");
     lines.push("Taxes, insurance, HOA, flood, and mortgage insurance can materially change the monthly picture.");
+    lines.push("Buydown math depends on upfront cost, monthly savings, and expected hold period.");
     ul.innerHTML = lines.slice(0, 6).map(function (t) { return "<li>" + t + "</li>"; }).join("");
   }
   function label(t) {
@@ -384,6 +410,16 @@
     q.set("estimated_loan_amount", String(ll.loan));
     if (ll.ltv != null && isFinite(ll.ltv)) q.set("ltv", String(Math.round(ll.ltv * 1000) / 1000));
     q.set("price", String(S.value)); // back-compat with the studio prefill
+    // Payment mode + rate assumption + payment previews (Phase 4).
+    var occ2 = occFor(S.scenarioType);
+    var pp = KW.paymentPreview ? KW.paymentPreview({ loan: ll.loan, scenario_type: S.scenarioType, occupancy: occ2 === "Investment" ? "Investment property" : (occ2 === "Second home" ? "Second home" : "Primary"), payment_mode: S.paymentMode === "io" ? "interest-only" : "pi" }) : null;
+    q.set("payment_mode", S.paymentMode === "io" ? "interest_only" : "pi");
+    if (pp) {
+      q.set("rate_assumption", String(pp.rate));
+      q.set("estimated_pi_payment", String(Math.round(pp.pi)));
+      q.set("estimated_interest_only_payment", String(Math.round(pp.interestOnly)));
+      q.set("interest_only_difference", String(Math.round(pp.difference)));
+    }
 
     if (confirmedReal) {
       // Only a CONFIRMED real property county is carried into the Studio.
@@ -423,6 +459,13 @@
     }
     $$("[data-ex]").forEach(function (b) {
       b.addEventListener("click", function () { if (E.q) E.q.value = b.textContent.trim(); doResolve(b.textContent.trim()); });
+    });
+    $$("[data-paymode]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        S.paymentMode = b.getAttribute("data-paymode");
+        $$("[data-paymode]").forEach(function (x) { x.classList.toggle("is-sel", x === b); });
+        if (S.confirmed) compute(); else updateContinue();
+      });
     });
     var mb1 = $("[data-confirm-manual]"); if (mb1) mb1.addEventListener("click", confirmManual);
     var mb2 = $("[data-confirm-manual2]"); if (mb2) mb2.addEventListener("click", confirmManual);

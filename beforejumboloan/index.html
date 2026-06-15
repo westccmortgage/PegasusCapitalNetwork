@@ -193,6 +193,13 @@
             <div class="meter__lbls"><span data-meter-loanlbl>Loan —</span><span data-meter-linelbl>County line —</span></div>
           </div>
 
+          <!-- payment mode -->
+          <div class="paymode" role="group" aria-label="Payment mode">
+            <span class="paymode__k">Payment mode</span>
+            <button type="button" class="paymode__opt is-sel" data-paymode="pi">Principal &amp; Interest</button>
+            <button type="button" class="paymode__opt" data-paymode="io">Interest Only</button>
+          </div>
+
           <!-- secondary outputs -->
           <dl class="scanner__out">
             <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
@@ -200,9 +207,12 @@
             <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
             <div class="so" data-ho-dscr-row hidden><dt>DSCR preview</dt><dd data-ho="dscr">—</dd></div>
             <div class="so"><dt>Estimated P&amp;I preview</dt><dd data-ho="pi">—</dd></div>
+            <div class="so"><dt>Estimated interest-only preview</dt><dd data-ho="io">—</dd></div>
+            <div class="so"><dt>Interest-only vs amortizing</dt><dd data-ho="iodiff">—</dd></div>
           </dl>
           <p class="scanner__rate" data-ho="rate"></p>
           <p class="scanner__note" data-ho-note></p>
+          <p class="scanner__note" data-ho-ionote></p>
         </div>
       </aside>
     </div>
@@ -281,6 +291,7 @@
   <div class="cookie-actions"><button class="btn btn--primary btn--sm" data-consent-accept>Accept</button><button class="btn btn--ghost btn--sm" data-consent-decline>Decline</button></div>
 </div>
 
+<script src="js/rate-config.js" defer></script>
 <script src="js/loan-limits.js" defer></script>
 <script src="js/engine.js" defer></script>
 <script src="js/site.js" defer></script>

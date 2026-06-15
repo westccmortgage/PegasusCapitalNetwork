@@ -1,9 +1,9 @@
 /* ============================================================
    Before Jumbo Strategy Studio — Market config + portable logic
    ------------------------------------------------------------
-   PORTABILITY: swap MARKET_CONFIG / BRAND_CONFIG to reuse this
-   engine for MonroeCountyMortgage.com, PalmBeachCountyMortgage.com,
-   MiamiDadeMortgage.com, BeforeJumboLoan.com, etc.
+   PORTABILITY: market copy lives in the MARKETS registry; the default
+   is a neutral "generic" market so the Studio never shows a specific
+   county unless a route preset or a confirmed property county sets it.
    Calculation logic below references the config only — no city or
    limit is hard-coded inside the functions.
 
@@ -22,7 +22,7 @@
      highBalanceLimit = 1-unit high-cost-area ceiling for that county
        (set equal to baseline for non-high-cost counties).
      ============================================================ */
-  var DEFAULT_MARKET = "key-west";
+  var DEFAULT_MARKET = "generic";
   var LIMIT_YEAR = 2026;
   var VERIFY = "VERIFY BEFORE LAUNCH (FHFA / Fannie Mae / HUD)";
   // FHFA 2026 Conforming Loan Limit Values (effective 2026-01-01):
@@ -31,6 +31,11 @@
   var VERIFIED = "FHFA 2026 CLL — verified 2026-06-12";
 
   var MARKETS = {
+    "generic": {
+      marketSlug: "generic", marketName: "", countyName: "", state: "",
+      loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 832750, fhaLimit: null,
+      localDisclaimer: "", marketHeroCopy: "", lastVerifiedDate: VERIFY
+    },
     "key-west": {
       marketSlug: "key-west", marketName: "Key West / Monroe County", countyName: "Monroe County", state: "FL",
       loanLimitYear: LIMIT_YEAR, baselineConformingLimit: 832750, highBalanceLimit: 990150, fhaLimit: null,
@@ -177,16 +182,24 @@
     return { state: st, county: cty };
   }
 
-  /* Rate ASSUMPTIONS — education only. Edit in ONE place. Not a rate quote. */
+  /* Rate ASSUMPTIONS — education only. Edit in js/rate-config.js (window.BJLRates).
+     Falls back to these defaults when the central config isn't loaded. */
   var RATE_CONFIG = {
     lastUpdated: "2026-06-12",
-    sourceLabel: "Public national mortgage rate averages; update before launch",
+    sourceLabel: "Owner-provided educational rate assumptions. Verify current pricing before use.",
     conforming30: 6.58,
     jumbo30: 6.84,
     fha30: 6.14,
     va30: 6.16,
     note: "Rates shown are assumptions for education only. They are not rate quotes, APRs, locked rates, or commitments to lend."
   };
+  /* Resolve a named assumption from the central config (window.BJLRates) with a
+     safe fallback. Keeps everything deterministic and owner-configurable. */
+  function rateAssumption(key, fallback) {
+    var a = global.BJLRates && global.BJLRates.assumptions;
+    if (a && a[key] != null) return a[key];
+    return fallback;
+  }
 
   /* ---------- formatting / parsing ---------- */
   function fmtCurrency(n) {
@@ -421,11 +434,24 @@
   function rateFor(s) {
     var loan = s.loan != null ? s.loan : estimatedLoan(s);
     var county = MARKET_CONFIG.highBalanceLimit;
+    var base = MARKET_CONFIG.baselineConformingLimit;
     var con = s.main_concern || "";
-    if (/va/i.test(con)) return { rate: RATE_CONFIG.va30, label: "VA 30-yr assumption" };
-    if (/fha/i.test(con)) return { rate: RATE_CONFIG.fha30, label: "FHA 30-yr assumption" };
-    if (county && loan > county) return { rate: RATE_CONFIG.jumbo30, label: "Jumbo 30-yr assumption" };
-    return { rate: RATE_CONFIG.conforming30, label: "Conforming 30-yr assumption" };
+    var st = s.scenario_type || "";
+    var occ = occShort(s.occupancy || "");
+    var io = /interest[ _-]?only/i.test(s.payment_mode || "") || s.interest_only === true;
+    if (/va/i.test(con)) return { rate: rateAssumption("va", RATE_CONFIG.va30), label: "VA 30-yr assumption", key: "va" };
+    if (/fha/i.test(con)) return { rate: rateAssumption("fha", RATE_CONFIG.fha30), label: "FHA 30-yr assumption", key: "fha" };
+    if (occ === "Investment" || st === "investment") {
+      if (io) return { rate: rateAssumption("interest_only_jumbo", 7.10), label: "Interest-only investment assumption", key: "interest_only_jumbo" };
+      return { rate: rateAssumption("dscr", 7.49), label: "DSCR / investment assumption", key: "dscr" };
+    }
+    if (county && loan > county) {
+      if (io) return { rate: rateAssumption("interest_only_jumbo", 7.10), label: "Interest-only jumbo assumption", key: "interest_only_jumbo" };
+      return { rate: rateAssumption("jumbo", RATE_CONFIG.jumbo30), label: "Jumbo 30-yr assumption", key: "jumbo" };
+    }
+    if (occ === "Second home" || st === "second_home") return { rate: rateAssumption("second_home", 6.99), label: "Second-home assumption", key: "second_home" };
+    if (base != null && county && loan > base && loan <= county) return { rate: rateAssumption("high_balance", 6.66), label: "High-balance assumption", key: "high_balance" };
+    return { rate: rateAssumption("conforming", RATE_CONFIG.conforming30), label: "Conforming 30-yr assumption", key: "conforming" };
   }
 
   /* ---------- payment estimator (deterministic amortization) ---------- */
@@ -436,6 +462,30 @@
     if (r === 0) return loan / n;
     return loan * r / (1 - Math.pow(1 + r, -n));
   }
+  /* ---------- Interest-only payment illustration (Phase 4) ---------- */
+  var IO_NOTE = "Interest-only options vary by lender, loan purpose, occupancy, property type, borrower profile, and market. This is an educational payment illustration only.";
+  function interestOnly(loan, ratePct) {
+    loan = Number(loan) || 0;
+    var r = (Number(ratePct) || 0) / 100 / 12;
+    return loan > 0 ? loan * r : 0;
+  }
+  /* Returns the amortizing P&I, the interest-only payment, and the difference. */
+  function paymentPreview(s) {
+    var loan = s.loan != null ? s.loan : estimatedLoan(s);
+    var ra = rateFor(s);
+    var rate = (s.rate != null && s.rate !== "") ? parseNum(s.rate) : ra.rate;
+    var term = s.term ? parseNum(s.term) : 30;
+    var pi = monthlyPI(loan, rate, term);
+    var io = interestOnly(loan, rate);
+    return {
+      loan: loan, rate: rate, term: term, rateLabel: ra.label, rateKey: ra.key,
+      pi: pi, interestOnly: io, difference: Math.max(0, pi - io), note: IO_NOTE
+    };
+  }
+
+  /* Buydown safe-language note (the deterministic buydown math lives below). */
+  var BUYDOWN_NOTE = "Buydown options may not be available for every borrower, loan purpose, occupancy, property, lender, or market. This is an educational illustration only, not a rate quote, APR, loan estimate, approval, or commitment to lend.";
+
   function paymentBreakdown(s) {
     var loan = s.loan != null ? s.loan : estimatedLoan(s);
     var ra = rateFor(s);
@@ -734,7 +784,13 @@
     brand: BRAND_CONFIG,
     rates: RATE_CONFIG,
     rateFor: rateFor,
+    rateAssumption: rateAssumption,
+    rateConfigLabel: function () { return (global.BJLRates && global.BJLRates.label) || RATE_CONFIG.sourceLabel; },
     monthlyPI: monthlyPI,
+    interestOnly: interestOnly,
+    paymentPreview: paymentPreview,
+    IO_NOTE: IO_NOTE,
+    BUYDOWN_NOTE: BUYDOWN_NOTE,
     paymentBreakdown: paymentBreakdown,
     dscr: dscr,
     explain: explain,

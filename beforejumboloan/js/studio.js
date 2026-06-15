@@ -62,6 +62,9 @@
       if (qs.get("property_query")) S.property_query = qs.get("property_query");
       S.property_location_status = qs.get("property_location_status") || "";
       S.needs_property_location = qs.get("needs_property_location") === "true";
+      // Payment mode + rate assumption carried from the homepage cockpit.
+      if (qs.get("payment_mode")) S.payment_mode = /interest/i.test(qs.get("payment_mode")) ? "interest_only" : "pi";
+      if (qs.get("rate_assumption")) S.rate = KW.parseNum(qs.get("rate_assumption"));
       // Never carry a default/unconfirmed county into the studio.
       if (S.needs_property_location || S.property_location_status === "example" || S.property_location_status === "unresolved") {
         S.property_state = ""; S.property_county = ""; S.property_county_fips = "";
@@ -162,7 +165,40 @@
     var ins = KW.insights(S), insWrap = $("[data-snap-insights]");
     if (insWrap) { insWrap.innerHTML = ""; ins.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; insWrap.appendChild(li); }); }
 
-    renderWhatIf(); renderPathCards();
+    renderWhatIf(); renderPathCards(); renderPaymentPanel();
+  }
+
+  /* ---------- Payment (P&I + interest-only) + buydown intelligence ---------- */
+  function renderPaymentPanel() {
+    if (!$("[data-payment-panel]")) return;
+    var io = S.payment_mode === "interest_only";
+    var sc = {
+      loan: S.loan, mode: S.mode, scenario_type: S.scenario_type, occupancy: S.occupancy,
+      main_concern: S.main_concern, payment_mode: io ? "interest-only" : "pi",
+      rate: (S.rate != null && S.rate !== "") ? S.rate : undefined
+    };
+    var pp = KW.paymentPreview(sc);
+    set("[data-pp-mode]", io ? "Interest Only" : "Principal & Interest");
+    set("[data-pp-pi]", KW.fmtCurrency(pp.pi) + "/mo" + (io ? "" : " · selected"));
+    set("[data-pp-io]", KW.fmtCurrency(pp.interestOnly) + "/mo" + (io ? " · selected" : ""));
+    set("[data-pp-iodiff]", "Interest-only is " + KW.fmtCurrency(pp.difference) + "/mo lower than amortizing");
+    set("[data-pp-ionote]", pp.note);
+
+    var pb = KW.permanentBuydown(sc);
+    set("[data-pp-bd-pi]", KW.fmtCurrency(pb.piCur) + " → " + KW.fmtCurrency(pb.piBd) + " (" + pb.curRate + "% → " + pb.bdRate + "%)");
+    set("[data-pp-bd-savings]", KW.fmtCurrency(pb.monthlySavings) + "/mo");
+    set("[data-pp-bd-cost]", KW.fmtCurrency(pb.cost) + " (" + pb.points + " pts)");
+    set("[data-pp-bd-be]", pb.breakEvenMonths != null
+      ? (Math.round(pb.breakEvenMonths) + " months (~" + pb.breakEvenYears.toFixed(1) + " yrs)")
+      : "—");
+
+    var tb = KW.temporaryBuydown(Object.assign({ bdTempType: "2-1" }, sc));
+    set("[data-pp-tb]", KW.fmtCurrency(tb.piY1) + " / " + KW.fmtCurrency(tb.piY2) + " / " + KW.fmtCurrency(tb.piNote));
+    set("[data-pp-tb-sub]", KW.fmtCurrency(tb.subsidy));
+
+    var bi = KW.buydownInsight(sc), ul = $("[data-pp-bd-insight]");
+    if (ul) { ul.innerHTML = ""; bi.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; ul.appendChild(li); }); }
+    set("[data-pp-bd-note]", KW.BUYDOWN_NOTE || "");
   }
 
   function renderWhatIf() {
@@ -298,7 +334,10 @@
     S.property_county = cty;
     S.property_zip = zipInput ? zipInput.value.trim() : "";
     S.units = unitsSel ? (parseInt(unitsSel.value, 10) || 1) : 1;
+    // A real selection clears the "needs location" / example state.
+    if (st && cty) { S.needs_property_location = false; if (S.property_location_status !== "resolved") S.property_location_status = "confirmed"; }
     applyLocation();
+    if (typeof renderStudioHeader === "function") renderStudioHeader();
     renderSnapshot();
   }
 
@@ -589,6 +628,12 @@
       return;
     }
     var o = KW.strategySummary(S);
+    var ppBase = { loan: S.loan, scenario_type: S.scenario_type, occupancy: S.occupancy, rate: (S.rate != null && S.rate !== "") ? S.rate : undefined };
+    var ppAmort = KW.paymentPreview(ppBase) || {};
+    var ppIo = KW.paymentPreview(Object.assign({ payment_mode: "interest-only" }, ppBase)) || {};
+    var rateAssumption = (S.rate != null && S.rate !== "")
+      ? (S.rate + "%")
+      : (KW.rateFor({ loan: S.loan, scenario_type: S.scenario_type, occupancy: S.occupancy }).rate + "% (assumption)");
     var data = {
       "form-name": BRAND.studioFormName,
       "bot-field": "",
@@ -625,6 +670,14 @@
       lead_intent_level: o.leadIntentLevel,
       lead_tags: o.leadTags.join(", "),
       scenario_summary: KW.summaryText(S),
+      scenario_type: S.scenario_type || (S.mode === "refi" ? "refinance" : "purchase"),
+      property_location_status: S.property_location_status || (S.property_county ? "confirmed" : "unresolved"),
+      payment_mode: S.payment_mode === "interest_only" ? "Interest Only" : "Principal & Interest",
+      estimated_pi_payment: KW.fmtCurrency(ppAmort.pi),
+      estimated_interest_only_payment: KW.fmtCurrency(ppIo.interestOnly),
+      interest_only_difference: KW.fmtCurrency(ppAmort.difference),
+      interest_only_note: KW.IO_NOTE || "",
+      rate_assumption: rateAssumption,
       name: S.name, email: S.email, phone: S.phone,
       preferred_contact_method: S.preferred_contact_method, message: S.message
     };
@@ -684,16 +737,42 @@
     if (go) go.textContent = step === TOTAL ? "Review →" : "Continue →";
   }
 
-  /* ---------- market-aware copy (from active MARKET_CONFIG) ---------- */
-  (function applyMarketCopy() {
-    var name = CFG.marketName || "";
-    var nameEl = $("[data-market-name]"); if (nameEl) nameEl.textContent = name + " · Before Jumbo Strategy Studio";
-    var heroEl = $("[data-market-hero]"); if (heroEl && CFG.marketHeroCopy) heroEl.textContent = CFG.marketHeroCopy;
-    if (name) { try { document.title = "Before Jumbo Strategy Studio — " + name; } catch (e) {} }
-    // surface the market's local disclaimer in the compliance line if present
-    var comp = $(".studio__compliance");
-    if (comp && CFG.localDisclaimer) comp.insertAdjacentHTML("afterbegin", "<strong>" + name + ":</strong> " + CFG.localDisclaimer + " ");
-  })();
+  /* ---------- header copy: county/route-aware, NEVER a hardcoded market ----------
+     A genuine market route (/key-west …) uses that market's copy. Otherwise the
+     header reflects the CONFIRMED property county passed from the homepage, or a
+     neutral "confirm property location" prompt when nothing is confirmed. */
+  var marketDisclaimerShown = false;
+  function isRouteMarket() {
+    var slug = (KW.activeSlug && KW.activeSlug()) || "";
+    return slug && slug !== "generic" && slug !== "custom";
+  }
+  function renderStudioHeader() {
+    var routeMarket = isRouteMarket();
+    var hasCounty = !!(S.property_state && S.property_county);
+    var needsLoc = S.needs_property_location || S.property_location_status === "unresolved" || S.property_location_status === "example";
+    var label = "", hero = "", titleName = "";
+    if (routeMarket) {
+      label = CFG.marketName || "";
+      hero = CFG.marketHeroCopy || "Build your mortgage scenario before you go jumbo.";
+      titleName = label;
+    } else if (hasCounty && !needsLoc) {
+      label = S.property_county + ", " + S.property_state;
+      hero = "Build your mortgage scenario before you go jumbo.";
+      titleName = label;
+    } else {
+      label = ""; hero = "Confirm property location to begin."; titleName = "";
+    }
+    var nameEl = $("[data-market-name]");
+    if (nameEl) nameEl.textContent = (label ? label + " · " : "") + "Before Jumbo Strategy Studio";
+    var heroEl = $("[data-market-hero]"); if (heroEl) heroEl.textContent = hero;
+    try { document.title = "Before Jumbo Strategy Studio" + (titleName ? " — " + titleName : ""); } catch (e) {}
+    // Surface a route market's local disclaimer once (only for genuine routes).
+    if (routeMarket && CFG.localDisclaimer && !marketDisclaimerShown) {
+      var comp = $(".studio__compliance");
+      if (comp) { comp.insertAdjacentHTML("afterbegin", "<strong>" + label + ":</strong> " + CFG.localDisclaimer + " "); marketDisclaimerShown = true; }
+    }
+  }
+  renderStudioHeader();
 
   /* ---------- init ---------- */
   preselect();
