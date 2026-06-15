@@ -75,6 +75,7 @@
       b.classList.toggle("is-sel", on); b.setAttribute("aria-pressed", on ? "true" : "false");
     });
     set("[data-value-label]", VALUE_LABEL[t] || VALUE_LABEL.unknown);
+    set("[data-occ-out]", t === "investment" ? "Investment property" : (t === "second_home" ? "Second home" : "Primary residence"));
     $$("[data-show]").forEach(function (w) {
       show(w, w.getAttribute("data-show").split(/\s+/).indexOf(t) > -1);
     });
@@ -226,24 +227,45 @@
     var addlDown = (delta != null && delta > 0) ? delta : 0;
 
     var occ = occFor(S.scenarioType);
+    var io = S.paymentMode === "io";
+    var occLabel = occ === "Investment" ? "Investment property" : (occ === "Second home" ? "Second home" : "Primary");
+    var sc = { loan: loan, scenario_type: S.scenarioType, occupancy: occLabel, payment_mode: io ? "interest-only" : "pi" };
+
+    // Current review path (one of the Potential Review Paths the engine compares).
     var zone = "conforming";
     if (hasData && loan > countyLimit) zone = "jumbo";
     else if (hasData && baseline != null && loan > baseline) zone = "high-balance";
-    var node = !hasData ? null : (occ === "Investment" ? "dscr" : zone);
+    var node = null;
+    if (hasData) {
+      if (S.scenarioType === "investment") node = "dscr";
+      else if (io && loan > countyLimit) node = "interest-only-jumbo";
+      else if (loan > countyLimit) node = "jumbo";
+      else if (S.scenarioType === "second_home") node = "second-home";
+      else if (baseline != null && loan > baseline) node = "high-balance";
+      else node = "conforming";
+    }
+    var pathLabels = { conforming: "Conforming Review", "high-balance": "High-Balance Conforming Review",
+      jumbo: "Jumbo Review", "interest-only-jumbo": "Interest-Only Jumbo Review", dscr: "DSCR / Investor Review",
+      "second-home": "Second Home Review", "bank-statement": "Bank Statement Review", fha: "FHA Review", va: "VA Review" };
 
-    var io = S.paymentMode === "io";
-    var pp = KW.paymentPreview
-      ? KW.paymentPreview({ loan: loan, scenario_type: S.scenarioType, occupancy: occ === "Investment" ? "Investment property" : (occ === "Second home" ? "Second home" : "Primary"), payment_mode: io ? "interest-only" : "pi" })
+    var pp = KW.paymentPreview ? KW.paymentPreview(sc)
       : { pi: KW.monthlyPI ? KW.monthlyPI(loan, 6.84, 30) : 0, interestOnly: 0, difference: 0, rate: 6.84, rateLabel: "30-yr assumption", rateKey: "jumbo" };
     var dscrBasis = io ? pp.interestOnly : pp.pi;
     var dscr = (S.scenarioType === "investment" && S.rent > 0 && dscrBasis > 0) ? (S.rent / dscrBasis) : null;
 
+    // Buydown illustrations (deterministic, integrated into the console).
+    var pb = KW.permanentBuydown ? KW.permanentBuydown(sc) : null;
+    var tb = KW.temporaryBuydown ? KW.temporaryBuydown(Object.assign({ bdTempType: "2-1" }, sc)) : null;
+    var tb10 = KW.temporaryBuydown ? KW.temporaryBuydown(Object.assign({ bdTempType: "1-0" }, sc)) : null;
+
     render({
       loan: loan, ltv: ltv, baseline: baseline, countyLimit: countyLimit, hasData: hasData,
       delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ,
+      pathLabel: node ? (pathLabels[node] || "Licensed Review") : "Confirm a property county",
       pi: pp.pi, io: pp.interestOnly, iodiff: pp.difference, paymentMode: S.paymentMode,
       rate: { rate: pp.rate, label: pp.rateLabel, key: pp.rateKey },
-      dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier
+      dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier,
+      pb: pb, tb: tb, tb10: tb10
     });
     updateContinue();
   }
@@ -295,12 +317,27 @@
       }
     }
 
+    set('[data-ho="path"]', o.pathLabel || "—");
     set('[data-ho="pi"]', fmt(o.pi) + "/mo" + (o.paymentMode === "pi" ? " · selected" : ""));
     set('[data-ho="io"]', fmt(o.io) + "/mo" + (o.paymentMode === "io" ? " · selected" : ""));
     set('[data-ho="iodiff"]', "Interest-only is " + fmt(o.iodiff) + "/mo lower than amortizing");
     set('[data-ho="rate"]', "Estimated " + (o.paymentMode === "io" ? "interest-only" : "P&I") + " preview · " + o.rate.rate + "% " + (o.rate.label || "assumption") + " · taxes, insurance, HOA, flood & MI added in the Studio");
     var ioNote = $("[data-ho-ionote]");
     if (ioNote) ioNote.textContent = (KW.IO_NOTE || "Interest-only options vary by lender, loan purpose, occupancy, property type, borrower profile, and market. This is an educational payment illustration only.");
+
+    // Buydown strategy (integrated into the console).
+    if (o.pb) {
+      set("[data-ho-bd-pi]", fmt(o.pb.piCur) + " → " + fmt(o.pb.piBd) + " (" + o.pb.curRate + "% → " + o.pb.bdRate + "%)");
+      set("[data-ho-bd-savings]", fmt(o.pb.monthlySavings) + "/mo");
+      set("[data-ho-bd-cost]", fmt(o.pb.cost) + " (" + o.pb.points + " pts)");
+      set("[data-ho-bd-be]", o.pb.breakEvenMonths != null ? (Math.round(o.pb.breakEvenMonths) + " months (~" + o.pb.breakEvenYears.toFixed(1) + " yrs)") : "—");
+    }
+    if (o.tb) {
+      set("[data-ho-tb]", fmt(o.tb.piY1) + " / " + fmt(o.tb.piY2) + " / " + fmt(o.tb.piNote));
+      set("[data-ho-tb-sub]", fmt(o.tb.subsidy));
+    }
+    if (o.tb10) set("[data-ho-tb10]", fmt(o.tb10.piY1) + " / " + fmt(o.tb10.piNote));
+    set("[data-ho-bdnote]", KW.BUYDOWN_NOTE || "Buydown options may not be available for every borrower, loan purpose, occupancy, property, lender, or market. This is an educational illustration only.");
 
     // County Line Meter.
     var meter = $("[data-meter]");

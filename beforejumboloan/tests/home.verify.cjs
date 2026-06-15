@@ -137,6 +137,18 @@ function serve() {
   check(/educational payment illustration only/i.test(await txt(page, '[data-ho-ionote]')), 'interest-only note shown');
   await page.click('[data-paymode="pi"]');
 
+  // ---- buydown integrated INSIDE the console (Phase 5) ----
+  check(/→/.test(await txt(page, '[data-ho-bd-pi]')) && /\/mo/.test(await txt(page, '[data-ho-bd-savings]')), 'console shows permanent buydown P&I before→after + monthly savings');
+  check(/months/i.test(await txt(page, '[data-ho-bd-be]')), 'console shows permanent buydown break-even');
+  check(/\$.* \/ .*\$/.test(await txt(page, '[data-ho-tb]')) && /\$/.test(await txt(page, '[data-ho-tb-sub]')), 'console shows temporary 2-1 buydown schedule + subsidy');
+  check(/educational illustration only/i.test(await txt(page, '[data-ho-bdnote]')), 'buydown safe-language note shown');
+
+  // ---- Potential Review Paths inside the console ----
+  check((await page.$$('.pathmap--wide .pathmap__node')).length >= 9, 'Potential Review Paths shows the full program set (9+ paths)');
+  const headings = await page.$$eval('.console__h', (els) => els.map((e) => e.textContent));
+  check(headings.some((h) => /Potential Review Paths/i.test(h)), 'review paths labeled "Potential Review Paths"');
+  check(/Review/.test(await txt(page, '[data-ho="path"]')), 'current review path is shown in the result');
+
   // footer compliance
   const footer = await txt(page, '.footer-legal');
   check(/West Coast Capital Mortgage Inc\., NMLS #2817729/.test(footer) && /Anatoliy Kanevsky, NMLS #2775380/.test(footer), 'footer: entity + individual NMLS from config');

@@ -11,6 +11,39 @@ body.home { background: var(--ivory); }
 
 .btn--sm { padding: 9px 16px; font-size: 0.86rem; }
 
+/* ============================================================
+   FULL-WIDTH STRATEGY CONSOLE (v10 homepage architecture)
+   Headline on top → one connected full-width console below.
+   ============================================================ */
+.cockpit--head { text-align: center; border-bottom: 0; }
+.cockpit__head { padding: clamp(36px, 5vw, 64px) 0 clamp(18px, 2.4vw, 28px); max-width: 920px; margin: 0 auto; }
+.cockpit--head h1 { margin: 0 0 16px; }
+.cockpit--head .cockpit__sub { margin: 0 auto; max-width: 720px; }
+
+.console { padding: 0 0 clamp(36px, 5vw, 64px); background: var(--ivory); }
+.scanner--console {
+  width: 100%; max-width: none; padding: clamp(20px, 2.6vw, 32px);
+}
+.console__grid { display: grid; grid-template-columns: 0.86fr 1.14fr; gap: clamp(18px, 2.4vw, 30px); align-items: start; }
+.console__grid--bd { grid-template-columns: 1fr 1fr; }
+@media (max-width: 860px) { .console__grid, .console__grid--bd { grid-template-columns: 1fr; } }
+.console__col { min-width: 0; }
+.console__col--result { display: flex; flex-direction: column; }
+.console__h { font-family: var(--font-display); color: var(--navy); font-size: 1.04rem; margin: 0 0 12px; font-weight: 600; }
+.console__h-sub { font-family: var(--font-body); font-weight: 500; color: var(--muted); font-size: 0.82rem; }
+.console__section { margin-top: clamp(18px, 2.4vw, 26px); padding-top: clamp(18px, 2.4vw, 26px); border-top: 1px solid var(--line); }
+.console__cta { margin-top: clamp(18px, 2.4vw, 26px); text-align: center; }
+.console__cta .cockpit__hint { margin-top: 10px; }
+.ig__out { background: var(--ivory); border: 1px solid var(--line-strong); border-radius: 9px; padding: 9px 11px; font-size: 0.9rem; color: var(--navy); font-weight: 600; }
+
+/* quick inline levers (kept inside the console, not a separate card) */
+.levers-inline { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.levers-inline__k { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--champagne); margin-right: 2px; }
+
+/* wide review-paths map (no arrows; wraps as comparison chips) */
+.pathmap--wide { gap: 8px; }
+.pathmap--wide .pathmap__node { min-width: 0; flex: 1 1 140px; }
+
 /* ---------- Above the fold ---------- */
 .cockpit {
   background:
