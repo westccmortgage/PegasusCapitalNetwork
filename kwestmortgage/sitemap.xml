@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://kwestmortgage.com/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/concierge.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/jumbo-vs-conforming.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/loan-options.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/rates.html</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/education.html</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/about.html</loc><priority>0.5</priority><changefreq>yearly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/contact.html</loc><priority>0.8</priority><changefreq>yearly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/privacy.html</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/terms.html</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
-  <url><loc>https://kwestmortgage.com/disclosures.html</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
+  <url><loc>https://kwestmortgages.com/</loc><lastmod>2026-06-15</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kwestmortgages.com/scenario-studio</loc><lastmod>2026-06-15</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kwestmortgages.com/jumbo-vs-conforming</loc><lastmod>2026-06-15</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kwestmortgages.com/loan-options</loc><lastmod>2026-06-15</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kwestmortgages.com/education</loc><lastmod>2026-06-15</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kwestmortgages.com/about</loc><lastmod>2026-06-15</lastmod><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kwestmortgages.com/contact</loc><lastmod>2026-06-15</lastmod><changefreq>yearly</changefreq><priority>0.8</priority></url>
 </urlset>

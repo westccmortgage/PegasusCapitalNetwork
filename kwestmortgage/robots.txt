@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kwestmortgage.com/sitemap.xml
+Sitemap: https://kwestmortgages.com/sitemap.xml
