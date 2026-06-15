@@ -53,13 +53,13 @@
           <span class="ln">The bank may call it jumbo.</span>
           <span class="ln muted-ln">The structure may tell a different story.</span>
         </h1>
-        <p class="cockpit__sub">Tell the engine where the property is — ZIP, city, or county. Confirm the property county. Then run the loan amount against that county’s line, the jumbo gap, and an Estimated P&amp;I preview.</p>
+        <p class="cockpit__sub">Tell the engine what you’re structuring — purchase, refinance, cash-out, investment, or second home — and where the property is. Confirm the property county. Then run the loan against that county’s line, your LTV, and an Estimated P&amp;I preview.</p>
         <div class="cockpit__lever-callout">
           <span class="cockpit__lever-k">Next best lever</span>
-          <span class="cockpit__lever-v" data-ho="nextlever">Adjust the scenario to scan the structure.</span>
+          <span class="cockpit__lever-v" data-ho="nextlever">Confirm a property county to scan the structure.</span>
         </div>
         <a class="btn btn--primary btn--lg" data-ho-continue href="scenario-studio.html">Continue Into Full Strategy Studio →</a>
-        <p class="cockpit__hint">Live, deterministic engine. You confirm the property location — we don’t guess it from your device.</p>
+        <p class="cockpit__hint">Deterministic engine. We never calculate on a guessed or default county — you confirm the property location first.</p>
       </div>
 
       <!-- RIGHT: command-driven property intelligence cockpit -->
@@ -69,63 +69,117 @@
           <span class="scanner__live"><i></i>property-location intelligence engine</span>
         </div>
 
-        <!-- 1. Command input: where is the property? -->
+        <!-- 1. Scenario purpose: what are you trying to structure? -->
+        <div class="purpose">
+          <p class="purpose__label" id="hs-purpose-label">What are you trying to structure?</p>
+          <div class="purpose__opts" data-purpose role="group" aria-labelledby="hs-purpose-label">
+            <button type="button" class="purpose__opt" data-purpose-opt="purchase">Purchase</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="rate_term">Rate-and-term refinance</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="cash_out">Cash-out refinance</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="investment">Investment / DSCR</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="second_home">Second home</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="unknown">Not sure</button>
+          </div>
+        </div>
+
+        <!-- 2. Command input: where is the property? -->
         <div class="cmd">
           <label class="cmd__label" for="hs-q">Where is the property?</label>
           <input id="hs-q" class="cmd__input" type="text" inputmode="search" autocomplete="off"
                  placeholder="ZIP, city, county, or property location" aria-label="Where is the property?">
           <p class="cmd__hint">Press Enter. Try:
-            <button type="button" class="ex" data-ex>90210</button>
             <button type="button" class="ex" data-ex>Beverly Hills CA</button>
-            <button type="button" class="ex" data-ex>Newport Beach</button>
+            <button type="button" class="ex" data-ex>Newport Beach CA</button>
             <button type="button" class="ex" data-ex>Miami-Dade</button>
             <button type="button" class="ex" data-ex>Key West</button>
             <button type="button" class="ex" data-ex>Austin TX</button>
+            <button type="button" class="ex" data-ex>Los Angeles County CA</button>
           </p>
         </div>
 
-        <!-- 2. Resolve / confirm card -->
+        <!-- "I need the county" prompt — shown when no county is confirmed -->
+        <div class="needcty" data-needcty hidden>
+          <p class="needcty__msg">I need the property county to calculate the county line.</p>
+          <div class="manual">
+            <select id="hs-mstate" aria-label="Property state"><option value="">State…</option></select>
+            <input id="hs-mcounty" type="text" placeholder="Property county" aria-label="Property county">
+            <button type="button" class="btn btn--primary btn--sm" data-confirm-manual>Use this property county</button>
+          </div>
+        </div>
+
+        <!-- 3. Resolve / confirm card -->
         <div class="resolve" data-resolve hidden>
-          <!-- confident: one match -> confirm -->
           <div class="resolve__confident" data-resolve-confident hidden>
             <p class="resolve__k">Detected property county</p>
             <p class="resolve__detected" data-detected>—</p>
             <button type="button" class="btn btn--primary btn--sm" data-confirm>Confirm property county</button>
           </div>
-          <!-- ambiguous: choices -->
           <div class="resolve__choices" data-resolve-choices hidden>
             <p class="resolve__k">More than one match — which property county?</p>
             <div class="choices" data-choices></div>
           </div>
-          <!-- unresolved: manual state + county -->
           <div class="resolve__manual" data-resolve-manual hidden>
             <p class="resolve__warn" data-resolve-warn>Enter the property’s state and county.</p>
             <div class="manual">
-              <select id="hs-mstate" aria-label="Property state"><option value="">State…</option></select>
-              <input id="hs-mcounty" type="text" placeholder="Property county" aria-label="Property county">
-              <button type="button" class="btn btn--primary btn--sm" data-confirm-manual>Use this county</button>
+              <select id="hs-mstate2" aria-label="Property state"><option value="">State…</option></select>
+              <input id="hs-mcounty2" type="text" placeholder="Property county" aria-label="Property county">
+              <button type="button" class="btn btn--primary btn--sm" data-confirm-manual2>Use this property county</button>
             </div>
           </div>
         </div>
 
-        <!-- 3. Confirmed chip -->
+        <!-- 4. Confirmed chip -->
         <div class="confirmed" data-confirmed hidden>
           <span class="confirmed__k">Property county</span>
           <span class="confirmed__v" data-confirmed-county>—</span>
           <button type="button" class="confirmed__change" data-change>Change</button>
         </div>
 
-        <!-- 4. Scenario inputs (revealed after confirmation) -->
+        <!-- Example banner — page-load demo only, clearly not the user's property -->
+        <p class="example-banner" data-example-banner hidden>Example scenario — not based on your property location. Enter your property above to run your own.</p>
+
+        <!-- 5. Adaptive scenario inputs (revealed after confirmation) -->
         <div class="scenario" data-scenario hidden>
           <div class="scanner__inputs">
             <div class="ig"><label for="hs-units">Units</label>
               <select id="hs-units"><option value="1">1 unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select></div>
-            <div class="ig"><label for="hs-occ">Occupancy</label>
-              <select id="hs-occ"><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
-            <div class="ig ig--full"><label for="hs-price">Purchase price <b id="hs-price-out">$1,600,000</b></label>
-              <input id="hs-price" type="range" min="200000" max="5000000" step="10000" value="1600000"></div>
-            <div class="ig ig--full"><label for="hs-down">Down payment <b id="hs-down-out">18%</b></label>
+
+            <div class="ig ig--full" data-show="purchase rate_term cash_out investment second_home unknown">
+              <label for="hs-value"><span data-value-label>Estimated property value or purchase price</span> <b id="hs-value-out">$1,600,000</b></label>
+              <input id="hs-value" type="range" min="200000" max="5000000" step="10000" value="1600000"></div>
+
+            <div class="ig ig--full" data-show="purchase second_home">
+              <label for="hs-down">Down payment <b id="hs-down-out">18%</b></label>
               <input id="hs-down" type="range" min="0" max="60" step="1" value="18"></div>
+
+            <div class="ig ig--full" data-show="rate_term cash_out">
+              <label for="hs-payoff">Current loan payoff / balance <b id="hs-payoff-out">$0</b></label>
+              <input id="hs-payoff" type="range" min="0" max="5000000" step="10000" value="900000"></div>
+
+            <div class="ig ig--full" data-show="rate_term">
+              <label for="hs-newloan">Desired new loan amount <b id="hs-newloan-out">$0</b></label>
+              <input id="hs-newloan" type="range" min="0" max="5000000" step="10000" value="900000"></div>
+
+            <div class="ig ig--full" data-show="cash_out">
+              <label for="hs-cashout">Requested cash out <b id="hs-cashout-out">$0</b></label>
+              <input id="hs-cashout" type="range" min="0" max="2000000" step="5000" value="150000"></div>
+            <div class="ig ig--full ig--check" data-show="cash_out">
+              <label><input id="hs-costs" type="checkbox"> Include estimated closing costs (~2%) in the new loan</label></div>
+
+            <div class="ig ig--full" data-show="investment unknown">
+              <label for="hs-loanamt">Estimated loan amount <b id="hs-loanamt-out">$0</b></label>
+              <input id="hs-loanamt" type="range" min="0" max="5000000" step="10000" value="1200000"></div>
+
+            <div class="ig ig--full" data-show="investment">
+              <label for="hs-rent">Estimated monthly rent</label>
+              <input id="hs-rent" type="number" inputmode="numeric" min="0" step="50" value="7500" placeholder="$/month"></div>
+          </div>
+
+          <!-- HERO result: dominant county-line gap -->
+          <div class="hero-result" data-hero-wrap>
+            <p class="hero-result__k" data-hero-k>Vs. the selected county line</p>
+            <p class="hero-result__v" data-hero>—</p>
+            <p class="hero-result__sub" data-hero-sub></p>
           </div>
 
           <!-- County Line Meter -->
@@ -139,12 +193,12 @@
             <div class="meter__lbls"><span data-meter-loanlbl>Loan —</span><span data-meter-linelbl>County line —</span></div>
           </div>
 
-          <!-- live outputs -->
+          <!-- secondary outputs -->
           <dl class="scanner__out">
             <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
+            <div class="so" data-ho-ltv-row hidden><dt>Loan-to-value (LTV)</dt><dd data-ho="ltv">—</dd></div>
             <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
-            <div class="so"><dt>Vs. county line</dt><dd class="so__delta" data-ho="delta">—</dd></div>
-            <div class="so"><dt>Before-jumbo gap</dt><dd data-ho="gap">—</dd></div>
+            <div class="so" data-ho-dscr-row hidden><dt>DSCR preview</dt><dd data-ho="dscr">—</dd></div>
             <div class="so"><dt>Estimated P&amp;I preview</dt><dd data-ho="pi">—</dd></div>
           </dl>
           <p class="scanner__rate" data-ho="rate"></p>

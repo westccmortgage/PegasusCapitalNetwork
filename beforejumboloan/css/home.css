@@ -6,6 +6,8 @@
    ============================================================ */
 :root { --champagne: #C8A86B; --champagne-soft: #E7D6AE; --ivory: #FBF8F1; --slate: rgba(14,42,59,0.12); }
 body.home { background: var(--ivory); }
+/* the [hidden] attribute must win over component display rules (e.g. .ig{display:flex}) */
+.scanner [hidden] { display: none !important; }
 
 .btn--sm { padding: 9px 16px; font-size: 0.86rem; }
 
@@ -63,6 +65,35 @@ body.home { background: var(--ivory); }
 .scanner input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 6px; background: linear-gradient(90deg, var(--champagne-soft), var(--stone)); }
 .scanner input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--navy); border: 3px solid #fff; box-shadow: var(--shadow-sm); cursor: pointer; }
 .scanner input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border: 3px solid #fff; border-radius: 50%; background: var(--navy); cursor: pointer; }
+
+/* ---------- Scenario purpose: "What are you trying to structure?" ---------- */
+.purpose { margin-bottom: 14px; }
+.purpose__label { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; color: var(--navy); margin: 0 0 8px; }
+.purpose__opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.purpose__opt { border: 1px solid var(--line-strong); background: #fff; color: var(--navy); border-radius: 999px; padding: 7px 13px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all .16s var(--ease); }
+.purpose__opt:hover { border-color: var(--champagne); }
+.purpose__opt.is-sel { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+/* ---------- "I need the county" prompt (no default calculation) ---------- */
+.needcty { background: #fff8ee; border: 1px solid var(--champagne-soft); border-left: 3px solid #b5651d; border-radius: 13px; padding: 16px; margin-bottom: 14px; }
+.needcty__msg { color: #8a4b13; font-weight: 600; font-size: 0.92rem; margin: 0 0 12px; }
+
+/* checkbox row */
+.ig--check label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--ink); font-weight: 500; }
+.ig--check input { width: auto; }
+
+/* ---------- Hero result (dominant county-line gap) ---------- */
+.hero-result { background: linear-gradient(180deg, #fff, var(--sand-soft)); border: 1px solid var(--line-strong); border-radius: 14px; padding: 18px 18px 16px; margin: 4px 0 16px; }
+.hero-result__k { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--champagne); margin: 0 0 6px; }
+.hero-result__v { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.5rem, 3.4vw, 2.05rem); line-height: 1.12; margin: 0; color: var(--navy); }
+.hero-result__v[data-tone="over"] { color: #b5651d; }
+.hero-result__v[data-tone="under"] { color: #2f7d44; }
+.hero-result__v[data-tone="warn"] { color: #8a4b13; font-size: clamp(1.2rem, 2.6vw, 1.5rem); }
+.hero-result__sub { font-size: 0.82rem; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
+[data-ho="ltv"][data-high="yes"] { color: #b5651d; }
+
+/* example banner — page-load demo only */
+.example-banner { font-size: 0.74rem; font-weight: 600; color: #8a4b13; background: #fff8ee; border: 1px dashed var(--champagne-soft); border-radius: 10px; padding: 9px 12px; margin: 0 0 14px; }
 
 /* ---------- Command input: "Where is the property?" ---------- */
 .cmd { margin-bottom: 14px; }

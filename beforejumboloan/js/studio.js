@@ -46,6 +46,18 @@
       if (qs.get("county")) S.property_county = qs.get("county");
       if (qs.get("county_fips")) S.property_county_fips = String(qs.get("county_fips")).trim();
       if (qs.get("units")) S.units = parseInt(qs.get("units"), 10) || 1;
+      // Scenario-purpose classifier carried from the homepage cockpit.
+      if (qs.get("estimated_property_value")) S.price = KW.parseNum(qs.get("estimated_property_value"));
+      var stype = qs.get("scenario_type");
+      if (stype) {
+        S.scenario_type = stype;
+        S.intent = ({ purchase: "Buy a primary home", second_home: "Buy a second home",
+          investment: "Buy an investment property", rate_term: "Refinance",
+          cash_out: "Cash-out refinance" })[stype] || S.intent;
+        S.mode = (stype === "rate_term" || stype === "cash_out") ? "refi" : "purchase";
+      }
+      if (qs.get("current_payoff")) S.balance = KW.parseNum(qs.get("current_payoff"));
+      if (qs.get("cash_out_requested")) S.cashout = KW.parseNum(qs.get("cash_out_requested"));
     } catch (e) {}
     try {
       var saved = JSON.parse(localStorage.getItem("kw_scenario") || "null");
@@ -347,6 +359,10 @@
     if (S.occupancy) {
       var b = $('.opt[data-field="occupancy"][data-value="' + S.occupancy + '"]');
       if (b) { b.classList.add("is-sel"); b.setAttribute("aria-pressed", "true"); }
+    }
+    if (S.intent) {
+      var i = $('.opt[data-field="intent"][data-value="' + S.intent + '"]');
+      if (i) { i.classList.add("is-sel"); i.setAttribute("aria-pressed", "true"); }
     }
   }
 

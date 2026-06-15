@@ -192,12 +192,23 @@ test('resolvePropertyLocation API present', () => {
   assert.equal(typeof API.resolvePropertyLocation, 'function');
 });
 
-test('ZIP → county (90210 → Los Angeles, high confidence)', () => {
+test('ZIP is GATED until the official ZCTA file is imported (no default county)', () => {
+  // The seed zips file is coverage:"partial-seed" — ZIP must NOT resolve, and
+  // must NOT fall back to a default county. It directs to city+state/county.
   const r = API.resolvePropertyLocation('90210', db);
+  assert.equal(r.confidence, 'none');
+  assert.equal(r.possible_matches.length, 0);
+  assert.equal(r.county_fips, null);
+  assert.match(r.warning, /official ZCTA\/county file/i);
+});
+
+test('ZIP resolves only when the zips dataset is marked official', () => {
+  const officialDb = Object.assign({}, db, {
+    zips: { coverage: 'official', zips: { '90210': { state_abbr: 'CA', state_name: 'California', county_name: 'Los Angeles County', county_fips: '06037', city: 'Beverly Hills' } } }
+  });
+  const r = API.resolvePropertyLocation('90210', officialDb);
   assert.equal(r.confidence, 'high');
   assert.equal(r.matched_by, 'zip');
-  assert.equal(r.possible_matches[0].county_name, 'Los Angeles County');
-  assert.equal(r.possible_matches[0].state_abbr, 'CA');
   assert.equal(r.possible_matches[0].county_fips, '06037');
 });
 

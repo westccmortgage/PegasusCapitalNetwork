@@ -1,4 +1,4 @@
-/* Homepage property-intelligence cockpit verification — command flow + routes (Netlify-drop parity). */
+/* Homepage cockpit verification — scenario classifier + trust rule (no default county) + routes. */
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const http = require('http');
 const fs = require('fs');
@@ -34,99 +34,115 @@ function serve() {
   const base = `http://localhost:${PORT}`;
   const noise = (t) => /ERR_CERT_AUTHORITY_INVALID|Failed to load resource|favicon|fonts\.g/i.test(t);
   const errors = [];
+  const txt = (p, s) => p.textContent(s);
 
-  const page = await browser.newPage({ viewport: { width: 1320, height: 1600 }, deviceScaleFactor: 1.3 });
+  const page = await browser.newPage({ viewport: { width: 1320, height: 1700 }, deviceScaleFactor: 1.3 });
   page.on('console', (m) => { if (m.type() === 'error' && !noise(m.text())) errors.push('console: ' + m.text()); });
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   await page.goto(`${base}/`, { waitUntil: 'networkidle' });
 
   // headline + intent
-  const h1 = (await page.textContent('.cockpit h1')).replace(/\s+/g, ' ').trim();
+  const h1 = (await txt(page, '.cockpit h1')).replace(/\s+/g, ' ').trim();
   check(/The bank may call it jumbo\./.test(h1) && /The structure may tell a different story\./.test(h1), `cockpit headline (${h1})`);
-  check(/Tell the engine where the property is/i.test(await page.textContent('.cockpit__sub')), 'subheadline: property-location framing');
-  check(/Continue Into Full Strategy Studio/.test(await page.textContent('[data-ho-continue]')), 'CTA: Continue Into Full Strategy Studio');
-
-  // command input present
+  check(/What are you trying to structure/i.test(await txt(page, '.purpose__label')), 'scenario purpose: "What are you trying to structure?"');
+  check((await page.$$('[data-purpose-opt]')).length === 6, 'six scenario purposes offered');
   check(await page.getAttribute('#hs-q', 'placeholder') === 'ZIP, city, county, or property location', 'command input asks where the property is');
-  check((await page.$$('[data-ex]')).length >= 5, 'example chips present');
 
-  // default example computes live (LA, $1.6M, 18%) and is clearly labeled an example
+  // page-load example is clearly labeled and visually separate
   await page.waitForFunction(() => /\$1,312,000/.test(document.querySelector('[data-ho="loan"]')?.textContent || ''), { timeout: 6000 });
-  check(true, 'default example computes estimated loan amount live ($1,312,000)');
-  check(/Example/.test(await page.textContent('[data-confirmed-county]')), 'confirmed chip is labeled an example, not a guessed location');
-  check(/\$1,249,125/.test(await page.textContent('[data-ho="limit"]')) && /high-cost/.test(await page.textContent('[data-ho="limit"]')), 'county limit resolved + tier label (high-cost)');
-  check(/\$62,875 above the selected county line/.test(await page.textContent('[data-ho="delta"]')), 'amount above the selected county line computed');
-  check(/Estimated P&I preview/.test(await page.textContent('[data-ho="rate"]')), 'payment label is "Estimated P&I preview" (not payment stack)');
-  check(await page.isVisible('[data-meter]'), 'County Line Meter renders');
+  check(await page.isVisible('[data-example-banner]'), 'page-load example is clearly labeled as an example');
+  check(/Example/.test(await txt(page, '[data-confirmed-county]')), 'confirmed chip labels the page-load county as an example');
+  check(/\$62,875 above the selected county line/.test(await txt(page, '[data-hero]')), 'HERO result shows the dominant county-line gap');
+  check(/\$1,249,125/.test(await txt(page, '[data-ho="limit"]')) && /high-cost/.test(await txt(page, '[data-ho="limit"]')), 'county limit + correct tier label (high-cost)');
+  check(/Estimated P&I preview/.test(await txt(page, '[data-ho="rate"]')), 'payment label is "Estimated P&I preview"');
 
-  // Loan Path Map marker = jumbo (loan over county line)
-  check(await page.getAttribute('.pathmap__node[data-node="jumbo"]', 'data-current') === 'yes', 'loan path map marks Jumbo for the default scenario');
-  check((await page.$$('[data-ho-insights] li')).length >= 3, '"Engine sees" panel has deterministic insights');
-  check(/Property county confirmed/.test(await page.textContent('[data-ho-insights]')), 'engine insight leads with the confirmed property county');
+  // ---- TRUST RULE: typing into search clears the example; no default calculation ----
+  await page.fill('#hs-q', '90210');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-needcty]:not([hidden])', { timeout: 3000 });
+  check(!(await page.isVisible('[data-scenario]')), 'unresolved ZIP: scenario/output is NOT shown (no default-county calculation)');
+  check(!(await page.isVisible('[data-example-banner]')), 'typing into the property search removes the example');
+  check(/official ZCTA\/county file/i.test(await txt(page, '[data-needcty] .needcty__msg')), 'ZIP is gated until the official ZCTA file — directs to city+state/county');
 
-  // ---- command resolve: city + state → confident → confirm (Newport Beach CA → Orange) ----
+  // unresolved non-ZIP → "I need the property county..."
+  await page.fill('#hs-q', 'Nowhereville');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-needcty]:not([hidden])', { timeout: 3000 });
+  check(/I need the property county to calculate the county line/.test(await txt(page, '[data-needcty] .needcty__msg')), 'unresolved location asks for the property county before calculating');
+
+  // ---- confident city+state → confirm → calculate ----
   await page.fill('#hs-q', 'Newport Beach CA');
   await page.press('#hs-q', 'Enter');
   await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
-  check(/Orange County, CA/.test(await page.textContent('[data-detected]')), 'resolver detects Newport Beach CA → Orange County (confirm step shown)');
+  check(/Detected: Orange County, CA/.test(await txt(page, '[data-detected]')), 'resolver detects Newport Beach CA → Orange County (confirm step)');
+  check(!(await page.isVisible('[data-scenario]')), 'still no calculation until the county is CONFIRMED');
   await page.click('[data-confirm]');
   await page.waitForFunction(() => /Orange County, CA/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
-  check(/\$1,249,125/.test(await page.textContent('[data-ho="limit"]')), 'after confirming Orange County, its county line is used');
+  check(/\$1,249,125/.test(await txt(page, '[data-ho="limit"]')), 'after confirming Orange County, its county line is used');
+  check(/LTV/i.test(await txt(page, '[data-ho-ltv-row]')) && /%/.test(await txt(page, '[data-ho="ltv"]')), 'LTV is shown');
 
-  // ---- ZIP → confident (90210 → Los Angeles) ----
-  await page.fill('#hs-q', '90210');
-  await page.press('#hs-q', 'Enter');
-  await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
-  check(/Los Angeles County, CA/.test(await page.textContent('[data-detected]')) && /matched by zip/i.test(await page.textContent('[data-detected]')), 'ZIP 90210 resolves to Los Angeles County (matched by zip)');
-
-  // ---- ambiguous city → choices, requires confirmation ----
+  // ---- ambiguous city → choices ----
   await page.fill('#hs-q', 'Beverly Hills');
   await page.press('#hs-q', 'Enter');
   await page.waitForSelector('[data-resolve-choices]:not([hidden])', { timeout: 3000 });
-  check((await page.$$('[data-choices] .choice')).length >= 2, 'ambiguous city "Beverly Hills" offers multiple counties to confirm');
+  check((await page.$$('[data-choices] .choice')).length >= 2, 'ambiguous "Beverly Hills" offers multiple counties to confirm');
 
-  // ---- county not in dataset → honest "needs official county data" (no fabricated line) ----
+  // ---- county not in dataset → honest "needs official county data" ----
   await page.fill('#hs-q', 'Austin TX');
   await page.press('#hs-q', 'Enter');
   await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
-  check(/Travis County, TX/.test(await page.textContent('[data-detected]')), 'Austin TX resolves to Travis County');
   await page.click('[data-confirm]');
   await page.waitForFunction(() => /Travis County, TX/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
-  check(/Needs official county data/i.test(await page.textContent('[data-ho="limit"]')), 'county outside the dataset is NOT given a fabricated line — flagged for official data');
+  check(/Needs official county data/i.test(await txt(page, '[data-hero]')), 'county outside the dataset is flagged, never given a fabricated line');
 
-  // ---- back to a real county, exercise interactivity ----
-  await page.fill('#hs-q', '90210');
+  // ---- scenario classifier: cash-out refinance changes the input model ----
+  await page.fill('#hs-q', 'Newport Beach CA');
   await page.press('#hs-q', 'Enter');
   await page.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
   await page.click('[data-confirm]');
-  await page.waitForFunction(() => /Los Angeles County, CA/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  await page.waitForFunction(() => /Orange County, CA/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  await page.click('[data-purpose-opt="cash_out"]');
+  await page.waitForFunction(() => document.querySelector('[data-purpose-opt="cash_out"]')?.classList.contains('is-sel'), { timeout: 2000 });
+  check(/Estimated property value/.test(await txt(page, '[data-value-label]')), 'cash-out refi relabels the value input to "Estimated property value"');
+  check(await page.isVisible('#hs-payoff') && await page.isVisible('#hs-cashout'), 'cash-out refi reveals payoff + cash-out inputs');
+  check(!(await page.isVisible('#hs-down')), 'cash-out refi hides the purchase down-payment input');
 
-  await page.fill('#hs-down', '40');
-  await page.waitForFunction(() => /below the selected county line/.test(document.querySelector('[data-ho="delta"]')?.textContent || ''), { timeout: 3000 });
-  check(true, 'raising down payment moves the scenario below the county line (live)');
+  // ---- investment shows DSCR ----
+  await page.click('[data-purpose-opt="investment"]');
+  await page.waitForFunction(() => document.querySelector('[data-purpose-opt="investment"]')?.classList.contains('is-sel'), { timeout: 2000 });
+  check(await page.isVisible('[data-ho-dscr-row]') && /×|rent/.test(await txt(page, '[data-ho="dscr"]')), 'investment / DSCR shows a DSCR preview');
 
-  await page.click('[data-lever-action="invest"]');
-  await page.waitForFunction(() => document.querySelector('.pathmap__node[data-node="dscr"]')?.getAttribute('data-current') === 'yes', { timeout: 3000 });
-  check(true, 'Investment lever maps the review path to DSCR (live)');
-
-  // footer from centralized compliance config
-  const footer = await page.textContent('.footer-legal');
+  // footer compliance
+  const footer = await txt(page, '.footer-legal');
   check(/West Coast Capital Mortgage Inc\., NMLS #2817729/.test(footer) && /Anatoliy Kanevsky, NMLS #2775380/.test(footer), 'footer: entity + individual NMLS from config');
-  check(/NMLS Consumer Access/.test(footer) && /Equal Housing Opportunity/.test(footer), 'footer: NMLS Consumer Access + EHO');
   check(!/K West|Sun Coast|REPLACE_WITH/i.test(footer), 'footer: no K West / Sun Coast / placeholder email');
   check(await page.isVisible('.cookie-bar--mini'), 'cookie banner is low-profile mini variant');
 
   await page.screenshot({ path: '/tmp/home-desktop.png', fullPage: true });
 
-  // ---- Continue link carries the property + scenario into the studio (fresh default page) ----
+  // ---- Continue link carries scenario_type + value + loan + ltv into the studio ----
   const cont = await browser.newPage();
   await cont.goto(`${base}/`, { waitUntil: 'networkidle' });
   await cont.waitForFunction(() => /\$1,312,000/.test(document.querySelector('[data-ho="loan"]')?.textContent || ''), { timeout: 6000 });
+  // switch to cash-out, confirm a real county, then read the continue link
+  await cont.fill('#hs-q', 'Newport Beach CA');
+  await cont.press('#hs-q', 'Enter');
+  await cont.waitForSelector('[data-resolve-confident]:not([hidden])', { timeout: 3000 });
+  await cont.click('[data-confirm]');
+  await cont.waitForFunction(() => /Orange County, CA/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  await cont.click('[data-purpose-opt="cash_out"]');
+  await cont.waitForFunction(() => document.querySelector('[data-purpose-opt="cash_out"]')?.classList.contains('is-sel'), { timeout: 2000 });
   const href = await cont.getAttribute('[data-ho-continue]', 'href');
-  check(/state=CA/.test(href) && /county=Los\+Angeles\+County/.test(href) && /county_fips=06037/.test(href) && /price=1600000/.test(href), `continue link carries property + scenario (${href.slice(0, 90)}…)`);
+  check(/scenario_type=cash_out/.test(href) && /state=CA/.test(href) && /county_fips=06059/.test(href) &&
+        /estimated_property_value=/.test(href) && /current_payoff=/.test(href) && /cash_out_requested=/.test(href) &&
+        /estimated_loan_amount=/.test(href) && /ltv=/.test(href),
+        `continue link carries scenario_type + property + financials (${href.slice(0, 110)}…)`);
   await cont.goto(base + '/' + href, { waitUntil: 'networkidle' });
   await cont.waitForFunction(() => { const s = document.querySelector('#st-state'); return s && s.options.length > 5; }, { timeout: 6000 });
-  check((await cont.inputValue('#st-state')) === 'CA' && /Los Angeles/.test(await cont.inputValue('#st-county')), 'studio prefilled from continue link (CA / Los Angeles County)');
+  check((await cont.inputValue('#st-state')) === 'CA' && /Orange/.test(await cont.inputValue('#st-county')), 'studio prefilled from continue link (CA / Orange County)');
+  // refi mode: the refinance input block is un-hidden (its step may not be active yet) and the Cash-out intent is preselected
+  check((await cont.getAttribute('[data-mode-refi]', 'hidden')) === null, 'studio enters refinance mode from scenario_type=cash_out');
+  check((await cont.getAttribute('.opt[data-field="intent"][data-value="Cash-out refinance"]', 'aria-pressed')) === 'true', 'studio preselects the Cash-out refinance intent');
   await cont.close();
 
   // ---- mobile ----
@@ -134,8 +150,7 @@ function serve() {
   m.on('pageerror', (e) => errors.push('mobile pageerror: ' + e.message));
   await m.goto(`${base}/`, { waitUntil: 'networkidle' });
   await m.waitForTimeout(300);
-  check(await m.isVisible('.scanner'), 'mobile: cockpit renders');
-  check(await m.isVisible('#hs-q'), 'mobile: command input visible');
+  check(await m.isVisible('.scanner') && await m.isVisible('[data-purpose]') && await m.isVisible('#hs-q'), 'mobile: cockpit + purpose + command input render');
   check(await m.isVisible('.nav__toggle'), 'mobile: hamburger visible');
   await m.screenshot({ path: '/tmp/home-mobile.png', fullPage: true });
 

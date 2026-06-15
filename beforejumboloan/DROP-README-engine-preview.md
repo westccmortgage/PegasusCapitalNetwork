@@ -1,6 +1,21 @@
-# BeforeJumboLoan.com — ENGINE PREVIEW (v4)
+# BeforeJumboLoan.com — ENGINE PREVIEW (v5)
 
 This package is an **engine preview**. It is **NOT production nationwide-ready.**
+
+## New in v5
+- **Scenario-purpose classifier.** The engine is no longer purchase-only. It first asks
+  *"What are you trying to structure?"* — Purchase / Rate-and-term refinance / Cash-out
+  refinance / Investment-DSCR / Second home / Not sure — and adapts the input model
+  (price + down for purchase; value + payoff + new loan for refi; value + payoff + cash
+  out for cash-out; value + loan + rent + DSCR preview for investment). LTV is shown
+  where relevant.
+- **Hard trust rule: no calculation on a guessed or default county.** If a location can't
+  be resolved and confirmed, the engine shows *"I need the property county to calculate
+  the county line."* and asks for state + property county. The page-load example is
+  clearly labeled and disappears the moment you engage the property search.
+- **ZIP is gated.** Until the official ZCTA→county file is imported, ZIP entry shows
+  *"ZIP-to-county intelligence requires the official ZCTA/county file. Enter city + state
+  or property county."* — it never defaults to a county.
 
 ## Why "engine preview" and not "nationwide"
 The full official loan-limit data has **not** been imported. The package ships with a

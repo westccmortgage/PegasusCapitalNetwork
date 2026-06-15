@@ -219,11 +219,18 @@
       return out;
     }
 
-    // 1) ZIP
+    // 1) ZIP — only when an OFFICIAL ZCTA→county file is imported. The seed
+    //    must never pretend ZIP intelligence works (no defaulting to a county).
     if (/^\d{5}$/.test(q)) {
-      var z = db.zips && db.zips.zips && db.zips.zips[q];
+      var zipsOfficial = db.zips && (db.zips.coverage === "official" || db.zips.official === true);
+      if (!zipsOfficial) {
+        out.matched_by = "zip"; out.confidence = "none"; out.needs_confirmation = true;
+        out.warning = "ZIP-to-county intelligence requires the official ZCTA/county file. Enter city + state or property county.";
+        return out;
+      }
+      var z = db.zips.zips && db.zips.zips[q];
       if (z) return finalize([mk(z, "zip")], "zip");
-      out.warning = "ZIP " + raw + " isn’t in the configured ZIP set yet — import an official ZCTA→county file, or enter state + county.";
+      out.warning = "ZIP " + raw + " isn’t in the official ZIP set — enter city + state or property county.";
       return out;
     }
 
