@@ -1,0 +1,10 @@
+# BeforeJumboLoan.com — market route presets (Netlify manual drop friendly)
+# Each market path serves the studio; the path stays visible so the engine
+# resolves the market slug. No GitHub dependency.
+/key-west          /scenario-studio.html   200
+/palm-beach        /scenario-studio.html   200
+/miami-dade        /scenario-studio.html   200
+/california        /scenario-studio.html   200
+/orange-county     /scenario-studio.html   200
+/los-angeles       /scenario-studio.html   200
+/scenario-studio   /scenario-studio.html   200
