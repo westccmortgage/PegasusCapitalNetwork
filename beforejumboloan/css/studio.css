@@ -328,10 +328,17 @@ table.compare td:last-child { font-weight:600; color:var(--ocean); }
    HERO + HEADER REFINEMENTS (premium pass)
    ============================================================ */
 
-/* --- Cleaner, premium logo (single line, no stacked tag) --- */
-.brand { flex-direction: row; align-items: baseline; }
+/* --- Cleaner, premium logo (single line) + powered-by trust line --- */
+.brand { flex-direction: row; align-items: baseline; flex-wrap: wrap; }
 .brand__name { white-space: nowrap; font-size: 1.5rem; letter-spacing: .002em; }
 .brand__name b { font-weight: 600; }
+.brand__powered { flex-basis: 100%; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 3px; line-height: 1.2; }
+/* the [hidden] attribute must win over .btn/.state-block display rules */
+[data-app-panel] [hidden] { display: none !important; }
+[data-app-panel] .state-block { background: #fff8ee; border: 1px solid #e7d6ae; border-left: 3px solid #b5651d; border-radius: 12px; padding: 14px; text-align: left; }
+[data-app-panel] .state-block__title { color: #8a4b13; font-weight: 600; margin: 0 0 6px; }
+[data-app-panel] .state-block__text { font-size: .82rem; line-height: 1.55; margin: 0 0 12px; }
+.footer-brand .brand__powered { color: rgba(255,255,255,.6); }
 @media (max-width: 380px){ .brand__name { font-size: 1.3rem; } }
 
 /* --- Hero video background --- */

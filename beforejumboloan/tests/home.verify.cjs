@@ -149,6 +149,44 @@ function serve() {
   check(headings.some((h) => /Potential Review Paths/i.test(h)), 'review paths labeled "Potential Review Paths"');
   check(/Review/.test(await txt(page, '[data-ho="path"]')), 'current review path is shown in the result');
 
+  // ---- Conversion CTA: state-gated lender application (Phase 2/3) ----
+  const ARIVE = 'https://2817729.my1003app.com/2775380/register';
+  // CA (90210 → Los Angeles) → application CTA to ARIVE in a new tab + helper
+  await page.fill('#hs-q', '90210');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForFunction(() => /Los Angeles/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  check(await page.isVisible('[data-cta-app]'), 'CA: secure lender application CTA appears');
+  check((await page.getAttribute('[data-cta-app]', 'href')) === ARIVE, 'CA: application CTA links to the ARIVE portal');
+  check((await page.getAttribute('[data-cta-app]', 'target')) === '_blank', 'CA: application opens in a new tab');
+  check(await page.isVisible('[data-cta-helper]') && /secure lender application portal powered by ARIVE/i.test(await txt(page, '[data-cta-helper]')), 'CA: application helper text shown');
+  check(!(await page.isVisible('[data-cta-state]')), 'CA: no unsupported-state block');
+
+  // FL (ZIP 33139 → Miami-Dade, auto-detect) → application CTA to ARIVE
+  await page.fill('#hs-q', '33139');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForFunction(() => /Miami-Dade County, FL/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  check(await page.isVisible('[data-cta-app]') && (await page.getAttribute('[data-cta-app]', 'href')) === ARIVE, 'FL: application CTA appears and links to ARIVE');
+
+  // TX (Austin → Travis) → NO application; unsupported-state block + contact CTA
+  await page.fill('#hs-q', 'Austin TX');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-resolve-choices]:not([hidden])', { timeout: 3000 });
+  await page.click('xpath=//*[@data-choices]//button[contains(., "Travis County")]');
+  await page.waitForFunction(() => /Travis County, TX/.test(document.querySelector('[data-confirmed-county]')?.textContent || ''), { timeout: 3000 });
+  check(!(await page.isVisible('[data-cta-app]')), 'TX: no ARIVE application link for an unsupported state');
+  check(await page.isVisible('[data-cta-state]') && /not available for this property state/i.test(await txt(page, '[data-cta-state]')), 'TX: unsupported-state message shown');
+  check((await page.getAttribute('[data-cta-contact]', 'href')) === 'contact.html', 'TX: contact CTA links to contact.html (not ARIVE)');
+
+  // Unresolved → no application link; prompt to confirm location
+  await page.fill('#hs-q', 'Nowhereville');
+  await page.press('#hs-q', 'Enter');
+  await page.waitForSelector('[data-needcty]:not([hidden])', { timeout: 3000 });
+  check(!(await page.isVisible('[data-cta-app]')) && !(await page.isVisible('[data-cta-state]')), 'unresolved: no application link');
+  check(await page.isVisible('[data-cta-prompt]'), 'unresolved: prompt to confirm property location');
+
+  // Header powered-by trust line
+  check(/Powered by West Coast Capital Mortgage Inc\./.test(await txt(page, '.site-header .brand__powered')), 'header shows "Powered by West Coast Capital Mortgage Inc."');
+
   // footer compliance
   const footer = await txt(page, '.footer-legal');
   check(/West Coast Capital Mortgage Inc\., NMLS #2817729/.test(footer) && /Anatoliy Kanevsky, NMLS #2775380/.test(footer), 'footer: entity + individual NMLS from config');

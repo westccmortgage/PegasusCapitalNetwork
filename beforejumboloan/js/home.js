@@ -103,6 +103,8 @@
 
   function doResolve(query) {
     clearExample();
+    // A new search invalidates any prior confirmation until it re-resolves.
+    S.confirmed = false;
     S.query = query;
     var r = BJL && BJL.resolvePropertyLocation
       ? BJL.resolvePropertyLocation(query)
@@ -496,9 +498,32 @@
         } catch (e) {}
       }
       a.setAttribute("data-needs-loc", "yes");
-      a.textContent = "Continue — confirm property location in the Studio →";
+      a.textContent = "Open the full Strategy Studio →";
     }
     a.setAttribute("href", "scenario-studio.html?" + q.toString());
+    renderCta(confirmedReal);
+  }
+
+  /* ---------- conversion CTA: state-gated lender application (CA/FL) ---------- */
+  function renderCta(confirmedReal) {
+    var comp = window.BJLCompliance;
+    var supported = confirmedReal && comp && comp.isSupportedState && comp.isSupportedState(S.state);
+    var appCta = $("[data-cta-app]"), helper = $("[data-cta-helper]"), stateBlock = $("[data-cta-state]"), prompt = $("[data-cta-prompt]");
+    show(appCta, false); show(helper, false); show(stateBlock, false); show(prompt, false);
+    if (supported) {
+      if (appCta) {
+        appCta.setAttribute("href", (comp.applicationUrl && comp.applicationUrl()) || (comp.config && comp.config.application_portal_url) || "#");
+        appCta.textContent = "Continue to Secure Lender Application →";
+      }
+      show(appCta, true); show(helper, true);
+    } else if (confirmedReal) {
+      // Confirmed county in a state we don't route applications for yet.
+      var t = $("[data-cta-state] .state-block__title");
+      if (t) t.textContent = "Licensed review is not available for this property state yet.";
+      show(stateBlock, true);
+    } else {
+      show(prompt, true);
+    }
   }
 
   /* ---------- wiring ---------- */

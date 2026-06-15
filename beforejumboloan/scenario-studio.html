@@ -348,6 +348,19 @@
           </div>
         </div>
 
+        <!-- Continue to secure lender application (state-gated CA/FL) -->
+        <div class="snap glass" data-app-panel>
+          <h3 class="snap__title">Continue to application</h3>
+          <a class="btn btn--primary btn--block" data-app-cta href="#" target="_blank" rel="noopener" hidden>Continue to Secure Lender Application →</a>
+          <p class="snap__refnote" data-app-helper hidden>Your scenario will continue in the secure lender application portal. Final program availability, pricing, eligibility, and terms require licensed review.</p>
+          <div class="state-block" data-app-state hidden>
+            <p class="state-block__title" data-app-state-title>Licensed review is not available for this property state yet.</p>
+            <p class="state-block__text">West Coast Capital Mortgage Inc. is currently routing applications only for supported states. Contact us to ask about future availability.</p>
+            <a class="btn btn--ghost btn--block" href="contact.html">Contact Us About Future Availability →</a>
+          </div>
+          <p class="snap__refnote" data-app-prompt hidden>Confirm the property location above to continue.</p>
+        </div>
+
         <div class="whatif glass" data-whatif aria-live="polite">
           <h3 class="snap__title">What If I Want to Stay Before Jumbo?</h3>
           <div data-whatif-body></div>
@@ -410,6 +423,10 @@
   <input name="interest_only_difference" />
   <textarea name="interest_only_note"></textarea>
   <input name="rate_assumption" />
+  <input name="supported_application_state" />
+  <input name="application_cta_shown" />
+  <input name="application_portal" />
+  <textarea name="application_compliance_note"></textarea>
   <input name="name" />
   <input name="email" />
   <input name="phone" />

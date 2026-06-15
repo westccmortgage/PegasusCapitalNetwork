@@ -165,7 +165,26 @@
     var ins = KW.insights(S), insWrap = $("[data-snap-insights]");
     if (insWrap) { insWrap.innerHTML = ""; ins.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; insWrap.appendChild(li); }); }
 
-    renderWhatIf(); renderPathCards(); renderPaymentPanel();
+    renderWhatIf(); renderPathCards(); renderPaymentPanel(); renderAppCta();
+  }
+
+  /* ---------- conversion CTA: state-gated lender application (CA/FL) ---------- */
+  function renderAppCta() {
+    if (!$("[data-app-panel]")) return;
+    var comp = window.BJLCompliance;
+    var confirmed = !!(S.property_state && S.property_county) && !S.needs_property_location;
+    var supported = confirmed && comp && comp.isSupportedState && comp.isSupportedState(S.property_state);
+    var cta = $("[data-app-cta]"), helper = $("[data-app-helper]"), block = $("[data-app-state]"), prompt = $("[data-app-prompt]");
+    function show(el, on) { if (el) el.hidden = !on; }
+    show(cta, false); show(helper, false); show(block, false); show(prompt, false);
+    if (supported) {
+      if (cta) cta.setAttribute("href", (comp.applicationUrl && comp.applicationUrl()) || "#");
+      show(cta, true); show(helper, true);
+    } else if (confirmed) {
+      show(block, true);
+    } else {
+      show(prompt, true);
+    }
   }
 
   /* ---------- Payment (P&I + interest-only) + buydown intelligence ---------- */
@@ -634,6 +653,7 @@
     var rateAssumption = (S.rate != null && S.rate !== "")
       ? (S.rate + "%")
       : (KW.rateFor({ loan: S.loan, scenario_type: S.scenario_type, occupancy: S.occupancy }).rate + "% (assumption)");
+    var appSupported = !!(window.BJLCompliance && window.BJLCompliance.isSupportedState && window.BJLCompliance.isSupportedState(S.property_state));
     var data = {
       "form-name": BRAND.studioFormName,
       "bot-field": "",
@@ -678,6 +698,10 @@
       interest_only_difference: KW.fmtCurrency(ppAmort.difference),
       interest_only_note: KW.IO_NOTE || "",
       rate_assumption: rateAssumption,
+      supported_application_state: appSupported ? "true" : "false",
+      application_cta_shown: appSupported ? "true" : "false",
+      application_portal: appSupported ? ((window.BJLCompliance && window.BJLCompliance.config.application_portal_name) || "ARIVE / my1003app") : "",
+      application_compliance_note: "Application redirect is shown only for currently supported states. Application, pricing, program availability, and eligibility require licensed review. Not an approval, qualification, rate quote, APR, loan estimate, or commitment to lend.",
       name: S.name, email: S.email, phone: S.phone,
       preferred_contact_method: S.preferred_contact_method, message: S.message
     };

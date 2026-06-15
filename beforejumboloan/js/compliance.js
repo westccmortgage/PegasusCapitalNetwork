@@ -25,8 +25,18 @@
     // Configurable license footprint — left empty until confirmed, so the site
     // never asserts active state licensing it can't back up.
     states_active: [],
-    states_pending_or_future: ["CA", "FL"]
+    states_pending_or_future: ["CA", "FL"],
+    // Single source of truth for the lender-application redirect. The secure
+    // application portal (ARIVE / my1003app) is shown ONLY for these states.
+    supported_application_states: ["CA", "FL"],
+    application_portal_name: "ARIVE / my1003app",
+    application_portal_url: "https://2817729.my1003app.com/2775380/register"
   };
+
+  function isSupportedState(st) {
+    st = String(st == null ? "" : st).trim().toUpperCase();
+    return C.supported_application_states.indexOf(st) > -1;
+  }
 
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   function realEmail() { return EMAIL_RE.test(C.lead_email) && !/REPLACE|SET_/i.test(C.lead_email); }
@@ -71,6 +81,16 @@
     // Page hooks.
     setHTML('[data-compliance="legal"]', educationalDisclaimer());
     setHTML('[data-compliance="licensing"]', licensingSentence());
+    // Powered-by trust line under the brand mark, on every page (one source).
+    var brands = document.querySelectorAll(".brand");
+    for (var b = 0; b < brands.length; b++) {
+      if (!brands[b].querySelector(".brand__powered")) {
+        var s = document.createElement("span");
+        s.className = "brand__powered";
+        s.textContent = "Powered by " + C.licensed_review_entity;
+        brands[b].appendChild(s);
+      }
+    }
     // Contact details only when real values are configured.
     if (realEmail()) {
       document.querySelectorAll('[data-compliance="email"]').forEach(function (a) {
@@ -83,7 +103,10 @@
   global.BJL_COMPLIANCE = C;
   global.BJLCompliance = {
     config: C, render: render, footerLegalHTML: footerLegalHTML,
-    licensingSentence: licensingSentence, educationalDisclaimer: educationalDisclaimer
+    licensingSentence: licensingSentence, educationalDisclaimer: educationalDisclaimer,
+    isSupportedState: isSupportedState,
+    applicationUrl: function () { return C.application_portal_url; },
+    supportedStates: function () { return C.supported_application_states.slice(); }
   };
 
   if (document.readyState !== "loading") render();

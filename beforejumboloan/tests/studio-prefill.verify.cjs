@@ -83,7 +83,23 @@ function serve() {
   check(/lower than amortizing/i.test(await st.textContent('[data-pp-iodiff]')), 'studio shows interest-only vs amortizing difference');
   check(/months/i.test(await st.textContent('[data-pp-bd-be]')), 'studio shows permanent buydown break-even');
   check(/\$/.test(await st.textContent('[data-pp-tb]')), 'studio shows temporary 2-1 buydown schedule');
+  // CA → application CTA to ARIVE
+  const ARIVE = 'https://2817729.my1003app.com/2775380/register';
+  check(await st.isVisible('[data-app-cta]') && (await st.getAttribute('[data-app-cta]', 'href')) === ARIVE, 'studio (CA): secure lender application CTA links to ARIVE');
+  check(await st.isVisible('[data-app-helper]') && /licensed review/i.test(await st.textContent('[data-app-helper]')), 'studio (CA): application helper text shown');
+  check(!(await st.isVisible('[data-app-state]')), 'studio (CA): no unsupported-state block');
+  // powered-by line in the studio header too
+  check(/Powered by West Coast Capital Mortgage Inc\./.test(await st.textContent('.site-header .brand__powered')), 'studio header shows the powered-by trust line');
   await st.close();
+
+  // 3b) Studio with a TX (unsupported) county → no application; state block + contact.
+  const tx = await browser.newPage();
+  await tx.goto(`${base}/scenario-studio.html?scenario_type=purchase&property_location_status=resolved&state=TX&county=Travis+County&county_fips=48453&estimated_property_value=900000`, { waitUntil: 'networkidle' });
+  await tx.waitForFunction(() => { const s = document.querySelector('#st-state'); return s && s.options.length > 5; }, { timeout: 6000 });
+  await tx.waitForTimeout(300);
+  check(!(await tx.isVisible('[data-app-cta]')), 'studio (TX): no ARIVE application link for an unsupported state');
+  check(await tx.isVisible('[data-app-state]'), 'studio (TX): unsupported-state block shown');
+  await tx.close();
 
   // 4) Unresolved → Studio opens at the property-location step, no default county.
   const un = await browser.newPage();

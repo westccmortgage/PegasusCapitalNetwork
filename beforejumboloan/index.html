@@ -272,10 +272,25 @@
           <p class="scanner__note" data-ho-ionote></p>
         </div>
 
-        <!-- Continue (always available; flips to "confirm in Studio" when unresolved) -->
-        <div class="console__cta">
-          <a class="btn btn--primary btn--lg" data-ho-continue href="scenario-studio.html">Continue Into Full Strategy Studio →</a>
-          <p class="cockpit__hint">Deterministic engine. We never calculate on a guessed or default county — you confirm the property location first.</p>
+        <!-- Conversion CTA — state-gated lender application (CA/FL) -->
+        <div class="console__cta" data-cta>
+          <!-- confirmed + supported state → secure lender application (ARIVE) -->
+          <a class="btn btn--primary btn--lg" data-cta-app href="#" target="_blank" rel="noopener" hidden>Continue to Secure Lender Application →</a>
+          <p class="cta-helper" data-cta-helper hidden>You’ll continue to a secure lender application portal powered by ARIVE. BeforeJumboLoan.com does not replace a licensed mortgage application or underwriting review.</p>
+
+          <!-- confirmed + unsupported state → no application, contact only -->
+          <div class="state-block" data-cta-state hidden>
+            <p class="state-block__title">Licensed review is not available for this property state yet.</p>
+            <p class="state-block__text">BeforeJumboLoan.com can organize the scenario, but West Coast Capital Mortgage Inc. is currently routing applications only for supported states. Check back soon or contact us to ask about future availability.</p>
+            <a class="btn btn--ghost btn--lg" data-cta-contact href="contact.html">Contact Us About This State →</a>
+          </div>
+
+          <!-- unresolved/example → confirm property first -->
+          <p class="cta-prompt" data-cta-prompt hidden>Confirm a property location to continue.</p>
+
+          <!-- always available: open the deeper educational Studio (carries the scenario) -->
+          <a class="btn btn--ghost console__studio-link" data-ho-continue href="scenario-studio.html">Open the full Strategy Studio →</a>
+          <p class="cockpit__hint">Deterministic engine. We never calculate on a guessed or default county — you confirm the property location first. Not approval, qualification, rate quote, APR, loan estimate, or commitment to lend.</p>
         </div>
       </div>
     </div>
