@@ -130,10 +130,19 @@ export function buildFhfaDataset(rows, opts = {}) {
   // Sample vs official_full. Explicit override wins; otherwise infer from size.
   const datasetType = opts.datasetType || (counties.length >= FHFA_MIN_OFFICIAL ? "official_full" : "sample");
 
+  // An official full import must carry every unit column on every county.
+  if (datasetType === "official_full") {
+    const missUnits = counties.filter((c) => c.conforming_two_unit == null || c.conforming_three_unit == null || c.conforming_four_unit == null);
+    if (missUnits.length) fail("official_full import is missing 2–4 unit limits on " + missUnits.length + " counties (e.g. " + missUnits.slice(0, 3).map((c) => c.county_name + ", " + c.state_abbr).join("; ") + ")");
+    const missFips = counties.filter((c) => !/^\d{5}$/.test(String(c.county_fips || "")));
+    if (missFips.length) fail("official_full import is missing valid county FIPS on " + missFips.length + " counties");
+  }
+
   return {
     schema: "fhfa-conforming",
     dataset_type: datasetType,
     source_name: "FHFA Conforming Loan Limit Values",
+    source_file: opts.sourceFile || null,
     source_url_or_label: opts.sourceLabel || "https://www.fhfa.gov/data/conforming-loan-limit (full county flat file)",
     effective_year: year,
     imported_at: nowISO(),
@@ -187,6 +196,7 @@ function main() {
   }
   const file = resolveInput(input);
   if (/\.sample\.csv$/.test(file)) opts.datasetType = "sample"; // committed seed → never "official_full"
+  opts.sourceFile = path.basename(file);
   info("Reading: " + path.relative(ROOT, file));
   const ds = buildFhfaDataset(readCSV(file), opts);
   const out = path.join(ROOT, "data/loan-limits/" + opts.year + "/fhfa-conforming.json");

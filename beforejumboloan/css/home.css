@@ -64,17 +64,48 @@ body.home { background: var(--ivory); }
 .scanner input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--navy); border: 3px solid #fff; box-shadow: var(--shadow-sm); cursor: pointer; }
 .scanner input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border: 3px solid #fff; border-radius: 50%; background: var(--navy); cursor: pointer; }
 
-/* structure bar */
-.scanner__bar { margin: 4px 0 16px; }
-.sbar__track { position: relative; height: 18px; border-radius: 10px; background: var(--sand-soft); border: 1px solid var(--line); }
-.sbar__seg { position: absolute; top: 0; height: 100%; border-radius: 10px; }
-.sbar__seg--down { left: 0; background: var(--champagne); border-radius: 10px 0 0 10px; }
-.sbar__seg--loan { background: linear-gradient(90deg, var(--ocean), var(--ocean-light)); }
-.sbar__line { position: absolute; top: -5px; width: 2px; height: 28px; background: var(--navy); }
-.sbar__line::after { content: "county line"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 0.58rem; color: var(--navy); white-space: nowrap; }
-.sbar__legend { display: flex; gap: 16px; font-size: 0.68rem; color: var(--muted); margin-top: 14px; }
-.sbar__legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-.dot-down { background: var(--champagne); } .dot-loan { background: var(--ocean); } .dot-line { background: var(--navy); }
+/* ---------- Command input: "Where is the property?" ---------- */
+.cmd { margin-bottom: 14px; }
+.cmd__label { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; color: var(--navy); margin-bottom: 6px; }
+.cmd__input {
+  width: 100%; background: var(--ivory); border: 1.5px solid var(--line-strong); color: var(--ink);
+  border-radius: 11px; padding: 13px 14px; font-size: 1rem; font-family: var(--font-body);
+}
+.cmd__input:focus { outline: none; border-color: var(--champagne); box-shadow: 0 0 0 3px rgba(200,168,107,0.18); }
+.cmd__hint { font-size: 0.72rem; color: var(--muted); margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ex { border: 1px solid var(--line-strong); background: #fff; color: var(--ocean); border-radius: 999px; padding: 4px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all .16s var(--ease); }
+.ex:hover { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+
+/* ---------- Resolve / confirm card ---------- */
+.resolve { background: var(--sand-soft); border: 1px solid var(--line-strong); border-radius: 13px; padding: 16px; margin-bottom: 14px; }
+.resolve__k { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--champagne); margin: 0 0 6px; }
+.resolve__detected { font-family: var(--font-display); color: var(--navy); font-size: 1.16rem; font-weight: 600; margin: 0 0 12px; }
+.resolve__warn { color: #b5651d; font-size: 0.84rem; margin: 0 0 10px; }
+.choices { display: flex; flex-direction: column; gap: 7px; }
+.choice { text-align: left; border: 1px solid var(--line-strong); background: #fff; color: var(--navy); border-radius: 9px; padding: 10px 13px; font-size: 0.9rem; font-weight: 500; cursor: pointer; font-family: var(--font-body); transition: all .16s var(--ease); }
+.choice:hover { border-color: var(--champagne); background: #fffaf0; }
+.manual { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+.manual select, .manual input { background: #fff; border: 1px solid var(--line-strong); color: var(--ink); border-radius: 9px; padding: 9px 11px; font-size: 0.88rem; font-family: var(--font-body); }
+.manual select:focus, .manual input:focus { outline: none; border-color: var(--champagne); }
+@media (max-width: 520px) { .manual { grid-template-columns: 1fr 1fr; } .manual .btn { grid-column: 1 / -1; } }
+
+/* ---------- Confirmed chip ---------- */
+.confirmed { display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, #fff, #fffaf0); border: 1px solid var(--champagne-soft); border-left: 3px solid var(--champagne); border-radius: 11px; padding: 11px 14px; margin-bottom: 14px; }
+.confirmed__k { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--champagne); }
+.confirmed__v { font-family: var(--font-display); color: var(--navy); font-weight: 600; font-size: 0.98rem; flex: 1; }
+.confirmed__change { border: 1px solid var(--line-strong); background: #fff; color: var(--ocean); border-radius: 999px; padding: 5px 12px; font-size: 0.74rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+.confirmed__change:hover { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+
+/* ---------- County Line Meter ---------- */
+.meter { margin: 4px 0 16px; }
+.meter__track { position: relative; height: 20px; border-radius: 10px; background: var(--sand-soft); border: 1px solid var(--line); overflow: hidden; }
+.meter__fill { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: linear-gradient(90deg, var(--ocean), var(--ocean-light)); border-radius: 10px 0 0 10px; transition: width .3s var(--ease); }
+.meter__over { position: absolute; top: 0; height: 100%; background: repeating-linear-gradient(45deg, #b5651d, #b5651d 5px, #c8772e 5px, #c8772e 10px); opacity: 0.92; }
+.meter__mark { position: absolute; top: -4px; width: 2px; height: 28px; }
+.meter__mark--line { background: var(--navy); }
+.meter__mark--baseline { background: var(--champagne); }
+.meter[data-empty] .meter__track { background: repeating-linear-gradient(90deg, var(--sand-soft), var(--sand-soft) 8px, #fff 8px, #fff 16px); }
+.meter__lbls { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--muted); margin-top: 12px; }
 
 /* live output rows */
 .scanner__out { margin: 0; display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }

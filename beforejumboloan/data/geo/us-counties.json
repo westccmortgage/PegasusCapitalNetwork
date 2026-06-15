@@ -1,6 +1,6 @@
 {
   "source": "Derived from data/loan-limits/2026/fhfa-conforming.json (official FHFA county list).",
-  "derived_at": "2026-06-13T00:46:29.537Z",
+  "derived_at": "2026-06-15T05:15:46.304Z",
   "note": "States list is complete. County lists are seeded only for the route-preset markets; other states fall back to a free-text county entry until the full list is imported.",
   "states": [
     {

@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BeforeJumboLoan.com — The structure may tell a different story</title>
-<meta name="description" content="A live mortgage strategy engine. Run a scenario against the county line, payment stack, rent coverage, and buydown math before accepting a jumbo path. Educational only.">
+<meta name="description" content="A property-location-intelligent mortgage strategy engine. Name the property by ZIP, city, or county; confirm the county; then run the loan against the county line, jumbo gap, and an Estimated P&I preview before accepting a jumbo path. Educational only.">
 <link rel="canonical" href="https://beforejumboloan.com/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="BeforeJumboLoan.com — The structure may tell a different story">
-<meta property="og:description" content="Run the loan amount against the county line, payment stack, rent coverage, and buydown math. Educational structure estimate only.">
+<meta property="og:description" content="Name the property by ZIP, city, or county; confirm the county; then run the loan against the county line, jumbo gap, and an Estimated P&I preview. Educational structure estimate only.">
 <meta property="og:url" content="https://beforejumboloan.com/">
 <meta property="og:image" content="https://beforejumboloan.com/assets/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
@@ -53,7 +53,7 @@
           <span class="ln">The bank may call it jumbo.</span>
           <span class="ln muted-ln">The structure may tell a different story.</span>
         </h1>
-        <p class="cockpit__sub">Before you accept a jumbo path, run the loan amount against the county line, payment stack, rent coverage, and buydown math.</p>
+        <p class="cockpit__sub">Tell the engine where the property is — ZIP, city, or county. Confirm the property county. Then run the loan amount against that county’s line, the jumbo gap, and an Estimated P&amp;I preview.</p>
         <div class="cockpit__lever-callout">
           <span class="cockpit__lever-k">Next best lever</span>
           <span class="cockpit__lever-v" data-ho="nextlever">Adjust the scenario to scan the structure.</span>
@@ -62,49 +62,94 @@
         <p class="cockpit__hint">Live, deterministic engine. You confirm the property location — we don’t guess it from your device.</p>
       </div>
 
-      <!-- RIGHT: live Jumbo Gap Scanner -->
-      <aside class="scanner" data-scanner aria-label="Jumbo Gap Scanner">
+      <!-- RIGHT: command-driven property intelligence cockpit -->
+      <aside class="scanner" data-scanner aria-label="Property intelligence cockpit">
         <div class="scanner__head">
           <h2 class="scanner__title">Jumbo Gap Scanner</h2>
-          <span class="scanner__live"><i></i>live</span>
+          <span class="scanner__live"><i></i>property-location intelligence engine</span>
         </div>
 
-        <div class="scanner__inputs">
-          <div class="ig"><label for="hs-state">State</label>
-            <select id="hs-state"><option value="CA">California</option></select></div>
-          <div class="ig"><label for="hs-county">County</label>
-            <select id="hs-county"><option value="Los Angeles County">Los Angeles County</option></select>
-            <input id="hs-county-free" type="text" placeholder="Type the county" hidden></div>
-          <div class="ig"><label for="hs-units">Units</label>
-            <select id="hs-units"><option value="1">1 unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select></div>
-          <div class="ig"><label for="hs-occ">Occupancy</label>
-            <select id="hs-occ"><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
-          <div class="ig ig--full"><label for="hs-price">Purchase price <b id="hs-price-out">$1,600,000</b></label>
-            <input id="hs-price" type="range" min="200000" max="5000000" step="10000" value="1600000"></div>
-          <div class="ig ig--full"><label for="hs-down">Down payment <b id="hs-down-out">18%</b></label>
-            <input id="hs-down" type="range" min="0" max="60" step="1" value="18"></div>
+        <!-- 1. Command input: where is the property? -->
+        <div class="cmd">
+          <label class="cmd__label" for="hs-q">Where is the property?</label>
+          <input id="hs-q" class="cmd__input" type="text" inputmode="search" autocomplete="off"
+                 placeholder="ZIP, city, county, or property location" aria-label="Where is the property?">
+          <p class="cmd__hint">Press Enter. Try:
+            <button type="button" class="ex" data-ex>90210</button>
+            <button type="button" class="ex" data-ex>Beverly Hills CA</button>
+            <button type="button" class="ex" data-ex>Newport Beach</button>
+            <button type="button" class="ex" data-ex>Miami-Dade</button>
+            <button type="button" class="ex" data-ex>Key West</button>
+            <button type="button" class="ex" data-ex>Austin TX</button>
+          </p>
         </div>
 
-        <!-- structure bar -->
-        <div class="scanner__bar">
-          <div class="sbar__track">
-            <span class="sbar__seg sbar__seg--loan" data-ho-bar-loan></span>
-            <span class="sbar__seg sbar__seg--down" data-ho-bar-down></span>
-            <span class="sbar__line" data-ho-bar-line></span>
+        <!-- 2. Resolve / confirm card -->
+        <div class="resolve" data-resolve hidden>
+          <!-- confident: one match -> confirm -->
+          <div class="resolve__confident" data-resolve-confident hidden>
+            <p class="resolve__k">Detected property county</p>
+            <p class="resolve__detected" data-detected>—</p>
+            <button type="button" class="btn btn--primary btn--sm" data-confirm>Confirm property county</button>
           </div>
-          <div class="sbar__legend"><span><i class="dot-down"></i>Down</span><span><i class="dot-loan"></i>Loan</span><span><i class="dot-line"></i>County line</span></div>
+          <!-- ambiguous: choices -->
+          <div class="resolve__choices" data-resolve-choices hidden>
+            <p class="resolve__k">More than one match — which property county?</p>
+            <div class="choices" data-choices></div>
+          </div>
+          <!-- unresolved: manual state + county -->
+          <div class="resolve__manual" data-resolve-manual hidden>
+            <p class="resolve__warn" data-resolve-warn>Enter the property’s state and county.</p>
+            <div class="manual">
+              <select id="hs-mstate" aria-label="Property state"><option value="">State…</option></select>
+              <input id="hs-mcounty" type="text" placeholder="Property county" aria-label="Property county">
+              <button type="button" class="btn btn--primary btn--sm" data-confirm-manual>Use this county</button>
+            </div>
+          </div>
         </div>
 
-        <!-- live outputs -->
-        <dl class="scanner__out">
-          <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
-          <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
-          <div class="so"><dt>Vs. county line</dt><dd class="so__delta" data-ho="delta">—</dd></div>
-          <div class="so"><dt>Before-jumbo gap</dt><dd data-ho="gap">—</dd></div>
-          <div class="so"><dt>Payment stack preview</dt><dd data-ho="pi">—</dd></div>
-        </dl>
-        <p class="scanner__rate" data-ho="rate"></p>
-        <p class="scanner__note" data-ho-note></p>
+        <!-- 3. Confirmed chip -->
+        <div class="confirmed" data-confirmed hidden>
+          <span class="confirmed__k">Property county</span>
+          <span class="confirmed__v" data-confirmed-county>—</span>
+          <button type="button" class="confirmed__change" data-change>Change</button>
+        </div>
+
+        <!-- 4. Scenario inputs (revealed after confirmation) -->
+        <div class="scenario" data-scenario hidden>
+          <div class="scanner__inputs">
+            <div class="ig"><label for="hs-units">Units</label>
+              <select id="hs-units"><option value="1">1 unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select></div>
+            <div class="ig"><label for="hs-occ">Occupancy</label>
+              <select id="hs-occ"><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
+            <div class="ig ig--full"><label for="hs-price">Purchase price <b id="hs-price-out">$1,600,000</b></label>
+              <input id="hs-price" type="range" min="200000" max="5000000" step="10000" value="1600000"></div>
+            <div class="ig ig--full"><label for="hs-down">Down payment <b id="hs-down-out">18%</b></label>
+              <input id="hs-down" type="range" min="0" max="60" step="1" value="18"></div>
+          </div>
+
+          <!-- County Line Meter -->
+          <div class="meter" data-meter>
+            <div class="meter__track">
+              <span class="meter__fill" data-meter-loan></span>
+              <span class="meter__over" data-meter-over hidden></span>
+              <span class="meter__mark meter__mark--baseline" data-meter-baseline hidden></span>
+              <span class="meter__mark meter__mark--line" data-meter-line></span>
+            </div>
+            <div class="meter__lbls"><span data-meter-loanlbl>Loan —</span><span data-meter-linelbl>County line —</span></div>
+          </div>
+
+          <!-- live outputs -->
+          <dl class="scanner__out">
+            <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
+            <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
+            <div class="so"><dt>Vs. county line</dt><dd class="so__delta" data-ho="delta">—</dd></div>
+            <div class="so"><dt>Before-jumbo gap</dt><dd data-ho="gap">—</dd></div>
+            <div class="so"><dt>Estimated P&amp;I preview</dt><dd data-ho="pi">—</dd></div>
+          </dl>
+          <p class="scanner__rate" data-ho="rate"></p>
+          <p class="scanner__note" data-ho-note></p>
+        </div>
       </aside>
     </div>
   </section>

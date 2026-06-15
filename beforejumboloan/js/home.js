@@ -1,199 +1,228 @@
 /* ============================================================
-   BeforeJumboLoan.com — Homepage mini-engine (deterministic)
-   Drives the above-the-fold Jumbo Gap Scanner, Loan Path Map,
-   Strategy Levers, and Engine Insight panel using the SAME engine
-   (window.KW) and resolver (window.BJLLimits) as the Strategy Studio.
-   No AI. No network beyond the local loan-limit dataset fetch.
+   BeforeJumboLoan.com — Homepage property-intelligence cockpit
+   Command-driven: the user describes the property (ZIP, city, county,
+   or alias); the deterministic resolver finds the county; the user
+   CONFIRMS the property county; then the same engine (window.KW) +
+   resolver (window.BJLLimits) compute the county line, jumbo gap,
+   review path, and an Estimated P&I preview. No AI. No PII sent.
    ============================================================ */
 (function () {
   "use strict";
   if (!window.KW || !document.querySelector("[data-scanner]")) return;
   var KW = window.KW;
+  var BJL = window.BJLLimits;
   var $ = function (s) { return document.querySelector(s); };
-  var fmt = KW.fmtCurrency;
-  var num = KW.parseNum;
-  var COMPLIANCE = (window.KW && KW.COMPLIANCE_REF) ||
-    "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.";
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var fmt = KW.fmtCurrency, num = KW.parseNum;
+  var COMPLIANCE = (KW.COMPLIANCE_REF) || "Configured reference only — verify current FHFA/Fannie/Freddie/HUD limits before launch.";
   var SAFE = "Educational structure estimate only. Not approval, qualification, rate quote, APR, loan estimate, or commitment to lend.";
 
-  // Default example scenario (Los Angeles County — a high-cost market).
-  var S = { state: "CA", county: "Los Angeles County", units: 1, occupancy: "Primary residence",
-    price: 1600000, downPct: 18 };
+  // Default example (clearly labeled — user can change immediately).
+  var S = {
+    query: "Los Angeles County, CA",
+    state: "CA", county: "Los Angeles County", county_fips: "06037",
+    confirmed: true, isExample: true,
+    units: 1, occupancy: "Primary residence", price: 1600000, downPct: 18
+  };
 
-  var els = {
-    state: $("#hs-state"), county: $("#hs-county"), countyFree: $("#hs-county-free"),
+  var E = {
+    q: $("#hs-q"), resolve: $("[data-resolve]"),
+    confident: $("[data-resolve-confident]"), detected: $("[data-detected]"), confirm: $("[data-confirm]"),
+    choicesWrap: $("[data-resolve-choices]"), choices: $("[data-choices]"),
+    manual: $("[data-resolve-manual]"), warn: $("[data-resolve-warn]"),
+    mstate: $("#hs-mstate"), mcounty: $("#hs-mcounty"), confirmManual: $("[data-confirm-manual]"),
+    confirmed: $("[data-confirmed]"), confirmedCounty: $("[data-confirmed-county]"), change: $("[data-change]"),
+    scenario: $("[data-scenario]"),
     units: $("#hs-units"), occ: $("#hs-occ"), price: $("#hs-price"), down: $("#hs-down"),
     priceOut: $("#hs-price-out"), downOut: $("#hs-down-out")
   };
+  function set(sel, t) { var e = $(sel); if (e) e.textContent = t; }
+  function show(el, on) { if (el) el.hidden = !on; }
 
-  function set(sel, txt) { var e = $(sel); if (e) e.textContent = txt; }
+  /* ---------- resolve ---------- */
+  function doResolve(query) {
+    S.query = query;
+    var r = BJL && BJL.resolvePropertyLocation ? BJL.resolvePropertyLocation(query) : { confidence: "none", possible_matches: [], warning: "Resolver not loaded." };
+    show(E.resolve, true);
+    show(E.confident, false); show(E.choicesWrap, false); show(E.manual, false);
 
-  /* ---- selector population (from the resolver's geo data) ---- */
-  function populateStates() {
-    if (!els.state || !window.BJLLimits) return;
-    var states = window.BJLLimits.getStates();
-    if (!states.length) return;
-    els.state.innerHTML = states.map(function (s) {
-      return '<option value="' + s.abbr + '">' + s.name + "</option>";
-    }).join("");
-    els.state.value = S.state;
-  }
-  function populateCounties(stateAbbr, keep) {
-    if (!els.county) return;
-    var counties = (window.BJLLimits && window.BJLLimits.getCounties(stateAbbr)) || [];
-    if (counties.length) {
-      els.county.hidden = false; els.county.disabled = false;
-      if (els.countyFree) { els.countyFree.hidden = true; els.countyFree.value = ""; }
-      els.county.innerHTML = '<option value="">Select county…</option>' +
-        counties.map(function (c) { return '<option value="' + c.name + '">' + c.name + "</option>"; }).join("");
-      if (keep) els.county.value = keep;
+    if (r.confidence === "high" && r.possible_matches.length === 1) {
+      var m = r.possible_matches[0];
+      E.detected.textContent = m.county_name + ", " + m.state_abbr + (m.matched_by ? "  ·  matched by " + m.matched_by : "");
+      E.confirm.onclick = function () { confirmCounty(m, false); };
+      show(E.confident, true);
+    } else if (r.confidence === "ambiguous") {
+      E.choices.innerHTML = "";
+      r.possible_matches.forEach(function (m) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "choice";
+        b.textContent = m.label;
+        b.onclick = function () { confirmCounty(m, false); };
+        E.choices.appendChild(b);
+      });
+      show(E.choicesWrap, true);
     } else {
-      els.county.hidden = true; els.county.disabled = true;
-      if (els.countyFree) { els.countyFree.hidden = false; els.countyFree.value = keep || ""; }
+      E.warn.textContent = (r.warning || "I need the property county to calculate the county line.") +
+        " Enter the property’s state and county.";
+      show(E.manual, true);
+      if (E.mstate && BJL) {
+        var states = BJL.getStates();
+        if (states.length && E.mstate.options.length <= 1) {
+          E.mstate.innerHTML = '<option value="">State…</option>' + states.map(function (s) { return '<option value="' + s.abbr + '">' + s.name + "</option>"; }).join("");
+        }
+      }
     }
   }
 
-  /* ---- read current inputs into S ---- */
-  function read() {
-    if (els.price) S.price = num(els.price.value);
-    if (els.down) S.downPct = num(els.down.value);
-    if (els.units) S.units = parseInt(els.units.value, 10) || 1;
-    if (els.occ) S.occupancy = els.occ.value;
-    if (els.state) S.state = els.state.value;
-    if (els.county && !els.county.hidden) S.county = els.county.value;
-    else if (els.countyFree && !els.countyFree.hidden) S.county = els.countyFree.value.trim();
+  function confirmCounty(m, isExample) {
+    S.state = m.state_abbr; S.county = m.county_name; S.county_fips = m.county_fips || null;
+    S.confirmed = true; S.isExample = !!isExample;
+    show(E.resolve, false);
+    show(E.confirmed, true);
+    if (E.confirmedCounty) E.confirmedCounty.textContent = (S.isExample ? "Example · " : "") + S.county + ", " + S.state;
+    show(E.scenario, true);
+    compute();
   }
 
-  function occShort(o) { return KW.occShort ? KW.occShort(o) : (/(invest)/i.test(o) ? "Investment" : /second/i.test(o) ? "Second home" : "Primary"); }
+  function confirmManual() {
+    var st = E.mstate ? E.mstate.value : "";
+    var cty = E.mcounty ? E.mcounty.value.trim() : "";
+    if (!st || !cty) { E.warn.textContent = "Enter both the state and the property county."; return; }
+    confirmCounty({ state_abbr: st, county_name: /county$|parish$|borough$/i.test(cty) ? cty : cty + " County", county_fips: null }, false);
+  }
 
-  /* ---- the deterministic computation ---- */
+  /* ---------- compute (deterministic) ---------- */
+  function read() {
+    if (E.price) S.price = num(E.price.value);
+    if (E.down) S.downPct = num(E.down.value);
+    if (E.units) S.units = parseInt(E.units.value, 10) || 1;
+    if (E.occ) S.occupancy = E.occ.value;
+  }
+  function occShort(o) { return KW.occShort ? KW.occShort(o) : (/invest/i.test(o) ? "Investment" : /second/i.test(o) ? "Second home" : "Primary"); }
+
   function compute() {
+    if (!S.confirmed) return;
     read();
     var down = Math.min(S.price, Math.round(S.price * S.downPct / 100));
     var loan = Math.max(0, S.price - down);
-
-    // Resolve county limits via the shared engine (mutates MARKET_CONFIG for KW.* reuse).
     var loc = KW.applyLocation ? KW.applyLocation(S.state, S.county, "", S.units) : null;
+    // Prefer FIPS-accurate resolution when we have it.
+    if (BJL && BJL.resolveLoanLimits && S.county_fips) {
+      var r2 = BJL.resolveLoanLimits({ county_fips: S.county_fips, state: S.state, county: S.county, units: S.units });
+      if (r2 && r2.found) loc = r2;
+    }
+    var hasData = loc && loc.found && loc.countyConformingLimit != null && !loc.needsVerification;
+    var countyLimit = hasData ? loc.countyConformingLimit : null;
     var baseline = loc && loc.conformingBaseline;
-    var countyLimit = loc && loc.countyConformingLimit;
-    var needsVerify = loc && loc.needsVerification;
-    var datasetType = loc && loc.datasetType;
-
-    var delta = (countyLimit != null) ? (loan - countyLimit) : null;   // >0 over the line
+    var delta = hasData ? (loan - countyLimit) : null;
     var addlDown = (delta != null && delta > 0) ? delta : 0;
 
-    // Review-path zone.
     var occ = occShort(S.occupancy);
     var zone = "conforming";
-    if (countyLimit != null && loan > countyLimit) zone = "jumbo";
-    else if (baseline != null && loan > baseline) zone = "high-balance";
-    var node = occ === "Investment" ? "dscr" : zone;
+    if (hasData && loan > countyLimit) zone = "jumbo";
+    else if (hasData && baseline != null && loan > baseline) zone = "high-balance";
+    var node = !hasData ? null : (occ === "Investment" ? "dscr" : zone);
 
-    // Estimated P&I (payment-stack preview altitude).
     var ra = KW.rateFor ? KW.rateFor({ loan: loan, main_concern: "" }) : { rate: 6.84, label: "30-yr assumption" };
     var pi = KW.monthlyPI ? KW.monthlyPI(loan, ra.rate, 30) : 0;
 
-    render({ down: down, loan: loan, baseline: baseline, countyLimit: countyLimit,
-      delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ,
-      needsVerify: needsVerify, datasetType: datasetType, pi: pi, rate: ra });
+    render({ down: down, loan: loan, baseline: baseline, countyLimit: countyLimit, hasData: hasData,
+      delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ, pi: pi, rate: ra,
+      datasetType: loc && loc.datasetType, tier: loc && loc.tier });
     updateContinue();
   }
 
-  /* ---- render outputs ---- */
   function render(o) {
     set('[data-ho="loan"]', fmt(o.loan));
-    set('[data-ho="limit"]', o.countyLimit != null
-      ? (fmt(o.countyLimit) + (o.needsVerify ? " · needs verification" : (o.zone === "jumbo" || o.zone === "high-balance" ? " · high-cost" : "")))
-      : "—");
-    var limEl = $('[data-ho="limit"]'); if (limEl) limEl.setAttribute("data-verify", o.needsVerify ? "yes" : "no");
 
+    var limEl = $('[data-ho="limit"]');
+    if (limEl) {
+      limEl.textContent = o.hasData ? (fmt(o.countyLimit) + (o.tier === "high-cost" ? " · high-cost" : " · baseline")) : "Needs official county data";
+      limEl.setAttribute("data-verify", o.hasData ? "no" : "yes");
+    }
     var deltaEl = $('[data-ho="delta"]');
     if (deltaEl) {
-      if (o.delta == null) { deltaEl.textContent = "—"; deltaEl.removeAttribute("data-over"); }
-      else if (o.delta > 0) { deltaEl.textContent = fmt(o.delta) + " above the county line"; deltaEl.setAttribute("data-over", "yes"); }
-      else { deltaEl.textContent = fmt(-o.delta) + " below the county line"; deltaEl.setAttribute("data-over", "no"); }
+      if (!o.hasData) { deltaEl.textContent = "—"; deltaEl.removeAttribute("data-over"); }
+      else if (o.delta > 0) { deltaEl.textContent = fmt(o.delta) + " above the selected county line"; deltaEl.setAttribute("data-over", "yes"); }
+      else { deltaEl.textContent = fmt(-o.delta) + " below the selected county line"; deltaEl.setAttribute("data-over", "no"); }
     }
-
-    set('[data-ho="gap"]', o.addlDown > 0 ? ("+" + fmt(o.addlDown) + " down to reach the line") : "At or below the county line");
+    set('[data-ho="gap"]', !o.hasData ? "Import official county data to calculate" : (o.addlDown > 0 ? ("+" + fmt(o.addlDown) + " down to reach the line") : "At or below the county line"));
     set('[data-ho="pi"]', fmt(o.pi) + "/mo");
-    set('[data-ho="rate"]', "est. P&I · " + o.rate.rate + "% " + (o.rate.label || "assumption"));
+    set('[data-ho="rate"]', "Estimated P&I preview · " + o.rate.rate + "% " + (o.rate.label || "assumption") + " · taxes, insurance, HOA, flood & MI added in the Studio");
 
-    // structure bar (purchase axis): down segment, loan segment, county line marker.
-    var dPct = Math.max(0, Math.min(100, (o.down / S.price) * 100));
-    var barDown = $("[data-ho-bar-down]"); if (barDown) barDown.style.width = dPct + "%";
-    var barLoan = $("[data-ho-bar-loan]"); if (barLoan) { barLoan.style.left = dPct + "%"; barLoan.style.width = (100 - dPct) + "%"; }
-    var line = $("[data-ho-bar-line]");
-    if (line) {
-      // County line position = where the loan would equal the county limit on the purchase axis.
-      if (o.countyLimit != null && S.price > 0) {
-        var linePos = Math.max(0, Math.min(100, ((o.down + o.countyLimit) / S.price) * 100));
-        line.style.left = linePos + "%"; line.hidden = false;
-      } else { line.hidden = true; }
+    // County Line Meter (dollar axis: 0 → max(loan, county line, baseline)).
+    var meter = $("[data-meter]");
+    if (meter) {
+      if (o.hasData) {
+        meter.removeAttribute("data-empty");
+        var max = Math.max(o.loan, o.countyLimit, o.baseline || 0) * 1.08;
+        var pos = function (v) { return Math.max(0, Math.min(100, (v / max) * 100)); };
+        var fill = $("[data-meter-loan]"); if (fill) fill.style.width = pos(o.loan) + "%";
+        var over = $("[data-meter-over]");
+        if (over) {
+          if (o.delta > 0) { over.hidden = false; over.style.left = pos(o.countyLimit) + "%"; over.style.width = (pos(o.loan) - pos(o.countyLimit)) + "%"; }
+          else over.hidden = true;
+        }
+        var bl = $("[data-meter-baseline]"); if (bl) { bl.style.left = pos(o.baseline) + "%"; bl.hidden = (o.baseline == null); }
+        var cl = $("[data-meter-line]"); if (cl) cl.style.left = pos(o.countyLimit) + "%";
+        set("[data-meter-loanlbl]", "Loan " + fmt(o.loan));
+        set("[data-meter-linelbl]", "County line " + fmt(o.countyLimit));
+      } else {
+        meter.setAttribute("data-empty", "yes");
+        set("[data-meter-loanlbl]", "Loan " + fmt(o.loan));
+        set("[data-meter-linelbl]", "County line — needs official data");
+      }
     }
 
-    // Loan Path Map marker.
-    document.querySelectorAll(".pathmap__node").forEach(function (n) {
-      n.removeAttribute("data-current");
-    });
-    var cur = document.querySelector('.pathmap__node[data-node="' + o.node + '"]');
-    if (cur) cur.setAttribute("data-current", "yes");
+    // Loan Path Map.
+    $$(".pathmap__node").forEach(function (n) { n.removeAttribute("data-current"); });
+    if (o.node) { var cur = $('.pathmap__node[data-node="' + o.node + '"]'); if (cur) cur.setAttribute("data-current", "yes"); }
 
-    // Next best lever.
     set('[data-ho="nextlever"]', nextLever(o));
+    renderSees(o);
 
-    // Engine insights (deterministic).
-    renderInsights(o);
-
-    // Dataset / verification note.
     var note = $("[data-ho-note]");
     if (note) {
       var msg = SAFE + " ";
-      if (o.needsVerify) msg += "Selected county isn’t in the loaded dataset — limit needs official verification. ";
-      if (o.datasetType === "sample") msg += "County limit database is being finalized. ";
+      if (!o.hasData) msg += "This county isn’t in the configured loan-limit data — import the official full FHFA database to calculate its county line. ";
+      else if (o.datasetType === "sample") msg += "County line calculated from configured official data (engine-preview). ";
       note.textContent = msg + COMPLIANCE;
     }
   }
 
   function nextLever(o) {
-    if (o.countyLimit == null) return "Select a state and county to scan the structure.";
-    if (o.delta > 0) return "Add about " + fmt(o.addlDown) + " in down payment to bring the loan to the county line.";
+    if (!o.hasData) return "Property county confirmed — import the official full FHFA data to calculate its county line.";
+    if (o.delta > 0) return "Add about " + fmt(o.addlDown) + " in down payment to bring the estimated loan amount to the selected county reference line.";
     if (o.zone === "high-balance") return "You’re in high-balance review — a larger down payment could move the scenario toward conforming.";
-    if (o.occ === "Investment") return "Investment scenario — rent vs. payment (DSCR) drives the review path.";
-    return "You’re below the county line — review the payment stack and buydown options in the Studio.";
+    if (o.occ === "Investment") return "Investment occupancy can introduce rent and DSCR review.";
+    return "You’re at or below the county line — review the payment stack and buydown options in the Studio.";
   }
 
-  function renderInsights(o) {
+  function renderSees(o) {
     var ul = $("[data-ho-insights]"); if (!ul) return;
     var lines = [];
-    if (o.delta != null && o.delta > 0)
-      lines.push("Estimated loan amount is " + fmt(o.delta) + " above the selected county reference line.");
-    else if (o.delta != null && o.zone === "high-balance")
-      lines.push("Estimated loan amount is within the high-balance reference range for the selected county.");
-    else if (o.delta != null)
-      lines.push("Estimated loan amount is below the selected county reference line.");
-    if (o.addlDown > 0)
-      lines.push("A larger down payment (about " + fmt(o.addlDown) + ") may move the scenario closer to the county line.");
-    lines.push("Taxes, insurance, HOA, and flood assumptions can materially change the monthly picture.");
-    lines.push(o.occ === "Investment"
-      ? "DSCR applies for this investment-property review — rent vs. estimated housing cost."
-      : "DSCR applies only for investment-property review.");
+    lines.push("Property county confirmed: " + S.county + ", " + S.state + (S.isExample ? " (example — change to your property)." : "."));
+    if (!o.hasData) {
+      lines.push("This county’s line is not in the configured data — import the official full FHFA database to calculate it.");
+    } else if (o.delta > 0) {
+      lines.push("Estimated loan amount is above the selected county reference line.");
+      lines.push("A larger down payment may move the scenario closer to the county line.");
+    } else {
+      lines.push("Estimated loan amount is at or below the selected county reference line.");
+    }
+    lines.push("Taxes, insurance, HOA, flood, and mortgage insurance can materially change the monthly picture.");
+    lines.push(o.occ === "Investment" ? "Investment occupancy can introduce rent and DSCR review." : "Investment occupancy can introduce rent and DSCR review.");
     lines.push("Buydown math depends on upfront cost, monthly savings, and expected hold period.");
-    if (o.needsVerify) lines.push("This county’s limit is not in the loaded dataset — it needs official verification before use.");
     ul.innerHTML = lines.slice(0, 6).map(function (t) { return "<li>" + t + "</li>"; }).join("");
   }
 
-  /* ---- "Continue Into Full Strategy Studio" carries the scenario ---- */
-  var PRESET_SLUG = {
-    "CA|los angeles": "los-angeles", "CA|orange": "orange-county",
-    "FL|miami-dade": "miami-dade", "FL|palm beach": "palm-beach", "FL|monroe": "key-west"
-  };
   function updateContinue() {
     var a = $("[data-ho-continue]"); if (!a) return;
-    var key = (S.state || "") + "|" + String(S.county || "").toLowerCase().replace(/\s+county$/, "");
     var q = new URLSearchParams();
-    if (PRESET_SLUG[key]) q.set("market", PRESET_SLUG[key]);
+    if (S.query) q.set("q", S.query);
     if (S.state) q.set("state", S.state);
     if (S.county) q.set("county", S.county);
+    if (S.county_fips) q.set("county_fips", S.county_fips);
     if (S.units) q.set("units", String(S.units));
     q.set("price", String(S.price));
     q.set("downpct", String(S.downPct));
@@ -201,48 +230,48 @@
     a.setAttribute("href", "scenario-studio.html?" + q.toString());
   }
 
-  /* ---- wiring ---- */
+  /* ---------- wiring ---------- */
   function syncReadouts() {
-    if (els.priceOut) els.priceOut.textContent = fmt(num(els.price.value));
-    if (els.downOut) els.downOut.textContent = num(els.down.value) + "%";
+    if (E.priceOut && E.price) E.priceOut.textContent = fmt(num(E.price.value));
+    if (E.downOut && E.down) E.downOut.textContent = num(E.down.value) + "%";
   }
-
   function bind() {
-    [els.price, els.down].forEach(function (el) { if (el) el.addEventListener("input", function () { syncReadouts(); compute(); }); });
-    [els.units, els.occ].forEach(function (el) { if (el) el.addEventListener("change", compute); });
-    if (els.state) els.state.addEventListener("change", function () { S.county = ""; populateCounties(els.state.value, ""); compute(); });
-    if (els.county) els.county.addEventListener("change", compute);
-    if (els.countyFree) els.countyFree.addEventListener("input", compute);
-
-    // Strategy lever quick-actions.
-    document.querySelectorAll("[data-lever-action]").forEach(function (btn) {
+    if (E.q) {
+      E.q.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); doResolve(E.q.value); } });
+    }
+    $$("[data-ex]").forEach(function (b) { b.addEventListener("click", function () { if (E.q) E.q.value = b.textContent.trim(); doResolve(b.textContent.trim()); }); });
+    if (E.confirmManual) E.confirmManual.addEventListener("click", confirmManual);
+    if (E.change) E.change.addEventListener("click", function () { show(E.confirmed, false); show(E.scenario, false); show(E.resolve, false); if (E.q) { E.q.value = ""; E.q.focus(); } });
+    [E.price, E.down].forEach(function (el) { if (el) el.addEventListener("input", function () { syncReadouts(); compute(); }); });
+    [E.units, E.occ].forEach(function (el) { if (el) el.addEventListener("change", compute); });
+    $$("[data-lever-action]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var act = btn.getAttribute("data-lever-action");
-        if (act === "down+5" && els.down) els.down.value = Math.min(60, num(els.down.value) + 5);
-        if (act === "down-5" && els.down) els.down.value = Math.max(0, num(els.down.value) - 5);
-        if (act === "units2" && els.units) els.units.value = "2";
-        if (act === "units1" && els.units) els.units.value = "1";
-        if (act === "invest" && els.occ) els.occ.value = "Investment property";
-        if (act === "primary" && els.occ) els.occ.value = "Primary residence";
+        var a = btn.getAttribute("data-lever-action");
+        if (a === "down+5" && E.down) E.down.value = Math.min(60, num(E.down.value) + 5);
+        if (a === "down-5" && E.down) E.down.value = Math.max(0, num(E.down.value) - 5);
+        if (a === "units2" && E.units) E.units.value = "2";
+        if (a === "units1" && E.units) E.units.value = "1";
+        if (a === "invest" && E.occ) E.occ.value = "Investment property";
+        if (a === "primary" && E.occ) E.occ.value = "Primary residence";
         syncReadouts(); compute();
       });
     });
   }
 
   function init() {
-    populateStates();
-    populateCounties(S.state, S.county);
-    if (els.price) els.price.value = S.price;
-    if (els.down) els.down.value = S.downPct;
-    if (els.units) els.units.value = String(S.units);
-    if (els.occ) els.occ.value = S.occupancy;
+    if (E.price) E.price.value = S.price;
+    if (E.down) E.down.value = S.downPct;
+    if (E.units) E.units.value = String(S.units);
+    if (E.occ) E.occ.value = S.occupancy;
     syncReadouts();
-    bind();
+    // Show the default example confirmed so the machine is live immediately.
+    show(E.resolve, false); show(E.confirmed, true); show(E.scenario, true);
+    if (E.confirmedCounty) E.confirmedCounty.textContent = "Example · " + S.county + ", " + S.state;
     compute();
   }
 
-  // Render immediately with whatever is loaded, then re-init when the dataset arrives.
-  if (window.BJLLimits && window.BJLLimits.isLoaded && window.BJLLimits.isLoaded()) init();
-  else { bind(); syncReadouts(); compute(); }
+  bind();
+  if (BJL && BJL.isLoaded && BJL.isLoaded()) init();
+  else { syncReadouts(); }
   window.addEventListener("bjl:limits-ready", init);
 })();

@@ -1,0 +1,22 @@
+{
+  "coverage": "partial-seed",
+  "source_name": "Verified public city/county geography (engine-preview seed)",
+  "note": "Verified public city → county facts for the engine-preview. NOT a full national places file. Import an official U.S. Census 'Places' / county-subdivision source for full nationwide coverage. City names can exist in multiple states/counties — the resolver returns all matches and asks the user to confirm.",
+  "places": [
+    { "name": "Beverly Hills", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Los Angeles County", "county_fips": "06037" },
+    { "name": "Beverly Hills", "type": "city", "state_abbr": "FL", "state_name": "Florida", "county_name": "Citrus County", "county_fips": "12017" },
+    { "name": "Los Angeles", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Los Angeles County", "county_fips": "06037" },
+    { "name": "Long Beach", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Los Angeles County", "county_fips": "06037" },
+    { "name": "Santa Monica", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Los Angeles County", "county_fips": "06037" },
+    { "name": "Newport Beach", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Orange County", "county_fips": "06059" },
+    { "name": "Santa Ana", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Orange County", "county_fips": "06059" },
+    { "name": "Irvine", "type": "city", "state_abbr": "CA", "state_name": "California", "county_name": "Orange County", "county_fips": "06059" },
+    { "name": "Miami", "type": "city", "state_abbr": "FL", "state_name": "Florida", "county_name": "Miami-Dade County", "county_fips": "12086" },
+    { "name": "Miami Beach", "type": "city", "state_abbr": "FL", "state_name": "Florida", "county_name": "Miami-Dade County", "county_fips": "12086" },
+    { "name": "Key West", "type": "city", "state_abbr": "FL", "state_name": "Florida", "county_name": "Monroe County", "county_fips": "12087" },
+    { "name": "West Palm Beach", "type": "city", "state_abbr": "FL", "state_name": "Florida", "county_name": "Palm Beach County", "county_fips": "12099" },
+    { "name": "Austin", "type": "city", "state_abbr": "TX", "state_name": "Texas", "county_name": "Travis County", "county_fips": "48453" },
+    { "name": "Travis County", "type": "county", "state_abbr": "TX", "state_name": "Texas", "county_name": "Travis County", "county_fips": "48453" },
+    { "name": "Citrus County", "type": "county", "state_abbr": "FL", "state_name": "Florida", "county_name": "Citrus County", "county_fips": "12017" }
+  ]
+}

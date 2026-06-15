@@ -18,6 +18,9 @@ const db = {
   conforming: read('data/loan-limits/2026/fhfa-conforming.json'),
   fha: read('data/loan-limits/2026/fha-forward.json'),
   geo: read('data/geo/us-counties.json'),
+  places: read('data/geo/us-places.json'),
+  zips: read('data/geo/us-zips.json'),
+  aliases: read('data/geo/aliases.json'),
 };
 
 test('resolver API + compliance string present', () => {
@@ -64,9 +67,15 @@ test('unknown county → national baseline + verify warning', () => {
   assert.match(r.warning, /not in the loan-limit dataset/);
 });
 
-test('missing county selection → prompt to select', () => {
+test('missing county selection → prompt for property location', () => {
   const r = API.resolveLoanLimits({ state: 'FL' }, db);
-  assert.match(r.warning, /Select a state and county/);
+  assert.match(r.warning, /property location|state and county/i);
+});
+
+test('resolveLoanLimits accepts county_fips directly', () => {
+  const r = API.resolveLoanLimits({ county_fips: '06037', state: 'CA', county: 'Los Angeles County' }, db);
+  assert.equal(r.found, true);
+  assert.equal(r.countyConformingLimit, 1249125);
 });
 
 test('no dataset loaded → graceful warning, no throw', () => {
@@ -160,4 +169,76 @@ test('seeded county for the available unit does not need verification', () => {
 test('seeded county, unimported unit → needsVerification true', () => {
   const r = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: 2 }, db);
   assert.equal(r.needsVerification, true);
+});
+
+/* ---- BUG FIX: a county equal to the national baseline is "baseline", not "high-cost" ---- */
+test('baseline/high-cost labeling: limit == baseline ⇒ baseline tier, not high-cost', () => {
+  // Monroe 2-unit falls back to the national baseline → must NOT read as high-cost.
+  const r = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: 2 }, db);
+  assert.equal(r.countyConformingLimit, db.conforming.baseline.two_unit);
+  assert.equal(r.highCost, false);
+  assert.equal(r.tier, 'baseline');
+});
+
+test('baseline/high-cost labeling: limit above baseline ⇒ high-cost tier', () => {
+  const r = API.resolveLoanLimits({ state: 'FL', county: 'Monroe County', units: 1 }, db);
+  assert.ok(r.countyConformingLimit > db.conforming.baseline.one_unit);
+  assert.equal(r.highCost, true);
+  assert.equal(r.tier, 'high-cost');
+});
+
+/* ---- resolvePropertyLocation: deterministic property → county ---- */
+test('resolvePropertyLocation API present', () => {
+  assert.equal(typeof API.resolvePropertyLocation, 'function');
+});
+
+test('ZIP → county (90210 → Los Angeles, high confidence)', () => {
+  const r = API.resolvePropertyLocation('90210', db);
+  assert.equal(r.confidence, 'high');
+  assert.equal(r.matched_by, 'zip');
+  assert.equal(r.possible_matches[0].county_name, 'Los Angeles County');
+  assert.equal(r.possible_matches[0].state_abbr, 'CA');
+  assert.equal(r.possible_matches[0].county_fips, '06037');
+});
+
+test('alias → county (Miami-Dade)', () => {
+  const r = API.resolvePropertyLocation('Miami-Dade', db);
+  assert.equal(r.confidence, 'high');
+  assert.equal(r.possible_matches[0].county_fips, '12086');
+});
+
+test('alias → county (Key West → Monroe)', () => {
+  const r = API.resolvePropertyLocation('Key West', db);
+  assert.equal(r.possible_matches[0].county_name, 'Monroe County');
+  assert.equal(r.possible_matches[0].state_abbr, 'FL');
+});
+
+test('city+state → county (Austin TX → Travis)', () => {
+  const r = API.resolvePropertyLocation('Austin TX', db);
+  assert.equal(r.confidence, 'high');
+  assert.equal(r.possible_matches[0].county_name, 'Travis County');
+});
+
+test('city+state → county (Newport Beach CA → Orange)', () => {
+  const r = API.resolvePropertyLocation('Newport Beach CA', db);
+  assert.equal(r.possible_matches[0].county_name, 'Orange County');
+});
+
+test('ambiguous city → multiple matches, needs confirmation', () => {
+  const r = API.resolvePropertyLocation('Beverly Hills', db);
+  assert.equal(r.confidence, 'ambiguous');
+  assert.equal(r.needs_confirmation, true);
+  assert.ok(r.possible_matches.length >= 2);
+});
+
+test('county name query → county (Miami-Dade County)', () => {
+  const r = API.resolvePropertyLocation('Miami-Dade County, FL', db);
+  assert.equal(r.possible_matches[0].county_name, 'Miami-Dade County');
+  assert.equal(r.possible_matches[0].state_abbr, 'FL');
+});
+
+test('unresolvable query → confidence none + warning', () => {
+  const r = API.resolvePropertyLocation('zzzz nowhere 00000', db);
+  assert.equal(r.confidence, 'none');
+  assert.ok(r.warning);
 });

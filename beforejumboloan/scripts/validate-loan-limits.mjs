@@ -61,8 +61,26 @@ if (fhfa) {
   if (dupFips) note(fails, `FHFA: ${dupFips} duplicate FIPS records`);
   if (dupKey) note(fails, `FHFA: ${dupKey} duplicate state/county records`);
 
-  const states = new Set((fhfa.counties || []).map((c) => c.state_abbr)).size;
-  if (states < 50) note(warns, `FHFA covers ${states} states/territories (expected 50+)`);
+  // County FIPS present + valid on every record.
+  const badFips = (fhfa.counties || []).filter((c) => !/^\d{5}$/.test(String(c.county_fips || "")));
+  if (badFips.length) note(fails, `FHFA: ${badFips.length} counties missing/invalid county FIPS`);
+
+  // Baseline/high-cost labeling must be correct (high_cost iff one-unit > baseline).
+  const baseOne = fhfa.baseline && fhfa.baseline.one_unit;
+  if (baseOne != null) {
+    const badLabel = (fhfa.counties || []).filter((c) => !!c.high_cost !== (c.conforming_one_unit > baseOne));
+    if (badLabel.length) note(fails, `FHFA: ${badLabel.length} counties have wrong baseline/high-cost labeling`);
+  }
+
+  // State coverage + the must-be-complete states from the official source.
+  const perState = {};
+  for (const c of fhfa.counties || []) perState[c.state_abbr] = (perState[c.state_abbr] || 0) + 1;
+  const states = Object.keys(perState).length;
+  if (states < 51) note(fails, `FHFA covers ${states} states/territories — official full data spans 50 states + DC (and territories)`);
+  const REQUIRED = { CA: 58, FL: 67, TX: 254 }; // official county counts
+  for (const [st, n] of Object.entries(REQUIRED)) {
+    if ((perState[st] || 0) < n) note(fails, `FHFA: ${st} has ${perState[st] || 0} counties — official source has ${n}`);
+  }
 }
 
 if (fha) {

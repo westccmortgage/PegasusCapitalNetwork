@@ -1,0 +1,15 @@
+{
+  "coverage": "partial-seed",
+  "source_name": "Verified public ZIP → county geography (engine-preview seed)",
+  "note": "Verified ZIP → primary county facts for the engine-preview. NOT a full ZCTA file. Import an official U.S. Census ZCTA-to-county relationship file for full coverage. ZIP codes can cross county lines; this seed lists the primary county and the resolver flags it for confirmation.",
+  "zips": {
+    "90210": { "state_abbr": "CA", "state_name": "California", "county_name": "Los Angeles County", "county_fips": "06037", "city": "Beverly Hills" },
+    "90401": { "state_abbr": "CA", "state_name": "California", "county_name": "Los Angeles County", "county_fips": "06037", "city": "Santa Monica" },
+    "92660": { "state_abbr": "CA", "state_name": "California", "county_name": "Orange County", "county_fips": "06059", "city": "Newport Beach" },
+    "92701": { "state_abbr": "CA", "state_name": "California", "county_name": "Orange County", "county_fips": "06059", "city": "Santa Ana" },
+    "33040": { "state_abbr": "FL", "state_name": "Florida", "county_name": "Monroe County", "county_fips": "12087", "city": "Key West" },
+    "33139": { "state_abbr": "FL", "state_name": "Florida", "county_name": "Miami-Dade County", "county_fips": "12086", "city": "Miami Beach" },
+    "33401": { "state_abbr": "FL", "state_name": "Florida", "county_name": "Palm Beach County", "county_fips": "12099", "city": "West Palm Beach" },
+    "78701": { "state_abbr": "TX", "state_name": "Texas", "county_name": "Travis County", "county_fips": "48453", "city": "Austin" }
+  }
+}

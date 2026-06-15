@@ -104,6 +104,7 @@ export function buildFhaDataset(rows, opts = {}) {
     schema: "fha-forward",
     dataset_type: datasetType,
     source_name: "HUD FHA Forward Mortgage Limits",
+    source_file: opts.sourceFile || null,
     source_url_or_label: opts.sourceLabel || "https://www.hud.gov/program_offices/housing/sfh/lender/origination/mortgage_limits (CHUMS full file)",
     effective_year: year,
     imported_at: nowISO(),
@@ -152,6 +153,7 @@ function main() {
   }
   const file = resolveInput(input);
   if (/\.sample\.csv$/.test(file)) opts.datasetType = "sample";
+  opts.sourceFile = path.basename(file);
   info("Reading: " + path.relative(ROOT, file));
   const ds = buildFhaDataset(readCSV(file), opts);
   const out = path.join(ROOT, "data/loan-limits/" + opts.year + "/fha-forward.json");

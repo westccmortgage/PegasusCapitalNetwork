@@ -27,7 +27,7 @@
     intent: "", mode: "purchase",
     price: 1150000, downPct: 20, down: 230000,
     balance: 700000, cashout: 0, equity: 0, loan: 920000,
-    property_location: "", property_state: "", property_county: "", property_zip: "", units: 1,
+    property_location: "", property_state: "", property_county: "", property_county_fips: "", property_zip: "", units: 1,
     occupancy: "", property_type: "",
     income_situation: "", main_concern: "",
     name: "", email: "", phone: "", preferred_contact_method: "", message: "",
@@ -44,6 +44,7 @@
       // Carry the homepage Jumbo Gap Scanner location/units into the studio.
       if (qs.get("state")) S.property_state = String(qs.get("state")).toUpperCase();
       if (qs.get("county")) S.property_county = qs.get("county");
+      if (qs.get("county_fips")) S.property_county_fips = String(qs.get("county_fips")).trim();
       if (qs.get("units")) S.units = parseInt(qs.get("units"), 10) || 1;
     } catch (e) {}
     try {
