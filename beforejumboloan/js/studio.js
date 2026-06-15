@@ -701,6 +701,7 @@
       supported_application_state: appSupported ? "true" : "false",
       application_cta_shown: appSupported ? "true" : "false",
       application_portal: appSupported ? ((window.BJLCompliance && window.BJLCompliance.config.application_portal_name) || "ARIVE / my1003app") : "",
+      application_url: appSupported ? ((window.BJLCompliance && window.BJLCompliance.applicationUrl && window.BJLCompliance.applicationUrl()) || "") : "",
       application_compliance_note: "Application redirect is shown only for currently supported states. Application, pricing, program availability, and eligibility require licensed review. Not an approval, qualification, rate quote, APR, loan estimate, or commitment to lend.",
       name: S.name, email: S.email, phone: S.phone,
       preferred_contact_method: S.preferred_contact_method, message: S.message

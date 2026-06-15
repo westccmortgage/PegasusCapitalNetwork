@@ -187,6 +187,19 @@ function serve() {
   // Header powered-by trust line
   check(/Powered by West Coast Capital Mortgage Inc\./.test(await txt(page, '.site-header .brand__powered')), 'header shows "Powered by West Coast Capital Mortgage Inc."');
 
+  // Header top CTA is "Start Application" → ARIVE (not Strategy Studio)
+  const navCta = await page.$('.site-header .nav__cta .btn');
+  check((await navCta.getAttribute('href')) === ARIVE && /Start Application/.test(await navCta.textContent()), 'header top CTA is "Start Application" → ARIVE');
+  check((await navCta.getAttribute('target')) === '_blank', 'header CTA opens application in a new tab');
+  // No Strategy Studio CTA text remains visible anywhere on the page
+  const bodyText = await page.textContent('body');
+  check(!/Continue Into Full Strategy Studio/.test(bodyText), 'no "Continue Into Full Strategy Studio" CTA remains');
+  check(!/Open the full Strategy Studio/.test(bodyText), 'no "Open the full Strategy Studio" CTA remains');
+  // Nav education/program links route to West Coast Capital Mortgage
+  const navHrefs = await page.$$eval('.site-header .nav__links a', (as) => as.map((a) => a.getAttribute('href')));
+  check(navHrefs.filter((h) => /westccmortgage\.com\/loans/.test(h)).length >= 2, 'Loan Options + Jumbo vs Conforming → westccmortgage.com/loans');
+  check(navHrefs.some((h) => /westccmortgage\.com\/resources/.test(h)), 'Education → westccmortgage.com/resources');
+
   // footer compliance
   const footer = await txt(page, '.footer-legal');
   check(/West Coast Capital Mortgage Inc\., NMLS #2817729/.test(footer) && /Anatoliy Kanevsky, NMLS #2775380/.test(footer), 'footer: entity + individual NMLS from config');

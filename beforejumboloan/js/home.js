@@ -484,7 +484,7 @@
       if (S.county) q.set("county", S.county);
       if (S.county_fips) q.set("county_fips", S.county_fips);
       a.removeAttribute("data-needs-loc");
-      a.textContent = "Continue Into Full Strategy Studio →";
+      a.textContent = "Scenario Engine Preview (internal)";
     } else {
       // No confirmed property (example / unresolved / ambiguous): never pass a
       // default county. Flag the Studio to open at property-location confirmation.
@@ -498,7 +498,7 @@
         } catch (e) {}
       }
       a.setAttribute("data-needs-loc", "yes");
-      a.textContent = "Open the full Strategy Studio →";
+      a.textContent = "Scenario Engine Preview (internal)";
     }
     a.setAttribute("href", "scenario-studio.html?" + q.toString());
     renderCta(confirmedReal);
