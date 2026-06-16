@@ -609,16 +609,7 @@ Pegasus.boot(async function () {
     var title=(p.full_name||'Pegasus member')+' on Pegasus Capital Network';
     var caption="I'm sharing my Pegasus Network profile — a central place for my professional work, connected businesses, and long-term relationships across capital, real estate, and business growth.\n\nWe rise. We build. We fly.\n\n"+url;
     var u=encodeURIComponent(url), t=encodeURIComponent(title), cap=encodeURIComponent(caption);
-    if(net==='instagram'){
-      /* Instagram has no reliable web link-share — copy the caption + link so the
-         member can paste it into a post/bio, then open Instagram. */
-      function done(){ try{ Pegasus.toast('⧉','var(--green-dim)','Caption copied','Paste it into your Instagram post or bio'); }catch(e){} window.open('https://instagram.com','_blank','noopener,noreferrer'); }
-      try{
-        if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(caption).then(done).catch(done); }
-        else { var ta=document.createElement('textarea'); ta.value=caption; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
-      }catch(e){ done(); }
-      return;
-    }
+    if(net==='instagram'){ ppInstagramShare(caption, url, title); return; }
     var dest={
       linkedin:'https://www.linkedin.com/sharing/share-offsite/?url='+u,
       facebook:'https://www.facebook.com/sharer/sharer.php?u='+u,
@@ -628,6 +619,111 @@ Pegasus.boot(async function () {
     if(!dest) return;
     if(net==='email') location.href=dest; else window.open(dest,'_blank','noopener,noreferrer');
   };
+
+  /* ── Instagram share ───────────────────────────────────────────────────────
+     Instagram does NOT allow true zero-tap posting from a browser (no web post
+     intent; feed posts can't carry links; posts need an image). So instead of a
+     dead button, we remove all the *design* work: we generate a branded,
+     Instagram-ready 1080×1080 image of this profile. On a phone, the native
+     share sheet sends it straight to Instagram (Stories/feed) with the caption
+     already on the clipboard. On desktop, a small panel offers Download + Copy +
+     Open Instagram. The only step left is the member tapping "Post" inside
+     Instagram — which Instagram requires and we can't bypass. */
+  var _ppShareImg=null;
+  function ppGetShareImage(){
+    if(!_ppShareImg) _ppShareImg=ppBuildShareImage(true).catch(function(){ return ppBuildShareImage(false); });
+    return _ppShareImg;
+  }
+  function ppLoadImg(src, cors){ return new Promise(function(res,rej){ var im=new Image(); if(cors) im.crossOrigin='anonymous'; im.onload=function(){res(im);}; im.onerror=function(){rej(new Error('img'));}; im.src=src; }); }
+  async function ppBuildShareImage(useAvatar){
+    var W=1080,H=1080, cx=540;
+    var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
+    if(!ctx) throw new Error('no canvas');
+    try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+    // Background + brand glow + top accent
+    var g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#0B1626'); g.addColorStop(1,'#060B14');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    var rg=ctx.createRadialGradient(cx,400,40,cx,400,560); rg.addColorStop(0,'rgba(58,143,232,.16)'); rg.addColorStop(1,'rgba(58,143,232,0)');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#3A8FE8'; ctx.fillRect(0,0,W,7);
+    // Wordmark (same-origin → never taints the canvas)
+    try{ var wm=await ppLoadImg('/assets/brand/pegasus-wordmark.png',false); var ww=300, wh=ww*(wm.height/wm.width||0.18); ctx.globalAlpha=.92; ctx.drawImage(wm, cx-ww/2, 78, ww, wh); ctx.globalAlpha=1; }catch(e){}
+    // Avatar (cover-cropped into a circle) or initials fallback
+    var cyAv=400, r=130, drew=false;
+    if(useAvatar && p.avatar_url){
+      try{
+        var av=await ppLoadImg(p.avatar_url,true);
+        var s=Math.max((2*r)/av.width,(2*r)/av.height), dw=av.width*s, dh=av.height*s;
+        ctx.save(); ctx.beginPath(); ctx.arc(cx,cyAv,r,0,Math.PI*2); ctx.closePath(); ctx.clip();
+        ctx.drawImage(av, cx-dw/2, cyAv-dh/2, dw, dh); ctx.restore(); drew=true;
+      }catch(e){ drew=false; }
+    }
+    if(!drew){
+      ctx.fillStyle=(p.avatar_color||'#235FA6'); ctx.beginPath(); ctx.arc(cx,cyAv,r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='600 96px "IBM Plex Sans", sans-serif'; ctx.fillText((initials(name)||'P'), cx, cyAv+4);
+    }
+    ctx.lineWidth=6; ctx.strokeStyle='rgba(58,143,232,.55)'; ctx.beginPath(); ctx.arc(cx,cyAv,r,0,Math.PI*2); ctx.stroke();
+    // Name
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#F4F8FC'; ctx.font='500 66px "Cormorant Garamond", serif';
+    if(ctx.measureText(name).width>W-120) ctx.font='500 52px "Cormorant Garamond", serif';
+    ctx.fillText(name, cx, 640);
+    // Role + company
+    ctx.fillStyle='#9FB4CC'; ctx.font='400 30px "IBM Plex Sans", sans-serif';
+    ctx.fillText((roleLabel(p.role)+(p.company_name?('   ·   '+p.company_name):'')).slice(0,62), cx, 692);
+    // Location / markets
+    var line2=[].concat(p.location?[p.location]:[], (p.markets&&p.markets.length?[p.markets.slice(0,3).join(', ')]:[])).join('   ·   ');
+    if(line2){ ctx.fillStyle='#6F88A6'; ctx.font='400 24px "IBM Plex Sans", sans-serif'; ctx.fillText(line2.slice(0,72), cx, 732); }
+    // Divider + motto
+    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-90,788); ctx.lineTo(cx+90,788); ctx.stroke();
+    ctx.fillStyle='#CFE0F2'; ctx.font='italic 400 40px "Cormorant Garamond", serif'; ctx.fillText('We rise. We build. We fly.', cx, 856);
+    // URL + wordmark line
+    ctx.fillStyle='#5B8FD6'; ctx.font='400 26px "IBM Plex Mono", monospace';
+    ctx.fillText((p.profile_slug?('pegasuscapitalnetwork.com/u/'+p.profile_slug):'pegasuscapitalnetwork.com'), cx, 980);
+    ctx.fillStyle='rgba(255,255,255,.32)'; ctx.font='400 18px "IBM Plex Mono", monospace';
+    ctx.fillText('P E G A S U S   C A P I T A L   N E T W O R K', cx, 1026);
+    // Export (toBlob throws on a tainted canvas → caller retries without avatar)
+    var blob=await new Promise(function(res,rej){ cv.toBlob(function(b){ b?res(b):rej(new Error('toBlob')); },'image/png',0.92); });
+    var file=new File([blob],'pegasus-profile.png',{type:'image/png'});
+    var dataUrl=null; try{ dataUrl=cv.toDataURL('image/png'); }catch(e){}
+    return { file:file, dataUrl:dataUrl };
+  }
+  async function ppInstagramShare(caption, url, title){
+    try{ if(navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(caption); }catch(e){}
+    var img=null; try{ img=await ppGetShareImage(); }catch(e){ console.warn('[profile] share image failed:', e); img=null; }
+    var file=img&&img.file;
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({ files:[file], title:title, text:caption }); return; }
+      catch(err){ if(err && err.name==='AbortError') return; /* else fall through */ }
+    }
+    ppShareDesktopPanel(img, caption);
+  }
+  function ppShareDesktopPanel(img, caption){
+    var sc='position:fixed;inset:0;background:rgba(8,12,18,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:36px 18px;z-index:1000;overflow-y:auto';
+    var bx='background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.42)';
+    var preview=(img&&img.dataUrl)?'<img src="'+img.dataUrl+'" alt="" style="width:100%;display:block;border-bottom:1px solid var(--border)">':'';
+    Pegasus.modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+      preview+
+      '<div style="padding:18px 20px">'+
+        '<div style="font-family:var(--serif);font-size:19px;color:var(--text);margin-bottom:6px">Share to Instagram</div>'+
+        '<div style="font-size:12.5px;color:var(--text3);line-height:1.55;margin-bottom:14px">Instagram can’t accept a post directly from a browser. '+(img?'Download this ready-made image, ':'')+'then open Instagram and post it — your caption is already copied to the clipboard.</div>'+
+        '<div style="display:flex;flex-direction:column;gap:9px">'+
+          (img&&img.dataUrl?'<button class="btn btn-pri" id="ppDl">Download image</button>':'')+
+          '<button class="btn btn-ghost" id="ppCap">Copy caption again</button>'+
+          '<a class="btn btn-ghost" href="https://instagram.com" target="_blank" rel="noopener noreferrer">Open Instagram</a>'+
+          '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Close</button>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text4);margin-top:11px">Tip: on your phone, this button sends the image straight to Instagram Stories.</div>'+
+      '</div>'+
+    '</div></div>');
+    var dl=document.getElementById('ppDl');
+    if(dl) dl.onclick=function(){ try{ var a=document.createElement('a'); a.href=img.dataUrl; a.download='pegasus-profile.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); Pegasus.toast('✓','var(--green-dim)','Downloaded','Now open Instagram and post it'); }catch(e){} };
+    var cp=document.getElementById('ppCap');
+    if(cp) cp.onclick=function(){ try{ navigator.clipboard.writeText(caption); Pegasus.toast('⧉','var(--green-dim)','Caption copied','Paste it into your Instagram caption'); }catch(e){} };
+  }
+  // Pre-warm the share image after first paint so the share is instant on click.
+  setTimeout(function(){ try{ ppGetShareImage(); }catch(e){} }, 1500);
 
   /* ── Active in Pegasus panel (owner only) ──────────────────────
      Mixed recent activity — people AND business/project pages — via the
