@@ -204,9 +204,9 @@
 .pp-showcase-inner{max-width:none;margin:0;padding:0}
 .pp-showcase-inner .sc-section{margin:32px 0}
 /* Owner-only floating management controls */
-.pp-manage{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.pp-manage-btn{padding:9px 18px;border-radius:24px;background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18)}
-.pp-manage-menu{display:none;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:hidden;min-width:184px}
+.pp-manage{position:relative;z-index:30;display:flex;justify-content:flex-end;margin-bottom:14px}
+.pp-manage-btn{padding:8px 16px;border-radius:8px;background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer}
+.pp-manage-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:hidden;min-width:210px;z-index:40}
 .pp-manage-menu.open{display:flex}
 .pp-manage-item{padding:11px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;border-bottom:1px solid var(--border);text-align:left;cursor:pointer;font-family:var(--sans)}
 .pp-manage-item:last-child{border-bottom:none}
@@ -514,6 +514,24 @@ Pegasus.boot(async function () {
 
     '<div class="pp-flow">'+
 
+      /* OWNER controls — one clear 'Manage Profile' dropdown at the top, right-
+         aligned (near Edit). Predictable, always here on the profile. */
+      (route.isOwner?
+        '<div class="pp-manage" id="ppManage">'+
+          '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage Profile ▾</button>'+
+          '<div class="pp-manage-menu" id="ppManageMenu">'+
+            '<a class="pp-manage-item" href="/profile-edit.html">✎ Edit Profile</a>'+
+            '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">🔗 Copy Profile Link</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'linkedin\')">in &nbsp;Share to LinkedIn</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'facebook\')">f &nbsp;Share to Facebook</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'x\')">✕ &nbsp;Share to X</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'email\')">✉ &nbsp;Share by Email</button>'+
+            '<a class="pp-manage-item" href="/my-presences.html">◫ Manage Businesses</a>'+
+            '<a class="pp-manage-item" href="/dashboard.html">▦ My Workspace</a>'+
+          '</div>'+
+        '</div>'
+      :'')+
+
       /* 1. Businesses & Projects — compact logo TILE strip near the top
          (populated async). No full cards/buttons here — tiles are clickable. */
       '<div id="pp-biz-strip" style="display:none;margin-bottom:24px"></div>'+
@@ -588,21 +606,9 @@ Pegasus.boot(async function () {
       '</div><br>'
     :'')+
 
-    /* OWNER-ONLY floating management controls */
-    (route.isOwner?
-      '<div class="pp-manage" id="ppManage">'+
-        '<div class="pp-manage-menu" id="ppManageMenu">'+
-          '<a class="pp-manage-item" href="/profile-edit.html">\u270E Edit Profile</a>'+
-          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy Profile Link</button>'+
-          '<button class="pp-manage-item" onclick="ppShare(\'linkedin\')">in  Share to LinkedIn</button>'+
-          '<button class="pp-manage-item" onclick="ppShare(\'facebook\')">f  Share to Facebook</button>'+
-          '<button class="pp-manage-item" onclick="ppShare(\'x\')">\u2715  Share to X</button>'+
-          '<button class="pp-manage-item" onclick="ppShare(\'email\')">\u2709  Share by Email</button>'+
-          '<a class="pp-manage-item" href="/my-presences.html">\u25EB Manage Businesses</a>'+
-          '<a class="pp-manage-item" href="/dashboard.html">\u25A6 My Workspace</a>'+
-        '</div>'+
-        '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage</button>'+
-      '</div>'
+    /* (Owner controls moved to the 'Manage Profile' dropdown at the top of the
+       profile \u2014 no floating button.) */
+    ''
     :'')
   );
 
