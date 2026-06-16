@@ -399,6 +399,8 @@ Pegasus.boot(async function () {
     });
     if(socLinks.length){
       out+='<div class="cid-section"><div class="cid-label">Online Presence</div><div>'+socLinks.join('')+'</div></div>';
+    } else if(route.isOwner){
+      out+='<div class="cid-section"><div class="cid-label">Online Presence</div><div style="font-size:12px;color:var(--text4)">Add your LinkedIn, Instagram, X, Facebook, or website so people can connect with you. <a href="/profile-edit.html" style="color:var(--blue)">Add links →</a></div></div>';
     }
     var foot=[];
     if(p.location) foot.push('<span class="cid-meta-item">📍 '+esc(p.location)+'</span>');
@@ -535,6 +537,11 @@ Pegasus.boot(async function () {
           '<div class="pp-about">'+esc(p.bio).split(/\n+/).map(function(t){return t.trim()?'<p>'+t+'</p>':'';}).join('')+'</div>'+
         '</section>'
       :'')+
+
+      /* 4. PROFESSIONAL IDENTITY — role, company, markets, specialties, and
+         Online Presence / social links (the identity card was previously built
+         but never placed in the page). */
+      '<section class="pp-sec"><div class="pp-sec-label">Professional Identity</div><div class="pp-card">'+idFields+'</div></section>'+
 
       /* Ecosystem identity (ecosystem members) */
       ((p.ecosystem_contribution||p.ecosystem_goals)?
