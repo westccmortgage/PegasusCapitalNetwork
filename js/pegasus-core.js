@@ -292,6 +292,61 @@
   function modal(html){ el('modalRoot').innerHTML=html; }
   function closeModal(){ const m=el('modalRoot'); if(m) m.innerHTML=''; }
 
+  /* ── Engagement ("How to engage") ────────────────────────────────────────────
+     Opens a self-styled modal letting a logged-in member express interest in a
+     business page (presence) or a specific opportunity. Records the request via
+     the secure RPC, which notifies the page managers. Personal contact details
+     are never exchanged here — Pegasus mediates the introduction.
+     opts: { presenceId, opportunityId?, name (the business/opportunity name) } */
+  var ENGAGE_INTENTS=[
+    ['interested','I’m interested'],
+    ['introduction','Request an introduction'],
+    ['have_capital','I have capital'],
+    ['need_financing','I need financing'],
+    ['have_deal','I have a deal'],
+    ['partner','I want to partner'],
+    ['contact','Contact through Pegasus']
+  ];
+  async function engageOpen(opts){
+    opts=opts||{};
+    if(!opts.presenceId && !opts.opportunityId){ toast('!','var(--gold-dim)','Unavailable','This page cannot accept requests yet.'); return; }
+    var c=null; try{ c=await window.PegSB.ready; }catch(e){ c=null; }
+    var uid=null; if(c){ try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){} }
+    if(!uid){ location.href='/signin.html'; return; }
+    var name=opts.name||'this page';
+    var sc='position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto';
+    var bx='background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:480px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden';
+    var opts_html=ENGAGE_INTENTS.map(function(o){return '<option value="'+o[0]+'">'+esc(o[1])+'</option>';}).join('');
+    modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)"><div style="font-family:var(--serif);font-size:18px;color:var(--text)">Engage with '+esc(name)+'</div><button onclick="Pegasus.closeModal()" style="border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer">✕</button></div>'+
+      '<div style="padding:20px 22px">'+
+        '<label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">What would you like to share?</label>'+
+        '<select id="engIntent" style="width:100%;padding:10px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:14px">'+opts_html+'</select>'+
+        '<label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">Message <span style="color:var(--text4)">(optional)</span></label>'+
+        '<textarea id="engMsg" rows="4" placeholder="A short note about why you’re reaching out…" style="width:100%;padding:10px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical"></textarea>'+
+        '<div style="font-size:11px;color:var(--text4);margin-top:10px;line-height:1.5">Pegasus shares your profile with this page’s team so they can respond. Your private contact details are never shown.</div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:flex-end;gap:10px;padding:15px 22px;border-top:1px solid var(--border);background:var(--bg1)"><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="engSend">Send</button></div>'+
+    '</div></div>');
+    var sendBtn=el('engSend');
+    sendBtn.onclick=async function(){
+      var intent=(el('engIntent')||{}).value||'interested';
+      var msg=(el('engMsg')||{}).value||'';
+      sendBtn.disabled=true; sendBtn.textContent='Sending…';
+      try{
+        var r=await c.rpc('create_engagement_request',{p_presence_id:opts.presenceId||null,p_opportunity_id:opts.opportunityId||null,p_intent:intent,p_message:msg});
+        if(r&&r.error) throw r.error;
+        closeModal();
+        toast('✓','var(--green-dim)','Sent','Your request was delivered to the team behind '+name+'.');
+      }catch(err){
+        console.error('[engage] failed:',err);
+        var m=(err&&err.message)||'Could not send. Apply migration 055 and restart Supabase, then try again.';
+        toast('!','var(--gold-dim)','Could not send',m);
+        sendBtn.disabled=false; sendBtn.textContent='Send';
+      }
+    };
+  }
+
   // notifications dropdown
   function toggleNotif(ev){ if(ev) ev.stopPropagation(); const p=el('notifPanel'); if(!p) return;
     if(p.innerHTML){ p.innerHTML=''; return; }
@@ -499,7 +554,7 @@
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
     fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal,
-    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath, opportunityPath,
+    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath, opportunityPath, engageOpen,
     refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },
   };

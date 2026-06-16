@@ -249,11 +249,12 @@ Pegasus.boot(async function(){
   var ctaBtn = p.public_cta_url ? '<a class="btn btn-pri" href="'+safeHref(p.public_cta_url)+'" target="_blank" rel="noopener noreferrer">'+esc(p.public_cta_label||'Learn more')+'</a>' : '';
   var convo;
   if(isLoggedIn()){
-    var ctas = ['Request Introduction','I\'m Interested','I Have Capital','I Need Financing','I Have a Deal','I Want to Partner','Contact Through Pegasus'];
     convo = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">How to start a conversation</span></div><div class="pp-card-body">'+
-      (ctaBtn?'<div style="margin-bottom:14px">'+ctaBtn+'</div>':'')+
-      ctas.map(function(t){ return '<div class="ppg-soon"><span>'+esc(t)+'</span><span class="pill">Coming soon</span></div>'; }).join('')+
-      '<div style="margin-top:10px;font-size:11px;color:var(--text4)">Introductions and messaging arrive in an upcoming phase. Personal contact details are never shown publicly.</div>'+
+      (ctaBtn?'<div style="margin-bottom:12px">'+ctaBtn+'</div>':'')+
+      (canManage
+        ? '<div style="font-size:12.5px;color:var(--text4)">When members express interest in this page, their requests appear in your <a href="/dashboard.html#requests" style="color:var(--blue)">Workspace</a>.</div>'
+        : '<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Reach out to the team behind this page. Pegasus shares your profile so they can respond — your private contact details are never shown.</div>'+
+          '<button class="btn btn-pri" onclick="psEngage()">Express Interest / Connect</button>')+
     '</div></div>';
   } else {
     convo = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">How to start a conversation</span></div><div class="pp-card-body">'+
@@ -446,6 +447,9 @@ Pegasus.boot(async function(){
       Pegasus.toast('✓','var(--green-dim)','Archived','Opportunity archived.');
     }catch(err){ console.error('[presence] archive failed:', err); Pegasus.toast('!','var(--gold-dim)','Could not archive', (err&&err.message)||'Try again.'); }
   };
+
+  // Engage handler — express interest in this business page.
+  window.psEngage = function(){ Pegasus.engageOpen({ presenceId: p.id, name: p.name }); };
 
   // Copy link handler
   window.presenceCopyLink = function(){

@@ -161,11 +161,12 @@ Pegasus.boot(async function(){
   var ctaBtn = o.cta_url ? '<a class="btn btn-pri" href="'+safeHref(o.cta_url)+'" target="_blank" rel="noopener noreferrer">'+esc(o.cta_label||'Learn more')+'</a>' : '';
   var engage;
   if(isLoggedIn()){
-    var ctas = ['Request Introduction','I\'m Interested','I Have Capital','I Want to Partner','Contact Through Pegasus'];
     engage = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">How to engage</span></div><div class="pp-card-body">'+
-      (ctaBtn?'<div style="margin-bottom:14px">'+ctaBtn+'</div>':'')+
-      ctas.map(function(t){ return '<div class="ppg-soon"><span>'+esc(t)+'</span><span class="pill">Coming soon</span></div>'; }).join('')+
-      '<div style="margin-top:10px;font-size:11px;color:var(--text4)">Introductions and messaging arrive in an upcoming phase. Personal contact details are never shown publicly.</div>'+
+      (ctaBtn?'<div style="margin-bottom:12px">'+ctaBtn+'</div>':'')+
+      (canManage
+        ? '<div style="font-size:12.5px;color:var(--text4)">When members express interest in this opportunity, their requests appear in your <a href="/dashboard.html#requests" style="color:var(--blue)">Workspace</a>.</div>'
+        : '<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Reach out about this opportunity. Pegasus shares your profile with the presenting team so they can respond — your private contact details are never shown.</div>'+
+          '<button class="btn btn-pri" onclick="oppEngage()">Express Interest / Connect</button>')+
     '</div></div>';
   } else {
     engage = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">How to engage</span></div><div class="pp-card-body">'+
@@ -199,6 +200,9 @@ Pegasus.boot(async function(){
       '<div>'+rightCol+'</div>'+
     '</div>';
   addFooter();
+
+  // Engage handler — express interest in this opportunity (presence derived server-side).
+  window.oppEngage = function(){ Pegasus.engageOpen({ opportunityId: o.id, name: o.title }); };
 
   window.oppCopyLink = function(){
     var url = cleanUrl;

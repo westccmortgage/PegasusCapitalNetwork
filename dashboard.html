@@ -59,6 +59,77 @@ Pegasus.boot((st)=>{
     }catch(err){ /* non-fatal */ }
   })();
 
+  /* ── Engagement Requests — interest people have expressed in your business
+     pages and opportunities (private operations). Triage: mark seen / accepted /
+     declined. Requester identity is a public profile link only — never private
+     contact. Hidden if there's nothing to show. Degrades gracefully if migration
+     055 isn't applied yet. ── */
+  v.insertAdjacentHTML('beforeend','<div id="ws-requests"></div>');
+  (function(){
+    function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    var INTENT={interested:'Interested',introduction:'Introduction',have_capital:'Has capital',need_financing:'Needs financing',have_deal:'Has a deal',partner:'Wants to partner',contact:'Wants to connect'};
+    var STATUS={'new':'New',seen:'Seen',accepted:'Accepted',declined:'Declined'};
+    var TYPE_SEG={company:'business',capital_program:'business',fund:'fund',project:'project',showcase:'showcase',event:'event',property:'property'};
+    function when(ts){ try{ var d=new Date(ts); var s=Math.floor((Date.now()-d)/1000); if(s<60)return'just now'; if(s<3600)return Math.floor(s/60)+'m ago'; if(s<86400)return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }catch(_){ return ''; } }
+    var sb=null, _list=[];
+    async function load(){
+      var host=document.getElementById('ws-requests'); if(!host) return;
+      try{ sb=await window.PegSB.ready; }catch(_){ host.innerHTML=''; return; }
+      try{
+        var r=await sb.rpc('get_engagement_requests_received',{p_presence_id:null});
+        _list=(r && !r.error && Array.isArray(r.data)) ? r.data : [];
+        if(r && r.error){ console.warn('[dashboard] requests RPC — apply migration 055 + restart Supabase:', r.error); host.innerHTML=''; return; }
+      }catch(err){ console.warn('[dashboard] requests load failed:', err); host.innerHTML=''; return; }
+      render();
+    }
+    function render(){
+      var host=document.getElementById('ws-requests'); if(!host) return;
+      if(!_list.length){ host.innerHTML=''; return; }
+      var rows=_list.map(function(q){
+        var m=q.from_member||{}; var pr=q.presence||{}; var op=q.opportunity||null;
+        var ini=(m.name||'—').split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+        var profLink=m.slug?('/u/'+encodeURIComponent(m.slug)):'';
+        var seg=TYPE_SEG[pr.presence_type]||'business';
+        var ctx = op ? ('On opportunity '+e(op.title)) : ('On '+e(pr.name||'your page'));
+        var ctxLink = op && op.slug ? ('/opportunity/'+encodeURIComponent(op.slug)) : (pr.slug?('/'+seg+'/'+encodeURIComponent(pr.slug)):'');
+        var sub=[INTENT[q.intent]||'Interested', m.role, m.location].filter(Boolean).map(e).join(' · ');
+        var statusPill='<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px">'+e(STATUS[q.status]||q.status)+'</span>';
+        var actions = (q.status==='accepted'||q.status==='declined')
+          ? '<button class="btn btn-ghost btn-sm" onclick="wsReq(\''+e(q.id)+'\',\'archived\')">Dismiss</button>'
+          : '<button class="btn btn-pri btn-sm" onclick="wsReq(\''+e(q.id)+'\',\'accepted\')">Accept</button>'+
+            '<button class="btn btn-ghost btn-sm" onclick="wsReq(\''+e(q.id)+'\',\'declined\')">Decline</button>';
+        return '<div style="padding:12px 0;border-bottom:1px solid var(--border)">'+
+          '<div style="display:flex;align-items:flex-start;gap:11px">'+
+            '<div style="width:38px;height:38px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+e(ini)+'</div>'+
+            '<div style="min-width:0;flex:1">'+
+              '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+                (profLink?'<a href="'+e(profLink)+'" style="font-size:13.5px;font-weight:600;color:var(--text);text-decoration:none">'+e(m.name||'Member')+'</a>':'<span style="font-size:13.5px;font-weight:600;color:var(--text)">'+e(m.name||'Member')+'</span>')+
+                statusPill+'<span style="font-size:10px;color:var(--text4);margin-left:auto">'+e(when(q.created_at))+'</span>'+
+              '</div>'+
+              '<div style="font-size:11px;color:var(--text3);margin-top:1px">'+sub+'</div>'+
+              (ctxLink?'<a href="'+e(ctxLink)+'" style="font-size:11.5px;color:var(--blue);text-decoration:none;display:inline-block;margin-top:3px">'+ctx+' →</a>':'<div style="font-size:11.5px;color:var(--text3);margin-top:3px">'+ctx+'</div>')+
+              (q.message?'<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:6px;padding:8px 11px;background:var(--bg2);border-radius:8px">'+e(q.message)+'</div>':'')+
+              '<div style="display:flex;gap:8px;margin-top:9px">'+actions+'</div>'+
+            '</div>'+
+          '</div></div>';
+      }).join('');
+      var newCount=_list.filter(function(q){return q.status==='new';}).length;
+      host.innerHTML='<div class="card" id="requests" style="margin-bottom:14px"><div class="card-head"><div class="card-title">Requests'+(newCount?' <span style="background:var(--red);color:#fff;font-size:9px;font-family:var(--mono);border-radius:8px;padding:1px 6px;vertical-align:middle">'+newCount+'</span>':'')+'</div><span style="font-size:11px;color:var(--text3)">Interest in your pages &amp; opportunities</span></div><div class="card-body" style="padding-top:2px">'+rows+'</div></div>';
+      if(location.hash==='#requests'){ try{ document.getElementById('requests').scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){} }
+    }
+    window.wsReq=async function(id,status){
+      try{
+        var r=await sb.rpc('update_engagement_request_status',{p_id:id,p_status:status});
+        if(r&&r.error) throw r.error;
+        if(status==='archived'){ _list=_list.filter(function(q){return q.id!==id;}); }
+        else { _list=_list.map(function(q){ if(q.id===id) q.status=status; return q; }); }
+        render();
+        Pegasus.toast('✓','var(--green-dim)','Updated', status==='accepted'?'Request accepted.':(status==='declined'?'Request declined.':'Dismissed.'));
+      }catch(err){ console.error('[dashboard] triage failed:',err); Pegasus.toast('!','var(--gold-dim)','Could not update',(err&&err.message)||'Try again.'); }
+    };
+    load();
+  })();
+
   /* ── Billing upgrade success handler ── */
   (async function handleUpgradeSuccess(){
     const params = new URLSearchParams(window.location.search);
