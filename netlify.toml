@@ -102,6 +102,24 @@
   to = "/presence.html?kind=fund&slug=:slug"
   status = 200
 
+# ── Clean opportunity (deal/listing) page URLs → internal resolver (200 rewrite;
+#    browser URL stays clean). /opportunity is canonical; /deal and /listing are
+#    aliases that resolve to the same opportunity page. ──
+[[redirects]]
+  from = "/opportunity/:slug"
+  to = "/opportunity.html?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/deal/:slug"
+  to = "/opportunity.html?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/listing/:slug"
+  to = "/opportunity.html?slug=:slug"
+  status = 200
+
 [[redirects]]
   from = "/dashboard"
   to = "/dashboard.html"

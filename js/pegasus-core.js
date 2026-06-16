@@ -316,6 +316,13 @@
     var seg=map[type]||'business';
     return '/'+seg+'/'+encodeURIComponent(slug);
   }
+  /* Clean, shareable public path for an opportunity (deal/listing/project).
+     The internal resolver (opportunity.html?slug=) still works; users only
+     ever see the clean /opportunity/<slug> URL. */
+  function opportunityPath(slug){
+    if(!slug) return '/opportunity.html';
+    return '/opportunity/'+encodeURIComponent(slug);
+  }
   /* Build the shareable public-profile URL for the current user.
      Prefers profile_slug; falls back to ?id=. */
   var CANONICAL_ORIGIN='https://pegasuscapitalnetwork.com';
@@ -492,7 +499,7 @@
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
     fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal,
-    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath,
+    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath, opportunityPath,
     refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },
   };
