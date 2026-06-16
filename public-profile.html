@@ -556,14 +556,10 @@ Pegasus.boot(async function () {
         '</section>'
       :'')+
 
-      /* 5. NETWORK PRESENCE — moved lower, calmer, ecosystem-oriented */
-      '<section class="pp-sec">'+
-        '<div class="pp-sec-label">Network Presence</div>'+
-        '<div class="pp-presence">'+
-          '<div class="pp-presence-metrics">'+metricsHtml+'</div>'+
-          '<div class="pp-presence-map">'+networkSvg+'</div>'+
-        '</div>'+
-      '</section>'+
+      /* Network value — replaces the old dashboard-style Network Presence /
+         market-bar metric cards (those belong in Workspace, not the public
+         profile). Populated async; hidden if there's nothing safe to show. */
+      '<section class="pp-sec" id="pp-around" style="display:none"></section>'+
 
       /* Featured Opportunities intentionally NOT shown on the personal profile.
          Opportunities / deals / listings belong to a business or project page,
@@ -708,6 +704,34 @@ Pegasus.boot(async function () {
 
   /* Showcase mount removed: opportunities/listings/deals are presented on
      business/project pages, not on the personal profile. */
+
+  /* Network Around This Member — recent visibility-safe ecosystem movement
+     (people + business pages). Hidden if there's nothing safe to show. */
+  (async function loadAround(){
+    try{
+      var host=document.getElementById('pp-around'); if(!host) return;
+      var sb=await window.PegSB.ready;
+      var r=await sb.rpc('get_recent_network_activity');
+      var items=(r && !r.error && r.data) ? r.data : [];
+      if(!items.length) return;
+      var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+      var cards=items.slice(0,6).map(function(a){
+        var isPerson=a.kind==='person';
+        var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
+        var kind=TL[a.kind]||a.kind;
+        var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
+        return '<a href="'+esc(href)+'" style="display:block;background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-decoration:none">'+
+          '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">'+esc(kind)+'</div>'+
+          '<div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.25">'+esc(a.name||'—')+'</div>'+
+          (sub?'<div style="font-size:11.5px;color:var(--text2);margin-top:4px">'+esc(sub)+'</div>':'')+
+        '</a>';
+      }).join('');
+      host.innerHTML='<div class="pp-sec-label">Network Around This Member</div>'+
+        '<div style="font-size:12.5px;color:var(--text3);margin:-6px 0 14px;max-width:620px">People and businesses active across the Pegasus ecosystem.</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">'+cards+'</div>';
+      host.style.display='';
+    }catch(e){ /* non-fatal */ }
+  })();
 
   addFooter();
 });
