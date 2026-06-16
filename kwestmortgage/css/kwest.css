@@ -815,3 +815,8 @@ input[type="range"]:focus-visible{ box-shadow:0 0 0 3px rgba(46,127,166,.3); }
 /* Assumptions-first block (top of dashboard) */
 .dash-assume{ border-left:4px solid var(--ocean); }
 .dash-assume .st__sub{ margin-bottom:8px; }
+
+/* Loan-program cards as links */
+a.card.card--link{ text-decoration:none; display:block; }
+.card__more{ display:inline-block; margin-top:12px; font-weight:600; font-size:.85rem; color:var(--ocean); }
+a.card.card--link:hover .card__more{ color:var(--navy); }

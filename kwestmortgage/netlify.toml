@@ -67,3 +67,45 @@
   from = "/scenario-studio"
   to = "/scenario-studio.html"
   status = 200
+
+# Loan program landing pages (clean URLs)
+[[redirects]]
+  from = "/high-balance-conforming"
+  to = "/high-balance-conforming.html"
+  status = 200
+[[redirects]]
+  from = "/jumbo-loans"
+  to = "/jumbo-loans.html"
+  status = 200
+[[redirects]]
+  from = "/va-loans"
+  to = "/va-loans.html"
+  status = 200
+[[redirects]]
+  from = "/fha-loans"
+  to = "/fha-loans.html"
+  status = 200
+[[redirects]]
+  from = "/dscr-loans"
+  to = "/dscr-loans.html"
+  status = 200
+[[redirects]]
+  from = "/bank-statement-loans"
+  to = "/bank-statement-loans.html"
+  status = 200
+[[redirects]]
+  from = "/self-employed-mortgage"
+  to = "/self-employed-mortgage.html"
+  status = 200
+[[redirects]]
+  from = "/second-home-financing"
+  to = "/second-home-financing.html"
+  status = 200
+[[redirects]]
+  from = "/condo-financing"
+  to = "/condo-financing.html"
+  status = 200
+[[redirects]]
+  from = "/refinance-cash-out"
+  to = "/refinance-cash-out.html"
+  status = 200
