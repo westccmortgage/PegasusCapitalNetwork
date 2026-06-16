@@ -206,10 +206,10 @@
 /* Owner-only floating management controls */
 .pp-manage{position:relative;z-index:30;display:flex;justify-content:flex-end;margin-bottom:14px}
 .pp-manage-btn{padding:8px 16px;border-radius:8px;background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer}
-.pp-manage-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:hidden;min-width:210px;z-index:40}
+.pp-manage-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:auto;max-height:78vh;min-width:220px;z-index:40;padding:5px 0}
 .pp-manage-menu.open{display:flex}
-.pp-manage-item{padding:11px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;border-bottom:1px solid var(--border);text-align:left;cursor:pointer;font-family:var(--sans)}
-.pp-manage-item:last-child{border-bottom:none}
+.pp-manage-label{font-size:9px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:10px 16px 4px}
+.pp-manage-item{padding:9px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:var(--sans);display:block;width:100%}
 .pp-manage-item:hover{background:var(--bg2)}
 
 </style>
@@ -520,14 +520,19 @@ Pegasus.boot(async function () {
         '<div class="pp-manage" id="ppManage">'+
           '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage Profile ▾</button>'+
           '<div class="pp-manage-menu" id="ppManageMenu">'+
-            '<a class="pp-manage-item" href="/profile-edit.html">✎ Edit Profile</a>'+
-            '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">🔗 Copy Profile Link</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'linkedin\')">in &nbsp;Share to LinkedIn</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'facebook\')">f &nbsp;Share to Facebook</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'x\')">✕ &nbsp;Share to X</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'email\')">✉ &nbsp;Share by Email</button>'+
-            '<a class="pp-manage-item" href="/my-presences.html">◫ Manage Businesses</a>'+
-            '<a class="pp-manage-item" href="/dashboard.html">▦ My Workspace</a>'+
+            '<div class="pp-manage-label">Profile</div>'+
+            '<a class="pp-manage-item" href="/profile-edit.html">Edit Profile</a>'+
+            '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">Copy Profile Link</button>'+
+            '<div class="pp-manage-label">Share</div>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'linkedin\')">Share to LinkedIn</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'facebook\')">Share to Facebook</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'x\')">Share to X</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'instagram\')">Copy for Instagram</button>'+
+            '<button class="pp-manage-item" onclick="ppShare(\'email\')">Share by Email</button>'+
+            '<div class="pp-manage-label">Business</div>'+
+            '<a class="pp-manage-item" href="/my-presences.html">Manage Businesses</a>'+
+            '<div class="pp-manage-label">Workspace</div>'+
+            '<a class="pp-manage-item" href="/dashboard.html">My Workspace</a>'+
           '</div>'+
         '</div>'
       :'')+
@@ -616,12 +621,23 @@ Pegasus.boot(async function () {
   window.ppShare=function(net){
     var url='https://pegasuscapitalnetwork.com'+(p.profile_slug?('/u/'+p.profile_slug):('/public-profile.html?id='+p.id));
     var title=(p.full_name||'Pegasus member')+' on Pegasus Capital Network';
-    var u=encodeURIComponent(url), t=encodeURIComponent(title);
+    var caption="I'm sharing my Pegasus Network profile — a central place for my professional work, connected businesses, and long-term relationships across capital, real estate, and business growth.\n\nWe rise. We build. We fly.\n\n"+url;
+    var u=encodeURIComponent(url), t=encodeURIComponent(title), cap=encodeURIComponent(caption);
+    if(net==='instagram'){
+      /* Instagram has no reliable web link-share — copy the caption + link so the
+         member can paste it into a post/bio, then open Instagram. */
+      function done(){ try{ Pegasus.toast('⧉','var(--green-dim)','Caption copied','Paste it into your Instagram post or bio'); }catch(e){} window.open('https://instagram.com','_blank','noopener,noreferrer'); }
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(caption).then(done).catch(done); }
+        else { var ta=document.createElement('textarea'); ta.value=caption; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+      }catch(e){ done(); }
+      return;
+    }
     var dest={
       linkedin:'https://www.linkedin.com/sharing/share-offsite/?url='+u,
       facebook:'https://www.facebook.com/sharer/sharer.php?u='+u,
-      x:'https://twitter.com/intent/tweet?url='+u+'&text='+t,
-      email:'mailto:?subject='+t+'&body='+encodeURIComponent(url)
+      x:'https://twitter.com/intent/tweet?text='+cap,
+      email:'mailto:?subject='+t+'&body='+cap
     }[net];
     if(!dest) return;
     if(net==='email') location.href=dest; else window.open(dest,'_blank','noopener,noreferrer');
