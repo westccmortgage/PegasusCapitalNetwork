@@ -241,7 +241,17 @@ Pegasus.boot(async function () {
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function cap(s){return(s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
-  var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Agent',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
+  var ROLE_LABELS={
+    growth_partner:'Growth Partner',borrower:'Growth Partner',
+    founder:'Founder',entrepreneur:'Entrepreneur',startup_founder:'Startup Founder',business_owner:'Business Owner',
+    developer:'Developer',real_estate_developer:'Real Estate Developer',
+    broker:'Broker',mortgage_broker:'Mortgage Broker',real_estate_broker:'Real Estate Broker',
+    lender:'Lender',private_lender:'Private Lender',hard_money_lender:'Hard Money Lender',
+    investor:'Investor',capital_partner:'Capital Partner',fund_manager:'Fund Manager',family_office:'Family Office',
+    advisor:'Advisor',consultant:'Consultant',insurance:'Insurance Professional',
+    agent:'Agent',real_estate_agent:'Real Estate Agent',service_provider:'Service Provider',
+    business_funding_provider:'Business Funding Provider',rwa_partner:'RWA Partner',
+    ecosystem_member:'Ecosystem Member',member:'Member'};
   function roleLabel(r){r=(r||'').toLowerCase();return ROLE_LABELS[r]||cap(r||'member');}
   function webHref(u){u=(u||'').trim();if(!u)return '#';return /^[a-z][a-z0-9+.-]*:\/\//i.test(u)?u:('https://'+u.replace(/^\/+/,''));}
   function trustBadges(p){var o='';
@@ -355,8 +365,13 @@ Pegasus.boot(async function () {
     var out = '';
     if(p.role) out+='<div class="cid-role">'+esc(roleLabel(p.role))+'</div>';
     if(p.ecosystem_role) out+='<div class="cid-company">'+esc(p.ecosystem_role)+'</div>';
-    if(p.company_name) out+='<div class="cid-company">'+esc(p.company_name)+'</div>';
+    if(p.company_name) out+='<div class="cid-company">Affiliated with '+esc(p.company_name)+'</div>';
     if(p.role||p.company_name||p.ecosystem_role) out+='<div class="cid-divider"></div>';
+    if(p.additional_roles && p.additional_roles.length){
+      out+='<div class="cid-section"><div class="cid-label">Also</div><div class="cid-chips">'+
+        p.additional_roles.map(function(r){return'<span class="cid-chip">'+esc(roleLabel(r))+'</span>';}).join('')+
+      '</div></div>';
+    }
     if(p.ecosystem_contribution){
       out+='<div class="cid-section"><div class="cid-label">Contribution</div><div style="font-size:12.5px;color:var(--text2);line-height:1.6">'+esc(p.ecosystem_contribution)+'</div></div>';
     }
@@ -371,9 +386,19 @@ Pegasus.boot(async function () {
       '</div></div>';
     }
     if(p.specialties&&p.specialties.length){
+      var sp7=p.specialties.slice(0,7);
+      var spMore=p.specialties.length>7 ? '<span class="cid-chip" style="color:var(--text3)">+'+(p.specialties.length-7)+' more</span>' : '';
       out+='<div class="cid-section"><div class="cid-label">Specialties</div><div class="cid-chips">'+
-        p.specialties.map(function(sp){return'<span class="cid-chip">'+esc(sp)+'</span>';}).join('')+
+        sp7.map(function(sp){return'<span class="cid-chip">'+esc(sp)+'</span>';}).join('')+spMore+
       '</div></div>';
+    }
+    /* Online Presence — only links the member intentionally added (safe URLs). */
+    var socDefs=[['LinkedIn',p.linkedin_url],['X',p.x_url],['Instagram',p.instagram_url],['Facebook',p.facebook_url],['YouTube',p.youtube_url],['TikTok',p.tiktok_url]];
+    var socLinks=socDefs.filter(function(d){return d[1];}).map(function(d){
+      return '<a href="'+esc(webHref(d[1]))+'" target="_blank" rel="noopener noreferrer" class="cid-link" style="display:inline-block;margin:0 14px 6px 0;font-size:12.5px">'+esc(d[0])+' ↗</a>';
+    });
+    if(socLinks.length){
+      out+='<div class="cid-section"><div class="cid-label">Online Presence</div><div>'+socLinks.join('')+'</div></div>';
     }
     var foot=[];
     if(p.location) foot.push('<span class="cid-meta-item">📍 '+esc(p.location)+'</span>');
@@ -565,7 +590,11 @@ Pegasus.boot(async function () {
       '<div class="pp-manage" id="ppManage">'+
         '<div class="pp-manage-menu" id="ppManageMenu">'+
           '<a class="pp-manage-item" href="/profile-edit.html">\u270E Edit Profile</a>'+
-          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy My Address</button>'+
+          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy Profile Link</button>'+
+          '<button class="pp-manage-item" onclick="ppShare(\'linkedin\')">in  Share to LinkedIn</button>'+
+          '<button class="pp-manage-item" onclick="ppShare(\'facebook\')">f  Share to Facebook</button>'+
+          '<button class="pp-manage-item" onclick="ppShare(\'x\')">\u2715  Share to X</button>'+
+          '<button class="pp-manage-item" onclick="ppShare(\'email\')">\u2709  Share by Email</button>'+
           '<a class="pp-manage-item" href="/my-presences.html">\u25EB Manage Businesses</a>'+
           '<a class="pp-manage-item" href="/dashboard.html">\u25A6 My Workspace</a>'+
         '</div>'+
@@ -575,6 +604,20 @@ Pegasus.boot(async function () {
   );
 
   window.ppToggleManage=function(){var m=document.getElementById('ppManageMenu');if(m)m.classList.toggle('open');};
+  /* Share the clean Pegasus profile URL to external networks. */
+  window.ppShare=function(net){
+    var url='https://pegasuscapitalnetwork.com'+(p.profile_slug?('/u/'+p.profile_slug):('/public-profile.html?id='+p.id));
+    var title=(p.full_name||'Pegasus member')+' on Pegasus Capital Network';
+    var u=encodeURIComponent(url), t=encodeURIComponent(title);
+    var dest={
+      linkedin:'https://www.linkedin.com/sharing/share-offsite/?url='+u,
+      facebook:'https://www.facebook.com/sharer/sharer.php?u='+u,
+      x:'https://twitter.com/intent/tweet?url='+u+'&text='+t,
+      email:'mailto:?subject='+t+'&body='+encodeURIComponent(url)
+    }[net];
+    if(!dest) return;
+    if(net==='email') location.href=dest; else window.open(dest,'_blank','noopener,noreferrer');
+  };
 
   /* ── Active in Pegasus panel (owner only) ──────────────────────
      Mixed recent activity — people AND business/project pages — via the
