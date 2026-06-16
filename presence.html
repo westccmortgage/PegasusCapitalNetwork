@@ -440,8 +440,17 @@ Pegasus.boot(async function(){
     var manage = canManage
       ? '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="oppShare(\''+esc(o.id)+'\')">Share</button><button class="btn btn-ghost btn-sm" onclick="oppEdit(\''+esc(o.id)+'\')">Edit</button><button class="btn btn-ghost btn-sm" onclick="oppArchive(\''+esc(o.id)+'\')">Archive</button></div>'
       : '';
+    // Visual treatment: presentations with a cover image (esp. Showcase) lead
+    // with a thumbnail so they don't look like every other card.
+    var md=o.media||{}; var cover=md.cover_url || (md.images && md.images[0] && md.images[0].url) || '';
+    var isShowcase = tk==='showcase';
+    var nImg = (md.images && md.images.length) || 0;
+    var thumb = cover
+      ? '<a href="'+esc(href)+'" style="display:block;margin:2px 0 9px"><img src="'+esc(cover)+'" alt="" style="width:100%;height:'+(isShowcase?'170':'130')+'px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"></a>'+(isShowcase&&nImg>1?'<div style="font-size:10px;color:var(--text4);margin:-4px 0 6px">'+nImg+' photos'+(md.video_url?' · video':'')+'</div>':'')
+      : '';
     return '<div style="padding:13px 0;border-bottom:1px solid var(--border)">'+
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+badge+visTag+'</div>'+
+      thumb+
       '<a href="'+esc(href)+'" style="font-size:15px;font-weight:600;color:var(--text);text-decoration:none;display:block">'+esc(o.title)+'</a>'+
       (o.summary?'<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:3px">'+esc(o.summary)+'</div>':'')+
       (meta?'<div style="font-size:11px;color:var(--text3);margin-top:5px">'+meta+'</div>':'')+
@@ -475,7 +484,21 @@ Pegasus.boot(async function(){
     renderOpps(_opps);
   })();
 
-  // ── Owner: guided launch selector → per-format form → create/edit ──────────
+  // ── Owner: 3-step Presentation Builder (Choose → Build → Preview & Publish) ──
+  var GUIDE = {
+    capital_program:'Describe the capital you provide and exactly who it’s for. The clearer the fit, the better the scenarios you’ll attract.',
+    project:'Show the project clearly — what it is, where it stands, and what you need. Investors and partners decide on clarity.',
+    property_listing:'Present the asset like a real listing — location, price, and the numbers that matter. Make it easy to request details.',
+    startup_business_need:'Say what you’re building and exactly what you need. The right capital, partners, or clients respond to specifics.',
+    showcase:'Show your best work. Add a strong cover image, a short story, and a gallery — this is your proof, and the most shareable format.',
+    event_session:'Make the invite clear — what it is, when it happens, and who should be in the room.',
+    partnership_request:'Tell the network exactly who you want to meet and what you bring. Specific asks earn warm introductions.'
+  };
+  // Media level per format: 'full' = cover+gallery+video, 'cover' = one optional image, 'none'.
+  var MEDIA_LEVEL = { showcase:'full', project:'cover', property_listing:'cover', startup_business_need:'cover', event_session:'cover', capital_program:'none', partnership_request:'none' };
+  function emptyMedia(){ return { cover_url:'', video_url:'', images:[] }; }
+  var oppDraft = null; // { tmpl, id, values:{}, media:{}, visibility }
+
   function oppSelector(){
     var cards = TEMPLATES.map(function(t){
       return '<button class="opp-pick" onclick="oppPick(\''+t.key+'\')">'+
@@ -487,79 +510,188 @@ Pegasus.boot(async function(){
     }).join('');
     Pegasus.modal(
       '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:680px">'+
-        '<div class="sce-head"><div class="sce-title">What do you want Pegasus to help you present?</div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 1 of 3 · Choose a format</div><div class="sce-title">What do you want Pegasus to help you present?</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
         '<div class="sce-body" style="max-height:74vh;overflow-y:auto">'+
           '<div style="font-family:var(--serif);font-size:17px;color:var(--text);margin-bottom:4px">Turn what you do into something the right people can discover.</div>'+
-          '<div style="font-size:12.5px;color:var(--text3);line-height:1.55;margin-bottom:16px">Choose the best format. Pegasus will guide you into the right page, fields, and audience — whether you’re offering capital, presenting a project, showing completed work, or looking for the right partners.</div>'+
+          '<div style="font-size:12.5px;color:var(--text3);line-height:1.55;margin-bottom:16px">Build it once. Publish inside Pegasus. Share everywhere else.</div>'+
           '<div class="opp-grid">'+cards+'</div>'+
         '</div>'+
       '</div></div>'
     );
   }
-  window.oppPick = function(k){ try{ oppFormModal(k, null); }catch(err){ console.error('[presence] open form failed:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); } };
+  window.oppPick = function(k){
+    try{
+      var t=TMAP[k]||TMAP['capital_program'];
+      oppDraft = { tmpl:t.key, id:null, values:{}, media:emptyMedia(), visibility:'public_preview' };
+      oppBuilder();
+    }catch(err){ console.error('[presence] open builder failed:', err); Pegasus.toast('!','var(--gold-dim)','Could not open','Please refresh and try again.'); }
+  };
 
-  function oppFormModal(tmplKey, o){
-    o = o || {};
-    var t = TMAP[tmplKey] || TMAP['capital_program']; tmplKey = t.key;
-    var isEdit = !!o.id;
-    function esca(v){ return esc(v==null?'':v); }
-    function f(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><input id="opp_'+col+'" type="text" value="'+esca(val)+'" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px"></div>'; }
-    function ta(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><textarea id="opp_'+col+'" rows="4" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical">'+esca(val)+'</textarea></div>'; }
+  function esca(v){ return esc(v==null?'':v); }
+  function bf(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><input id="opp_'+col+'" type="text" value="'+esca(val)+'" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px"></div>'; }
+  function bta(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><textarea id="opp_'+col+'" rows="4" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical">'+esca(val)+'</textarea></div>'; }
+
+  // STEP 2 — Build
+  function oppBuilder(){
+    var t=TMAP[oppDraft.tmpl]; var v=oppDraft.values; var isEdit=!!oppDraft.id;
     var rows = t.fields.map(function(fd){
-      var val = (fd.col in o) ? o[fd.col] : '';
-      return (fd.kind==='textarea') ? ta(fd.col, fd.label, val, fd.ph) : f(fd.col, fd.label, val, fd.ph);
+      var val = (fd.col in v) ? v[fd.col] : '';
+      return (fd.kind==='textarea') ? bta(fd.col, fd.label, val, fd.ph) : bf(fd.col, fd.label, val, fd.ph);
     }).join('');
     var visKeys=['public_preview','member_only','private'];
-    var visOpts=visKeys.map(function(k){ return '<option value="'+k+'"'+((o.visibility||'public_preview')===k?' selected':'')+'>'+esc(OPP_VIS[k])+'</option>'; }).join('');
-    var visSel='<div style="margin-bottom:4px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">Who can see this</label><select id="opp_vis" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">'+visOpts+'</select></div>';
+    var visOpts=visKeys.map(function(k){ return '<option value="'+k+'"'+((oppDraft.visibility||'public_preview')===k?' selected':'')+'>'+esc(OPP_VIS[k])+'</option>'; }).join('');
+    var visSel='<div style="margin-bottom:2px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">Who can see this</label><select id="opp_vis" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">'+visOpts+'</select></div>';
+    var guide='<div style="font-size:12px;color:var(--text2);line-height:1.55;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:16px">'+esc(GUIDE[t.key]||'')+'</div>';
+    var mediaSec = (MEDIA_LEVEL[t.key]!=='none') ? '<div id="opp-media" style="margin-bottom:14px"></div>' : '';
     var back = isEdit ? '' : '<button class="btn btn-ghost" onclick="oppSelector()" style="margin-right:auto">← Formats</button>';
-    var saveBtn = '<button class="btn btn-pri" id="opp_save">'+(isEdit?'Save changes':'Publish')+'</button>';
     Pegasus.modal(
       '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
-        '<div class="sce-head"><div><div class="sce-title">'+esc((isEdit?'Edit ':'')+t.title)+'</div><div style="font-size:11.5px;color:var(--text3);margin-top:2px">'+esc(t.line)+'</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
-        '<div class="sce-body" style="max-height:66vh;overflow-y:auto">'+rows+visSel+'</div>'+
-        '<div class="sce-foot">'+back+'<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+saveBtn+'</div>'+
+        '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 2 of 3 · Build</div><div class="sce-title">'+esc((isEdit?'Edit ':'')+t.title)+'</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:64vh;overflow-y:auto">'+guide+rows+mediaSec+visSel+'</div>'+
+        '<div class="sce-foot">'+back+'<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="opp_next">Preview & Publish →</button></div>'+
       '</div></div>'
     );
-    var gv=function(col){ var e=document.getElementById('opp_'+col); return e?(e.value||'').trim():''; };
-    document.getElementById('opp_save').onclick = async function(){
-      var btn=this; var titleV=gv('title');
-      if(!titleV){ Pegasus.toast('!','var(--gold-dim)','Title required','Give this a name first.'); return; }
-      btn.disabled=true; btn.textContent='Saving…';
-      var base = { p_title:titleV, p_summary:gv('summary')||null, p_description:gv('description')||null,
-        p_category:gv('category')||null, p_location:gv('location')||null, p_market:gv('market')||null,
-        p_amount_label:gv('amount_label')||null, p_cta_label:t.cta, p_cta_url:gv('cta_url')||null,
-        p_visibility:(document.getElementById('opp_vis')||{}).value||'public_preview', p_template_type:tmplKey };
-      try{
-        var newId=null;
-        if(isEdit){
-          var up=Object.assign({ p_id:o.id, p_opportunity_type:null, p_status:null }, base);
-          var ur = await c.rpc('update_opportunity', up); if(ur && ur.error) throw ur.error;
-        } else {
-          var cr = await c.rpc('create_opportunity', Object.assign({ p_presence_id:p.id, p_opportunity_type:null }, base)); if(cr && cr.error) throw cr.error;
-          newId = cr && cr.data;
-        }
-        Pegasus.closeModal();
-        var rr = await c.rpc('get_opportunities_for_presence', { p_slug: slug });
-        _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps;
-        renderOpps(_opps);
-        if(isEdit){
-          Pegasus.toast('✓','var(--green-dim)','Saved','Updated.');
-        } else {
-          // Post-creation share screen — turn the new opportunity into a distribution asset.
-          var created = newId ? _opps.filter(function(x){return x.id===newId;})[0] : null;
-          if(!created) created = { title:base.p_title, slug:'', summary:base.p_summary, visibility:base.p_visibility, status:'active' };
-          if(Pegasus.opportunityShare){ Pegasus.opportunityShare(created, { businessName:p.name, badge:t.badge, created:true }); }
-          else Pegasus.toast('✓','var(--green-dim)','Saved','Published to your business page.');
-        }
-      }catch(err){
-        console.error('[presence] opportunity save failed:', err);
-        var m=(err&&err.message)||'Could not save. Apply migrations 054/056 and restart Supabase, then try again.';
-        Pegasus.toast('!','var(--gold-dim)','Could not save', m);
-        btn.disabled=false; btn.textContent=isEdit?'Save changes':'Publish';
-      }
+    if(mediaSec) renderOppMedia();
+    document.getElementById('opp_next').onclick = function(){
+      oppReadBuilder();
+      if(!(oppDraft.values.title||'').trim()){ Pegasus.toast('!','var(--gold-dim)','Title required','Give this a name first.'); return; }
+      oppPreviewStep();
     };
   }
+  function oppReadBuilder(){
+    var t=TMAP[oppDraft.tmpl];
+    var gv=function(col){ var e=document.getElementById('opp_'+col); return e?(e.value||'').trim():''; };
+    t.fields.forEach(function(fd){ oppDraft.values[fd.col]=gv(fd.col); });
+    oppDraft.visibility=(document.getElementById('opp_vis')||{}).value||'public_preview';
+    var vu=document.getElementById('opp_videourl'); if(vu) oppDraft.media.video_url=(vu.value||'').trim();
+  }
+
+  // Media (Showcase = cover+gallery+video; others = optional cover)
+  function renderOppMedia(){
+    var host=document.getElementById('opp-media'); if(!host) return;
+    var lvl=MEDIA_LEVEL[oppDraft.tmpl]; var m=oppDraft.media;
+    var cover = m.cover_url
+      ? '<div style="position:relative"><img src="'+esca(m.cover_url)+'" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"><button class="btn btn-ghost btn-sm" onclick="oppMediaRemoveCover()" style="position:absolute;top:8px;right:8px">Remove</button></div>'
+      : '<button class="btn btn-ghost" style="width:100%" onclick="document.getElementById(\'opp-cover-file\').click()">'+(lvl==='full'?'Upload cover image':'Add an image (optional)')+'</button>';
+    var html='<label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px">'+(lvl==='full'?'Cover image':'Image (optional)')+'</label>'+cover+
+      '<input type="file" id="opp-cover-file" accept="image/*" style="display:none" onchange="oppMediaCover(this)">';
+    if(lvl==='full'){
+      var thumbs=(m.images||[]).map(function(im,i){ return '<div style="position:relative"><img src="'+esca(im.url)+'" alt="" style="width:100%;height:78px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><button onclick="oppMediaRemoveImg('+i+')" style="position:absolute;top:3px;right:3px;border:none;background:rgba(8,12,18,.7);color:#fff;width:20px;height:20px;border-radius:6px;cursor:pointer;font-size:11px">✕</button></div>'; }).join('');
+      html+='<label style="display:block;font-size:11px;color:var(--text3);margin:14px 0 6px">Gallery</label>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+thumbs+'</div>'+
+        '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="document.getElementById(\'opp-gallery-file\').click()">+ Add photos</button>'+
+        '<input type="file" id="opp-gallery-file" accept="image/*" multiple style="display:none" onchange="oppMediaGallery(this)">'+
+        '<div style="margin-top:14px">'+bf('videourl','Video URL (optional)', m.video_url, 'YouTube, Vimeo, or a hosted video link')+'</div>';
+    }
+    host.innerHTML=html;
+  }
+  async function oppUpload(file){
+    if(!/^image\//.test(file.type)) throw new Error('Please choose an image file (JPG, PNG, WebP).');
+    if(file.size/1048576 > 5) throw new Error('Image must be under 5MB.');
+    var uid=null; try{ var us=await c.auth.getUser(); uid=us&&us.data&&us.data.user&&us.data.user.id; }catch(e){}
+    if(!uid) throw new Error('Please sign in again.');
+    var ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+    var path=uid+'/opp-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)+'.'+ext;
+    var up=await c.storage.from('profile-media').upload(path,file,{cacheControl:'3600',upsert:true,contentType:file.type});
+    if(up.error){ var em=(up.error.message||'').toLowerCase(); if(em.indexOf('bucket')!==-1||em.indexOf('not found')!==-1) throw new Error('Storage bucket "profile-media" missing — run migration 007.'); throw up.error; }
+    var pub=c.storage.from('profile-media').getPublicUrl(path); var url=pub&&pub.data?pub.data.publicUrl:null;
+    if(!url) throw new Error('Could not resolve the uploaded image URL.');
+    return url;
+  }
+  window.oppMediaCover = async function(input){
+    var file=input&&input.files&&input.files[0]; if(!file) return;
+    Pegasus.toast('◷','var(--blue-dim)','Uploading…','');
+    try{ oppReadBuilder(); oppDraft.media.cover_url=await oppUpload(file); renderOppMedia(); Pegasus.toast('◫','var(--green-dim)','Cover added',''); }
+    catch(e){ console.error('[presence] cover upload:', e); Pegasus.toast('!','var(--gold-dim)','Upload failed',(e&&e.message)||'Try again.'); }
+  };
+  window.oppMediaRemoveCover = function(){ oppReadBuilder(); oppDraft.media.cover_url=''; renderOppMedia(); };
+  window.oppMediaGallery = async function(input){
+    var files=input&&input.files; if(!files||!files.length) return;
+    oppReadBuilder();
+    Pegasus.toast('◷','var(--blue-dim)','Uploading '+files.length+' photo'+(files.length>1?'s':'')+'…','');
+    for(var i=0;i<files.length;i++){
+      try{ var url=await oppUpload(files[i]); oppDraft.media.images.push({url:url, caption:''}); renderOppMedia(); }
+      catch(e){ console.error('[presence] gallery upload:', e); Pegasus.toast('!','var(--gold-dim)','Upload failed',(e&&e.message)||'Try again.'); }
+    }
+    Pegasus.toast('◫','var(--green-dim)','Photos added','');
+  };
+  window.oppMediaRemoveImg = function(i){ oppReadBuilder(); oppDraft.media.images.splice(i,1); renderOppMedia(); };
+
+  function oppDraftToOpp(){
+    var v=oppDraft.values; var t=TMAP[oppDraft.tmpl];
+    return { title:v.title, slug:'', summary:v.summary||'', description:v.description||'', opportunity_type:null, template_type:oppDraft.tmpl,
+      amount_label:v.amount_label||'', location:v.location||'', market:v.market||'', category:v.category||'',
+      cta_label:t.cta, cta_url:v.cta_url||'', visibility:oppDraft.visibility, status:'active', media:oppDraft.media, can_manage:true };
+  }
+
+  // STEP 3 — Preview & Publish
+  function oppPreviewStep(){
+    var t=TMAP[oppDraft.tmpl]; var pseudo=oppDraftToOpp(); var m=oppDraft.media||{};
+    var cardPrev='<div style="pointer-events:none;border:1px solid var(--border);border-radius:12px;padding:4px 14px 2px;background:var(--bg1)">'+oppCard(pseudo)+'</div>';
+    var coverImg = m.cover_url ? '<img src="'+esca(m.cover_url)+'" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:10px;border:1px solid var(--border)">' : '';
+    var galleryStrip = (t.key==='showcase' && m.images && m.images.length) ? '<div style="display:flex;gap:5px;margin:8px 0">'+m.images.slice(0,5).map(function(im){return '<img src="'+esca(im.url)+'" alt="" style="width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">';}).join('')+'</div>' : '';
+    var meta=[pseudo.amount_label,pseudo.location,pseudo.market,pseudo.category].filter(Boolean).map(esc).join(' · ');
+    var detailPrev='<div style="border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--bg1)">'+
+      coverImg+
+      '<div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:'+(t.color)+';margin-bottom:4px">'+esc(t.badge)+' · Detail page</div>'+
+      '<div style="font-size:18px;font-weight:600;color:var(--text);font-family:var(--serif)">'+esc(pseudo.title||'Untitled')+'</div>'+
+      '<div style="font-size:11.5px;color:var(--text3);margin-top:2px">Presented by '+esc(p.name)+'</div>'+
+      (pseudo.summary?'<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:8px">'+esc(pseudo.summary)+'</div>':'')+
+      galleryStrip+
+      (pseudo.description?'<div style="font-size:12px;color:var(--text3);line-height:1.55;margin-top:8px">'+esc(pseudo.description.slice(0,220))+(pseudo.description.length>220?'…':'')+'</div>':'')+
+      (meta?'<div style="font-size:11px;color:var(--text4);margin-top:8px">'+meta+'</div>':'')+
+      (m.video_url?'<div style="font-size:11px;color:var(--blue-lt);margin-top:6px">▶ Video attached</div>':'')+
+    '</div>';
+    var sec=function(t2,h){ return '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px">'+t2+'</div>'+h; };
+    Pegasus.modal(
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
+        '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 3 of 3 · Preview & publish</div><div class="sce-title">Here’s how it will look</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:64vh;overflow-y:auto">'+
+          sec('On your business page', cardPrev)+
+          sec('Detail page', detailPrev)+
+          sec('After you publish', '<div style="font-size:12px;color:var(--text2);line-height:1.55;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px">Pegasus will generate share-ready images (LinkedIn, Instagram post & story, square) and a caption so you can post it across your network.</div>')+
+        '</div>'+
+        '<div class="sce-foot"><button class="btn btn-ghost" onclick="oppBuilder()" style="margin-right:auto">← Back</button><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="opp_publish">'+(oppDraft.id?'Save changes':'Publish')+'</button></div>'+
+      '</div></div>'
+    );
+    document.getElementById('opp_publish').onclick = oppPublish;
+  }
+
+  async function oppPublish(){
+    var btn=document.getElementById('opp_publish'); if(btn){ btn.disabled=true; btn.textContent='Publishing…'; }
+    var t=TMAP[oppDraft.tmpl]; var v=oppDraft.values; var isEdit=!!oppDraft.id;
+    var media = (MEDIA_LEVEL[t.key]==='none') ? null : oppDraft.media;
+    var base = { p_title:(v.title||'').trim(), p_summary:v.summary||null, p_description:v.description||null,
+      p_category:v.category||null, p_location:v.location||null, p_market:v.market||null,
+      p_amount_label:v.amount_label||null, p_cta_label:t.cta, p_cta_url:v.cta_url||null,
+      p_visibility:oppDraft.visibility||'public_preview', p_template_type:oppDraft.tmpl, p_media:media };
+    try{
+      var newId=null;
+      if(isEdit){
+        var ur=await c.rpc('update_opportunity', Object.assign({ p_id:oppDraft.id, p_opportunity_type:null, p_status:null }, base)); if(ur && ur.error) throw ur.error;
+      } else {
+        var cr=await c.rpc('create_opportunity', Object.assign({ p_presence_id:p.id, p_opportunity_type:null }, base)); if(cr && cr.error) throw cr.error;
+        newId = cr && cr.data;
+      }
+      Pegasus.closeModal();
+      var rr=await c.rpc('get_opportunities_for_presence', { p_slug: slug });
+      _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps;
+      renderOpps(_opps);
+      if(isEdit){ Pegasus.toast('✓','var(--green-dim)','Saved','Your presentation was updated.'); }
+      else {
+        var created = newId ? _opps.filter(function(x){return x.id===newId;})[0] : null;
+        if(!created) created = Object.assign(oppDraftToOpp(), { slug:'' });
+        if(Pegasus.opportunityShare) Pegasus.opportunityShare(created, { businessName:p.name, badge:t.badge, created:true });
+        else Pegasus.toast('✓','var(--green-dim)','Published','Live on your business page.');
+      }
+    }catch(err){
+      console.error('[presence] publish failed:', err);
+      var msg=(err&&err.message)||'Could not publish. Apply migrations 054/056/057 and restart Supabase, then try again.';
+      Pegasus.toast('!','var(--gold-dim)','Could not publish', msg);
+      if(btn){ btn.disabled=false; btn.textContent=oppDraft.id?'Save changes':'Publish'; }
+    }
+  }
+
   window.oppCreate = function(){
     try{ oppSelector(); }
     catch(err){ console.error('[presence] could not open selector:', err); Pegasus.toast('!','var(--gold-dim)','Could not open','Please refresh and try again.'); }
@@ -568,10 +700,13 @@ Pegasus.boot(async function(){
     try{
       var o=_opps.filter(function(x){return x.id===id;})[0]; if(!o){ return; }
       var full=o;
-      // Fetch the full record (list payload omits description/cta_url) so edit pre-fills correctly.
       try{ var r=await c.rpc('get_opportunity_by_slug',{ p_slug:o.slug }); if(r && !r.error && r.data && r.data.opportunity) full=Object.assign({}, o, r.data.opportunity); }catch(e){}
-      oppFormModal(tmplForOpp(full) || 'capital_program', full);
-    }catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+      var tk=tmplForOpp(full) || 'capital_program'; var t=TMAP[tk];
+      var values={}; t.fields.forEach(function(fd){ values[fd.col]= full[fd.col]!=null ? full[fd.col] : ''; });
+      var md=full.media||emptyMedia(); md.images=md.images||[];
+      oppDraft = { tmpl:tk, id:full.id, values:values, media:{cover_url:md.cover_url||'', video_url:md.video_url||'', images:md.images.slice()}, visibility:full.visibility||'public_preview' };
+      oppBuilder();
+    }catch(err){ console.error('[presence] could not open builder:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
   };
   window.oppShare = function(id){
     var o=_opps.filter(function(x){return x.id===id;})[0]; if(!o) return;

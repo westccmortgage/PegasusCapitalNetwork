@@ -38,6 +38,11 @@
 .ppg-soon:last-child{border-bottom:none}
 .ppg-soon .pill{font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:12px;padding:3px 8px;margin-left:auto}
 .opp-desc{font-size:14.5px;color:var(--text2);line-height:1.7;white-space:pre-wrap}
+.opp-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opp-gallery img{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block}
+@media(max-width:560px){.opp-gallery{grid-template-columns:1fr 1fr}}
+.opp-embed{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.opp-embed iframe{position:absolute;inset:0;width:100%;height:100%}
 </style>
 </head><body>
 <!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
@@ -183,10 +188,38 @@ Pegasus.boot(async function(){
   if(canManage) rf.push(railItem('Visibility', visLbl));
   var rail = '<div class="pp-strip"><div class="pp-strip-inner">'+rf.join('')+'</div></div>';
 
-  // MAIN — description + how to engage
+  // MEDIA — cover, gallery, video (Showcase leads with visuals)
+  var media = o.media || {};
+  function safeImg(u){ return Pegasus.safeUrl ? Pegasus.safeUrl(u) : esc(u); }
+  function vembed(u){ u=(u||'').trim(); if(!u) return '';
+    var yt=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_\-]{6,})/);
+    if(yt) return '<div class="opp-embed"><iframe src="https://www.youtube.com/embed/'+esc(yt[1])+'" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>';
+    var vm=u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if(vm) return '<div class="opp-embed"><iframe src="https://player.vimeo.com/video/'+esc(vm[1])+'" frameborder="0" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe></div>';
+    return '<a class="btn btn-ghost btn-sm" href="'+safeHref(u)+'" target="_blank" rel="noopener noreferrer">▶ Watch video</a>';
+  }
+  var coverBig = media.cover_url ? '<img src="'+safeImg(media.cover_url)+'" alt="" style="width:100%;max-height:440px;object-fit:cover;border-radius:12px;border:1px solid var(--border);display:block">' : '';
+  var vid = media.video_url ? vembed(media.video_url) : '';
+  var galleryImgs = (media.images||[]).filter(function(im){return im&&im.url;});
+  var gallery = galleryImgs.length ? '<div class="opp-gallery">'+galleryImgs.map(function(im){return '<a href="'+safeHref(im.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+safeImg(im.url)+'" alt="'+esc(im.caption||'')+'"></a>';}).join('')+'</div>' : '';
+  var mediaCard='';
+  if(coverBig||vid||gallery){
+    mediaCard='<div class="pp-card"><div class="pp-card-body" style="padding:14px">'+
+      (coverBig?'<div'+((vid||gallery)?' style="margin-bottom:12px"':'')+'>'+coverBig+'</div>':'')+
+      (vid?'<div'+(gallery?' style="margin-bottom:12px"':'')+'>'+vid+'</div>':'')+
+      gallery+
+    '</div></div>';
+  }
+
+  // MAIN — media + description + how to engage (label adapts to format)
+  var descLabel = (o.template_type==='showcase') ? 'Project story'
+    : (o.template_type==='event_session') ? 'Event details'
+    : (o.template_type==='property_listing') ? 'Property details'
+    : (o.template_type==='capital_program') ? 'Program details'
+    : 'About this presentation';
   var descCard = o.description
-    ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">About this opportunity</span></div><div class="pp-card-body"><div class="opp-desc">'+esc(o.description)+'</div></div></div>'
-    : (o.summary ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">About this opportunity</span></div><div class="pp-card-body"><div class="opp-desc">'+esc(o.summary)+'</div></div></div>' : '');
+    ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">'+esc(descLabel)+'</span></div><div class="pp-card-body"><div class="opp-desc">'+esc(o.description)+'</div></div></div>'
+    : (o.summary ? '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">'+esc(descLabel)+'</span></div><div class="pp-card-body"><div class="opp-desc">'+esc(o.summary)+'</div></div></div>' : '');
 
   var ctaBtn = o.cta_url ? '<a class="btn btn-pri" href="'+safeHref(o.cta_url)+'" target="_blank" rel="noopener noreferrer">'+esc(o.cta_label||'Learn more')+'</a>' : '';
   var engage;
@@ -205,7 +238,7 @@ Pegasus.boot(async function(){
       '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-pri" href="/signin.html">Sign In to Connect</a><a class="btn btn-ghost" href="/signup.html">Create Your Free Page</a></div>'+
     '</div></div>';
   }
-  var mainCol = descCard + engage;
+  var mainCol = mediaCard + descCard + engage;
 
   // RIGHT — Presented by
   var presented = '';
@@ -238,7 +271,7 @@ Pegasus.boot(async function(){
   // Share this opportunity outside Pegasus (visibility rules enforced in shareSheet).
   window.oppShareThis = function(){
     Pegasus.opportunityShare(
-      { title:o.title, slug:o.slug, summary:o.summary, visibility:o.visibility, status:o.status },
+      { title:o.title, slug:o.slug, summary:o.summary, visibility:o.visibility, status:o.status, media:o.media },
       { businessName: by.name||'', badge: typeLbl }
     );
   };

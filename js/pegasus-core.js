@@ -360,129 +360,150 @@
      no fake "posted" messages. */
   var SHARE_ORIGIN='https://pegasuscapitalnetwork.com';
   function shareLoadImg(src){ return new Promise(function(res,rej){ var im=new Image(); im.onload=function(){res(im);}; im.onerror=function(){rej(new Error('img'));}; im.src=src; }); }
-  // Branded 1080×1080 image card (same-origin assets only → never taints canvas).
-  async function buildShareCard(card){
-    card=card||{}; var W=1080,H=1080, cx=540;
+  function shareLoadImgCors(src){ return new Promise(function(res,rej){ var im=new Image(); im.crossOrigin='anonymous'; im.onload=function(){res(im);}; im.onerror=function(){rej(new Error('img'));}; im.src=src; }); }
+  // The social asset sizes Pegasus generates from one presentation.
+  var SHARE_FORMATS=[
+    { key:'li',  label:'LinkedIn / Facebook / X', sub:'1200×630',  w:1200, h:630,  name:'link' },
+    { key:'igp', label:'Instagram post',          sub:'1080×1350', w:1080, h:1350, name:'instagram-post' },
+    { key:'igs', label:'Instagram story',         sub:'1080×1920', w:1080, h:1920, name:'instagram-story' },
+    { key:'sq',  label:'Square',                  sub:'1080×1080', w:1080, h:1080, name:'square' }
+  ];
+  /* Branded share-asset generator. Adapts to any size; uses a Showcase cover
+     image as a full-bleed background when one is provided (cross-origin Supabase
+     URLs send CORS, so this works; if it ever taints, we fall back to the
+     gradient). Only same-origin brand assets are required, so it never breaks.
+     card: { eyebrow, title, subtitle, summary, url, coverUrl }
+     opts: { w, h, name } */
+  async function buildShareCard(card, opts){
+    card=card||{}; opts=opts||{};
+    var W=opts.w||1080, H=opts.h||1080;
     var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
     if(!ctx) throw new Error('no canvas');
     try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
-    var g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#0B1626'); g.addColorStop(1,'#060B14');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    var rg=ctx.createRadialGradient(cx,300,40,cx,300,620); rg.addColorStop(0,'rgba(58,143,232,.15)'); rg.addColorStop(1,'rgba(58,143,232,0)');
-    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#3A8FE8'; ctx.fillRect(0,0,W,7);
-    try{ var wm=await shareLoadImg('/assets/brand/pegasus-wordmark.png'); var ww=300, wh=ww*(wm.height/wm.width||0.18); ctx.globalAlpha=.92; ctx.drawImage(wm, cx-ww/2, 80, ww, wh); ctx.globalAlpha=1; }catch(e){}
-    ctx.textAlign='center';
-    // Eyebrow / type
-    if(card.eyebrow){ ctx.fillStyle='#5B8FD6'; ctx.font='500 26px "IBM Plex Mono", monospace'; ctx.fillText(String(card.eyebrow).toUpperCase().slice(0,32), cx, 360); }
-    // Title (wrap up to 3 lines)
-    ctx.fillStyle='#F4F8FC';
-    var fs=72; ctx.font='500 '+fs+'px "Cormorant Garamond", serif';
-    var words=String(card.title||'Opportunity').split(/\s+/), lines=[], cur='';
-    for(var i=0;i<words.length;i++){ var test=cur?cur+' '+words[i]:words[i]; if(ctx.measureText(test).width>W-160 && cur){ lines.push(cur); cur=words[i]; } else cur=test; }
-    if(cur) lines.push(cur); lines=lines.slice(0,3);
-    if(lines.length>=3){ fs=58; ctx.font='500 '+fs+'px "Cormorant Garamond", serif'; }
-    var ty=440; lines.forEach(function(ln){ ctx.fillText(ln, cx, ty); ty+=fs+6; });
-    // Presented by
-    if(card.subtitle){ ctx.fillStyle='#9FB4CC'; ctx.font='400 30px "IBM Plex Sans", sans-serif'; ctx.fillText(String(card.subtitle).slice(0,60), cx, ty+14); ty+=44; }
-    // Summary (wrap 2 lines)
-    if(card.summary){ ctx.fillStyle='#7E97B4'; ctx.font='400 26px "IBM Plex Sans", sans-serif';
-      var sw=String(card.summary).split(/\s+/), sl=[], sc=''; for(var j=0;j<sw.length;j++){ var st=sc?sc+' '+sw[j]:sw[j]; if(ctx.measureText(st).width>W-220 && sc){ sl.push(sc); sc=sw[j]; } else sc=st; } if(sc) sl.push(sc); sl=sl.slice(0,2);
-      var sy=ty+30; sl.forEach(function(ln){ ctx.fillText(ln, cx, sy); sy+=36; }); }
-    // Divider + URL
-    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-90,936); ctx.lineTo(cx+90,936); ctx.stroke();
-    ctx.fillStyle='#5B8FD6'; ctx.font='400 26px "IBM Plex Mono", monospace';
-    ctx.fillText(('pegasuscapitalnetwork.com'+(card.url||'')).slice(0,52), cx, 986);
-    ctx.fillStyle='rgba(255,255,255,.32)'; ctx.font='400 18px "IBM Plex Mono", monospace';
-    ctx.fillText('P E G A S U S   C A P I T A L   N E T W O R K', cx, 1028);
+    var k=(W>H)?(H/1080):(Math.min(W,H)/1080); var pad=Math.round(64*k);
+    var cover=null;
+    if(card.coverUrl){ try{ cover=await shareLoadImgCors(card.coverUrl); }catch(e){ cover=null; } }
+    if(cover){ try{ var s=Math.max(W/cover.width,H/cover.height), dw=cover.width*s, dh=cover.height*s; ctx.drawImage(cover, W/2-dw/2, H/2-dh/2, dw, dh); }catch(e){ cover=null; } }
+    if(!cover){
+      var g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#0B1626'); g.addColorStop(1,'#060B14'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      var rg=ctx.createRadialGradient(W/2,H*0.34,40,W/2,H*0.34,Math.max(W,H)*0.65); rg.addColorStop(0,'rgba(58,143,232,.16)'); rg.addColorStop(1,'rgba(58,143,232,0)'); ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    } else {
+      var sg=ctx.createLinearGradient(0,0,0,H); sg.addColorStop(0,'rgba(6,11,20,.55)'); sg.addColorStop(0.5,'rgba(6,11,20,.30)'); sg.addColorStop(1,'rgba(6,11,20,.94)'); ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
+    }
+    ctx.fillStyle='#3A8FE8'; ctx.fillRect(0,0,W,Math.max(5,Math.round(7*k)));
+    var wmH=0;
+    try{ var wm=await shareLoadImg('/assets/brand/pegasus-wordmark.png'); var ww=Math.round(220*k); var wh=ww*(wm.height/wm.width||0.18); ctx.globalAlpha=.95; ctx.drawImage(wm, pad, pad, ww, wh); ctx.globalAlpha=1; wmH=wh; }catch(e){}
+    function wrap(text, font, maxW, maxLines){ ctx.font=font; var words=String(text||'').split(/\s+/), lines=[], cur=''; for(var i=0;i<words.length;i++){ var t=cur?cur+' '+words[i]:words[i]; if(ctx.measureText(t).width>maxW && cur){ lines.push(cur); cur=words[i]; } else cur=t; } if(cur) lines.push(cur); if(lines.length>maxLines){ lines=lines.slice(0,maxLines); lines[maxLines-1]=lines[maxLines-1].replace(/[\s\W]*$/,'')+'…'; } return lines; }
+    var maxW=W-pad*2, blocks=[];
+    if(card.eyebrow) blocks.push({lines:[String(card.eyebrow).toUpperCase()], font:'500 '+Math.round(26*k)+'px "IBM Plex Mono", monospace', fill:'#9FC1EA', lh:Math.round(36*k), gap:0});
+    var tf=Math.round((W>H?52:64)*k);
+    blocks.push({lines:wrap(card.title||'Opportunity','500 '+tf+'px "Cormorant Garamond", serif',maxW,(W>H?3:4)), font:'500 '+tf+'px "Cormorant Garamond", serif', fill:'#F6F9FC', lh:Math.round(tf*1.05), gap:Math.round(10*k)});
+    if(card.subtitle) blocks.push({lines:[String(card.subtitle).slice(0,64)], font:'400 '+Math.round(30*k)+'px "IBM Plex Sans", sans-serif', fill:'#AFC4DC', lh:Math.round(40*k), gap:Math.round(14*k)});
+    if(card.summary) blocks.push({lines:wrap(card.summary,'400 '+Math.round(26*k)+'px "IBM Plex Sans", sans-serif',maxW,2), font:'400 '+Math.round(26*k)+'px "IBM Plex Sans", sans-serif', fill:'#92A9C4', lh:Math.round(36*k), gap:Math.round(12*k)});
+    var totalH=0; blocks.forEach(function(b){ totalH+=b.gap + b.lines.length*b.lh; });
+    var urlGap=Math.round(80*k), blockBottom=H-pad-urlGap;
+    var y=Math.max(pad+wmH+Math.round(30*k), blockBottom-totalH);
+    ctx.textAlign='left'; ctx.textBaseline='top';
+    blocks.forEach(function(b){ y+=b.gap; ctx.fillStyle=b.fill; ctx.font=b.font; b.lines.forEach(function(ln){ ctx.fillText(ln,pad,y); y+=b.lh; }); });
+    ctx.fillStyle='#7FB0E6'; ctx.font='400 '+Math.round(25*k)+'px "IBM Plex Mono", monospace'; ctx.textBaseline='alphabetic';
+    ctx.fillText(('pegasuscapitalnetwork.com'+(card.url||'')).slice(0,54), pad, H-pad);
     var blob=await new Promise(function(res,rej){ cv.toBlob(function(b){ b?res(b):rej(new Error('toBlob')); },'image/png',0.92); });
     var dataUrl=null; try{ dataUrl=cv.toDataURL('image/png'); }catch(e){}
-    return { file:new File([blob],'pegasus-opportunity.png',{type:'image/png'}), dataUrl:dataUrl };
+    return { file:new File([blob],'pegasus-'+(opts.name||'card')+'.png',{type:'image/png'}), dataUrl:dataUrl, w:W, h:H };
   }
   function shareClip(text){ try{ if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text); }catch(e){}
     try{ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }catch(e){} return Promise.resolve(); }
 
-  /* opts: { url, title, subtitle, badge, summary, caption, visibility, status,
-            created (bool → post-create heading), card:{eyebrow,title,subtitle,summary,url} } */
+  /* Share package modal. opts: { url, title, subtitle, badge, summary, caption,
+     shortText, visibility, status, created, card:{...,coverUrl} } */
   function shareSheet(opts){
     opts=opts||{}; var url=opts.url||SHARE_ORIGIN; var caption=opts.caption||(opts.title+' — '+url);
+    var shortText=opts.shortText||((opts.title||'Opportunity')+(opts.subtitle?(' — '+opts.subtitle):''));
     var vis=opts.visibility||'public_preview'; var status=opts.status||'active';
-    var sc='position:fixed;inset:0;background:rgba(8,12,18,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:34px 18px;z-index:1000;overflow-y:auto';
-    var bx='background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.42)';
+    var shareable=(status!=='archived' && vis!=='private');
+    var sc='position:fixed;inset:0;background:rgba(8,12,18,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:30px 18px;z-index:1000;overflow-y:auto';
+    var bx='background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:470px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.42)';
     var head = opts.created
-      ? '<div style="font-family:var(--serif);font-size:22px;color:var(--text)">Opportunity created.</div><div style="font-size:13px;color:var(--text2);line-height:1.55;margin-top:6px">Your opportunity is now live inside Pegasus. Share it with your network to bring the right people back to Pegasus.</div>'
-      : '<div style="font-family:var(--serif);font-size:21px;color:var(--text)">Share this opportunity</div><div style="font-size:12.5px;color:var(--text3);line-height:1.5;margin-top:5px">Bring the right people back to Pegasus.</div>';
-    // Card summary chip
+      ? '<div style="font-family:var(--serif);font-size:22px;color:var(--text)">Published.</div><div style="font-size:13px;color:var(--text2);line-height:1.55;margin-top:6px">Your presentation is live inside Pegasus. Build it once — now share it everywhere to bring the right people back.</div>'
+      : '<div style="font-family:var(--serif);font-size:21px;color:var(--text)">Share this presentation</div><div style="font-size:12.5px;color:var(--text3);line-height:1.5;margin-top:5px">Bring the right people back to Pegasus.</div>';
     var chip = '<div style="margin-top:14px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">'+
       (opts.badge?'<div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:3px">'+esc(opts.badge)+'</div>':'')+
-      '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(opts.title||'Opportunity')+'</div>'+
+      '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(opts.title||'Presentation')+'</div>'+
       (opts.subtitle?'<div style="font-size:11.5px;color:var(--text3);margin-top:1px">'+esc(opts.subtitle)+'</div>':'')+
       '<div style="font-size:11px;color:var(--text4);margin-top:5px;font-family:var(--mono);word-break:break-all">'+esc(url.replace(/^https?:\/\//,''))+'</div></div>';
-
-    var btns;
-    var viewBtn='<button class="btn btn-ghost" id="shView">View Opportunity</button>';
-    var copyBtn='<button class="btn btn-ghost" id="shCopy">Copy Opportunity Link</button>';
+    var lbl=function(t){ return '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px">'+t+'</div>'; };
+    var body;
     if(status==='archived'){
-      btns='<div style="font-size:12.5px;color:var(--text3);margin-top:14px">This opportunity is archived and can’t be shared. Make it active again to share it.</div><div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">'+viewBtn+'</div>';
+      body='<div style="font-size:12.5px;color:var(--text3);margin-top:14px">This presentation is archived and can’t be shared. Make it active again to share it.</div><div style="margin-top:14px"><button class="btn btn-ghost" style="width:100%" id="shView">View presentation</button></div>';
     } else if(vis==='private'){
-      btns='<div style="font-size:12.5px;color:var(--gold);margin-top:14px;line-height:1.5">This opportunity is private and cannot be publicly shared. Set it to Public to share it outside Pegasus.</div><div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">'+copyBtn+viewBtn+'</div>';
+      body='<div style="font-size:12.5px;color:var(--gold);margin-top:14px;line-height:1.5">This presentation is private and cannot be publicly shared. Set its visibility to Public to share it outside Pegasus.</div><div style="display:flex;flex-direction:column;gap:9px;margin-top:14px"><button class="btn btn-ghost" id="shCopy">Copy link</button><button class="btn btn-ghost" id="shView">View presentation</button></div>';
     } else {
       var warn = vis==='member_only'
-        ? '<div style="font-size:11.5px;color:var(--gold);line-height:1.5;margin-top:12px;padding:9px 11px;background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.25);border-radius:9px">This opportunity is member-only. People outside Pegasus may see a locked preview or a sign-in prompt.</div>'
+        ? '<div style="font-size:11.5px;color:var(--gold);line-height:1.5;margin-top:12px;padding:9px 11px;background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.25);border-radius:9px">This is member-only. People outside Pegasus may see a locked preview or a sign-in prompt.</div>'
         : '';
-      btns=warn+'<div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">'+
-        '<button class="btn btn-pri" id="shLi">Share on LinkedIn</button>'+
-        '<button class="btn btn-ghost" id="shFb">Share on Facebook</button>'+
-        '<button class="btn btn-ghost" id="shX">Share on X</button>'+
-        '<button class="btn btn-ghost" id="shIg">Copy for Instagram</button>'+
-        '<button class="btn btn-ghost" id="shEm">Share by Email</button>'+
-        copyBtn+viewBtn+
-      '</div>';
+      var imgBtns = SHARE_FORMATS.map(function(fmt,i){ return '<button class="btn btn-ghost btn-sm" id="shImg'+i+'" style="text-align:left;justify-content:flex-start">'+esc(fmt.label)+' <span style="color:var(--text4);font-family:var(--mono);font-size:9px;margin-left:4px">'+fmt.sub+'</span></button>'; }).join('');
+      body=warn+
+        lbl('Post to')+
+        '<div style="display:flex;flex-direction:column;gap:8px"><button class="btn btn-pri" id="shLi">Share on LinkedIn</button>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn btn-ghost" id="shFb">Facebook</button><button class="btn btn-ghost" id="shX">X</button></div>'+
+        '<button class="btn btn-ghost" id="shEm">Share by Email</button></div>'+
+        lbl('Share images')+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+imgBtns+'</div>'+
+        '<div style="font-size:10.5px;color:var(--text4);margin-top:7px;line-height:1.45">On a phone these share straight to the app; on a computer they download so you can upload them.</div>'+
+        lbl('Caption & link')+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn btn-ghost btn-sm" id="shCap">Copy caption</button><button class="btn btn-ghost btn-sm" id="shShort">Copy short text</button></div>'+
+        '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><button class="btn btn-ghost" id="shCopy">Copy link</button><button class="btn btn-ghost" id="shView">View presentation</button></div>';
     }
     modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
       '<div style="padding:20px 22px;border-bottom:1px solid var(--border)">'+head+'</div>'+
-      '<div style="padding:18px 22px">'+chip+btns+
-        '<div style="font-size:10.5px;color:var(--text4);margin-top:12px;line-height:1.5">Pegasus prepares the post — you confirm it on each platform. Your caption is copied automatically.</div>'+
+      '<div style="padding:8px 22px 20px;max-height:74vh;overflow-y:auto">'+chip+body+
+        '<div style="font-size:10.5px;color:var(--text4);margin-top:14px;line-height:1.5">Pegasus prepares everything — you confirm the post on each platform. No automatic posting.</div>'+
       '</div>'+
     '</div></div>');
 
     function openWin(u){ window.open(u,'_blank','noopener,noreferrer'); }
     function on(id,fn){ var e=el(id); if(e) e.onclick=fn; }
     var u=encodeURIComponent(url), cap=encodeURIComponent(caption);
-    var shortText=encodeURIComponent((opts.title||'Opportunity')+(opts.subtitle?(' — '+opts.subtitle):''));
     on('shView', function(){ closeModal(); location.href=url; });
     on('shCopy', function(){ shareClip(url).then(function(){ toast('⧉','var(--green-dim)','Link copied', url.replace(/^https?:\/\//,'')); }); });
+    on('shCap',  function(){ shareClip(caption).then(function(){ toast('⧉','var(--green-dim)','Caption copied','Paste it into your post.'); }); });
+    on('shShort',function(){ shareClip(shortText+'\n'+url).then(function(){ toast('⧉','var(--green-dim)','Short text copied',''); }); });
     on('shLi', function(){ shareClip(caption).then(function(){ toast('⧉','var(--green-dim)','Caption copied','Paste it into your LinkedIn post.'); openWin('https://www.linkedin.com/sharing/share-offsite/?url='+u); }); });
     on('shFb', function(){ openWin('https://www.facebook.com/sharer/sharer.php?u='+u); });
-    on('shX',  function(){ openWin('https://twitter.com/intent/tweet?text='+shortText+'&url='+u); });
-    on('shEm', function(){ location.href='mailto:?subject='+encodeURIComponent((opts.title||'Opportunity on Pegasus'))+'&body='+cap; });
-    on('shIg', async function(){
-      await shareClip(caption);
-      var img=null; try{ img=await buildShareCard(opts.card||{eyebrow:opts.badge,title:opts.title,subtitle:opts.subtitle,summary:opts.summary,url:''}); }catch(e){ console.warn('[share] card failed:',e); }
-      var file=img&&img.file;
+    on('shX',  function(){ openWin('https://twitter.com/intent/tweet?text='+encodeURIComponent(shortText)+'&url='+u); });
+    on('shEm', function(){ location.href='mailto:?subject='+encodeURIComponent((opts.title||'A presentation on Pegasus'))+'&body='+cap; });
+    SHARE_FORMATS.forEach(function(fmt,i){ on('shImg'+i, function(){ shareImage(fmt); }); });
+    async function shareImage(fmt){
+      toast('◷','var(--blue-dim)','Preparing image','Building '+fmt.sub+'…');
+      var img=null; try{ img=await buildShareCard(opts.card||{eyebrow:opts.badge,title:opts.title,subtitle:opts.subtitle,summary:opts.summary,url:''}, {w:fmt.w,h:fmt.h,name:fmt.name}); }
+      catch(e){ console.warn('[share] image failed:',e); toast('!','var(--gold-dim)','Could not build image','Please try again.'); return; }
+      var file=img.file;
+      // Copy caption so it's ready to paste wherever they post.
+      shareClip(caption);
       if(file && navigator.canShare && navigator.canShare({files:[file]})){
         try{ await navigator.share({ files:[file], title:opts.title, text:caption }); return; }
         catch(err){ if(err && err.name==='AbortError') return; }
       }
-      if(img&&img.dataUrl){ try{ var a=document.createElement('a'); a.href=img.dataUrl; a.download='pegasus-opportunity.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }catch(e){} }
-      openWin('https://instagram.com');
-      toast('⧉','var(--green-dim)','Ready for Instagram','Caption copied'+(img&&img.dataUrl?' & image saved':'')+' — paste it into your post.');
-    });
+      if(img.dataUrl){ try{ var a=document.createElement('a'); a.href=img.dataUrl; a.download='pegasus-'+fmt.name+'.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }catch(e){} }
+      toast('✓','var(--green-dim)','Image saved · caption copied', fmt.label+' ('+fmt.sub+')');
+    }
   }
   /* High-level helper used by opportunity/business pages.
-     opp: { title, slug, summary, visibility, status }
+     opp: { title, slug, summary, visibility, status, media }
      opts: { businessName, badge, created } */
   function opportunityShare(opp, opts){
     opp=opp||{}; opts=opts||{};
     var path=opportunityPath(opp.slug); var url=SHARE_ORIGIN+path;
     var biz=opts.businessName||''; var badge=opts.badge||'Opportunity';
-    var caption='We just added a new opportunity inside Pegasus Capital Network.\n\n'+
+    var md=opp.media||{}; var cover=md.cover_url || (md.images && md.images[0] && md.images[0].url) || '';
+    var caption='We just added a new presentation inside Pegasus Capital Network.\n\n'+
       (opp.title||'')+(biz?(' — presented by '+biz):'')+'.\n\n'+
       'Pegasus helps connect the right people through trusted visibility, business pages, opportunities, and curated introductions.\n\n'+
-      'View the opportunity here:\n'+url;
+      'View it here:\n'+url;
     shareSheet({ url:url, title:opp.title, subtitle: biz?('Presented by '+biz):'', badge:badge,
-      summary:opp.summary||'', caption:caption, visibility:opp.visibility, status:opp.status, created:!!opts.created,
-      card:{ eyebrow:badge, title:opp.title, subtitle: biz?('Presented by '+biz):'', summary:opp.summary||'', url:path } });
+      summary:opp.summary||'', caption:caption, shortText:(opp.title||'')+(biz?(' — '+biz):''),
+      visibility:opp.visibility, status:opp.status, created:!!opts.created,
+      card:{ eyebrow:badge, title:opp.title, subtitle: biz?('Presented by '+biz):'', summary:opp.summary||'', url:path, coverUrl:cover } });
   }
 
   // notifications dropdown
