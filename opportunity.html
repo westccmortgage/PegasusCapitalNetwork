@@ -3,6 +3,22 @@
 <!-- Opportunities are viewable by direct link only — not a public directory, and
      member_only/private opportunities must not be indexable. -->
 <meta name="robots" content="noindex,nofollow">
+<!-- Default social-preview metadata (professional fallback for link unfurls).
+     NOTE: link-preview crawlers (LinkedIn/Facebook/X) don't run JS, so they see
+     THESE static tags — a clean Pegasus-branded card — for every shared
+     opportunity. The JS below upgrades title/description/url to the specific
+     opportunity for browsers and JS-capable clients. Per-opportunity preview
+     IMAGES require server-side/edge rendering (future). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pegasus Capital Network">
+<meta property="og:title" content="An opportunity on Pegasus Capital Network">
+<meta property="og:description" content="A curated opportunity inside Pegasus Capital Network — trusted visibility, business pages, and the right introductions.">
+<meta property="og:url" content="https://pegasuscapitalnetwork.com/opportunity.html">
+<meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="An opportunity on Pegasus Capital Network">
+<meta name="twitter:description" content="A curated opportunity inside Pegasus Capital Network.">
+<meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -120,6 +136,18 @@ Pegasus.boot(async function(){
   var cleanUrl = CANON + cleanPath;
   (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
 
+  // Upgrade social metadata to this specific opportunity (for JS-capable clients;
+  // static defaults in <head> cover non-JS link-preview crawlers).
+  (function(){
+    var metaTitle=(o.title||'Opportunity')+(by.name?(' · '+by.name):'')+' — Pegasus';
+    var metaDesc=(o.summary||o.description||('A '+typeLbl.toLowerCase()+(by.name?(' presented by '+by.name):'')+' on Pegasus Capital Network.')).slice(0,200);
+    function setMeta(sel,val){ var m=document.querySelector(sel); if(m) m.setAttribute('content',val); }
+    setMeta('meta[property="og:title"]',metaTitle); setMeta('meta[name="twitter:title"]',metaTitle);
+    setMeta('meta[property="og:description"]',metaDesc); setMeta('meta[name="twitter:description"]',metaDesc);
+    setMeta('meta[property="og:url"]',cleanUrl);
+    var md=document.querySelector('meta[name="description"]'); if(md) md.setAttribute('content',metaDesc);
+  })();
+
   // HERO
   var hero =
   '<section class="pp-hero">'+
@@ -191,6 +219,7 @@ Pegasus.boot(async function(){
       '</div></div></div>';
   }
   var sideActions='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Next steps</span></div><div class="pp-card-body"><div style="display:flex;flex-direction:column;gap:8px">'+
+    '<button class="btn btn-pri btn-sm" onclick="oppShareThis()">Share this opportunity</button>'+
     (byPath?'<a class="btn btn-ghost btn-sm" href="'+esc(byPath)+'">View Presenting Business</a>':'')+
     '<button class="btn btn-ghost btn-sm" onclick="oppCopyLink()">Copy Link</button>'+
     '</div></div></div>';
@@ -205,6 +234,14 @@ Pegasus.boot(async function(){
 
   // Engage handler — express interest in this opportunity (presence derived server-side).
   window.oppEngage = function(){ Pegasus.engageOpen({ opportunityId: o.id, name: o.title }); };
+
+  // Share this opportunity outside Pegasus (visibility rules enforced in shareSheet).
+  window.oppShareThis = function(){
+    Pegasus.opportunityShare(
+      { title:o.title, slug:o.slug, summary:o.summary, visibility:o.visibility, status:o.status },
+      { businessName: by.name||'', badge: typeLbl }
+    );
+  };
 
   window.oppCopyLink = function(){
     var url = cleanUrl;

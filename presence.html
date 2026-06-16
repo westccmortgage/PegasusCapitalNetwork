@@ -438,7 +438,7 @@ Pegasus.boot(async function(){
       ? '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px;margin-left:auto">'+esc(OPP_VIS[o.visibility]||o.visibility)+'</span>'
       : '';
     var manage = canManage
-      ? '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="oppEdit(\''+esc(o.id)+'\')">Edit</button><button class="btn btn-ghost btn-sm" onclick="oppArchive(\''+esc(o.id)+'\')">Archive</button></div>'
+      ? '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="oppShare(\''+esc(o.id)+'\')">Share</button><button class="btn btn-ghost btn-sm" onclick="oppEdit(\''+esc(o.id)+'\')">Edit</button><button class="btn btn-ghost btn-sm" onclick="oppArchive(\''+esc(o.id)+'\')">Archive</button></div>'
       : '';
     return '<div style="padding:13px 0;border-bottom:1px solid var(--border)">'+
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+badge+visTag+'</div>'+
@@ -531,17 +531,27 @@ Pegasus.boot(async function(){
         p_amount_label:gv('amount_label')||null, p_cta_label:t.cta, p_cta_url:gv('cta_url')||null,
         p_visibility:(document.getElementById('opp_vis')||{}).value||'public_preview', p_template_type:tmplKey };
       try{
+        var newId=null;
         if(isEdit){
           var up=Object.assign({ p_id:o.id, p_opportunity_type:null, p_status:null }, base);
           var ur = await c.rpc('update_opportunity', up); if(ur && ur.error) throw ur.error;
         } else {
           var cr = await c.rpc('create_opportunity', Object.assign({ p_presence_id:p.id, p_opportunity_type:null }, base)); if(cr && cr.error) throw cr.error;
+          newId = cr && cr.data;
         }
         Pegasus.closeModal();
         var rr = await c.rpc('get_opportunities_for_presence', { p_slug: slug });
         _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps;
         renderOpps(_opps);
-        Pegasus.toast('✓','var(--green-dim)','Saved', isEdit?'Updated.':'Published to your business page.');
+        if(isEdit){
+          Pegasus.toast('✓','var(--green-dim)','Saved','Updated.');
+        } else {
+          // Post-creation share screen — turn the new opportunity into a distribution asset.
+          var created = newId ? _opps.filter(function(x){return x.id===newId;})[0] : null;
+          if(!created) created = { title:base.p_title, slug:'', summary:base.p_summary, visibility:base.p_visibility, status:'active' };
+          if(Pegasus.opportunityShare){ Pegasus.opportunityShare(created, { businessName:p.name, badge:t.badge, created:true }); }
+          else Pegasus.toast('✓','var(--green-dim)','Saved','Published to your business page.');
+        }
       }catch(err){
         console.error('[presence] opportunity save failed:', err);
         var m=(err&&err.message)||'Could not save. Apply migrations 054/056 and restart Supabase, then try again.';
@@ -562,6 +572,11 @@ Pegasus.boot(async function(){
       try{ var r=await c.rpc('get_opportunity_by_slug',{ p_slug:o.slug }); if(r && !r.error && r.data && r.data.opportunity) full=Object.assign({}, o, r.data.opportunity); }catch(e){}
       oppFormModal(tmplForOpp(full) || 'capital_program', full);
     }catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+  };
+  window.oppShare = function(id){
+    var o=_opps.filter(function(x){return x.id===id;})[0]; if(!o) return;
+    var tk=tmplForOpp(o); var t=tk?TMAP[tk]:null;
+    Pegasus.opportunityShare(o, { businessName:p.name, badge:(t?t.badge:(OPP_TYPE[o.opportunity_type]||'Opportunity')) });
   };
   window.oppArchive = async function(id){
     if(!confirm('Archive this opportunity? It will no longer be shown publicly.')) return;
