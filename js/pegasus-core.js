@@ -417,11 +417,29 @@
     if (ctaEl) {
       var onProfile = window.location.pathname.indexOf('/u/') === 0 ||
                       window.location.pathname.indexOf('/public-profile') >= 0;
-      if (onProfile) {
+      if (onProfile && window.__PEG_OWNER_NAV) {
+        /* Owner viewing their own profile \u2014 a single Manage Profile dropdown
+           replaces the old 3 buttons. Menu actions are defined by the profile
+           page (window.ppToggleManage / window.ppShare). */
         ctaEl.innerHTML =
-          '<button class="btn btn-ghost" onclick="Pegasus.copyProfileLink()" style="font-size:13px">\u29C9 Copy My Address</button>' +
-          '<a class="btn btn-ghost" href="/profile-edit.html" style="font-size:13px">\u270E Edit Profile</a>' +
-          '<a class="btn btn-pri nav-create" href="/dashboard.html">My Workspace \u2192</a>';
+          '<div class="pp-manage" id="ppManage" style="position:relative;margin:0">'+
+            '<button class="btn btn-pri nav-create" onclick="window.ppToggleManage&&window.ppToggleManage()">Manage Profile \u25BE</button>'+
+            '<div class="pp-manage-menu" id="ppManageMenu">'+
+              '<div class="pp-manage-label">Profile</div>'+
+              '<a class="pp-manage-item" href="/profile-edit.html">Edit Profile</a>'+
+              '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">Copy Profile Link</button>'+
+              '<div class="pp-manage-label">Share</div>'+
+              '<button class="pp-manage-item" onclick="window.ppShare&&ppShare(\'linkedin\')">Share to LinkedIn</button>'+
+              '<button class="pp-manage-item" onclick="window.ppShare&&ppShare(\'facebook\')">Share to Facebook</button>'+
+              '<button class="pp-manage-item" onclick="window.ppShare&&ppShare(\'x\')">Share to X</button>'+
+              '<button class="pp-manage-item" onclick="window.ppShare&&ppShare(\'instagram\')">Share on Instagram</button>'+
+              '<button class="pp-manage-item" onclick="window.ppShare&&ppShare(\'email\')">Share by Email</button>'+
+              '<div class="pp-manage-label">Business</div>'+
+              '<a class="pp-manage-item" href="/my-presences.html">Manage Businesses</a>'+
+              '<div class="pp-manage-label">Workspace</div>'+
+              '<a class="pp-manage-item" href="/dashboard.html">My Workspace</a>'+
+            '</div>'+
+          '</div>';
       } else {
         ctaEl.innerHTML =
           (slug ? '<a class="btn btn-ghost" href="/u/'+slug+'" style="font-size:13px">My Profile</a>' : '') +
@@ -475,6 +493,7 @@
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
     fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal,
     toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath,
+    refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },
   };
 })();

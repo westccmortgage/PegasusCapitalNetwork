@@ -281,6 +281,12 @@ Pegasus.boot(async function () {
 
   var p = route.profile;
 
+  /* Tell core's header nav this is the owner's own profile, so the single
+     "Manage Profile" dropdown renders in the top-right (replacing the old 3
+     buttons). Re-applied; core respects this flag on every nav refresh. */
+  window.__PEG_OWNER_NAV = !!route.isOwner;
+  if(route.isOwner && Pegasus.refreshNav){ try{ Pegasus.refreshNav(); }catch(e){} }
+
   /* SEO: set canonical, title, and description from the real profile */
   (function(){
     var slug = p.profile_slug;
@@ -514,28 +520,8 @@ Pegasus.boot(async function () {
 
     '<div class="pp-flow">'+
 
-      /* OWNER controls — one clear 'Manage Profile' dropdown at the top, right-
-         aligned (near Edit). Predictable, always here on the profile. */
-      (route.isOwner?
-        '<div class="pp-manage" id="ppManage">'+
-          '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage Profile ▾</button>'+
-          '<div class="pp-manage-menu" id="ppManageMenu">'+
-            '<div class="pp-manage-label">Profile</div>'+
-            '<a class="pp-manage-item" href="/profile-edit.html">Edit Profile</a>'+
-            '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">Copy Profile Link</button>'+
-            '<div class="pp-manage-label">Share</div>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'linkedin\')">Share to LinkedIn</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'facebook\')">Share to Facebook</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'x\')">Share to X</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'instagram\')">Copy for Instagram</button>'+
-            '<button class="pp-manage-item" onclick="ppShare(\'email\')">Share by Email</button>'+
-            '<div class="pp-manage-label">Business</div>'+
-            '<a class="pp-manage-item" href="/my-presences.html">Manage Businesses</a>'+
-            '<div class="pp-manage-label">Workspace</div>'+
-            '<a class="pp-manage-item" href="/dashboard.html">My Workspace</a>'+
-          '</div>'+
-        '</div>'
-      :'')+
+      /* Owner controls now live in the single 'Manage Profile' dropdown in the
+         top-right header (rendered by core, owner-gated via __PEG_OWNER_NAV). */
 
       /* 1. Businesses & Projects — compact logo TILE strip near the top
          (populated async). No full cards/buttons here — tiles are clickable. */
