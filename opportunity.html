@@ -45,7 +45,9 @@ Pegasus.boot(async function(){
   var esc = Pegasus.esc;
   var CANON = 'https://pegasuscapitalnetwork.com';
 
-  var OPP_TYPE = { opportunity:'Opportunity', project:'Project', listing:'Listing', property:'Property', capital_request:'Capital Request', fund:'Fund', deal:'Deal', event:'Event', other:'Opportunity' };
+  var OPP_TYPE = { opportunity:'Opportunity', project:'Project', listing:'Listing', property:'Property', capital_request:'Capital Request', fund:'Fund', deal:'Deal', event:'Event', other:'Opportunity', showcase:'Showcase', startup:'Startup', partnership:'Partnership' };
+  // Presentation-format labels (migration 056). Prefer these over the raw type.
+  var TMPL_LABEL = { capital_program:'Capital Program', project:'Project', property_listing:'Listing', startup_business_need:'Startup', showcase:'Showcase', event_session:'Event', partnership_request:'Partnership' };
   var VIS_LABEL = { public_preview:'Public Preview', member_only:'Members Only', private:'Private' };
   var TYPE_SEG = { company:'business', capital_program:'business', fund:'fund', project:'project', showcase:'showcase', event:'event', property:'property' };
 
@@ -104,7 +106,7 @@ Pegasus.boot(async function(){
   var o = data.opportunity;
   var by = data.presented_by || {};
   var canManage = !!data.can_manage;
-  var typeLbl = OPP_TYPE[o.opportunity_type] || 'Opportunity';
+  var typeLbl = (o.template_type && TMPL_LABEL[o.template_type]) || OPP_TYPE[o.opportunity_type] || 'Opportunity';
   var visLbl  = VIS_LABEL[o.visibility] || o.visibility;
   var loc = [o.location, o.market].filter(Boolean).join(' · ');
   document.title = (o.title || 'Opportunity') + ' — Pegasus Network';

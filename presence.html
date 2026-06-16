@@ -33,6 +33,16 @@
 .sce-x:hover{background:var(--bg3);color:var(--text)}
 .sce-body{padding:22px 24px}
 .sce-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--bg1)}
+/* Opportunity launch selector — premium grid of presentation formats */
+.opp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.opp-grid{grid-template-columns:1fr}}
+.opp-pick{text-align:left;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:15px 16px;cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:border-color .15s,background .15s,transform .15s;font-family:inherit;width:100%}
+.opp-pick:hover{border-color:var(--blue);background:var(--bg3);transform:translateY(-1px)}
+.opp-pick-ic{font-size:20px;line-height:1;color:var(--blue-lt)}
+.opp-pick-t{font-size:14px;font-weight:600;color:var(--text)}
+.opp-pick-l{font-size:12px;color:var(--text2);line-height:1.45}
+.opp-pick-for{font-size:10.5px;color:var(--text4);line-height:1.4}
+.opp-badge{display:inline-block;font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border-radius:10px;padding:2px 8px;font-weight:500}
 </style>
 </head><body>
 <!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
@@ -280,7 +290,7 @@ Pegasus.boot(async function(){
     if(!p.offers) sSteps.push('Add what you offer');
     if(!p.looking_for) sSteps.push('Add what you are looking for');
     if(!p.ideal_connections) sSteps.push('Add who should connect with you');
-    sSteps.push('Add your first opportunity');
+    sSteps.push('Present an opportunity or showcase');
     sSteps.push('Share this business page');
     steps='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Suggested next steps</span></div><div class="pp-card-body">'+
       sSteps.map(function(s){return '<div style="font-size:12.5px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border)">'+esc(s)+'</div>';}).join('')+
@@ -335,12 +345,94 @@ Pegasus.boot(async function(){
      "Add Opportunity" action and per-card manage controls. Degrades gracefully:
      if migration 054 isn't applied yet, the section simply hides (managers see a
      soft prompt). Opportunities NEVER live on a personal profile — only here. */
-  var OPP_TYPE = { opportunity:'Opportunity', project:'Project', listing:'Listing', property:'Property', capital_request:'Capital Request', fund:'Fund', deal:'Deal', event:'Event', other:'Opportunity' };
+  var OPP_TYPE = { opportunity:'Opportunity', project:'Project', listing:'Listing', property:'Property', capital_request:'Capital Request', fund:'Fund', deal:'Deal', event:'Event', other:'Opportunity', showcase:'Showcase', startup:'Startup', partnership:'Partnership' };
   var OPP_VIS  = { public_preview:'Public', member_only:'Members only', private:'Private' };
+
+  /* The presentation formats an "opportunity" can take. Each keeps its own
+     fields + language on the frontend; all store in the one opportunities table
+     (template_type column added in migration 056). Every field maps to one
+     existing column so no per-type DB tables are needed. */
+  var TEMPLATES = [
+    { key:'capital_program', badge:'Capital Program', color:'#3A8FE8', icon:'◈',
+      title:'Capital / Financing Program', line:'Offer capital, lending, or funding solutions.',
+      forWho:'Lenders, brokers, private capital, hard money, business funding.', cta:'Request Scenario Review',
+      fields:[ {col:'title',label:'Program name',ph:'e.g. Nationwide Bridge Loan Program'},
+        {col:'summary',label:'Who this is for',ph:'One line — e.g. Investors needing fast bridge capital',opt:true},
+        {col:'category',label:'Capital / loan type',ph:'Bridge, DSCR, hard money, SBA…',opt:true},
+        {col:'market',label:'Markets / states',ph:'Nationwide, or TX, FL, CA…',opt:true},
+        {col:'amount_label',label:'Minimum / maximum size',ph:'$250K – $10M',opt:true},
+        {col:'description',label:'Use cases & basic requirements',ph:'What it funds, terms, eligibility…',kind:'textarea',opt:true} ] },
+    { key:'project', badge:'Project', color:'#7C5CFF', icon:'◭',
+      title:'Project / Development', line:'Present a real project people can understand.',
+      forWho:'Developers, builders, landowners, investors, construction.', cta:'Request Project Info',
+      fields:[ {col:'title',label:'Project name',ph:'e.g. Riverside 120-Unit Multifamily'},
+        {col:'location',label:'Location',ph:'Austin, TX',opt:true},
+        {col:'category',label:'Project type',ph:'Multifamily, Mixed-use, Land…',opt:true},
+        {col:'market',label:'Stage',ph:'Pre-development, Entitled, Under construction…',opt:true},
+        {col:'amount_label',label:'Capital need / sale price',ph:'$12M raise · or $4.2M sale',opt:true},
+        {col:'summary',label:'Short summary',ph:'One line people see on the card.',opt:true},
+        {col:'description',label:'Description',ph:'The full project story and details.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Project info link (optional)',ph:'https://…',opt:true} ] },
+    { key:'property_listing', badge:'Listing', color:'#1FA37A', icon:'⌂',
+      title:'Property / Listing', line:'Show an asset, property, land, or listing.',
+      forWho:'Real estate pros, owners, brokers, developers, investors.', cta:'Request Details',
+      fields:[ {col:'title',label:'Property / asset name',ph:'e.g. 123 Main St — Retail Center'},
+        {col:'location',label:'Location',ph:'Dallas, TX',opt:true},
+        {col:'category',label:'Property type',ph:'Retail, Office, Multifamily, Land…',opt:true},
+        {col:'amount_label',label:'Price / value',ph:'$2.4M',opt:true},
+        {col:'market',label:'Size / units / land / zoning',ph:'12,000 sqft · 0.8 acres · C-2',opt:true},
+        {col:'summary',label:'Short summary',ph:'One line people see on the card.',opt:true},
+        {col:'description',label:'Details',ph:'Condition, income, highlights…',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Listing link (optional)',ph:'https://…',opt:true} ] },
+    { key:'startup_business_need', badge:'Startup', color:'#E8923A', icon:'✦',
+      title:'Startup / Business Need', line:'Attract capital, partners, clients, or support.',
+      forWho:'Founders, business owners, operators, growing companies.', cta:'Connect',
+      fields:[ {col:'title',label:'Company / project name',ph:'e.g. FinTechCo'},
+        {col:'category',label:'Stage',ph:'Idea, MVP, Growth, Scaling…',opt:true},
+        {col:'summary',label:'What problem it solves',ph:'One line — the core value.',opt:true},
+        {col:'market',label:'What you need',ph:'Capital, partners, clients, advisors',opt:true},
+        {col:'amount_label',label:'Raise / amount (optional)',ph:'$1M seed',opt:true},
+        {col:'description',label:'Description',ph:'The story, traction, and the ask.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Deck / website (optional)',ph:'https://…',opt:true} ] },
+    { key:'showcase', badge:'Showcase', color:'#D14FB0', icon:'❖',
+      title:'Showcase', line:'Show what you’ve built, created, or delivered.',
+      forWho:'Developers, architects, designers, builders, consultants, brands.', cta:'View Showcase',
+      fields:[ {col:'title',label:'Showcase title',ph:'e.g. Tower Renovation — Before & After'},
+        {col:'summary',label:'What this demonstrates',ph:'One line — the capability or result.',opt:true},
+        {col:'category',label:'Capabilities shown',ph:'Design-build, Construction, Branding…',opt:true},
+        {col:'location',label:'Location (optional)',ph:'Miami, FL',opt:true},
+        {col:'description',label:'Project story / case study',ph:'What you set out to do and the outcome.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Video / showcase URL (optional)',ph:'YouTube, Vimeo, gallery link…',opt:true} ] },
+    { key:'event_session', badge:'Event', color:'#C9A227', icon:'◷',
+      title:'Event / Session', line:'Invite the right people into a private session.',
+      forWho:'Hosts, educators, capital groups, founders, community builders.', cta:'Request Access',
+      fields:[ {col:'title',label:'Event / session name',ph:'e.g. Private Investor Dinner'},
+        {col:'amount_label',label:'Date & time',ph:'June 20, 2026 · 7:00pm ET',opt:true},
+        {col:'location',label:'Location / online',ph:'Miami, or Online (Zoom)',opt:true},
+        {col:'category',label:'Topic',ph:'Capital raising, RWA, Development…',opt:true},
+        {col:'summary',label:'Who should attend',ph:'One line — the ideal guest.',opt:true},
+        {col:'description',label:'Details',ph:'Agenda, format, what attendees get.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Registration / access link (optional)',ph:'https://…',opt:true} ] },
+    { key:'partnership_request', badge:'Partnership', color:'#3AB0E8', icon:'⬡',
+      title:'Partnership Request', line:'Tell the network who you want to meet.',
+      forWho:'Anyone seeking aligned partners, referrals, capital, or operators.', cta:'Request Introduction',
+      fields:[ {col:'title',label:'Request title',ph:'e.g. Seeking CRE Brokers in Texas'},
+        {col:'summary',label:'Who you want to meet',ph:'One line — the person or business.',opt:true},
+        {col:'market',label:'Geography / market',ph:'Texas, CRE, Nationwide…',opt:true},
+        {col:'category',label:'Type of partner (optional)',ph:'Referral, Capital, Operator…',opt:true},
+        {col:'description',label:'Reason for connection + what you can offer',ph:'Why connect, and the value you bring.',kind:'textarea',opt:true} ] }
+  ];
+  var TMAP = {}; TEMPLATES.forEach(function(t){ TMAP[t.key]=t; });
+  // Map a legacy opportunity_type → a presentation format (for opps created before 056).
+  var TYPE_TO_TMPL = { capital_request:'capital_program', project:'project', property:'property_listing', listing:'property_listing', startup:'startup_business_need', showcase:'showcase', event:'event_session', partnership:'partnership_request' };
+  function tmplForOpp(o){ return (o && o.template_type) || (o && TYPE_TO_TMPL[o.opportunity_type]) || null; }
 
   function oppCard(o){
     var href = Pegasus.opportunityPath ? Pegasus.opportunityPath(o.slug) : ('/opportunity/'+encodeURIComponent(o.slug));
-    var tlabel = OPP_TYPE[o.opportunity_type] || 'Opportunity';
+    var tk = tmplForOpp(o); var t = tk ? TMAP[tk] : null;
+    var badgeTxt = t ? t.badge : (OPP_TYPE[o.opportunity_type] || 'Opportunity');
+    var badgeCol = t ? t.color : '#5C7BA0';
+    var badge = '<span class="opp-badge" style="color:'+badgeCol+';border:1px solid '+badgeCol+'55;background:'+badgeCol+'14">'+esc(badgeTxt)+'</span>';
     var meta = [o.amount_label, o.location, o.market, o.category].filter(Boolean).map(function(m){return esc(m);}).join(' · ');
     var visTag = (canManage && o.visibility && o.visibility!=='public_preview')
       ? '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px;margin-left:auto">'+esc(OPP_VIS[o.visibility]||o.visibility)+'</span>'
@@ -349,11 +441,11 @@ Pegasus.boot(async function(){
       ? '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="oppEdit(\''+esc(o.id)+'\')">Edit</button><button class="btn btn-ghost btn-sm" onclick="oppArchive(\''+esc(o.id)+'\')">Archive</button></div>'
       : '';
     return '<div style="padding:13px 0;border-bottom:1px solid var(--border)">'+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt)">'+esc(tlabel)+'</span>'+visTag+'</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+badge+visTag+'</div>'+
       '<a href="'+esc(href)+'" style="font-size:15px;font-weight:600;color:var(--text);text-decoration:none;display:block">'+esc(o.title)+'</a>'+
       (o.summary?'<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:3px">'+esc(o.summary)+'</div>':'')+
       (meta?'<div style="font-size:11px;color:var(--text3);margin-top:5px">'+meta+'</div>':'')+
-      '<a href="'+esc(href)+'" class="pp-card-action" style="margin-top:6px;display:inline-block">View opportunity →</a>'+
+      '<a href="'+esc(href)+'" class="pp-card-action" style="margin-top:6px;display:inline-block">View →</a>'+
       manage+
     '</div>';
   }
@@ -362,15 +454,15 @@ Pegasus.boot(async function(){
     var host=document.getElementById('ps-opps'); if(!host) return;
     list = list || [];
     if(!list.length && !canManage){ host.innerHTML=''; return; }
-    var addBtn = canManage ? '<button class="btn btn-ghost btn-sm" onclick="oppCreate()" style="margin-left:auto">+ Add Opportunity</button>' : '';
+    var addBtn = canManage ? '<button class="btn btn-ghost btn-sm" onclick="oppCreate()" style="margin-left:auto">+ Present something</button>' : '';
     var body;
     if(list.length){
       var rows = list.map(oppCard).join('');
       body = '<div style="margin-top:-13px">'+rows+'</div>';
     } else {
-      body = '<div style="font-size:12.5px;color:var(--text4)">Add your first opportunity so people can see the specific deals, projects, or listings this business presents.</div>';
+      body = '<div style="font-size:12.5px;color:var(--text4)">Present what this business does — a capital program, a project, a listing, a showcase of completed work, an event, or a partnership you’re looking for.</div>';
     }
-    host.innerHTML = '<div class="pp-card"><div class="pp-card-head" style="display:flex;align-items:center"><span class="pp-card-label-serif">Featured Opportunities</span>'+addBtn+'</div><div class="pp-card-body">'+body+'</div></div>';
+    host.innerHTML = '<div class="pp-card"><div class="pp-card-head" style="display:flex;align-items:center"><span class="pp-card-label-serif">Opportunities &amp; Showcases</span>'+addBtn+'</div><div class="pp-card-body">'+body+'</div></div>';
   }
 
   var _opps = [];
@@ -378,70 +470,98 @@ Pegasus.boot(async function(){
     try{
       var rr = await c.rpc('get_opportunities_for_presence', { p_slug: slug });
       _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : [];
-      if(rr && rr.error) console.warn('[presence] get_opportunities_for_presence failed — apply migration 054 + restart Supabase. Error:', rr.error);
+      if(rr && rr.error) console.warn('[presence] get_opportunities_for_presence failed — apply migrations 054/056 + restart Supabase. Error:', rr.error);
     }catch(e){ console.warn('[presence] opportunities load threw:', e); _opps=[]; }
     renderOpps(_opps);
   })();
 
-  // ── Owner: create / edit / archive opportunities ──────────────────────────
-  function oppFormModal(title, o){
-    o = o || {};
-    function f(id,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><input id="'+id+'" type="text" value="'+esc(val||'')+'" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px"></div>'; }
-    function ta(id,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><textarea id="'+id+'" rows="3" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical">'+esc(val||'')+'</textarea></div>'; }
-    var typeOpts = Object.keys(OPP_TYPE).map(function(k){ return '<option value="'+k+'"'+(o.opportunity_type===k?' selected':'')+'>'+esc(OPP_TYPE[k])+'</option>'; }).join('');
-    var visKeys = ['public_preview','member_only','private'];
-    var visOpts = visKeys.map(function(k){ return '<option value="'+k+'"'+((o.visibility||'public_preview')===k?' selected':'')+'>'+esc(OPP_VIS[k])+'</option>'; }).join('');
-    var sel = function(id,label,opts){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><select id="'+id+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">'+opts+'</select></div>'; };
-    var inner =
-      f('opp_title','Title','title' in o?o.title:'','e.g. $5M Bridge Loan Pool — Miami')+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+sel('opp_type','Type',typeOpts)+sel('opp_vis','Visibility',visOpts)+'</div>'+
-      ta('opp_summary','Short summary',o.summary,'One line people see on the card.')+
-      ta('opp_description','Description',o.description,'The full details shown on the opportunity page.')+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('opp_amount','Amount / size',o.amount_label,'$5M')+f('opp_category','Category',o.category,'Debt, Equity, Listing…')+'</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('opp_location','Location',o.location,'Miami, FL')+f('opp_market','Market',o.market,'CRE, Residential…')+'</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('opp_cta_label','Call-to-action label',o.cta_label,'Request access')+f('opp_cta_url','Call-to-action URL',o.cta_url,'https://…')+'</div>';
-    var saveBtn = '<button class="btn btn-pri" id="opp_save">'+(o.id?'Save changes':'Create opportunity')+'</button>';
-    var footer = '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+saveBtn;
+  // ── Owner: guided launch selector → per-format form → create/edit ──────────
+  function oppSelector(){
+    var cards = TEMPLATES.map(function(t){
+      return '<button class="opp-pick" onclick="oppPick(\''+t.key+'\')">'+
+        '<span class="opp-pick-ic">'+t.icon+'</span>'+
+        '<span class="opp-pick-t">'+esc(t.title)+'</span>'+
+        '<span class="opp-pick-l">'+esc(t.line)+'</span>'+
+        '<span class="opp-pick-for">'+esc(t.forWho)+'</span>'+
+      '</button>';
+    }).join('');
     Pegasus.modal(
-      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
-        '<div class="sce-head"><div class="sce-title">'+esc(title)+'</div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
-        '<div class="sce-body" style="max-height:70vh;overflow-y:auto">'+inner+'</div>'+
-        '<div class="sce-foot">'+footer+'</div>'+
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:680px">'+
+        '<div class="sce-head"><div class="sce-title">What do you want Pegasus to help you present?</div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:74vh;overflow-y:auto">'+
+          '<div style="font-family:var(--serif);font-size:17px;color:var(--text);margin-bottom:4px">Turn what you do into something the right people can discover.</div>'+
+          '<div style="font-size:12.5px;color:var(--text3);line-height:1.55;margin-bottom:16px">Choose the best format. Pegasus will guide you into the right page, fields, and audience — whether you’re offering capital, presenting a project, showing completed work, or looking for the right partners.</div>'+
+          '<div class="opp-grid">'+cards+'</div>'+
+        '</div>'+
       '</div></div>'
     );
-    var gv=function(id){ var e=document.getElementById(id); return e?e.value:''; };
+  }
+  window.oppPick = function(k){ try{ oppFormModal(k, null); }catch(err){ console.error('[presence] open form failed:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); } };
+
+  function oppFormModal(tmplKey, o){
+    o = o || {};
+    var t = TMAP[tmplKey] || TMAP['capital_program']; tmplKey = t.key;
+    var isEdit = !!o.id;
+    function esca(v){ return esc(v==null?'':v); }
+    function f(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><input id="opp_'+col+'" type="text" value="'+esca(val)+'" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px"></div>'; }
+    function ta(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><textarea id="opp_'+col+'" rows="4" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical">'+esca(val)+'</textarea></div>'; }
+    var rows = t.fields.map(function(fd){
+      var val = (fd.col in o) ? o[fd.col] : '';
+      return (fd.kind==='textarea') ? ta(fd.col, fd.label, val, fd.ph) : f(fd.col, fd.label, val, fd.ph);
+    }).join('');
+    var visKeys=['public_preview','member_only','private'];
+    var visOpts=visKeys.map(function(k){ return '<option value="'+k+'"'+((o.visibility||'public_preview')===k?' selected':'')+'>'+esc(OPP_VIS[k])+'</option>'; }).join('');
+    var visSel='<div style="margin-bottom:4px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">Who can see this</label><select id="opp_vis" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">'+visOpts+'</select></div>';
+    var back = isEdit ? '' : '<button class="btn btn-ghost" onclick="oppSelector()" style="margin-right:auto">← Formats</button>';
+    var saveBtn = '<button class="btn btn-pri" id="opp_save">'+(isEdit?'Save changes':'Publish')+'</button>';
+    Pegasus.modal(
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
+        '<div class="sce-head"><div><div class="sce-title">'+esc((isEdit?'Edit ':'')+t.title)+'</div><div style="font-size:11.5px;color:var(--text3);margin-top:2px">'+esc(t.line)+'</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:66vh;overflow-y:auto">'+rows+visSel+'</div>'+
+        '<div class="sce-foot">'+back+'<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+saveBtn+'</div>'+
+      '</div></div>'
+    );
+    var gv=function(col){ var e=document.getElementById('opp_'+col); return e?(e.value||'').trim():''; };
     document.getElementById('opp_save').onclick = async function(){
-      var btn=this; var titleV=(gv('opp_title')||'').trim();
-      if(!titleV){ Pegasus.toast('!','var(--gold-dim)','Title required','Give this opportunity a title.'); return; }
+      var btn=this; var titleV=gv('title');
+      if(!titleV){ Pegasus.toast('!','var(--gold-dim)','Title required','Give this a name first.'); return; }
       btn.disabled=true; btn.textContent='Saving…';
+      var base = { p_title:titleV, p_summary:gv('summary')||null, p_description:gv('description')||null,
+        p_category:gv('category')||null, p_location:gv('location')||null, p_market:gv('market')||null,
+        p_amount_label:gv('amount_label')||null, p_cta_label:t.cta, p_cta_url:gv('cta_url')||null,
+        p_visibility:(document.getElementById('opp_vis')||{}).value||'public_preview', p_template_type:tmplKey };
       try{
-        if(o.id){
-          var ur = await c.rpc('update_opportunity', { p_id:o.id, p_title:titleV, p_opportunity_type:gv('opp_type'), p_summary:gv('opp_summary'), p_description:gv('opp_description'), p_category:gv('opp_category'), p_location:gv('opp_location'), p_market:gv('opp_market'), p_amount_label:gv('opp_amount'), p_cta_label:gv('opp_cta_label'), p_cta_url:gv('opp_cta_url'), p_visibility:gv('opp_vis'), p_status:null });
-          if(ur && ur.error) throw ur.error;
+        if(isEdit){
+          var up=Object.assign({ p_id:o.id, p_opportunity_type:null, p_status:null }, base);
+          var ur = await c.rpc('update_opportunity', up); if(ur && ur.error) throw ur.error;
         } else {
-          var cr = await c.rpc('create_opportunity', { p_presence_id:p.id, p_title:titleV, p_opportunity_type:gv('opp_type'), p_summary:gv('opp_summary'), p_description:gv('opp_description'), p_category:gv('opp_category'), p_location:gv('opp_location'), p_market:gv('opp_market'), p_amount_label:gv('opp_amount'), p_cta_label:gv('opp_cta_label'), p_cta_url:gv('opp_cta_url'), p_visibility:gv('opp_vis') });
-          if(cr && cr.error) throw cr.error;
+          var cr = await c.rpc('create_opportunity', Object.assign({ p_presence_id:p.id, p_opportunity_type:null }, base)); if(cr && cr.error) throw cr.error;
         }
         Pegasus.closeModal();
         var rr = await c.rpc('get_opportunities_for_presence', { p_slug: slug });
         _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps;
         renderOpps(_opps);
-        Pegasus.toast('✓','var(--green-dim)','Saved', o.id?'Opportunity updated.':'Opportunity published.');
+        Pegasus.toast('✓','var(--green-dim)','Saved', isEdit?'Updated.':'Published to your business page.');
       }catch(err){
         console.error('[presence] opportunity save failed:', err);
-        var m=(err&&err.message)||'Could not save. Apply migration 054 and restart Supabase, then try again.';
+        var m=(err&&err.message)||'Could not save. Apply migrations 054/056 and restart Supabase, then try again.';
         Pegasus.toast('!','var(--gold-dim)','Could not save', m);
-        btn.disabled=false; btn.textContent=o.id?'Save changes':'Create opportunity';
+        btn.disabled=false; btn.textContent=isEdit?'Save changes':'Publish';
       }
     };
   }
   window.oppCreate = function(){
-    try{ oppFormModal('Add an opportunity', null); }
-    catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+    try{ oppSelector(); }
+    catch(err){ console.error('[presence] could not open selector:', err); Pegasus.toast('!','var(--gold-dim)','Could not open','Please refresh and try again.'); }
   };
-  window.oppEdit = function(id){
-    try{ var o=_opps.filter(function(x){return x.id===id;})[0]; oppFormModal('Edit opportunity', o||{ id:id }); }
-    catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+  window.oppEdit = async function(id){
+    try{
+      var o=_opps.filter(function(x){return x.id===id;})[0]; if(!o){ return; }
+      var full=o;
+      // Fetch the full record (list payload omits description/cta_url) so edit pre-fills correctly.
+      try{ var r=await c.rpc('get_opportunity_by_slug',{ p_slug:o.slug }); if(r && !r.error && r.data && r.data.opportunity) full=Object.assign({}, o, r.data.opportunity); }catch(e){}
+      oppFormModal(tmplForOpp(full) || 'capital_program', full);
+    }catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
   };
   window.oppArchive = async function(id){
     if(!confirm('Archive this opportunity? It will no longer be shown publicly.')) return;
