@@ -435,8 +435,14 @@ Pegasus.boot(async function(){
       }
     };
   }
-  window.oppCreate = function(){ oppFormModal('Add an opportunity', null); };
-  window.oppEdit = function(id){ var o=_opps.filter(function(x){return x.id===id;})[0]; oppFormModal('Edit opportunity', o||{ id:id }); };
+  window.oppCreate = function(){
+    try{ oppFormModal('Add an opportunity', null); }
+    catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+  };
+  window.oppEdit = function(id){
+    try{ var o=_opps.filter(function(x){return x.id===id;})[0]; oppFormModal('Edit opportunity', o||{ id:id }); }
+    catch(err){ console.error('[presence] could not open opportunity form:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+  };
   window.oppArchive = async function(id){
     if(!confirm('Archive this opportunity? It will no longer be shown publicly.')) return;
     try{

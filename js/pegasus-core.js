@@ -289,7 +289,12 @@
       </div>
       <div class="footer-legal">Pegasus Lenders Group LLC operates as a membership marketplace platform. Pegasus is not a mortgage lender, mortgage loan originator (MLO), broker-dealer, real estate broker, or registered investment advisor. All connections made through the Pegasus platform are member-directed. Users must consult licensed professionals for all financial and legal decisions. \u00A9 2026 Pegasus Lenders Group LLC. &nbsp;·&nbsp; <a href="/privacy.html" style="color:var(--text3)">Privacy</a> &nbsp;·&nbsp; <a href="/terms.html" style="color:var(--text3)">Terms</a> &nbsp;·&nbsp; <a href="/disclosures.html" style="color:var(--text3)">Disclosures</a></div></footer>`;
   }
-  function modal(html){ el('modalRoot').innerHTML=html; }
+  /* Render modal HTML into #modalRoot. mountApp() creates that container, but
+     mountPublic() pages (public profile, business pages, opportunity pages) do
+     not — so auto-create it on demand. Without this, modal() threw on null and
+     buttons like "Add Opportunity" failed silently. */
+  function modalHost(){ var m=el('modalRoot'); if(!m){ m=document.createElement('div'); m.id='modalRoot'; document.body.appendChild(m); } return m; }
+  function modal(html){ modalHost().innerHTML=html; }
   function closeModal(){ const m=el('modalRoot'); if(m) m.innerHTML=''; }
 
   /* ── Engagement ("How to engage") ────────────────────────────────────────────
