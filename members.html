@@ -505,8 +505,13 @@ Pegasus.boot(async function(){
         renderSelected();
         applyFilter();
       }catch(e){
+        /* Never surface raw SQL to members. Show a clean message; admins also
+           get the technical detail so they can open the Repair Center. */
+        var isAdm=false; try{ isAdm = Pegasus.store && Pegasus.store.isAdmin && Pegasus.store.isAdmin(); }catch(_){}
+        var friendly='We couldn’t send this request because the network system needs an update. Please contact the Pegasus administrator.';
         var err=document.getElementById('cnErr');
-        err.style.display=''; err.textContent = (e&&e.message) || 'Could not send the request. Please try again.';
+        err.style.display='';
+        err.innerHTML = Pegasus.esc(friendly) + (isAdm && e && e.message ? '<br><span style="color:var(--text4)">Technical detail: '+Pegasus.esc(e.message)+'</span>' : '');
         btn.disabled=false; btn.textContent='Send Connection Request';
       }
     };
