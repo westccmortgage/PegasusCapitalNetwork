@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Explore the Pegasus Ecosystem — Capital, Real Estate & Growth Network</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>How Pegasus Works — Pegasus Capital Network</title>
 <link rel="canonical" href="https://pegasuscapitalnetwork.com/explore.html">
 <meta name="description" content="Explore the Pegasus ecosystem before you join — see who participates, what becomes possible, and where you belong across capital, real estate, business growth, and tokenization.">
 <meta property="og:title" content="Explore the Pegasus Ecosystem">
@@ -83,15 +83,32 @@
 <div id="nav"></div>
 
 <div class="xp-hero">
-  <div class="eyebrow">The Pegasus Ecosystem</div>
-  <h1>Explore what's inside before you build your presence.</h1>
-  <p>Pegasus is a private ecosystem for capital, real estate, business growth, trusted introductions, and professional visibility. Take a look around — understand who participates, what becomes possible, and whether this is where you belong.</p>
+  <div class="eyebrow">How Pegasus Works</div>
+  <h1>Become visible to the right people.</h1>
+  <p>Pegasus turns what you do into something the right people can discover. Build a profile, connect your business pages, present opportunities and showcases, share them outside Pegasus, and receive interest from aligned people — all in one place.</p>
 </div>
 
 <div class="xp-wrap">
 
-  <!-- 8 ecosystem areas -->
+  <!-- The system: layers + flow -->
   <section class="xp-section" style="border-top:none">
+    <div class="xp-section-head">
+      <div class="eyebrow" style="justify-content:center">The system</div>
+      <h2>How it works, in five layers</h2>
+      <p>Pegasus keeps trust, promotion, deals, and private operations separate — so each does its job well.</p>
+    </div>
+    <div class="xp-grid-3">
+      <div class="xp-card"><div class="ic">◉</div><h3>Personal Profile = trust</h3><p>Who you are and why people should believe in you. The foundation of every connection.</p></div>
+      <div class="xp-card"><div class="ic">◫</div><h3>Business Page = promotion</h3><p>Promote a company, project, fund, or program — with real network context.</p></div>
+      <div class="xp-card"><div class="ic">◆</div><h3>Opportunity / Showcase = presentation</h3><p>Present a specific deal, listing, or completed work — always under a business, never on a personal profile.</p></div>
+      <div class="xp-card"><div class="ic">↗</div><h3>Share outside Pegasus</h3><p>Turn any presentation into LinkedIn, Instagram, and image assets that bring people back.</p></div>
+      <div class="xp-card"><div class="ic">→</div><h3>Receive interest</h3><p>The right people express interest — curated requests, never cold outreach.</p></div>
+      <div class="xp-card"><div class="ic">▦</div><h3>Manage in your Workspace</h3><p>Requests, introductions, and private activity — kept entirely to you.</p></div>
+    </div>
+  </section>
+
+  <!-- 8 ecosystem areas -->
+  <section class="xp-section">
     <div class="xp-section-head">
       <div class="eyebrow" style="justify-content:center">What's inside</div>
       <h2>Eight ways the ecosystem works for you</h2>
@@ -131,6 +148,7 @@
       <div class="xp-signals-bar"><span class="xp-live-dot"></span>NETWORK LIVE</div>
       <div class="xp-signals" id="signals"></div>
     </div>
+    <div id="xp-network-signals" style="margin-top:26px"></div>
   </section>
 
   <!-- How it works -->
@@ -178,9 +196,10 @@
 <!-- Closing CTA -->
 <section class="xp-cta-band">
   <h2>Ready to be part of it?</h2>
-  <p>Your profile is your presence inside Pegasus. Without it you can explore — with it, you can participate.</p>
+  <p>Your profile is how you become visible inside Pegasus. Without it you can explore — with it, you can participate.</p>
   <div class="xp-cta-row">
-    <a class="btn btn-pri btn-lg" href="/signup.html">Build Your Presence</a>
+    <a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a>
+    <a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>
     <a class="btn btn-ghost btn-lg" href="/how-it-works.html">See How It Works</a>
   </div>
 </section>
@@ -202,6 +221,33 @@
 <script>
 Pegasus.mountPublic('Explore');
 document.getElementById('footer').outerHTML=Pegasus.footer();
+
+/* ── What's moving inside Pegasus — real, visibility-safe Network Signals
+   (people + business/project pages) via get_recent_network_activity. ── */
+(async function(){
+  try{
+    var host=document.getElementById('xp-network-signals'); if(!host) return;
+    var sb=await window.PegSB.ready;
+    var r=await sb.rpc('get_recent_network_activity');
+    var items=(r && !r.error && r.data) ? r.data : [];
+    if(!items.length) return;
+    var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+    function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    var cards=items.slice(0,8).map(function(a){
+      var isPerson=a.kind==='person';
+      var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
+      var kind=TL[a.kind]||a.kind;
+      var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
+      return '<a href="'+e(href)+'" style="display:block;background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:16px 18px;text-decoration:none;transition:border-color .15s,transform .15s" onmouseover="this.style.borderColor=\'var(--border2)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">'+
+        '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:7px">'+e(kind)+'</div>'+
+        '<div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.25">'+e(a.name||'—')+'</div>'+
+        (sub?'<div style="font-size:12px;color:var(--text2);margin-top:5px">'+e(sub)+'</div>':'')+
+      '</a>';
+    }).join('');
+    host.innerHTML='<div class="xp-section-head" style="margin-bottom:16px"><div class="eyebrow" style="justify-content:center">Network Signals</div><h2>What\'s moving inside Pegasus</h2><p>Live movement from people, businesses, capital, and opportunities inside Pegasus.</p></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px">'+cards+'</div>';
+  }catch(err){ /* non-fatal */ }
+})();
 
 /* 8 ecosystem areas */
 var AREAS=[

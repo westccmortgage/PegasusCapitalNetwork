@@ -1,0 +1,744 @@
+<!DOCTYPE html><html lang="en"><head><title>Business Page — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/presence.html">
+<!-- Presence/business pages are viewable by direct link only — not a public
+     directory, and member_only/private pages must not be indexable. -->
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529">
+<link rel="stylesheet" href="/css/profile-shell.css?v=dealroom-entitlements-20260524-1529">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+<style>
+/* Business-page extras layered on the shared profile shell */
+.ppg-state{max-width:560px;margin:90px auto;text-align:center;padding:30px}
+.ppg-state h1{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:300;color:var(--text);margin-bottom:10px}
+.ppg-state p{color:var(--text2);line-height:1.6;margin-bottom:22px;max-width:440px;margin-left:auto;margin-right:auto}
+.ppg-soon{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);padding:10px 0;border-bottom:1px solid var(--border)}
+.ppg-soon:last-child{border-bottom:none}
+.ppg-soon .pill{font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:12px;padding:3px 8px;margin-left:auto}
+/* Self-contained modal styles (the .sce-* classes live in showcase.css, which
+   this page does not load) — used by the owner Add/Edit Opportunity modal. */
+.sce-scrim{position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto}
+.sce-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden;animation:scePop .18s ease}
+@keyframes scePop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sce-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
+.sce-title{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--text)}
+.sce-x{border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px}
+.sce-x:hover{background:var(--bg3);color:var(--text)}
+.sce-body{padding:22px 24px}
+.sce-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--bg1)}
+/* Opportunity launch selector — premium grid of presentation formats */
+.opp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.opp-grid{grid-template-columns:1fr}}
+.opp-pick{text-align:left;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:15px 16px;cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:border-color .15s,background .15s,transform .15s;font-family:inherit;width:100%}
+.opp-pick:hover{border-color:var(--blue);background:var(--bg3);transform:translateY(-1px)}
+.opp-pick-ic{font-size:20px;line-height:1;color:var(--blue-lt)}
+.opp-pick-t{font-size:14px;font-weight:600;color:var(--text)}
+.opp-pick-l{font-size:12px;color:var(--text2);line-height:1.45}
+.opp-pick-for{font-size:10.5px;color:var(--text4);line-height:1.4}
+.opp-badge{display:inline-block;font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border-radius:10px;padding:2px 8px;font-weight:500}
+</style>
+</head><body>
+<!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";</script>
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script>
+Pegasus.boot(async function(){
+  Pegasus.mountPublic('');
+
+  var esc = Pegasus.esc;
+  var CANON = 'https://pegasuscapitalnetwork.com';
+
+  var TYPE_LABEL = {
+    personal:'Personal', company:'Company', project:'Project',
+    showcase:'Showcase', event:'Event / Session', capital_program:'Capital Program',
+    property:'Property / Listing', fund:'Fund / Vehicle'
+  };
+  var VIS_LABEL = { public_preview:'Public Preview', member_only:'Members Only', private:'Private' };
+
+  function cap(s){ return (s||'').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+  function webHref(u){ u=(u||'').trim(); if(!u) return ''; return /^[a-z][a-z0-9+.-]*:\/\//i.test(u)?u:('https://'+u.replace(/^\/+/,'')); }
+  function safeHref(u){ var h=webHref(u); return Pegasus.safeUrl ? Pegasus.safeUrl(h) : h; }
+  function isLoggedIn(){ try{ var st=PegStore.get(); return st && st.mode==='live' && st.user && st.user.id!=='demo'; }catch(e){ return false; } }
+
+  var main = document.createElement('main');
+  document.body.appendChild(main);
+  function addFooter(){ var f=document.createElement('div'); f.innerHTML=Pegasus.footer(); if(f.firstElementChild) document.body.appendChild(f.firstElementChild); }
+
+  function stateView(title, body, ctas){
+    main.innerHTML = '<div class="ppg-state"><h1>'+esc(title)+'</h1><p>'+body+'</p>'+(ctas||'')+'</div>';
+    addFooter();
+  }
+
+  // ── Resolve slug ───────────────────────────────────────────────────────────
+  // Resolve slug from the query (?slug=, also set by the clean-URL rewrite) OR
+  // directly from a clean path like /business/<slug> or /project/<slug>.
+  var slug = (new URLSearchParams(location.search)).get('slug') || '';
+  if(!slug){
+    var pm = location.pathname.match(/^\/(business|company|project|showcase|event|property|fund)\/([^\/?#]+)\/?$/i);
+    if(pm) slug = decodeURIComponent(pm[2]);
+  }
+  slug = slug.trim();
+  if(!slug){ stateView('Business page not found', 'No business page was specified.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
+
+  var c = null;
+  try { c = await window.PegSB.ready; } catch(e) { c = null; }
+  if(!c){ stateView('Something went wrong', 'We could not connect right now. Please try again shortly.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
+
+  // ── Data access: secure RPC first, RLS/view fallback if the RPC isn't in the
+  //    API yet (049/050 not applied or PostgREST cache not reloaded). ──────────
+  function rpcMissing(err){
+    if(!err) return false;
+    var code = err.code || '';
+    var msg  = ((err.message||'')+' '+(err.details||'')+' '+(err.hint||'')).toLowerCase();
+    return code==='PGRST202' || code==='404' ||
+           /could not find the function|function .* does not exist|schema cache|not found/.test(msg);
+  }
+  async function fallbackResolve(s){
+    // Base columns only — guaranteed to exist regardless of which presence
+    // migrations are applied, so the fallback never fails on a missing optional
+    // column (offers/looking_for/ideal_connections come only from the RPC path).
+    var SAFE = 'id,presence_type,name,slug,tagline,short_description,category,industry,location,market,website_url,public_cta_label,public_cta_url,visibility,status';
+    if(isLoggedIn()){
+      var uid=null; try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){}
+      var q=await c.from('presences').select(SAFE).eq('slug',s).maybeSingle();
+      if(q.error) console.error('[presence] fallback presences error:', q.error);
+      if(q.data){
+        var role=null, canPub=false, canManage=false;
+        if(uid){
+          var m=await c.from('presence_members').select('role,can_publish_as').eq('presence_id',q.data.id).eq('user_id',uid).maybeSingle();
+          if(m && m.data){ role=m.data.role; canPub=!!m.data.can_publish_as; canManage=['owner','admin','editor'].indexOf(role)!==-1; }
+        }
+        return { access:'full', presence:q.data, role:role, can_publish_as:canPub, can_manage:canManage };
+      }
+      return { access:'unavailable' };
+    } else {
+      var v=await c.from('public_presence_previews').select('*').eq('slug',s).maybeSingle();
+      if(v.error) console.error('[presence] fallback view error:', v.error);
+      if(v.data){ v.data.visibility='public_preview'; return { access:'full', presence:v.data, role:null, can_publish_as:false, can_manage:false }; }
+      return null;
+    }
+  }
+  async function resolvePresence(s){
+    var res;
+    try { res = await c.rpc('get_presence_page_by_slug', { p_slug: s }); }
+    catch(netErr){ console.error('[presence] rpc threw:', netErr); res = { error: netErr }; }
+    if(res && !res.error) return res.data;          // RPC available → authoritative
+    // ANY rpc error (missing function, stale schema cache, or a column the live
+    // schema doesn't have yet) → degrade to the safe RLS/view fallback rather
+    // than failing the page. Apply migrations 049–051 + restart Supabase for the
+    // full server-side experience (managed_by, offerings).
+    console.warn('[presence] get_presence_page_by_slug failed — using RLS/view fallback. Apply migrations 049–051 and RESTART the Supabase project. Error:', res && res.error);
+    return await fallbackResolve(s);
+  }
+
+  var data = null;
+  try { data = await resolvePresence(slug); }
+  catch(e){
+    console.error('[presence] load failed:', e);
+    stateView('Something went wrong', 'This business page could not be loaded right now. Please try again shortly.', '<a class="btn btn-ghost" href="/">Return home</a>');
+    return;
+  }
+
+  // ── Access states ───────────────────────────────────────────────────────────
+  if(!data){ stateView('Not found', 'This business page could not be found.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
+  var access = data.access;
+  if(access === 'locked'){
+    stateView('Available inside Pegasus',
+      'This business page is available inside Pegasus. Sign in or create your own free page to continue.',
+      '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+        '<a class="btn btn-pri" href="/signin.html">Sign In</a>'+
+        '<a class="btn btn-ghost" href="/signup.html">Create Your Free Page</a></div>');
+    return;
+  }
+  if(access === 'unavailable'){ stateView('Unavailable', 'This page is not available.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
+  if(access !== 'full' || !data.presence){ stateView('Not found', 'This business page could not be found.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
+
+  // ── Full view (profile-shell layout) ─────────────────────────────────────────
+  var p = data.presence;
+  var canManage = !!data.can_manage;
+  var typeLbl = TYPE_LABEL[p.presence_type] || p.presence_type;
+  var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
+  var loc = [p.location, p.market].filter(Boolean).join(' · ');
+  document.title = (p.name || 'Business Page') + ' — Pegasus Network';
+  // Clean public URL for this page (shown/copied; never the technical resolver).
+  var cleanPath = Pegasus.presencePath(p.presence_type, p.slug);
+  var cleanUrl = CANON + cleanPath;
+  (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
+
+  var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';
+  var avHtml = p.logo_url ? '<img src="'+(Pegasus.safeUrl?Pegasus.safeUrl(p.logo_url):esc(p.logo_url))+'" alt="">' : esc(initials);
+
+  // HERO
+  var hero =
+  '<section class="pp-hero">'+
+    '<div class="pp-hero-grid"></div>'+
+    '<div class="pp-hero-wm" aria-hidden="true">'+esc((p.name||'').slice(0,16))+'</div>'+
+    '<div class="pp-hero-c">'+
+      '<div class="pp-av">'+avHtml+'</div>'+
+      '<div>'+
+        '<h1 class="pp-name">'+esc(p.name)+'</h1>'+
+        '<div class="pp-sub"><strong>'+esc(typeLbl)+'</strong>'+(loc?' · '+esc(loc):'')+'</div>'+
+        '<div class="pp-tags">'+
+          '<span class="pp-tag pp-tag-r">'+esc(typeLbl)+'</span>'+
+          (p.category?'<span class="pp-tag pp-tag-m">'+esc(p.category)+'</span>':'')+
+          '<span class="pp-tag '+(p.status==='active'?'pp-tag-v':'pp-tag-m')+'">'+esc(cap(p.status))+'</span>'+
+          '<span class="pp-tag pp-tag-m">'+esc(visLbl)+'</span>'+
+          (p.market?'<span class="pp-tag pp-tag-m">'+esc(p.market)+'</span>':'')+
+        '</div>'+
+        (p.tagline?'<div class="pp-tagline"><div class="pp-tagline-bar"></div><div class="pp-tagline-text">“'+esc(p.tagline)+'”</div></div>':'')+
+      '</div>'+
+      '<div class="pp-actions">'+
+        '<button class="btn btn-ghost" onclick="presenceCopyLink()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Copy Link</button>'+
+        (canManage?'<a class="btn btn-ghost" href="/my-presences.html" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Edit Page</a>':'')+
+      '</div>'+
+    '</div>'+
+    '<div class="pp-hero-horizon"></div>'+
+  '</section>';
+
+  // IDENTITY RAIL (quick facts)
+  function railItem(label,val,dot){ return '<div class="pp-strip-item"><div class="pp-rail-label">'+(dot?'<span class="pp-rail-dot '+dot+'"></span>':'')+esc(label)+'</div><div class="pp-rail-val">'+esc(val)+'</div></div>'; }
+  var rf=[ railItem('Type', typeLbl, 'blue') ];
+  if(p.category) rf.push(railItem('Category', p.category));
+  if(p.industry) rf.push(railItem('Industry', p.industry));
+  if(loc) rf.push(railItem('Region', loc));
+  rf.push(railItem('Visibility', visLbl));
+  rf.push(railItem('Status', cap(p.status), p.status==='active'?'green':'gold'));
+  var rail = '<div class="pp-strip"><div class="pp-strip-inner">'+rf.join('')+'</div></div>';
+
+  // ── helpers for cards ──
+  function field(label,val){ if(val==null||val==='') return ''; return '<div class="pp-field"><div><div class="pp-field-label">'+esc(label)+'</div><div class="pp-field-val">'+esc(val)+'</div></div></div>'; }
+  function fieldRaw(label,html){ return '<div class="pp-field"><div><div class="pp-field-label">'+esc(label)+'</div><div class="pp-field-val">'+html+'</div></div></div>'; }
+  function bizSec(label, value, hint){
+    var inner;
+    if(value) inner = '<div class="pp-about">'+esc(value)+'</div>';
+    else if(canManage) inner = '<div style="font-size:12.5px;color:var(--text4)">'+esc(hint)+' <a href="/my-presences.html" style="color:var(--blue)">Add now →</a></div>';
+    else return '';
+    return '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">'+esc(label)+'</span></div><div class="pp-card-body">'+inner+'</div></div>';
+  }
+
+  // ── Managed by / Represented by — a clear relationship card (never owner_user_id)
+  var mb = data.managed_by || {};
+  var managed = '';
+  if(mb.generic){
+    managed = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Managed by</span></div><div class="pp-card-body"><div style="font-size:13px;color:var(--text2)">Connected Pegasus member</div></div></div>';
+  } else if(mb.name){
+    var mbLink = mb.you ? '/profile.html' : (mb.slug ? '/u/'+encodeURIComponent(mb.slug) : '');
+    var mbInit = (mb.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+    managed = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">'+(mb.you?'Managed by':'Represented by')+'</span></div><div class="pp-card-body">'+
+      '<div style="display:flex;align-items:center;gap:11px">'+
+        '<div style="width:40px;height:40px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,.2);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--blue-lt);font-size:13px;flex-shrink:0">'+esc(mbInit)+'</div>'+
+        '<div style="min-width:0"><div style="font-size:14px;font-weight:600;color:var(--text)">'+(mb.you?'You':esc(mb.name))+'</div>'+
+        (mbLink?'<a class="pp-card-action" href="'+mbLink+'">View profile →</a>':'')+'</div>'+
+      '</div></div></div>';
+  }
+
+  // ── MAIN column — what we do / offer / looking / connect / opportunities / talk
+  var focus;
+  if(p.short_description) focus = '<div class="pp-focus"><div class="pp-focus-label">What we do</div><div class="pp-focus-text">'+esc(p.short_description)+'</div></div>';
+  else if(canManage) focus = '<div class="pp-focus"><div class="pp-focus-label">What we do</div><div class="pp-focus-text" style="font-size:14px;font-family:var(--sans);color:var(--text4)">Add a short description of what this business or project does. <a href="/my-presences.html" style="color:var(--blue)">Add now →</a></div></div>';
+  else focus = '';
+
+  var ctaBtn = p.public_cta_url ? '<a class="btn btn-pri" href="'+safeHref(p.public_cta_url)+'" target="_blank" rel="noopener noreferrer">'+esc(p.public_cta_label||'Learn more')+'</a>' : '';
+  var convo;
+  if(isLoggedIn()){
+    convo = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">How to start a conversation</span></div><div class="pp-card-body">'+
+      (ctaBtn?'<div style="margin-bottom:12px">'+ctaBtn+'</div>':'')+
+      (canManage
+        ? '<div style="font-size:12.5px;color:var(--text4)">When members express interest in this page, their requests appear in your <a href="/dashboard.html#requests" style="color:var(--blue)">Workspace</a>.</div>'
+        : '<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Reach out to the team behind this page. Pegasus shares your profile so they can respond — your private contact details are never shown.</div>'+
+          '<button class="btn btn-pri" onclick="psEngage()">Express Interest / Connect</button>')+
+    '</div></div>';
+  } else {
+    convo = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">How to start a conversation</span></div><div class="pp-card-body">'+
+      (ctaBtn?'<div style="margin-bottom:14px">'+ctaBtn+'</div>':'')+
+      '<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Pegasus members can connect with this page inside the network.</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-pri" href="/signin.html">Sign In to Connect</a><a class="btn btn-ghost" href="/signup.html">Create Your Free Page</a></div>'+
+    '</div></div>';
+  }
+  // Featured Opportunities — real deal/listing/project cards, loaded async below.
+  var oppsSec = '<div id="ps-opps"></div>';
+
+  var mainCol = focus +
+    bizSec('What we offer', p.offers, 'List the products, services, capital, or deals you offer.')+
+    bizSec('What we are looking for', p.looking_for, 'Say what you are looking for — clients, capital, partners, deals.')+
+    bizSec('Who should connect with us', p.ideal_connections, 'Describe the people or businesses who should reach out.')+
+    oppsSec +
+    convo;
+
+  // ── RIGHT context column — Managed by + Network Signals + Suggested Next Steps
+  var steps;
+  if(canManage){
+    var sSteps=[];
+    if(!p.offers) sSteps.push('Add what you offer');
+    if(!p.looking_for) sSteps.push('Add what you are looking for');
+    if(!p.ideal_connections) sSteps.push('Add who should connect with you');
+    sSteps.push('Present an opportunity or showcase');
+    sSteps.push('Share this business page');
+    steps='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Suggested next steps</span></div><div class="pp-card-body">'+
+      sSteps.map(function(s){return '<div style="font-size:12.5px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border)">'+esc(s)+'</div>';}).join('')+
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'+
+        '<a class="btn btn-pri btn-sm" href="/my-presences.html">Edit Page</a>'+
+        '<button class="btn btn-ghost btn-sm" onclick="presenceCopyLink()">Copy Link</button>'+
+      '</div></div></div>';
+  } else {
+    var vActions='';
+    if(mb.name && mb.slug) vActions+='<a class="btn btn-ghost btn-sm" href="/u/'+encodeURIComponent(mb.slug)+'">View Manager Profile</a>';
+    if(p.website_url) vActions+='<a class="btn btn-ghost btn-sm" href="'+safeHref(p.website_url)+'" target="_blank" rel="noopener noreferrer">Visit Website</a>';
+    vActions+='<button class="btn btn-ghost btn-sm" onclick="presenceCopyLink()">Copy Link</button>';
+    steps='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Next steps</span></div><div class="pp-card-body"><div style="display:flex;flex-direction:column;gap:8px">'+vActions+'</div>'+
+      '<div class="ppg-soon" style="margin-top:10px"><span>Request Introduction</span><span class="pill">Coming soon</span></div></div></div>';
+  }
+  var rightCol = managed + '<div id="ps-signals"></div>' + steps;
+
+  main.innerHTML = hero + rail +
+    '<div class="pp-body" style="grid-template-columns:1fr 320px">'+
+      '<div>'+mainCol+'</div>'+
+      '<div>'+rightCol+'</div>'+
+    '</div>';
+  addFooter();
+
+  /* Network Signals — movement around the ecosystem (visibility-safe). Hidden if
+     there's nothing safe to show. */
+  (async function loadPsSignals(){
+    try{
+      var host=document.getElementById('ps-signals'); if(!host) return;
+      var rr=await c.rpc('get_recent_network_activity');
+      var items=(rr && !rr.error && rr.data) ? rr.data : [];
+      if(!items.length){ host.parentNode && host.parentNode.removeChild(host); return; }
+      var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+      var rows=items.slice(0,6).map(function(a){
+        var isPerson=a.kind==='person';
+        var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
+        var kind=TL[a.kind]||a.kind;
+        var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
+        var ini=(a.name||'—').split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('');
+        return '<a href="'+esc(href)+'" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none">'+
+          '<div style="width:30px;height:30px;border-radius:'+(isPerson?'50%':'8px')+';background:var(--blue-dim);border:1px solid rgba(58,143,232,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+esc(ini)+'</div>'+
+          '<div style="min-width:0;flex:1"><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt)">'+esc(kind)+'</div>'+
+          '<div style="font-size:12.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.name||'—')+'</div>'+
+          (sub?'<div style="font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(sub)+'</div>':'')+'</div></a>';
+      }).join('');
+      host.innerHTML='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Network Signals</span></div><div class="pp-card-body" style="padding-top:4px"><div style="font-size:11px;color:var(--text3);margin-bottom:6px">Movement inside Pegasus.</div>'+rows+'</div></div>';
+    }catch(e){ var h=document.getElementById('ps-signals'); if(h && h.parentNode) h.parentNode.removeChild(h); }
+  })();
+
+  /* Featured Opportunities — the specific deals, projects, and listings this
+     business presents. Loaded via the visibility-safe RPC; managers also get an
+     "Add Opportunity" action and per-card manage controls. Degrades gracefully:
+     if migration 054 isn't applied yet, the section simply hides (managers see a
+     soft prompt). Opportunities NEVER live on a personal profile — only here. */
+  var OPP_TYPE = { opportunity:'Opportunity', project:'Project', listing:'Listing', property:'Property', capital_request:'Capital Request', fund:'Fund', deal:'Deal', event:'Event', other:'Opportunity', showcase:'Showcase', startup:'Startup', partnership:'Partnership' };
+  var OPP_VIS  = { public_preview:'Public', member_only:'Members only', private:'Private' };
+
+  /* The presentation formats an "opportunity" can take. Each keeps its own
+     fields + language on the frontend; all store in the one opportunities table
+     (template_type column added in migration 056). Every field maps to one
+     existing column so no per-type DB tables are needed. */
+  var TEMPLATES = [
+    { key:'capital_program', badge:'Capital Program', color:'#3A8FE8', icon:'◈',
+      title:'Capital / Financing Program', line:'Offer capital, lending, or funding solutions.',
+      forWho:'Lenders, brokers, private capital, hard money, business funding.', cta:'Request Scenario Review',
+      fields:[ {col:'title',label:'Program name',ph:'e.g. Nationwide Bridge Loan Program'},
+        {col:'summary',label:'Who this is for',ph:'One line — e.g. Investors needing fast bridge capital',opt:true},
+        {col:'category',label:'Capital / loan type',ph:'Bridge, DSCR, hard money, SBA…',opt:true},
+        {col:'market',label:'Markets / states',ph:'Nationwide, or TX, FL, CA…',opt:true},
+        {col:'amount_label',label:'Minimum / maximum size',ph:'$250K – $10M',opt:true},
+        {col:'description',label:'Use cases & basic requirements',ph:'What it funds, terms, eligibility…',kind:'textarea',opt:true} ] },
+    { key:'project', badge:'Project', color:'#7C5CFF', icon:'◭',
+      title:'Project / Development', line:'Present a real project people can understand.',
+      forWho:'Developers, builders, landowners, investors, construction.', cta:'Request Project Info',
+      fields:[ {col:'title',label:'Project name',ph:'e.g. Riverside 120-Unit Multifamily'},
+        {col:'location',label:'Location',ph:'Austin, TX',opt:true},
+        {col:'category',label:'Project type',ph:'Multifamily, Mixed-use, Land…',opt:true},
+        {col:'market',label:'Stage',ph:'Pre-development, Entitled, Under construction…',opt:true},
+        {col:'amount_label',label:'Capital need / sale price',ph:'$12M raise · or $4.2M sale',opt:true},
+        {col:'summary',label:'Short summary',ph:'One line people see on the card.',opt:true},
+        {col:'description',label:'Description',ph:'The full project story and details.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Project info link (optional)',ph:'https://…',opt:true} ] },
+    { key:'property_listing', badge:'Listing', color:'#1FA37A', icon:'⌂',
+      title:'Property / Listing', line:'Show an asset, property, land, or listing.',
+      forWho:'Real estate pros, owners, brokers, developers, investors.', cta:'Request Details',
+      fields:[ {col:'title',label:'Property / asset name',ph:'e.g. 123 Main St — Retail Center'},
+        {col:'location',label:'Location',ph:'Dallas, TX',opt:true},
+        {col:'category',label:'Property type',ph:'Retail, Office, Multifamily, Land…',opt:true},
+        {col:'amount_label',label:'Price / value',ph:'$2.4M',opt:true},
+        {col:'market',label:'Size / units / land / zoning',ph:'12,000 sqft · 0.8 acres · C-2',opt:true},
+        {col:'summary',label:'Short summary',ph:'One line people see on the card.',opt:true},
+        {col:'description',label:'Details',ph:'Condition, income, highlights…',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Listing link (optional)',ph:'https://…',opt:true} ] },
+    { key:'startup_business_need', badge:'Startup', color:'#E8923A', icon:'✦',
+      title:'Startup / Business Need', line:'Attract capital, partners, clients, or support.',
+      forWho:'Founders, business owners, operators, growing companies.', cta:'Connect',
+      fields:[ {col:'title',label:'Company / project name',ph:'e.g. FinTechCo'},
+        {col:'category',label:'Stage',ph:'Idea, MVP, Growth, Scaling…',opt:true},
+        {col:'summary',label:'What problem it solves',ph:'One line — the core value.',opt:true},
+        {col:'market',label:'What you need',ph:'Capital, partners, clients, advisors',opt:true},
+        {col:'amount_label',label:'Raise / amount (optional)',ph:'$1M seed',opt:true},
+        {col:'description',label:'Description',ph:'The story, traction, and the ask.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Deck / website (optional)',ph:'https://…',opt:true} ] },
+    { key:'showcase', badge:'Showcase', color:'#D14FB0', icon:'❖',
+      title:'Showcase', line:'Show what you’ve built, created, or delivered.',
+      forWho:'Developers, architects, designers, builders, consultants, brands.', cta:'View Showcase',
+      fields:[ {col:'title',label:'Showcase title',ph:'e.g. Tower Renovation — Before & After'},
+        {col:'summary',label:'What this demonstrates',ph:'One line — the capability or result.',opt:true},
+        {col:'category',label:'Capabilities shown',ph:'Design-build, Construction, Branding…',opt:true},
+        {col:'location',label:'Location (optional)',ph:'Miami, FL',opt:true},
+        {col:'description',label:'Project story / case study',ph:'What you set out to do and the outcome.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Video / showcase URL (optional)',ph:'YouTube, Vimeo, gallery link…',opt:true} ] },
+    { key:'event_session', badge:'Event', color:'#C9A227', icon:'◷',
+      title:'Event / Session', line:'Invite the right people into a private session.',
+      forWho:'Hosts, educators, capital groups, founders, community builders.', cta:'Request Access',
+      fields:[ {col:'title',label:'Event / session name',ph:'e.g. Private Investor Dinner'},
+        {col:'amount_label',label:'Date & time',ph:'June 20, 2026 · 7:00pm ET',opt:true},
+        {col:'location',label:'Location / online',ph:'Miami, or Online (Zoom)',opt:true},
+        {col:'category',label:'Topic',ph:'Capital raising, RWA, Development…',opt:true},
+        {col:'summary',label:'Who should attend',ph:'One line — the ideal guest.',opt:true},
+        {col:'description',label:'Details',ph:'Agenda, format, what attendees get.',kind:'textarea',opt:true},
+        {col:'cta_url',label:'Registration / access link (optional)',ph:'https://…',opt:true} ] },
+    { key:'partnership_request', badge:'Partnership', color:'#3AB0E8', icon:'⬡',
+      title:'Partnership Request', line:'Tell the network who you want to meet.',
+      forWho:'Anyone seeking aligned partners, referrals, capital, or operators.', cta:'Request Introduction',
+      fields:[ {col:'title',label:'Request title',ph:'e.g. Seeking CRE Brokers in Texas'},
+        {col:'summary',label:'Who you want to meet',ph:'One line — the person or business.',opt:true},
+        {col:'market',label:'Geography / market',ph:'Texas, CRE, Nationwide…',opt:true},
+        {col:'category',label:'Type of partner (optional)',ph:'Referral, Capital, Operator…',opt:true},
+        {col:'description',label:'Reason for connection + what you can offer',ph:'Why connect, and the value you bring.',kind:'textarea',opt:true} ] }
+  ];
+  var TMAP = {}; TEMPLATES.forEach(function(t){ TMAP[t.key]=t; });
+  // Map a legacy opportunity_type → a presentation format (for opps created before 056).
+  var TYPE_TO_TMPL = { capital_request:'capital_program', project:'project', property:'property_listing', listing:'property_listing', startup:'startup_business_need', showcase:'showcase', event:'event_session', partnership:'partnership_request' };
+  function tmplForOpp(o){ return (o && o.template_type) || (o && TYPE_TO_TMPL[o.opportunity_type]) || null; }
+
+  function oppCard(o){
+    var href = Pegasus.opportunityPath ? Pegasus.opportunityPath(o.slug) : ('/opportunity/'+encodeURIComponent(o.slug));
+    var tk = tmplForOpp(o); var t = tk ? TMAP[tk] : null;
+    var badgeTxt = t ? t.badge : (OPP_TYPE[o.opportunity_type] || 'Opportunity');
+    var badgeCol = t ? t.color : '#5C7BA0';
+    var badge = '<span class="opp-badge" style="color:'+badgeCol+';border:1px solid '+badgeCol+'55;background:'+badgeCol+'14">'+esc(badgeTxt)+'</span>';
+    var meta = [o.amount_label, o.location, o.market, o.category].filter(Boolean).map(function(m){return esc(m);}).join(' · ');
+    var visTag = (canManage && o.visibility && o.visibility!=='public_preview')
+      ? '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px;margin-left:auto">'+esc(OPP_VIS[o.visibility]||o.visibility)+'</span>'
+      : '';
+    var manage = canManage
+      ? '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="oppShare(\''+esc(o.id)+'\')">Share</button><button class="btn btn-ghost btn-sm" onclick="oppEdit(\''+esc(o.id)+'\')">Edit</button><button class="btn btn-ghost btn-sm" onclick="oppArchive(\''+esc(o.id)+'\')">Archive</button></div>'
+      : '';
+    // Visual treatment: presentations with a cover image (esp. Showcase) lead
+    // with a thumbnail so they don't look like every other card.
+    var md=o.media||{}; var cover=md.cover_url || (md.images && md.images[0] && md.images[0].url) || '';
+    var isShowcase = tk==='showcase';
+    var nImg = (md.images && md.images.length) || 0;
+    var thumb = cover
+      ? '<a href="'+esc(href)+'" style="display:block;margin:2px 0 9px"><img src="'+esc(cover)+'" alt="" style="width:100%;height:'+(isShowcase?'170':'130')+'px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"></a>'+(isShowcase&&nImg>1?'<div style="font-size:10px;color:var(--text4);margin:-4px 0 6px">'+nImg+' photos'+(md.video_url?' · video':'')+'</div>':'')
+      : '';
+    return '<div style="padding:13px 0;border-bottom:1px solid var(--border)">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+badge+visTag+'</div>'+
+      thumb+
+      '<a href="'+esc(href)+'" style="font-size:15px;font-weight:600;color:var(--text);text-decoration:none;display:block">'+esc(o.title)+'</a>'+
+      (o.summary?'<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:3px">'+esc(o.summary)+'</div>':'')+
+      (meta?'<div style="font-size:11px;color:var(--text3);margin-top:5px">'+meta+'</div>':'')+
+      '<a href="'+esc(href)+'" class="pp-card-action" style="margin-top:6px;display:inline-block">View →</a>'+
+      manage+
+    '</div>';
+  }
+
+  function renderOpps(list){
+    var host=document.getElementById('ps-opps'); if(!host) return;
+    list = list || [];
+    if(!list.length && !canManage){ host.innerHTML=''; return; }
+    var addBtn = canManage ? '<button class="btn btn-ghost btn-sm" onclick="oppCreate()" style="margin-left:auto">+ Present something</button>' : '';
+    var body;
+    if(list.length){
+      var rows = list.map(oppCard).join('');
+      body = '<div style="margin-top:-13px">'+rows+'</div>';
+    } else {
+      body = '<div style="font-size:12.5px;color:var(--text4)">Present what this business does — a capital program, a project, a listing, a showcase of completed work, an event, or a partnership you’re looking for.</div>';
+    }
+    host.innerHTML = '<div class="pp-card"><div class="pp-card-head" style="display:flex;align-items:center"><span class="pp-card-label-serif">Opportunities &amp; Showcases</span>'+addBtn+'</div><div class="pp-card-body">'+body+'</div></div>';
+  }
+
+  var _opps = [];
+  (async function loadOpps(){
+    try{
+      var rr = await c.rpc('get_opportunities_for_presence', { p_slug: slug });
+      _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : [];
+      if(rr && rr.error) console.warn('[presence] get_opportunities_for_presence failed — apply migrations 054/056 + restart Supabase. Error:', rr.error);
+    }catch(e){ console.warn('[presence] opportunities load threw:', e); _opps=[]; }
+    renderOpps(_opps);
+  })();
+
+  // ── Owner: 3-step Presentation Builder (Choose → Build → Preview & Publish) ──
+  var GUIDE = {
+    capital_program:'Describe the capital you provide and exactly who it’s for. The clearer the fit, the better the scenarios you’ll attract.',
+    project:'Show the project clearly — what it is, where it stands, and what you need. Investors and partners decide on clarity.',
+    property_listing:'Present the asset like a real listing — location, price, and the numbers that matter. Make it easy to request details.',
+    startup_business_need:'Say what you’re building and exactly what you need. The right capital, partners, or clients respond to specifics.',
+    showcase:'Show your best work. Add a strong cover image, a short story, and a gallery — this is your proof, and the most shareable format.',
+    event_session:'Make the invite clear — what it is, when it happens, and who should be in the room.',
+    partnership_request:'Tell the network exactly who you want to meet and what you bring. Specific asks earn warm introductions.'
+  };
+  // Media level per format: 'full' = cover+gallery+video, 'cover' = one optional image, 'none'.
+  var MEDIA_LEVEL = { showcase:'full', project:'cover', property_listing:'cover', startup_business_need:'cover', event_session:'cover', capital_program:'none', partnership_request:'none' };
+  function emptyMedia(){ return { cover_url:'', video_url:'', images:[] }; }
+  var oppDraft = null; // { tmpl, id, values:{}, media:{}, visibility }
+
+  function oppSelector(){
+    var cards = TEMPLATES.map(function(t){
+      return '<button class="opp-pick" onclick="oppPick(\''+t.key+'\')">'+
+        '<span class="opp-pick-ic">'+t.icon+'</span>'+
+        '<span class="opp-pick-t">'+esc(t.title)+'</span>'+
+        '<span class="opp-pick-l">'+esc(t.line)+'</span>'+
+        '<span class="opp-pick-for">'+esc(t.forWho)+'</span>'+
+      '</button>';
+    }).join('');
+    Pegasus.modal(
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:680px">'+
+        '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 1 of 3 · Choose a format</div><div class="sce-title">What do you want Pegasus to help you present?</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:74vh;overflow-y:auto">'+
+          '<div style="font-family:var(--serif);font-size:17px;color:var(--text);margin-bottom:4px">Turn what you do into something the right people can discover.</div>'+
+          '<div style="font-size:12.5px;color:var(--text3);line-height:1.55;margin-bottom:16px">Build it once. Publish inside Pegasus. Share everywhere else.</div>'+
+          '<div class="opp-grid">'+cards+'</div>'+
+        '</div>'+
+      '</div></div>'
+    );
+  }
+  window.oppPick = function(k){
+    try{
+      var t=TMAP[k]||TMAP['capital_program'];
+      oppDraft = { tmpl:t.key, id:null, values:{}, media:emptyMedia(), visibility:'public_preview' };
+      oppBuilder();
+    }catch(err){ console.error('[presence] open builder failed:', err); Pegasus.toast('!','var(--gold-dim)','Could not open','Please refresh and try again.'); }
+  };
+
+  function esca(v){ return esc(v==null?'':v); }
+  function bf(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><input id="opp_'+col+'" type="text" value="'+esca(val)+'" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px"></div>'; }
+  function bta(col,label,val,ph){ return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">'+esc(label)+'</label><textarea id="opp_'+col+'" rows="4" placeholder="'+esc(ph||'')+'" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical">'+esca(val)+'</textarea></div>'; }
+
+  // STEP 2 — Build
+  function oppBuilder(){
+    var t=TMAP[oppDraft.tmpl]; var v=oppDraft.values; var isEdit=!!oppDraft.id;
+    var rows = t.fields.map(function(fd){
+      var val = (fd.col in v) ? v[fd.col] : '';
+      return (fd.kind==='textarea') ? bta(fd.col, fd.label, val, fd.ph) : bf(fd.col, fd.label, val, fd.ph);
+    }).join('');
+    var visKeys=['public_preview','member_only','private'];
+    var visOpts=visKeys.map(function(k){ return '<option value="'+k+'"'+((oppDraft.visibility||'public_preview')===k?' selected':'')+'>'+esc(OPP_VIS[k])+'</option>'; }).join('');
+    var visSel='<div style="margin-bottom:2px"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">Who can see this</label><select id="opp_vis" style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">'+visOpts+'</select></div>';
+    var guide='<div style="font-size:12px;color:var(--text2);line-height:1.55;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:16px">'+esc(GUIDE[t.key]||'')+'</div>';
+    var mediaSec = (MEDIA_LEVEL[t.key]!=='none') ? '<div id="opp-media" style="margin-bottom:14px"></div>' : '';
+    var back = isEdit ? '' : '<button class="btn btn-ghost" onclick="oppSelector()" style="margin-right:auto">← Formats</button>';
+    Pegasus.modal(
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
+        '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 2 of 3 · Build</div><div class="sce-title">'+esc((isEdit?'Edit ':'')+t.title)+'</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:64vh;overflow-y:auto">'+guide+rows+mediaSec+visSel+'</div>'+
+        '<div class="sce-foot">'+back+'<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="opp_next">Preview & Publish →</button></div>'+
+      '</div></div>'
+    );
+    if(mediaSec) renderOppMedia();
+    document.getElementById('opp_next').onclick = function(){
+      oppReadBuilder();
+      if(!(oppDraft.values.title||'').trim()){ Pegasus.toast('!','var(--gold-dim)','Title required','Give this a name first.'); return; }
+      oppPreviewStep();
+    };
+  }
+  function oppReadBuilder(){
+    var t=TMAP[oppDraft.tmpl];
+    var gv=function(col){ var e=document.getElementById('opp_'+col); return e?(e.value||'').trim():''; };
+    t.fields.forEach(function(fd){ oppDraft.values[fd.col]=gv(fd.col); });
+    oppDraft.visibility=(document.getElementById('opp_vis')||{}).value||'public_preview';
+    var vu=document.getElementById('opp_videourl'); if(vu) oppDraft.media.video_url=(vu.value||'').trim();
+  }
+
+  // Media (Showcase = cover+gallery+video; others = optional cover)
+  function renderOppMedia(){
+    var host=document.getElementById('opp-media'); if(!host) return;
+    var lvl=MEDIA_LEVEL[oppDraft.tmpl]; var m=oppDraft.media;
+    var cover = m.cover_url
+      ? '<div style="position:relative"><img src="'+esca(m.cover_url)+'" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"><button class="btn btn-ghost btn-sm" onclick="oppMediaRemoveCover()" style="position:absolute;top:8px;right:8px">Remove</button></div>'
+      : '<button class="btn btn-ghost" style="width:100%" onclick="document.getElementById(\'opp-cover-file\').click()">'+(lvl==='full'?'Upload cover image':'Add an image (optional)')+'</button>';
+    var html='<label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px">'+(lvl==='full'?'Cover image':'Image (optional)')+'</label>'+cover+
+      '<input type="file" id="opp-cover-file" accept="image/*" style="display:none" onchange="oppMediaCover(this)">';
+    if(lvl==='full'){
+      var thumbs=(m.images||[]).map(function(im,i){ return '<div style="position:relative"><img src="'+esca(im.url)+'" alt="" style="width:100%;height:78px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><button onclick="oppMediaRemoveImg('+i+')" style="position:absolute;top:3px;right:3px;border:none;background:rgba(8,12,18,.7);color:#fff;width:20px;height:20px;border-radius:6px;cursor:pointer;font-size:11px">✕</button></div>'; }).join('');
+      html+='<label style="display:block;font-size:11px;color:var(--text3);margin:14px 0 6px">Gallery</label>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+thumbs+'</div>'+
+        '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="document.getElementById(\'opp-gallery-file\').click()">+ Add photos</button>'+
+        '<input type="file" id="opp-gallery-file" accept="image/*" multiple style="display:none" onchange="oppMediaGallery(this)">'+
+        '<div style="margin-top:14px">'+bf('videourl','Video URL (optional)', m.video_url, 'YouTube, Vimeo, or a hosted video link')+'</div>';
+    }
+    host.innerHTML=html;
+  }
+  async function oppUpload(file){
+    if(!/^image\//.test(file.type)) throw new Error('Please choose an image file (JPG, PNG, WebP).');
+    if(file.size/1048576 > 5) throw new Error('Image must be under 5MB.');
+    var uid=null; try{ var us=await c.auth.getUser(); uid=us&&us.data&&us.data.user&&us.data.user.id; }catch(e){}
+    if(!uid) throw new Error('Please sign in again.');
+    var ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+    var path=uid+'/opp-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)+'.'+ext;
+    var up=await c.storage.from('profile-media').upload(path,file,{cacheControl:'3600',upsert:true,contentType:file.type});
+    if(up.error){ var em=(up.error.message||'').toLowerCase(); if(em.indexOf('bucket')!==-1||em.indexOf('not found')!==-1) throw new Error('Storage bucket "profile-media" missing — run migration 007.'); throw up.error; }
+    var pub=c.storage.from('profile-media').getPublicUrl(path); var url=pub&&pub.data?pub.data.publicUrl:null;
+    if(!url) throw new Error('Could not resolve the uploaded image URL.');
+    return url;
+  }
+  window.oppMediaCover = async function(input){
+    var file=input&&input.files&&input.files[0]; if(!file) return;
+    Pegasus.toast('◷','var(--blue-dim)','Uploading…','');
+    try{ oppReadBuilder(); oppDraft.media.cover_url=await oppUpload(file); renderOppMedia(); Pegasus.toast('◫','var(--green-dim)','Cover added',''); }
+    catch(e){ console.error('[presence] cover upload:', e); Pegasus.toast('!','var(--gold-dim)','Upload failed',(e&&e.message)||'Try again.'); }
+  };
+  window.oppMediaRemoveCover = function(){ oppReadBuilder(); oppDraft.media.cover_url=''; renderOppMedia(); };
+  window.oppMediaGallery = async function(input){
+    var files=input&&input.files; if(!files||!files.length) return;
+    oppReadBuilder();
+    Pegasus.toast('◷','var(--blue-dim)','Uploading '+files.length+' photo'+(files.length>1?'s':'')+'…','');
+    for(var i=0;i<files.length;i++){
+      try{ var url=await oppUpload(files[i]); oppDraft.media.images.push({url:url, caption:''}); renderOppMedia(); }
+      catch(e){ console.error('[presence] gallery upload:', e); Pegasus.toast('!','var(--gold-dim)','Upload failed',(e&&e.message)||'Try again.'); }
+    }
+    Pegasus.toast('◫','var(--green-dim)','Photos added','');
+  };
+  window.oppMediaRemoveImg = function(i){ oppReadBuilder(); oppDraft.media.images.splice(i,1); renderOppMedia(); };
+
+  function oppDraftToOpp(){
+    var v=oppDraft.values; var t=TMAP[oppDraft.tmpl];
+    return { title:v.title, slug:'', summary:v.summary||'', description:v.description||'', opportunity_type:null, template_type:oppDraft.tmpl,
+      amount_label:v.amount_label||'', location:v.location||'', market:v.market||'', category:v.category||'',
+      cta_label:t.cta, cta_url:v.cta_url||'', visibility:oppDraft.visibility, status:'active', media:oppDraft.media, can_manage:true };
+  }
+
+  // STEP 3 — Preview & Publish
+  function oppPreviewStep(){
+    var t=TMAP[oppDraft.tmpl]; var pseudo=oppDraftToOpp(); var m=oppDraft.media||{};
+    var cardPrev='<div style="pointer-events:none;border:1px solid var(--border);border-radius:12px;padding:4px 14px 2px;background:var(--bg1)">'+oppCard(pseudo)+'</div>';
+    var coverImg = m.cover_url ? '<img src="'+esca(m.cover_url)+'" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:10px;border:1px solid var(--border)">' : '';
+    var galleryStrip = (t.key==='showcase' && m.images && m.images.length) ? '<div style="display:flex;gap:5px;margin:8px 0">'+m.images.slice(0,5).map(function(im){return '<img src="'+esca(im.url)+'" alt="" style="width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">';}).join('')+'</div>' : '';
+    var meta=[pseudo.amount_label,pseudo.location,pseudo.market,pseudo.category].filter(Boolean).map(esc).join(' · ');
+    var detailPrev='<div style="border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--bg1)">'+
+      coverImg+
+      '<div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:'+(t.color)+';margin-bottom:4px">'+esc(t.badge)+' · Detail page</div>'+
+      '<div style="font-size:18px;font-weight:600;color:var(--text);font-family:var(--serif)">'+esc(pseudo.title||'Untitled')+'</div>'+
+      '<div style="font-size:11.5px;color:var(--text3);margin-top:2px">Presented by '+esc(p.name)+'</div>'+
+      (pseudo.summary?'<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:8px">'+esc(pseudo.summary)+'</div>':'')+
+      galleryStrip+
+      (pseudo.description?'<div style="font-size:12px;color:var(--text3);line-height:1.55;margin-top:8px">'+esc(pseudo.description.slice(0,220))+(pseudo.description.length>220?'…':'')+'</div>':'')+
+      (meta?'<div style="font-size:11px;color:var(--text4);margin-top:8px">'+meta+'</div>':'')+
+      (m.video_url?'<div style="font-size:11px;color:var(--blue-lt);margin-top:6px">▶ Video attached</div>':'')+
+    '</div>';
+    var sec=function(t2,h){ return '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px">'+t2+'</div>'+h; };
+    Pegasus.modal(
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
+        '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 3 of 3 · Preview & publish</div><div class="sce-title">Here’s how it will look</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
+        '<div class="sce-body" style="max-height:64vh;overflow-y:auto">'+
+          sec('On your business page', cardPrev)+
+          sec('Detail page', detailPrev)+
+          sec('After you publish', '<div style="font-size:12px;color:var(--text2);line-height:1.55;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px">Pegasus will generate share-ready images (LinkedIn, Instagram post & story, square) and a caption so you can post it across your network.</div>')+
+        '</div>'+
+        '<div class="sce-foot"><button class="btn btn-ghost" onclick="oppBuilder()" style="margin-right:auto">← Back</button><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="opp_publish">'+(oppDraft.id?'Save changes':'Publish')+'</button></div>'+
+      '</div></div>'
+    );
+    document.getElementById('opp_publish').onclick = oppPublish;
+  }
+
+  async function oppPublish(){
+    var btn=document.getElementById('opp_publish'); if(btn){ btn.disabled=true; btn.textContent='Publishing…'; }
+    var t=TMAP[oppDraft.tmpl]; var v=oppDraft.values; var isEdit=!!oppDraft.id;
+    var media = (MEDIA_LEVEL[t.key]==='none') ? null : oppDraft.media;
+    var base = { p_title:(v.title||'').trim(), p_summary:v.summary||null, p_description:v.description||null,
+      p_category:v.category||null, p_location:v.location||null, p_market:v.market||null,
+      p_amount_label:v.amount_label||null, p_cta_label:t.cta, p_cta_url:v.cta_url||null,
+      p_visibility:oppDraft.visibility||'public_preview', p_template_type:oppDraft.tmpl, p_media:media };
+    try{
+      var newId=null;
+      if(isEdit){
+        var ur=await c.rpc('update_opportunity', Object.assign({ p_id:oppDraft.id, p_opportunity_type:null, p_status:null }, base)); if(ur && ur.error) throw ur.error;
+      } else {
+        var cr=await c.rpc('create_opportunity', Object.assign({ p_presence_id:p.id, p_opportunity_type:null }, base)); if(cr && cr.error) throw cr.error;
+        newId = cr && cr.data;
+      }
+      Pegasus.closeModal();
+      var rr=await c.rpc('get_opportunities_for_presence', { p_slug: slug });
+      _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps;
+      renderOpps(_opps);
+      if(isEdit){ Pegasus.toast('✓','var(--green-dim)','Saved','Your presentation was updated.'); }
+      else {
+        var created = newId ? _opps.filter(function(x){return x.id===newId;})[0] : null;
+        if(!created) created = Object.assign(oppDraftToOpp(), { slug:'' });
+        if(Pegasus.opportunityShare) Pegasus.opportunityShare(created, { businessName:p.name, badge:t.badge, created:true });
+        else Pegasus.toast('✓','var(--green-dim)','Published','Live on your business page.');
+      }
+    }catch(err){
+      console.error('[presence] publish failed:', err);
+      var msg=(err&&err.message)||'Could not publish. Apply migrations 054/056/057 and restart Supabase, then try again.';
+      Pegasus.toast('!','var(--gold-dim)','Could not publish', msg);
+      if(btn){ btn.disabled=false; btn.textContent=oppDraft.id?'Save changes':'Publish'; }
+    }
+  }
+
+  window.oppCreate = function(){
+    try{ oppSelector(); }
+    catch(err){ console.error('[presence] could not open selector:', err); Pegasus.toast('!','var(--gold-dim)','Could not open','Please refresh and try again.'); }
+  };
+  window.oppEdit = async function(id){
+    try{
+      var o=_opps.filter(function(x){return x.id===id;})[0]; if(!o){ return; }
+      var full=o;
+      try{ var r=await c.rpc('get_opportunity_by_slug',{ p_slug:o.slug }); if(r && !r.error && r.data && r.data.opportunity) full=Object.assign({}, o, r.data.opportunity); }catch(e){}
+      var tk=tmplForOpp(full) || 'capital_program'; var t=TMAP[tk];
+      var values={}; t.fields.forEach(function(fd){ values[fd.col]= full[fd.col]!=null ? full[fd.col] : ''; });
+      var md=full.media||emptyMedia(); md.images=md.images||[];
+      oppDraft = { tmpl:tk, id:full.id, values:values, media:{cover_url:md.cover_url||'', video_url:md.video_url||'', images:md.images.slice()}, visibility:full.visibility||'public_preview' };
+      oppBuilder();
+    }catch(err){ console.error('[presence] could not open builder:', err); Pegasus.toast('!','var(--gold-dim)','Could not open form','Please refresh and try again.'); }
+  };
+  window.oppShare = function(id){
+    var o=_opps.filter(function(x){return x.id===id;})[0]; if(!o) return;
+    var tk=tmplForOpp(o); var t=tk?TMAP[tk]:null;
+    Pegasus.opportunityShare(o, { businessName:p.name, badge:(t?t.badge:(OPP_TYPE[o.opportunity_type]||'Opportunity')) });
+  };
+  window.oppArchive = async function(id){
+    if(!confirm('Archive this opportunity? It will no longer be shown publicly.')) return;
+    try{
+      var ar=await c.rpc('archive_opportunity', { p_id:id }); if(ar && ar.error) throw ar.error;
+      var rr = await c.rpc('get_opportunities_for_presence', { p_slug: slug });
+      _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps.filter(function(x){return x.id!==id;});
+      renderOpps(_opps);
+      Pegasus.toast('✓','var(--green-dim)','Archived','Opportunity archived.');
+    }catch(err){ console.error('[presence] archive failed:', err); Pegasus.toast('!','var(--gold-dim)','Could not archive', (err&&err.message)||'Try again.'); }
+  };
+
+  // Engage handler — express interest in this business page.
+  window.psEngage = function(){ Pegasus.engageOpen({ presenceId: p.id, name: p.name }); };
+
+  // Copy link handler
+  window.presenceCopyLink = function(){
+    var url = cleanUrl;
+    function done(){ Pegasus.toast('⧉','var(--green-dim)','Link copied', url.replace(/^https?:\/\//,'')); }
+    function fallback(){
+      try{ var ta=document.createElement('textarea'); ta.value=url; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+      catch(e){ alert(url); }
+    }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done).catch(fallback); }
+      else fallback();
+    }catch(e){ fallback(); }
+  };
+});
+</script></body></html>

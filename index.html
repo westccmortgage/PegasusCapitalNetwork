@@ -33,6 +33,30 @@
 .ah-card p{font-size:11.5px;color:var(--text2);line-height:1.55;margin:0}
 @media(max-width:900px){.areas-home-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.how-grid{grid-template-columns:1fr}.how-works{padding:18px 20px 28px}.sessions-soon{padding:20px 20px 40px}.sessions-card{padding:34px 22px}}
+/* ── Cinematic hero video background ── */
+.cin{position:relative;overflow:hidden}
+.cin-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center right;z-index:0;pointer-events:none}
+/* Darker on the left (where the headline sits), lighter on the right (the
+   Pegasus visual) so motion supports the copy and never hurts readability. */
+.cin-video-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(8,17,28,.86) 0%,rgba(8,17,28,.62) 42%,rgba(8,17,28,.30) 72%,rgba(8,17,28,.20) 100%),
+             linear-gradient(180deg,rgba(8,17,28,.30) 0%,rgba(8,17,28,0) 30%,rgba(8,17,28,.55) 100%)}
+#cinCanvas{display:none}                 /* the video is now the hero motion */
+.cin-in{position:relative;z-index:2}
+/* Refined hero height — premium cinematic entry, not a full-screen splash wall.
+   Lands ~70vh so the next section clearly peeks below and invites scrolling. */
+.cin{height:70vh;min-height:560px;max-height:840px}
+@media(max-width:760px){.cin{height:auto;min-height:0;padding:64px 0 52px}}
+/* Soft bottom transition so the hero hands off naturally into the next section. */
+.cin::after{content:"";position:absolute;left:0;right:0;bottom:0;height:110px;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(8,17,28,0) 0%,var(--bg,#fff) 100%)}
+.cin-motto{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--gold,#CDA748);margin:22px 0;text-shadow:0 1px 14px rgba(0,0,0,.45)}
+@media(max-width:760px){.cin-motto{font-size:11px;letter-spacing:.2em;margin:18px 0}}
+.cin-scroll{display:inline-flex;align-items:center;gap:7px}
+.cin-scroll::after{content:"";width:1px;height:16px;background:linear-gradient(rgba(154,123,34,.9),transparent);animation:cinScroll 1.8s ease-in-out infinite}
+@keyframes cinScroll{0%,100%{opacity:.4;transform:translateY(0)}50%{opacity:1;transform:translateY(4px)}}
+@media(max-width:760px){.cin-video-scrim{background:linear-gradient(180deg,rgba(8,17,28,.55),rgba(8,17,28,.78))}}
+/* Who-it's-for chips */
+.peg-who-chip{display:inline-flex;align-items:center;font-size:13px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:24px;padding:9px 16px;line-height:1}
 /* ── Hook refinement ── */
 .cin-q-accent{color:var(--gold,#CDA748)}
 .cin-micro{font-size:12.5px;font-family:var(--mono);letter-spacing:0.02em;color:var(--text3);margin-top:-6px;margin-bottom:6px;opacity:0.9}
@@ -49,6 +73,35 @@
 .wm-founding-dot{width:7px;height:7px;border-radius:50%;background:var(--gold,#CDA748);box-shadow:0 0 0 0 rgba(154,123,34,0.4);animation:wmPulse 2.4s infinite;flex-shrink:0}
 @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(154,123,34,0.35)}70%{box-shadow:0 0 0 8px rgba(154,123,34,0)}100%{box-shadow:0 0 0 0 rgba(154,123,34,0)}}
 @media(max-width:760px){.why-matters{padding:38px 20px 22px}.wm-founding{font-size:11px;padding:8px 14px}}
+/* ── Live Lobby ── */
+.lobby-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+@media(max-width:900px){.lobby-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.lobby-grid{grid-template-columns:1fr}}
+.lobby-card{display:block;text-decoration:none;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
+.lobby-card:hover{transform:translateY(-3px);box-shadow:var(--sh-raise,0 14px 36px rgba(20,40,70,.10));border-color:var(--border2)}
+.lobby-cover{width:100%;height:142px;object-fit:cover;display:block;border-bottom:1px solid var(--border)}
+.lobby-body{padding:15px 16px}
+.lobby-kind{font-size:8.5px;font-family:var(--mono);letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;font-weight:500}
+.lobby-name{font-size:14.5px;font-weight:600;color:var(--text);line-height:1.3}
+.lobby-sub{font-size:11.5px;color:var(--text3);margin-top:3px}
+.lobby-action{font-size:11px;color:var(--blue);margin-top:9px;font-family:var(--mono)}
+.lobby-loading{grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:34px}
+.lobby-pill{display:inline-block;font-size:8px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.present-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
+@media(max-width:900px){.present-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.present-grid{grid-template-columns:1fr}}
+.present-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:18px 16px}
+.present-card .ic{font-size:18px;color:var(--blue);margin-bottom:8px}
+.present-card h3{font-size:13.5px;font-weight:600;margin:0 0 5px;color:var(--text)}
+.present-card p{font-size:11.5px;color:var(--text2);line-height:1.5;margin:0}
+.access-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
+@media(max-width:600px){.access-wrap{grid-template-columns:1fr}}
+.access-col{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:22px}
+.access-col h3{font-size:15px;margin:4px 0 0}
+.access-col .tag{font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.access-col ul{list-style:none;padding:0;margin:14px 0 0}
+.access-col li{font-size:12.5px;color:var(--text2);padding:5px 0 5px 18px;position:relative;line-height:1.45}
+.access-col li::before{content:"✓";position:absolute;left:0;color:var(--green)}
 </style><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
@@ -71,12 +124,35 @@
   }catch(e){}
 }());
 </script>
+<!-- Returning-member gateway: a logged-in visitor should land on their own
+     profile/workspace, not the public marketing homepage. Synchronous
+     localStorage check (no flash). Anonymous visitors fall through to the
+     public gateway below. Honors ?next= for protected-route return. -->
+<script>
+(function(){
+  try{
+    var qs=new URLSearchParams(location.search||'');
+    var raw=localStorage.getItem('pegasus.auth'); if(!raw) return;        // anonymous → gateway
+    var pj=null; try{ pj=JSON.parse(raw); }catch(e){}
+    var tok=pj && (pj.access_token||(pj.currentSession&&pj.currentSession.access_token));
+    if(!tok) return;                                                       // anonymous → gateway
+    var nxt=qs.get('next');
+    if(nxt && /^\/[A-Za-z0-9][A-Za-z0-9\/_?=&.\-]*$/.test(nxt)){ location.replace(nxt); return; }
+    var slug=null; try{ slug=localStorage.getItem('peg_slug'); }catch(e){}
+    location.replace(slug ? ('/u/'+slug) : '/dashboard.html');            // member → profile or workspace
+  }catch(e){}
+})();
+</script>
 <!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
 <script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";console.log("%cPEGASUS BUILD","color:#235FA6;font-weight:bold","dealroom-entitlements-20260524-1529");</script>
 
 <div class="ticker"><div class="ticker-label"><span class="dot" style="background:var(--green);animation:pulse 2s infinite"></span>NETWORK LIVE</div><div class="ticker-track"><div class="ticker-inner" id="tk"></div></div></div>
 <div id="nav"></div>
 <section class="cin">
+  <video class="cin-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="/assets/brand/pegasus-hero.mp4" type="video/mp4">
+  </video>
+  <div class="cin-video-scrim" aria-hidden="true"></div>
   <canvas id="cinCanvas" class="cin-canvas" aria-hidden="true"></canvas>
   <div class="cin-focus" aria-hidden="true"></div>
   <div class="cin-presence" aria-hidden="true"></div>
@@ -86,58 +162,80 @@
   <div class="cin-in cin-convert">
     <div class="cin-eyebrow cin-r1">Pegasus Capital Network</div>
     <h1 class="cin-q cin-r2">Stop chasing the right people.<br><span class="cin-q-accent">Become visible to them.</span></h1>
-    <p class="cin-lead cin-r3">Pegasus is a private ecosystem where capital, real estate, business growth, and professional relationships move through curated visibility, trusted introductions, and protected collaboration.</p>
-    <p class="cin-micro cin-r3">No cold outreach. No random noise. No public marketplace chaos.</p>
-    <div class="hero-cta cin-r4">
-      <a class="btn btn-pri btn-lg hero-cta-pri" href="/explore.html">Explore the Ecosystem →</a>
-      <a class="btn btn-ghost btn-lg" href="/signup.html" style="margin-left:10px">Build Your Presence</a>
+    <p class="cin-lead cin-r3">Create a Pegasus profile to present who you are, what you represent, and what you’re bringing into the network — businesses, opportunities, showcases, and trusted relationships.</p>
+    <div class="cin-motto cin-r4">We rise. We build. We fly.</div>
+    <div class="cin-r5" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a>
+      <a class="btn btn-ghost btn-lg" href="/signin.html" style="color:#fff;border-color:rgba(255,255,255,.38)">Sign In</a>
+      <a href="/explore.html" style="font-size:12.5px;font-family:var(--mono);color:rgba(255,255,255,.82);text-decoration:none">See how Pegasus works →</a>
     </div>
-    <a class="cin-scroll cin-r6" href="#why-matters">Why this matters&nbsp;&nbsp;&darr;</a>
   </div>
 </section>
 
-<section class="why-matters" id="why-matters">
-  <div class="wm-inner">
-    <p class="wm-lead">Most people don't miss opportunities because they lack value.<br>They miss them because the right people never see them at the right time.</p>
-    <p class="wm-body"><strong>Pegasus was built to change that.</strong> Inside the ecosystem, your profile, opportunities, services, listings, capital, or expertise can become visible to aligned people — without spam, cold outreach, or public marketplace noise.</p>
-    <div class="wm-signals" id="wmSignals" aria-label="Anonymized ecosystem activity"></div>
-    <div class="wm-founding"><span class="wm-founding-dot"></span>Founding Access is open now — early members help shape the ecosystem before it becomes crowded.</div>
+<!-- WHY CREATE A PROFILE -->
+<section class="home-section" id="why-profile" style="max-width:960px;margin:0 auto;padding:54px 40px 10px">
+  <div class="eyebrow" style="text-align:center;justify-content:center">Why create a Pegasus profile?</div>
+  <h2 class="why-h2" style="text-align:center">People can’t connect with what they can’t see.</h2>
+  <p class="why-intro">Your Pegasus profile gives the right people a professional place to understand who you are, what you represent, what you offer, and why they should connect with you.</p>
+  <div class="how-grid" style="grid-template-columns:repeat(auto-fit,minmax(165px,1fr))">
+    <div class="how-step"><div class="how-num">01</div><h3>Create your profile</h3><p>Present who you are and why people should trust you.</p></div>
+    <div class="how-step"><div class="how-num">02</div><h3>Connect your business pages</h3><p>Promote your company, project, fund, or program.</p></div>
+    <div class="how-step"><div class="how-num">03</div><h3>Present opportunities &amp; showcases</h3><p>Show deals, listings, and completed work.</p></div>
+    <div class="how-step"><div class="how-num">04</div><h3>Share them outside Pegasus</h3><p>Turn every presentation into a distribution asset.</p></div>
+    <div class="how-step"><div class="how-num">05</div><h3>Receive interest requests</h3><p>The right people reach out — curated, never cold.</p></div>
+  </div>
+  <div class="why-cta" style="margin-top:30px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a>
+    <a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>
   </div>
 </section>
 
-<section class="home-section" id="areas-home" style="max-width:1100px;margin:0 auto;padding:44px 40px 10px">
-  <div class="eyebrow" style="text-align:center;justify-content:center">What's inside</div>
-  <h2 class="why-h2" style="text-align:center">Explore the ecosystem</h2>
-  <p class="why-intro">Pegasus is organized into areas built around what you're trying to do. Look around — no profile required.</p>
-  <div class="areas-home-grid" id="areasHome"></div>
-  <div class="why-cta"><a class="btn btn-ghost btn-lg" href="/explore.html">Explore the full ecosystem →</a></div>
+<!-- INSIDE PEGASUS — live public-safe preview -->
+<section class="home-section" style="max-width:1100px;margin:0 auto;padding:50px 40px 10px">
+  <div class="eyebrow" style="text-align:center;justify-content:center"><span class="dot" style="background:var(--green);animation:pulse 2s infinite;margin-right:7px"></span>Inside Pegasus</div>
+  <h2 class="why-h2" style="text-align:center">Real movement, right now</h2>
+  <p class="why-intro">Public-safe businesses, opportunities, and showcases from inside the network. Member-only and private content stays protected.</p>
+  <div id="lobby-grid" class="lobby-grid"><div class="lobby-loading">Loading the network…</div></div>
+  <div class="why-cta" style="margin-top:28px"><a class="btn btn-ghost btn-lg" href="/explore.html">How Pegasus works →</a></div>
 </section>
-<section class="home-section why-join" id="why">
-  <div class="eyebrow" style="text-align:center">Why it matters</div>
-  <h2 class="why-h2">Why Build a Profile?</h2>
-  <p class="why-intro">Your profile is your presence inside Pegasus. Without it, you can explore. With it, you can participate.</p>
-  <div class="why-grid">
-    <div class="why-card"><div class="why-ic">◆</div><h3>Be Discoverable</h3><p>Let lenders, developers, investors, and real estate professionals find you.</p></div>
-    <div class="why-card"><div class="why-ic">◆</div><h3>Connect With Capital</h3><p>Position yourself for funding, deal-flow, lending, and strategic introductions.</p></div>
-    <div class="why-card"><div class="why-ic">◆</div><h3>Build Your Network</h3><p>Join a private ecosystem focused on real estate, finance, and growth.</p></div>
+
+<!-- WHAT YOU CAN PRESENT — 7 formats -->
+<section class="home-section" style="max-width:1100px;margin:0 auto;padding:46px 40px 10px">
+  <div class="eyebrow" style="text-align:center;justify-content:center">What you can present</div>
+  <h2 class="why-h2" style="text-align:center">Seven ways to be discovered</h2>
+  <p class="why-intro">Build it once. Publish inside Pegasus. Share everywhere else.</p>
+  <div class="present-grid">
+    <div class="present-card"><div class="ic">◈</div><h3>Capital / Financing Program</h3><p>Offer lending, funding, or capital solutions.</p></div>
+    <div class="present-card"><div class="ic">◭</div><h3>Project / Development</h3><p>Present a real project people can understand.</p></div>
+    <div class="present-card"><div class="ic">⌂</div><h3>Property / Listing</h3><p>Show an asset, property, land, or listing.</p></div>
+    <div class="present-card"><div class="ic">✦</div><h3>Startup / Business Need</h3><p>Attract capital, partners, clients, or support.</p></div>
+    <div class="present-card"><div class="ic">❖</div><h3>Showcase</h3><p>Show completed work, video, photos, case studies, or portfolio proof.</p></div>
+    <div class="present-card"><div class="ic">◷</div><h3>Event / Session</h3><p>Invite the right people into a private session.</p></div>
+    <div class="present-card"><div class="ic">⬡</div><h3>Partnership Request</h3><p>Tell the network who you want to meet.</p></div>
   </div>
-  <div class="why-cta"><a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Build Your Presence</a></div>
+  <p class="why-intro" style="margin-top:22px">Create your first presentation after building your profile.</p>
 </section>
-<section class="home-section how-works" id="how">
-  <h2 class="why-h2">How Pegasus Works</h2>
-  <p class="how-sub">Create your profile, define your goals, and let the network surface aligned relationships.</p>
-  <div class="how-grid">
-    <div class="how-step"><div class="how-num">01</div><h3>Build Your Profile</h3><p>Create a professional profile that shows who you are, what you do, and what relationships you are looking for.</p></div>
-    <div class="how-step"><div class="how-num">02</div><h3>Define Your Goals</h3><p>Tell Pegasus whether you are looking for capital, deals, lending relationships, investor connections, or professional visibility.</p></div>
-    <div class="how-step"><div class="how-num">03</div><h3>Receive Aligned Introductions</h3><p>Pegasus helps surface relevant members, opportunities, and strategic relationships inside the network.</p></div>
+
+<!-- FREE ENTRY / GROWTH POSITIONING -->
+<section class="home-section" style="max-width:900px;margin:0 auto;padding:46px 40px 10px">
+  <div class="eyebrow" style="text-align:center;justify-content:center">Free to enter. Value to upgrade.</div>
+  <h2 class="why-h2" style="text-align:center">Start free. Build value first.</h2>
+  <p class="why-intro">Create your profile, connect your first business page, and begin presenting opportunities or showcases before you ever need to upgrade.</p>
+  <div class="access-wrap">
+    <div class="access-col"><div class="tag">Free access</div><h3>Start building</h3><ul><li>Create a personal profile</li><li>Add a basic business presence</li><li>Present initial opportunities &amp; showcases</li><li>Share outside Pegasus</li><li>Receive initial interest</li></ul></div>
+    <div class="access-col"><div class="tag">Growth access</div><h3>Scale your reach</h3><ul><li>More business pages</li><li>More showcases &amp; opportunities</li><li>More visibility &amp; priority placement</li><li>Advanced matching</li><li>Deal Rooms &amp; Capital Intelligence</li></ul></div>
   </div>
+  <div class="why-cta" style="margin-top:24px"><a class="btn btn-ghost" href="/membership.html">See membership →</a></div>
 </section>
-<section class="home-section sessions-soon">
-  <div class="sessions-card">
-    <div class="eyebrow" style="text-align:center">Private Capital Sessions</div>
-    <h2 class="why-h2" style="margin-bottom:12px">Private Capital Sessions — Live Now</h2>
-    <p class="sessions-sub">Educational sessions for real estate, lending, investment, and capital professionals.</p>
-    <div class="why-cta"><a class="btn btn-pri btn-lg hero-cta-pri" href="/capital-sessions.html">View Capital Sessions</a></div>
+
+<!-- FINAL CTA -->
+<section class="home-section" style="text-align:center;max-width:900px;margin:0 auto;padding:34px 40px 66px">
+  <h2 class="why-h2">Build your presence inside Pegasus.</h2>
+  <p class="why-intro">Create your free profile, present your business, and become visible to the right people.</p>
+  <div class="why-cta" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create Free Profile</a>
+    <a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>
+    <a class="btn btn-ghost btn-lg" href="/explore.html">How It Works</a>
   </div>
 </section>
 <div id="footer"></div>
@@ -155,9 +253,64 @@
 <script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
 <script>
-Pegasus.mountPublic('Platform');
+Pegasus.mountPublic('');
 /* Homepage: keep the nav visible (incl. Explore) so visitors can browse the
    ecosystem before committing. The hero carries the primary CTAs. */
+
+/* ── Inside Pegasus — live, public-safe preview ──────────────────────────────
+   Real data only: public presentations (get_public_presentations) + public
+   businesses/members (get_recent_network_activity, which for anonymous visitors
+   returns public business pages only — never private profiles/opportunities).
+   Every card opens a real public page. If there is not enough real content yet,
+   we show a small set of clearly-labelled "Example" cards that route to signup —
+   never fake live objects. */
+(async function loadLobby(){
+  var host=document.getElementById('lobby-grid'); if(!host) return;
+  var esc=Pegasus.esc;
+  var KIND={person:['Member','#3A8FE8'],company:['Business Page','#3A8FE8'],project:['Project','#7C5CFF'],showcase:['Showcase','#D14FB0'],event:['Event','#C9A227'],capital_program:['Capital Program','#3A8FE8'],property:['Property','#1FA37A'],fund:['Fund','#3A8FE8']};
+  var TMPL={capital_program:['Capital Program','#3A8FE8'],project:['Project','#7C5CFF'],property_listing:['Listing','#1FA37A'],startup_business_need:['Startup','#E8923A'],showcase:['Showcase','#D14FB0'],event_session:['Event','#C9A227'],partnership_request:['Partnership','#3AB0E8']};
+  function card(x){
+    var cover=x.cover?'<img class="lobby-cover" src="'+esc(x.cover)+'" alt="">':'';
+    return '<a class="lobby-card" href="'+esc(x.href)+'">'+cover+'<div class="lobby-body">'+
+      '<div class="lobby-kind" style="color:'+x.color+'">'+esc(x.kind)+(x.pill?'<span class="lobby-pill">'+esc(x.pill)+'</span>':'')+'</div>'+
+      '<div class="lobby-name">'+esc(x.name)+'</div>'+
+      (x.sub?'<div class="lobby-sub">'+esc(x.sub)+'</div>':'')+
+      '<div class="lobby-action">'+esc(x.action)+'</div>'+
+    '</div></a>';
+  }
+  var cards=[];
+  try{
+    var c=await window.PegSB.ready;
+    try{
+      var pr=await c.rpc('get_public_presentations',{p_limit:9});
+      if(pr&&!pr.error&&Array.isArray(pr.data)) pr.data.forEach(function(o){
+        var t=TMPL[o.template_type]||['Opportunity','#3A8FE8']; var biz=(o.presented_by&&o.presented_by.name)||'';
+        cards.push({ href:'/opportunity/'+encodeURIComponent(o.slug), cover:o.cover_url||'', kind:t[0], color:t[1], name:o.title||'Untitled', sub:biz?('Presented by '+biz):'', action:(o.template_type==='showcase'?'View showcase →':'View opportunity →') });
+      });
+    }catch(e){ console.warn('[lobby] presentations:',e); }
+    try{
+      var na=await c.rpc('get_recent_network_activity');
+      if(na&&!na.error&&Array.isArray(na.data)) na.data.forEach(function(a){
+        var isPerson=a.kind==='person'; var k=KIND[a.kind]||[a.kind,'#3A8FE8'];
+        var href=isPerson?(a.url||'#'):Pegasus.presencePath(a.kind,a.slug);
+        cards.push({ href:href, cover:(!isPerson&&a.logo)?a.logo:'', kind:k[0], color:k[1], name:a.name||'—', sub:[a.meta,a.location].filter(Boolean).join(' · '), action:(isPerson?'View profile →':'View business →') });
+      });
+    }catch(e){ console.warn('[lobby] activity:',e); }
+  }catch(e){ console.warn('[lobby] supabase unavailable:',e); }
+
+  // Interleave presentations and members so the grid feels alive, cap at 9.
+  if(cards.length){
+    host.innerHTML = cards.slice(0,9).map(card).join('');
+    return;
+  }
+  // Fallback — clearly-labelled examples (never shown as real live objects).
+  var examples=[
+    {kind:'Business Page',color:'#3A8FE8',name:'Your company or project',sub:'Promote what you represent',pill:'Example',action:'Create yours →',href:'/signup.html'},
+    {kind:'Showcase',color:'#D14FB0',name:'Your completed work',sub:'Photos, video, case studies',pill:'Example',action:'Create yours →',href:'/signup.html'},
+    {kind:'Opportunity',color:'#7C5CFF',name:'A deal or capital program',sub:'Presented by your business',pill:'Example',action:'Create yours →',href:'/signup.html'}
+  ];
+  host.innerHTML='<div style="grid-column:1/-1;font-size:12px;color:var(--text3);text-align:center;margin-bottom:6px">Be among the first. Here’s what members create:</div>'+examples.map(card).join('');
+})();
 
 /* Living activity signals — subtle, anonymized, believable. No names, no numbers. */
 (function(){
