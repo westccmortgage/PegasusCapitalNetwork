@@ -90,28 +90,27 @@
   // --- public nav (full-site mega menu) ---
   function publicNav(active){
     const G=(label,items)=>`<div class="nav-group"><span tabindex="0" role="button" aria-haspopup="true">${label} \u25BE</span><div class="nav-drop">${items.map(i=>`<a href="${i[1]}"><span>${i[0]}</span>${i[2]?`<small>${i[2]}</small>`:''}</a>`).join('')}</div></div>`;
-    const rwa=G('RWA',[['RWA Network','/rwa-network.html','Real-world asset partners'],['Tokenization','/rwa-tokenization.html','Structured RE on-chain'],['RWA Education','/rwa-education.html','Frameworks & glossary'],['Events Network','/rwa-events-network.html','Capital sessions']]);
-    const learn=G('Learn',[['Capital Assistant','/ai-assistant.html','Ask about lenders, members & deals'],['Capital Sessions','/capital-sessions.html','Live institutional briefings'],['How It Works','/how-it-works.html','How the platform works'],['Capital Academy','/capital-academy.html','Finance fundamentals'],['Education Hub','/education.html','Guides & resources'],['FAQ','/faq.html','Common questions']]);
-    const company=G('Company',[['About','/about.html','Our mission'],['Contact','/contact.html','Get in touch'],['Trust & Safety','/trust-and-safety.html','How we protect members'],['Network Badge','/network-badge.html','Verified credentials']]);
+    const who=G('Who It’s For',[['Capital Providers','/category-capital-providers.html','Lenders, funds & investors'],['Capital Seekers','/category-capital-seekers.html','Developers & borrowers'],['Real Estate Agents','/category-real-estate-agents.html','Agents & brokers'],['RWA Partners','/category-rwa.html','Real-world asset partners'],['Browse Members','/members.html','The member directory']]);
+    const learn=G('Learn',[['How Pegasus Works','/how-it-works.html','The system explained'],['Growth Capital','/growth-capital.html','Financing & programs'],['Capital Sessions','/capital-sessions.html','Live institutional briefings'],['Capital Academy','/capital-academy.html','Finance fundamentals'],['Network Badge','/network-badge.html','Show your Pegasus connection'],['FAQ','/faq.html','Common questions']]);
     return `<a href="#maincontent" class="skip-link" onclick="var m=document.getElementById('maincontent')||document.querySelector('main,section,.section,.auth-wrap,.ar-wrap,.view');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</a><nav class="pub-nav">
       <a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a>
-      <div class="pub-links"><a href="/explore.html" class="${active==='Explore'?'on':''}">Explore</a><a href="/how-it-works.html" class="${active==='Platform'?'on':''}">Platform</a><a href="/members.html" class="${active==='Members'?'on':''}">Member Network</a><a href="/growth-capital.html" class="${active==='Growth'?'on':''}">Growth Capital</a>${rwa}${learn}${company}<a href="https://pegasusevents.net/" target="_blank" rel="noopener noreferrer">Events</a></div>
+      <div class="pub-links"><a href="/how-it-works.html" class="${active==='How It Works'?'on':''}">How It Works</a><a href="/explore.html" class="${active==='Inside Pegasus'||active==='Explore'?'on':''}">Inside Pegasus</a>${who}${learn}</div>
       <div class="nav-cta" id="pub-nav-cta"><a class="btn btn-ghost" id="nav-signin-btn" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" id="nav-create-btn" href="/signup.html">Create Free Profile</a></div>
       <button class="mob-menu-btn" id="mobMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
     </nav>
     <div class="mob-overlay" id="mobOverlay"></div>
     <div class="mob-drawer" id="mobDrawer">
       <div class="mob-drawer-head"><img src="/assets/brand/pegasus-wordmark.png" style="height:24px"><button class="mob-drawer-close" id="mobClose" aria-label="Close menu">✕</button></div>
-      <div class="mob-drawer-nav">
-        <a href="/">Platform Overview</a><a href="/members.html">Member Network</a><a href="/growth-capital.html">Growth Capital</a>
-        <div class="mob-sec">Platform</div>
-        <a href="/capital-sessions.html">Capital Sessions</a><a href="/match-engine.html">Match Engine</a><a href="/capital-academy.html">Capital Academy</a>
-        <div class="mob-sec">RWA</div>
-        <a href="/rwa-network.html">RWA Network</a><a href="/rwa-tokenization.html">Tokenization</a><a href="/rwa-education.html">RWA Education</a><a href="/rwa-events-network.html">Events Network</a>
+      <div class="mob-drawer-nav" id="mobDrawerNav">
+        <a href="/how-it-works.html">How It Works</a><a href="/explore.html">Inside Pegasus</a>
+        <div class="mob-sec">Who It’s For</div>
+        <a href="/category-capital-providers.html">Capital Providers</a><a href="/category-capital-seekers.html">Capital Seekers</a><a href="/category-real-estate-agents.html">Real Estate Agents</a><a href="/category-rwa.html">RWA Partners</a><a href="/members.html">Browse Members</a>
+        <div class="mob-sec">Learn</div>
+        <a href="/how-it-works.html">How Pegasus Works</a><a href="/growth-capital.html">Growth Capital</a><a href="/capital-sessions.html">Capital Sessions</a><a href="/capital-academy.html">Capital Academy</a><a href="/network-badge.html">Network Badge</a><a href="/faq.html">FAQ</a>
         <div class="mob-sec">Company</div>
-        <a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/membership.html">Membership</a><a href="/faq.html">FAQ</a><a href="https://pegasusevents.net/" target="_blank" rel="noopener noreferrer">Events ↗</a>
+        <a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="https://pegasusevents.net/" target="_blank" rel="noopener noreferrer">Events ↗</a>
       </div>
-      <div class="mob-drawer-foot"><a class="btn btn-ghost" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" href="/signup.html">Create Profile</a></div>
+      <div class="mob-drawer-foot" id="mobDrawerFoot"><a class="btn btn-ghost" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" href="/signup.html">Create Profile</a></div>
     </div>
 `;
   }
@@ -695,11 +694,39 @@
       ctaEl.style.visibility = '';
     }
 
-    /* Change "Platform" nav link → "My Profile" for logged-in members */
-    var platformLink = document.querySelector('.pub-links a[href="/how-it-works.html"]');
-    if (platformLink && slug) {
-      platformLink.textContent = 'My Profile';
-      platformLink.href = '/u/' + slug;
+    /* Replace public marketing links with member navigation. Logged-in members
+       should never see the anonymous marketing nav. Done once (idempotent). */
+    var links = document.querySelector('.pub-links');
+    if (links && links.getAttribute('data-member') !== '1') {
+      links.setAttribute('data-member', '1');
+      var on = function(p){ return location.pathname.indexOf(p) === 0 ? ' on' : ''; };
+      links.innerHTML =
+        '<a class="member'+(slug?on('/u/'):'')+'" href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
+        '<a class="member'+on('/my-presences')+'" href="/my-presences.html">Business Pages</a>'+
+        '<a class="member'+on('/members')+'" href="/members.html">Network</a>'+
+        '<a class="member'+on('/showcase')+'" href="/showcase.html">Opportunities</a>'+
+        '<a class="member'+on('/dashboard')+'" href="/dashboard.html">Workspace</a>'+
+        '<a class="member'+on('/membership')+'" href="/membership.html">Account</a>';
+    }
+    /* Mobile drawer → member links too */
+    var mdn = document.getElementById('mobDrawerNav');
+    if (mdn && mdn.getAttribute('data-member') !== '1') {
+      mdn.setAttribute('data-member', '1');
+      mdn.innerHTML =
+        '<a href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
+        '<a href="/my-presences.html">Business Pages</a>'+
+        '<a href="/members.html">Network</a>'+
+        '<a href="/showcase.html">Opportunities</a>'+
+        '<a href="/dashboard.html">Workspace</a>'+
+        '<div class="mob-sec">Account</div>'+
+        '<a href="/membership.html">Access & Growth</a>'+
+        '<a href="/profile-edit.html">Edit Profile</a>'+
+        '<a href="/share-studio.html">Share Studio</a>';
+    }
+    var mdf = document.getElementById('mobDrawerFoot');
+    if (mdf && mdf.getAttribute('data-member') !== '1') {
+      mdf.setAttribute('data-member', '1');
+      mdf.innerHTML = '<button class="btn btn-ghost" style="width:100%" onclick="PegAuth.signOut()">Sign Out</button>';
     }
 
     /* Swap hero "Create My Profile" → "Open My Dashboard" */
