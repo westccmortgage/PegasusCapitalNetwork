@@ -63,7 +63,8 @@ begin
     'notifications.kind','notifications.title','notifications.body',
     'notifications.link','notifications.read',
     'member_connections.status','member_connections.intent','member_connections.message',
-    'member_connections.requester_user_id','member_connections.recipient_user_id'
+    'member_connections.requester_user_id','member_connections.recipient_user_id',
+    'profiles.banner_focal'
   ]) as c;
 
   -- Required RPC functions ---------------------------------------------------

@@ -30,7 +30,9 @@
 }
 .peco-hero-banner {
   position: relative;
-  height: 168px;
+  aspect-ratio: 40/9;
+  min-height: 100px;
+  max-height: 220px;
   background: linear-gradient(120deg, #0a1830 0%, #112244 45%, #1c3a63 100%);
 }
 .peco-hero-wm {
