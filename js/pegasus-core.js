@@ -131,10 +131,11 @@
     const sidebar=`<aside class="sidebar">
       <div class="sb-head"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><div><div class="sb-logo">Pegasus</div><div class="sb-ws">Workspace</div></div></div>
       <div class="sb-nav">
-        <div class="sb-sec">Workspace</div>
-        ${item('▦','Home','/dashboard.html',{act:'Dashboard'})}
+        <div class="sb-sec">Network</div>
+        ${item('⬡','Members Network','/members.html',{act:'Members'})}
+        <div class="sb-sec">My Work</div>
+        ${item('▦','Workspace','/dashboard.html',{act:'Dashboard'})}
         ${item('◇','Requests','/network-requests.html',{act:'Network Requests'})}
-        ${item('◠','Network Signals','/deal-feed.html')}
         ${item('◈','Deal Rooms','/deal-rooms.html',{badge:drBadge,locked:drCap===0})}
         ${item('▣','CRM','/crm.html')}
         <div class="sb-sec">Presentation</div>
@@ -588,10 +589,10 @@
     var st=Store.get(); var isAdm = (typeof Store.isAdmin==='function') ? Store.isAdmin() : false;
     var p=st.profile||{}; var name=p.full_name||'My Account';
     var rows=[
+      ['\u25C8','Members Network','/members.html'],
       ['\u25C9','My Profile',ownProfilePath()],
-      ['\u270E','Edit Profile','/profile-edit.html'],
+      ['\u270E','Manage Profile','/profile-edit.html'],
       ['\u25EB','Business Pages','/my-presences.html'],
-      ['\u2795','Create Free Business Page','/my-presences.html'],
       ['\u25A6','My Workspace','/dashboard.html'],
       ['\u25A4','Access & Growth','/membership.html'],
     ];
@@ -701,26 +702,25 @@
       links.setAttribute('data-member', '1');
       var on = function(p){ return location.pathname.indexOf(p) === 0 ? ' on' : ''; };
       links.innerHTML =
+        '<a class="member'+on('/members')+'" href="/members.html">Members Network</a>'+
         '<a class="member'+(slug?on('/u/'):'')+'" href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
         '<a class="member'+on('/my-presences')+'" href="/my-presences.html">Business Pages</a>'+
-        '<a class="member'+on('/members')+'" href="/members.html">Network</a>'+
         '<a class="member'+on('/showcase')+'" href="/showcase.html">Opportunities</a>'+
-        '<a class="member'+on('/dashboard')+'" href="/dashboard.html">Workspace</a>'+
-        '<a class="member'+on('/membership')+'" href="/membership.html">Account</a>';
+        '<a class="member'+on('/dashboard')+'" href="/dashboard.html">Workspace</a>';
     }
     /* Mobile drawer → member links too */
     var mdn = document.getElementById('mobDrawerNav');
     if (mdn && mdn.getAttribute('data-member') !== '1') {
       mdn.setAttribute('data-member', '1');
       mdn.innerHTML =
+        '<a href="/members.html">Members Network</a>'+
         '<a href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
         '<a href="/my-presences.html">Business Pages</a>'+
-        '<a href="/members.html">Network</a>'+
         '<a href="/showcase.html">Opportunities</a>'+
         '<a href="/dashboard.html">Workspace</a>'+
         '<div class="mob-sec">Account</div>'+
         '<a href="/membership.html">Access & Growth</a>'+
-        '<a href="/profile-edit.html">Edit Profile</a>'+
+        '<a href="/profile-edit.html">Manage Profile</a>'+
         '<a href="/share-studio.html">Share Studio</a>';
     }
     var mdf = document.getElementById('mobDrawerFoot');

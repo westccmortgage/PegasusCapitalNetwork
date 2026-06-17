@@ -54,10 +54,9 @@ Pegasus.mountPublic();
     if (s && s.user) {
       await Pegasus.store.hydrate();
       var p = Pegasus.store.get().profile;
-      /* Already authenticated — go to own profile hub */
-      var _sl2 = p && p.profile_slug;
-      var _id2 = p && p.id;
-      location.replace(_sl2 ? '/u/'+_sl2 : _id2 ? '/public-profile.html?id='+_id2 : '/dashboard.html');
+      /* Already authenticated — go to the signed-in home (Members Network) */
+      if (p && p.profile_slug) { try { localStorage.setItem('peg_slug', p.profile_slug); } catch(e){} }
+      location.replace('/members.html');
     }
   } catch(_) {}
 })();

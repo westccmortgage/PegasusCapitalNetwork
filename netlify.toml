@@ -130,6 +130,32 @@
   to = "/dashboard.html"
   status = 200
 
+# ── Retired destinations — Deal Feeder + Get Started are no longer user-facing.
+#    force=true so these fire even though the .html files still exist on disk. ──
+[[redirects]]
+  from = "/deal-feed"
+  to = "/showcase.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/deal-feed.html"
+  to = "/showcase.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/get-started"
+  to = "/members.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/get-started.html"
+  to = "/members.html"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/profile"
   to = "/profile.html"

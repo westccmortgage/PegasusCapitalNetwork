@@ -131,7 +131,7 @@ Pegasus.mountPublic('');
        Always do a direct Supabase query using the confirmed session user ID.
        This is more reliable than Store.get() which can race with auth init.
        If slug is missing, generate it now so the URL is always clean.       */
-    var hubDest = '/dashboard.html'; /* fallback */
+    var hubDest = '/members.html'; /* signed-in home → Members Network */
     try {
       var sbHub = await window.PegSB.ready;
       var hubRes = await sbHub.from('profiles')
@@ -154,18 +154,23 @@ Pegasus.mountPublic('');
           if (chk.data && chk.data.length) slug = slug + '-' + hp.id.slice(0,4);
           await sbHub.from('profiles').update({ profile_slug: slug }).eq('id', hp.id);
         }
+        /* Cache slug so member nav / My Profile links resolve instantly */
+        if (slug) { try { localStorage.setItem('peg_slug', slug); } catch(_) {} }
 
-        hubDest = slug ? '/u/' + slug : '/public-profile.html?id=' + hp.id;
+        /* Signed-in home is the Members Network — never workspace/admin/get-started.
+           The Members Network shows the member inside the network and carries a
+           Launch Checklist while their profile is still incomplete. */
+        hubDest = '/members.html';
         welcomeBody = 'Your network is ready.';
       } else {
-        /* No profile row — brand new user needs onboarding */
-        hubDest = '/get-started.html';
+        /* No profile row — brand new user sets up their profile first */
+        hubDest = '/profile-edit.html';
         welcomeTitle = 'Welcome to Pegasus';
-        welcomeBody  = 'Let’s set up your presence.';
+        welcomeBody  = 'Let’s set up your profile.';
       }
     } catch (e) {
       console.warn('[auth-callback] hub detection error:', e && e.message);
-      hubDest = '/dashboard.html';
+      hubDest = '/members.html';
     }
 
     /* ── Check for deep link (user was heading somewhere before login) ── */

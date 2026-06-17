@@ -138,8 +138,7 @@
     if(!tok) return;                                                       // anonymous → gateway
     var nxt=qs.get('next');
     if(nxt && /^\/[A-Za-z0-9][A-Za-z0-9\/_?=&.\-]*$/.test(nxt)){ location.replace(nxt); return; }
-    var slug=null; try{ slug=localStorage.getItem('peg_slug'); }catch(e){}
-    location.replace(slug ? ('/u/'+slug) : '/dashboard.html');            // member → profile or workspace
+    location.replace('/members.html');                                     // signed-in home → Members Network
   }catch(e){}
 })();
 </script>
@@ -192,9 +191,9 @@
 
 <!-- INSIDE PEGASUS — live public-safe preview -->
 <section class="home-section" style="max-width:1100px;margin:0 auto;padding:50px 40px 10px">
-  <div class="eyebrow" style="text-align:center;justify-content:center"><span class="dot" style="background:var(--green);animation:pulse 2s infinite;margin-right:7px"></span>Inside Pegasus</div>
-  <h2 class="why-h2" style="text-align:center">Real movement, right now</h2>
-  <p class="why-intro">Public-safe businesses, opportunities, and showcases from inside the network. Member-only and private content stays protected.</p>
+  <div class="eyebrow" style="text-align:center;justify-content:center"><span class="dot" style="background:var(--green);animation:pulse 2s infinite;margin-right:7px"></span>Network in Motion</div>
+  <h2 class="why-h2" style="text-align:center">Most Active in Pegasus</h2>
+  <p class="why-intro">A curated, public-safe glimpse of people, businesses, opportunities, and showcases moving inside the network. Member-only and private content stays protected.</p>
   <div id="lobby-grid" class="lobby-grid"><div class="lobby-loading">Loading the network…</div></div>
   <div class="why-cta" style="margin-top:28px"><a class="btn btn-ghost btn-lg" href="/explore.html">How Pegasus works →</a></div>
 </section>
@@ -278,14 +277,14 @@ Pegasus.mountPublic('');
       '<div class="lobby-action">'+esc(x.action)+'</div>'+
     '</div></a>';
   }
-  var cards=[];
+  var presos=[], biz=[];
   try{
     var c=await window.PegSB.ready;
     try{
-      var pr=await c.rpc('get_public_presentations',{p_limit:9});
+      var pr=await c.rpc('get_public_presentations',{p_limit:12});
       if(pr&&!pr.error&&Array.isArray(pr.data)) pr.data.forEach(function(o){
-        var t=TMPL[o.template_type]||['Opportunity','#3A8FE8']; var biz=(o.presented_by&&o.presented_by.name)||'';
-        cards.push({ href:'/opportunity/'+encodeURIComponent(o.slug), cover:o.cover_url||'', kind:t[0], color:t[1], name:o.title||'Untitled', sub:biz?('Presented by '+biz):'', action:(o.template_type==='showcase'?'View showcase →':'View opportunity →') });
+        var t=TMPL[o.template_type]||['Opportunity','#3A8FE8']; var bn=(o.presented_by&&o.presented_by.name)||'';
+        presos.push({ owner:(bn||('preso-'+o.slug)).toLowerCase(), href:'/opportunity/'+encodeURIComponent(o.slug), cover:o.cover_url||'', kind:t[0], color:t[1], name:o.title||'Untitled', sub:bn?('Presented by '+bn):'', action:(o.template_type==='showcase'?'View showcase →':'View opportunity →') });
       });
     }catch(e){ console.warn('[lobby] presentations:',e); }
     try{
@@ -293,14 +292,28 @@ Pegasus.mountPublic('');
       if(na&&!na.error&&Array.isArray(na.data)) na.data.forEach(function(a){
         var isPerson=a.kind==='person'; var k=KIND[a.kind]||[a.kind,'#3A8FE8'];
         var href=isPerson?(a.url||'#'):Pegasus.presencePath(a.kind,a.slug);
-        cards.push({ href:href, cover:(!isPerson&&a.logo)?a.logo:'', kind:k[0], color:k[1], name:a.name||'—', sub:[a.meta,a.location].filter(Boolean).join(' · '), action:(isPerson?'View profile →':'View business →') });
+        /* No owner id is exposed by the RPC (privacy). owner_group, when present,
+           is an opaque server-provided key used only to diversify the strip. */
+        biz.push({ owner:(a.owner_group||a.name||'').toLowerCase(), href:href, cover:(!isPerson&&a.logo)?a.logo:'', kind:k[0], color:k[1], name:a.name||'—', sub:[a.meta,a.location].filter(Boolean).join(' · '), action:(isPerson?'View profile →':'View business →') });
       });
     }catch(e){ console.warn('[lobby] activity:',e); }
   }catch(e){ console.warn('[lobby] supabase unavailable:',e); }
 
-  // Interleave presentations and members so the grid feels alive, cap at 9.
+  /* Curate: small, diverse, public-safe. Interleave presentations + businesses
+     so types are mixed, cap to 2 items per owner so the homepage never becomes
+     one person's portfolio, and cap the whole strip at 10 (8–12 target). */
+  var MAX=10, PER_OWNER=2, seen={}, cards=[];
+  var qa=presos.slice(), qb=biz.slice();
+  while((qa.length||qb.length) && cards.length<MAX){
+    [qa,qb].forEach(function(q){
+      if(cards.length>=MAX) return;
+      var x=q.shift(); if(!x) return;
+      var key=x.owner||x.name; if((seen[key]||0)>=PER_OWNER) return;
+      seen[key]=(seen[key]||0)+1; cards.push(x);
+    });
+  }
   if(cards.length){
-    host.innerHTML = cards.slice(0,9).map(card).join('');
+    host.innerHTML = cards.map(card).join('');
     return;
   }
   // Fallback — clearly-labelled examples (never shown as real live objects).
