@@ -730,36 +730,74 @@ Pegasus.boot(async function () {
      get_recent_network_activity RPC (visibility-safe; guests see business
      pages only, members also see people).                            */
   var ACT_TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
-  /* Network Signals render for every viewer (visibility-safe RPC). */
+  /* ── My Connections (accepted only) ───────────────────────────────────────
+     Replaces the old "Network Signals" panel. Personal profiles only show
+     people who are ACTUALLY connected to this member — never random ecosystem
+     signals. Visibility-safe via get_member_connections_for_profile, which
+     returns only public profile fields. If nothing to show, the panel is
+     removed for visitors and shows an owner CTA for the profile owner. */
   {
     (async function(){
       var panel=document.getElementById('pp-active-members'); if(!panel)return;
+      var isOwner = !!(window.__PEG_OWNER_NAV);
       try{
         var sb=await window.PegSB.ready;
-        var r=await sb.rpc('get_recent_network_activity');
+        var r=await sb.rpc('get_member_connections_for_profile',{
+          p_profile_slug: (p && p.profile_slug) || null,
+          p_limit: 12
+        });
         var items=(r && !r.error && r.data) ? r.data : [];
-        if(!items.length){panel.remove();return;}
+        if(!items.length){
+          if(isOwner){
+            panel.innerHTML=
+              '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">My Connections</div>'+
+              '<div style="font-size:11.5px;color:var(--text3);line-height:1.55;margin-bottom:12px">You have no accepted connections yet. Use Members Network to find people and send connection requests.</div>'+
+              '<div style="display:flex;flex-direction:column;gap:7px">'+
+                '<a class="btn btn-pri btn-sm" href="/members.html">Explore Members Network</a>'+
+                '<a class="btn btn-ghost btn-sm" href="/network-requests.html#connection-inbox">Open Workspace Requests</a>'+
+              '</div>';
+          } else {
+            panel.innerHTML=
+              '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Connected Network</div>'+
+              '<div style="font-size:11.5px;color:var(--text3);line-height:1.5">No public connections yet.</div>';
+          }
+          return;
+        }
+        var header = isOwner ? 'My Connections' : 'Connected Network';
         panel.innerHTML=
-          '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:3px">Network Signals</div>'+
-          '<div style="font-size:10.5px;color:var(--text3);line-height:1.4;margin-bottom:12px">Live movement from people, businesses, and opportunities inside Pegasus.</div>'+
-          items.slice(0,10).map(function(a){
-            var nm=a.name||'—';
-            var ini=nm.split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('');
-            var isPerson=a.kind==='person';
-            var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind, a.slug);
-            var kind=ACT_TL[a.kind]||a.kind;
-            var sub=(a.meta?a.meta:'')+(a.location?(a.meta?' · ':'')+a.location:'');
+          '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:3px">'+esc(header)+'</div>'+
+          '<div style="font-size:10.5px;color:var(--text3);line-height:1.4;margin-bottom:12px">People actually connected to this profile on Pegasus.</div>'+
+          items.slice(0,12).map(function(c){
+            var nm=c.name||'—';
+            var ini=nm.split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase()||'•';
+            var role=(c.role||'').replace(/_/g,' ');
+            var sub=[role, c.company_name].filter(Boolean).join(' · ');
+            var href = c.profile_slug ? '/u/'+c.profile_slug : '#';
+            var av = c.avatar_url ? '<img src="'+esc(c.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover">' : esc(ini);
+            var status = c.recently_active
+              ? '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.06em;color:var(--green);text-transform:uppercase">Recently active</span>'
+              : '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.06em;color:var(--text3);text-transform:uppercase">Connected</span>';
             return '<a href="'+esc(href)+'" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">'+
-              '<div style="width:32px;height:32px;border-radius:'+(isPerson?'50%':'9px')+';background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+esc(ini)+'</div>'+
+              '<div style="width:32px;height:32px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0;overflow:hidden">'+av+'</div>'+
               '<div style="min-width:0;flex:1">'+
-                '<div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt)">'+esc(kind)+'</div>'+
                 '<div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(nm)+'</div>'+
                 (sub?'<div style="font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(sub)+'</div>':'')+
+                '<div>'+status+'</div>'+
               '</div>'+
             '</a>';
           }).join('')+
-          '<a href="/members.html" style="display:block;font-size:11px;color:var(--blue-lt);text-align:center;padding-top:10px;text-decoration:none">See all members →</a>';
-      }catch(e){panel.remove();}
+          (isOwner
+            ? '<div style="display:flex;flex-direction:column;gap:6px;padding-top:10px"><a href="/members.html" style="display:block;font-size:11px;color:var(--blue-lt);text-align:center;text-decoration:none">Explore Members Network →</a></div>'
+            : '');
+      }catch(e){
+        /* If the RPC is not yet deployed, hide the panel rather than leak stale data. */
+        if(!isOwner) panel.remove();
+        else {
+          panel.innerHTML='<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">My Connections</div>'+
+            '<div style="font-size:11.5px;color:var(--text3);line-height:1.55;margin-bottom:10px">Connections will appear here once you accept your first connection request.</div>'+
+            '<a class="btn btn-ghost btn-sm" href="/members.html">Explore Members Network</a>';
+        }
+      }
     }());
   }
 

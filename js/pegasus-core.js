@@ -517,7 +517,7 @@
   function toggleNotif(ev){ if(ev) ev.stopPropagation(); const p=el('notifPanel'); if(!p) return;
     if(p.innerHTML){ p.innerHTML=''; return; }
     const ns=Store.get().notifications||[];
-    const ic={lender_interest:'◈',match_found:'◎',deal_room_update:'⟳',doc_requested:'📄',billing:'💳',admin_review:'⛨',ai_recommendation:'🧠',onboarding:'◷'};
+    const ic={lender_interest:'◈',match_found:'◎',deal_room_update:'⟳',doc_requested:'📄',billing:'💳',admin_review:'⛨',ai_recommendation:'🧠',onboarding:'◷',connection_request:'⬡',connection_accepted:'✓'};
     p.innerHTML=`<div style="position:absolute;top:42px;right:0;width:320px;background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r3);box-shadow:var(--sh-lift);z-index:400;overflow:hidden">
       <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">Notifications</span><span class="link" onclick="Pegasus.markNotifs()">Mark all read</span></div>
       <div style="max-height:360px;overflow-y:auto">${ns.length?ns.map(n=>`<a href="${safeUrl(n.link)}" style="display:flex;gap:11px;padding:12px 16px;border-bottom:1px solid var(--border);${n.read?'':'background:var(--bg2)'}"><span style="font-size:14px">${ic[n.kind]||'•'}</span><div><div style="font-size:12px;color:var(--text);font-weight:${n.read?'400':'600'}">${esc(n.title)}</div><div style="font-size:11px;color:var(--text3);line-height:1.4">${esc(n.body||'')}</div></div></a>`).join(''):'<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px">No notifications</div>'}</div></div>`;

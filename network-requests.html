@@ -78,16 +78,144 @@ async function loadAll(){
   try{ var m=await sb.rpc('my_claimed_requests'); renderMine(m.error?[]:(m.data||[])); }catch(e){ renderMine([]); }
 }
 
+/* ── Connection Requests (member ↔ member) ─────────────────────────────────
+   Powered by migration 060_member_connections. Recipient inbox surfaces here,
+   sent items show pending/accepted status, and accepted connections are
+   listed for quick reference. Email/phone are NEVER returned by these RPCs. */
+var INTENT_LBL = {
+  business_connection:'Business connection',
+  capital_financing:'Capital / financing',
+  real_estate_opportunity:'Real estate opportunity',
+  professional_introduction:'Professional introduction',
+  partnership:'Partnership',
+  general_networking:'General networking',
+  other:'Other'
+};
+function crAvatar(p){
+  var av=p&&p.avatar_url; var nm=(p&&p.name)||'•';
+  var ini=(nm.trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('')||'•').toUpperCase();
+  var inner = av ? '<img src="'+esc(av)+'" alt="" style="width:100%;height:100%;object-fit:cover">' : esc(ini);
+  return '<div style="width:38px;height:38px;border-radius:10px;background:var(--blue-dim);color:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;overflow:hidden">'+inner+'</div>';
+}
+function crProfileHref(p){ return (p&&p.profile_slug) ? '/u/'+p.profile_slug : '#'; }
+function crCard(r, box){
+  var p=r.other||{};
+  var who=esc(p.name||'A Pegasus member');
+  var meta=[p.company_name, p.role && p.role.replace(/_/g,' ')].filter(Boolean).join(' · ');
+  var msg=r.message ? '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-top:9px;font-size:12.5px;color:var(--text2);line-height:1.55">“'+esc(r.message)+'”</div>' : '';
+  var intent = INTENT_LBL[r.intent] || 'A connection';
+  var actions;
+  if(box==='inbox' && r.status==='pending'){
+    actions = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">'+
+      '<button class="btn btn-pri btn-sm" data-cr-act="accepted" data-id="'+esc(r.id)+'">Accept</button>'+
+      '<button class="btn btn-ghost btn-sm" data-cr-act="declined" data-id="'+esc(r.id)+'">Decline</button>'+
+      '<button class="btn btn-ghost btn-sm" data-cr-act="dismissed" data-id="'+esc(r.id)+'">Dismiss</button>'+
+      '<a class="btn btn-ghost btn-sm" href="'+crProfileHref(p)+'">View Profile</a></div>';
+  } else {
+    var statusLabel = r.status==='accepted'?'Connected'
+                    : r.status==='declined'?'Declined'
+                    : r.status==='dismissed'?'Dismissed'
+                    : (box==='sent'?'Pending':'Pending');
+    var statusClass = r.status==='accepted'?'connected':(r.status==='pending'?'new':r.status);
+    actions = '<div style="display:flex;gap:8px;align-items:center;margin-top:11px;flex-wrap:wrap"><span class="nr-pill '+esc(statusClass)+'">'+esc(statusLabel)+'</span>'+
+      '<a class="btn btn-ghost btn-sm" href="'+crProfileHref(p)+'">View Profile</a></div>';
+  }
+  return '<div class="nr-card" id="connection-'+esc(r.id)+'">'+
+    '<div style="display:flex;gap:12px;align-items:flex-start">'+crAvatar(p)+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">'+who+'</div>'+
+          '<span class="nr-time">'+esc(ago(r.created_at))+'</span></div>'+
+        (meta?'<div style="font-size:11.5px;color:var(--text3);margin-top:1px">'+esc(meta)+'</div>':'')+
+        '<div style="font-size:10px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-top:7px">'+esc(intent)+'</div>'+
+        msg+
+        actions+
+      '</div></div></div>';
+}
+async function crRespond(id, status, btn){
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  try{
+    var sb=await window.PegSB.ready;
+    var r=await sb.rpc('respond_member_connection',{p_id:id, p_status:status});
+    if(r.error) throw r.error;
+    var resp=r.data||{}; if(!resp.ok) throw new Error(resp.message||'Could not update.');
+    if(window.Pegasus&&Pegasus.toast){
+      var msg = status==='accepted'?'Accepted':status==='declined'?'Declined':'Dismissed';
+      Pegasus.toast('✓','var(--green-dim)',msg,'');
+    }
+    await loadConnections();
+  }catch(e){ if(window.Pegasus&&Pegasus.toast) Pegasus.toast('!','var(--gold-dim)','Could not update', (e&&e.message)||''); if(btn){ btn.disabled=false; btn.textContent=status; } }
+}
+window.crRespond = crRespond;
+async function loadConnections(){
+  var sb=await window.PegSB.ready;
+  var inboxHost=document.getElementById('crInbox');
+  var sentHost=document.getElementById('crSent');
+  var connHost=document.getElementById('crConnections');
+  try{
+    var inb=await sb.rpc('get_my_connection_requests',{p_box:'inbox'});
+    var inboxAll = (inb&&!inb.error&&Array.isArray(inb.data)) ? inb.data : [];
+    var inboxPending = inboxAll.filter(function(r){return r.status==='pending';});
+    if(!inboxPending.length){ inboxHost.innerHTML='<div class="nr-empty">No incoming connection requests right now.</div>'; }
+    else { inboxHost.innerHTML = inboxPending.map(function(r){return crCard(r,'inbox');}).join(''); }
+  }catch(e){ inboxHost.innerHTML='<div class="nr-empty">Could not load incoming requests.</div>'; }
+  try{
+    var sent=await sb.rpc('get_my_connection_requests',{p_box:'sent'});
+    var sentList = (sent&&!sent.error&&Array.isArray(sent.data)) ? sent.data : [];
+    if(!sentList.length){ sentHost.innerHTML='<div class="nr-empty">You haven’t sent any connection requests yet. Open the Members Network to find people to connect with.</div>'; }
+    else { sentHost.innerHTML = sentList.map(function(r){return crCard(r,'sent');}).join(''); }
+  }catch(e){ sentHost.innerHTML='<div class="nr-empty">Could not load sent requests.</div>'; }
+  try{
+    var co=await sb.rpc('get_my_connections');
+    var coList = (co&&!co.error&&Array.isArray(co.data)) ? co.data : [];
+    if(!coList.length){ connHost.innerHTML='<div class="nr-empty">No accepted connections yet.</div>'; }
+    else {
+      connHost.innerHTML = coList.map(function(c){
+        var av = c.avatar_url ? '<img src="'+esc(c.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover">'
+                              : esc((c.name||'•').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase());
+        var role = (c.role||'').replace(/_/g,' ');
+        var sub = [role, c.company_name].filter(Boolean).join(' · ');
+        var active = c.recently_active ? '<span class="nr-pill connected" style="background:rgba(14,154,102,.18);color:var(--green)">Recently active</span>' : '';
+        var href = c.profile_slug ? '/u/'+c.profile_slug : '#';
+        return '<div class="nr-card"><div style="display:flex;gap:12px;align-items:center">'+
+          '<div style="width:38px;height:38px;border-radius:10px;background:var(--blue-dim);color:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;overflow:hidden">'+av+'</div>'+
+          '<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(c.name||'Connected member')+'</div>'+
+            '<div style="font-size:11.5px;color:var(--text3)">'+esc(sub)+'</div></div>'+
+          '<span class="nr-pill connected" style="background:var(--green-dim);color:var(--green)">Connected</span>'+
+          (active?' '+active:'')+
+          '<a class="btn btn-ghost btn-sm" href="'+href+'">View Profile</a>'+
+        '</div></div>';
+      }).join('');
+    }
+  }catch(e){ connHost.innerHTML='<div class="nr-empty">Could not load connections.</div>'; }
+
+  /* Wire inbox action buttons */
+  document.querySelectorAll('[data-cr-act]').forEach(function(b){
+    b.onclick=function(){ crRespond(b.getAttribute('data-id'), b.getAttribute('data-cr-act'), b); };
+  });
+}
+
 Pegasus.boot(function(st){
-  var v=Pegasus.mountApp({active:'Network Requests',title:'Network Requests',sub:'Opportunities matched to your role'});
+  var v=Pegasus.mountApp({active:'Network Requests',title:'Requests',sub:'Connection requests, engagements, and your active connections'});
   v.innerHTML=
     '<div class="card"><div class="card-body">'+
-      '<p style="color:var(--text2);font-size:14px;line-height:1.6;margin:0">When a member states a need, Pegasus routes it to the roles that can help. Claim a role to unlock the contact and begin the connection.</p>'+
+      '<p style="color:var(--text2);font-size:14px;line-height:1.6;margin:0">Requests sent to you appear here. Connection requests come from the Members Network; opportunity engagements come from your business and opportunity pages. Your private contact details are never exposed.</p>'+
     '</div></div>'+
+    '<div class="nr-sec" id="connection-inbox">Connection Requests · Incoming</div><div id="crInbox"><div class="nr-empty">Loading…</div></div>'+
+    '<div class="nr-sec" id="connection-sent">Connection Requests · Sent</div><div id="crSent"><div class="nr-empty">Loading…</div></div>'+
+    '<div class="nr-sec" id="connections">Your Connections</div><div id="crConnections"><div class="nr-empty">Loading…</div></div>'+
     '<div class="nr-sec">Open in the network</div><div id="nrOpen"><div class="nr-empty">Loading…</div></div>'+
     '<div class="nr-sec">Your engagements</div><div id="nrMine"><div class="nr-empty">Loading…</div></div>'+
     '<p class="nr-legal">Pegasus facilitates introductions between members. It is not a party to, and does not advise on, any transaction.</p>';
+  loadConnections();
   loadAll();
+  /* If we were deep-linked from a notification, smooth-scroll to the target row. */
+  if((location.hash||'').indexOf('#connection-')===0){
+    setTimeout(function(){
+      var el=document.getElementById(location.hash.slice(1));
+      if(el && el.scrollIntoView){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='1px solid var(--blue)'; }
+    }, 400);
+  }
 });
 </script>
 </body></html>
