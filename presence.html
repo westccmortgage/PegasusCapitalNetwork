@@ -16,6 +16,13 @@
 <meta name="theme-color" content="#08111C">
 <style>
 /* Business-page extras layered on the shared profile shell */
+/* Compact "Managed by" line that sits inside the dark hero (replaces the old
+   right-column relationship card). */
+.pp-managed{display:inline-flex;align-items:center;gap:9px;margin-top:14px;padding:6px 12px 6px 6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:30px}
+.pp-managed-av{width:26px;height:26px;border-radius:50%;background:rgba(58,143,232,.28);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#cfe2fb;flex:none}
+.pp-managed-txt{font-size:12.5px;color:rgba(255,255,255,.85)}
+.pp-managed-link{font-size:12.5px;color:#9fc4f5;text-decoration:none;border-left:1px solid rgba(255,255,255,.2);padding-left:9px;margin-left:2px}
+.pp-managed-link:hover{color:#cfe2fb}
 .ppg-state{max-width:560px;margin:90px auto;text-align:center;padding:30px}
 .ppg-state h1{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:300;color:var(--text);margin-bottom:10px}
 .ppg-state p{color:var(--text2);line-height:1.6;margin-bottom:22px;max-width:440px;margin-left:auto;margin-right:auto}
@@ -186,6 +193,38 @@ Pegasus.boot(async function(){
   var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';
   var avHtml = p.logo_url ? '<img src="'+(Pegasus.safeUrl?Pegasus.safeUrl(p.logo_url):esc(p.logo_url))+'" alt="">' : esc(initials);
 
+  // ── Managed by / Represented by — compact identity line in the hero (never a
+  //    sidebar card, never owner_user_id). Owner: "Managed by you"; visitor:
+  //    "Managed by {name} · View Profile"; privacy-restricted: generic member.
+  var mb = data.managed_by || {};
+  var mbSlug = mb.slug ? encodeURIComponent(mb.slug) : '';
+  var managedLine = '';
+  if (mb.generic) {
+    managedLine = '<div class="pp-managed"><span class="pp-managed-txt">Connected Pegasus member</span></div>';
+  } else if (mb.name) {
+    var mbInit = (mb.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+    managedLine = '<div class="pp-managed">'+
+      '<span class="pp-managed-av">'+esc(mbInit)+'</span>'+
+      '<span class="pp-managed-txt">'+(mb.you?'Managed by you':'Managed by '+esc(mb.name))+'</span>'+
+      ((!mb.you && mbSlug)?'<a class="pp-managed-link" href="/u/'+mbSlug+'">View Profile</a>':'')+
+    '</div>';
+  }
+
+  // Hero owner/visitor controls (clean — no sidebar). Owner: Edit, Present,
+  // Copy. Visitor: Visit Website, View Manager Profile, Copy.
+  var heroBtns;
+  if (canManage) {
+    heroBtns =
+      '<a class="btn btn-ghost" href="/my-presences.html" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Edit Page</a>'+
+      '<button class="btn btn-ghost" onclick="oppCreate()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">+ Present Something</button>'+
+      '<button class="btn btn-ghost" onclick="presenceCopyLink()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Copy Link</button>';
+  } else {
+    heroBtns =
+      (p.website_url?'<a class="btn btn-ghost" href="'+safeHref(p.website_url)+'" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Visit Website</a>':'')+
+      ((mb.name && mbSlug)?'<a class="btn btn-ghost" href="/u/'+mbSlug+'" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">View Manager Profile</a>':'')+
+      '<button class="btn btn-ghost" onclick="presenceCopyLink()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Copy Link</button>';
+  }
+
   // HERO
   var hero =
   '<section class="pp-hero">'+
@@ -204,11 +243,9 @@ Pegasus.boot(async function(){
           (p.market?'<span class="pp-tag pp-tag-m">'+esc(p.market)+'</span>':'')+
         '</div>'+
         (p.tagline?'<div class="pp-tagline"><div class="pp-tagline-bar"></div><div class="pp-tagline-text">“'+esc(p.tagline)+'”</div></div>':'')+
+        managedLine+
       '</div>'+
-      '<div class="pp-actions">'+
-        '<button class="btn btn-ghost" onclick="presenceCopyLink()" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Copy Link</button>'+
-        (canManage?'<a class="btn btn-ghost" href="/my-presences.html" style="color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)">Edit Page</a>':'')+
-      '</div>'+
+      '<div class="pp-actions">'+heroBtns+'</div>'+
     '</div>'+
     '<div class="pp-hero-horizon"></div>'+
   '</section>';
@@ -234,23 +271,10 @@ Pegasus.boot(async function(){
     return '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label-serif">'+esc(label)+'</span></div><div class="pp-card-body">'+inner+'</div></div>';
   }
 
-  // ── Managed by / Represented by — a clear relationship card (never owner_user_id)
-  var mb = data.managed_by || {};
-  var managed = '';
-  if(mb.generic){
-    managed = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Managed by</span></div><div class="pp-card-body"><div style="font-size:13px;color:var(--text2)">Connected Pegasus member</div></div></div>';
-  } else if(mb.name){
-    var mbLink = mb.you ? '/profile.html' : (mb.slug ? '/u/'+encodeURIComponent(mb.slug) : '');
-    var mbInit = (mb.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
-    managed = '<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">'+(mb.you?'Managed by':'Represented by')+'</span></div><div class="pp-card-body">'+
-      '<div style="display:flex;align-items:center;gap:11px">'+
-        '<div style="width:40px;height:40px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,.2);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--blue-lt);font-size:13px;flex-shrink:0">'+esc(mbInit)+'</div>'+
-        '<div style="min-width:0"><div style="font-size:14px;font-weight:600;color:var(--text)">'+(mb.you?'You':esc(mb.name))+'</div>'+
-        (mbLink?'<a class="pp-card-action" href="'+mbLink+'">View profile →</a>':'')+'</div>'+
-      '</div></div></div>';
-  }
+  // (Managed-by now renders as a compact line in the hero — see managedLine above.
+  //  No separate right-column relationship card.)
 
-  // ── MAIN column — what we do / offer / looking / connect / opportunities / talk
+  // ── MAIN content — what we do / offer / looking / connect / opportunities / talk
   var focus;
   if(p.short_description) focus = '<div class="pp-focus"><div class="pp-focus-label">What we do</div><div class="pp-focus-text">'+esc(p.short_description)+'</div></div>';
   else if(canManage) focus = '<div class="pp-focus"><div class="pp-focus-label">What we do</div><div class="pp-focus-text" style="font-size:14px;font-family:var(--sans);color:var(--text4)">Add a short description of what this business or project does. <a href="/my-presences.html" style="color:var(--blue)">Add now →</a></div></div>';
@@ -283,62 +307,15 @@ Pegasus.boot(async function(){
     oppsSec +
     convo;
 
-  // ── RIGHT context column — Managed by + Network Signals + Suggested Next Steps
-  var steps;
-  if(canManage){
-    var sSteps=[];
-    if(!p.offers) sSteps.push('Add what you offer');
-    if(!p.looking_for) sSteps.push('Add what you are looking for');
-    if(!p.ideal_connections) sSteps.push('Add who should connect with you');
-    sSteps.push('Present an opportunity or showcase');
-    sSteps.push('Share this business page');
-    steps='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Suggested next steps</span></div><div class="pp-card-body">'+
-      sSteps.map(function(s){return '<div style="font-size:12.5px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border)">'+esc(s)+'</div>';}).join('')+
-      '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'+
-        '<a class="btn btn-pri btn-sm" href="/my-presences.html">Edit Page</a>'+
-        '<button class="btn btn-ghost btn-sm" onclick="presenceCopyLink()">Copy Link</button>'+
-      '</div></div></div>';
-  } else {
-    var vActions='';
-    if(mb.name && mb.slug) vActions+='<a class="btn btn-ghost btn-sm" href="/u/'+encodeURIComponent(mb.slug)+'">View Manager Profile</a>';
-    if(p.website_url) vActions+='<a class="btn btn-ghost btn-sm" href="'+safeHref(p.website_url)+'" target="_blank" rel="noopener noreferrer">Visit Website</a>';
-    vActions+='<button class="btn btn-ghost btn-sm" onclick="presenceCopyLink()">Copy Link</button>';
-    steps='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Next steps</span></div><div class="pp-card-body"><div style="display:flex;flex-direction:column;gap:8px">'+vActions+'</div>'+
-      '<div class="ppg-soon" style="margin-top:10px"><span>Request Introduction</span><span class="pill">Coming soon</span></div></div></div>';
-  }
-  var rightCol = managed + '<div id="ps-signals"></div>' + steps;
-
+  // Single, wide editorial column — no right sidebar. Managed-by lives in the
+  // hero; owner/visitor controls live in the hero actions; the business content
+  // (what we do / offer / looking for / who should connect / opportunities /
+  // how to start a conversation) uses the full width to read as a presentation.
   main.innerHTML = hero + rail +
-    '<div class="pp-body" style="grid-template-columns:1fr 320px">'+
+    '<div class="pp-body pp-body-wide" style="grid-template-columns:1fr;max-width:880px;margin:0 auto">'+
       '<div>'+mainCol+'</div>'+
-      '<div>'+rightCol+'</div>'+
     '</div>';
   addFooter();
-
-  /* Network Signals — movement around the ecosystem (visibility-safe). Hidden if
-     there's nothing safe to show. */
-  (async function loadPsSignals(){
-    try{
-      var host=document.getElementById('ps-signals'); if(!host) return;
-      var rr=await c.rpc('get_recent_network_activity');
-      var items=(rr && !rr.error && rr.data) ? rr.data : [];
-      if(!items.length){ host.parentNode && host.parentNode.removeChild(host); return; }
-      var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
-      var rows=items.slice(0,6).map(function(a){
-        var isPerson=a.kind==='person';
-        var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
-        var kind=TL[a.kind]||a.kind;
-        var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
-        var ini=(a.name||'—').split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('');
-        return '<a href="'+esc(href)+'" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none">'+
-          '<div style="width:30px;height:30px;border-radius:'+(isPerson?'50%':'8px')+';background:var(--blue-dim);border:1px solid rgba(58,143,232,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+esc(ini)+'</div>'+
-          '<div style="min-width:0;flex:1"><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt)">'+esc(kind)+'</div>'+
-          '<div style="font-size:12.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.name||'—')+'</div>'+
-          (sub?'<div style="font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(sub)+'</div>':'')+'</div></a>';
-      }).join('');
-      host.innerHTML='<div class="pp-card"><div class="pp-card-head"><span class="pp-card-label">Network Signals</span></div><div class="pp-card-body" style="padding-top:4px"><div style="font-size:11px;color:var(--text3);margin-bottom:6px">Movement inside Pegasus.</div>'+rows+'</div></div>';
-    }catch(e){ var h=document.getElementById('ps-signals'); if(h && h.parentNode) h.parentNode.removeChild(h); }
-  })();
 
   /* Featured Opportunities — the specific deals, projects, and listings this
      business presents. Loaded via the visibility-safe RPC; managers also get an

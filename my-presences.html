@@ -50,7 +50,7 @@ Pegasus.boot(async function(){
 var _st = (window.PegStore && PegStore.get) ? PegStore.get() : {};
 if(_st.mode !== 'live'){ location.replace('/signin.html'); return; }
 
-var v = Pegasus.mountApp({active:'Business Pages', title:'Promote My Business', sub:'Create pages so the right people can discover and connect with you'});
+var v = Pegasus.mountApp({active:'Business Pages', title:'Manage Business Pages', sub:'Edit, preview, archive, and share the business pages you manage'});
 
 var c = null;
 try { c = await window.PegSB.ready; } catch(e) { c = null; }
@@ -87,16 +87,12 @@ function logoChip(name, logo, size){
   return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;background:var(--blue-dim);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--blue-lt);font-size:'+Math.round(size/2.6)+'px;flex-shrink:0">'+esc(ini)+'</div>';
 }
 
-// ── Intro ────────────────────────────────────────────────────────────────────
+// ── Management toolbar (no marketing — this is a utility, not a landing page) ──
 v.insertAdjacentHTML('beforeend',
-  '<div class="card" style="margin-bottom:18px"><div class="card-body" style="padding:18px 20px">'+
-    '<div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:680px">'+
-      'Create pages for your business, projects, services, events, or opportunities so the right people can discover and connect with you.'+
-      '<br><span style="color:var(--text3)">Your personal profile represents <strong style="color:var(--text2);font-weight:600">you</strong>. '+
-      'Your business pages represent what you offer, what you are building, and who you want to connect with.</span>'+
-    '</div>'+
-    '<div style="margin-top:14px"><button class="btn btn-pri btn-sm" data-create-presence="true">+ Create Free Business Page</button></div>'+
-  '</div></div>'+
+  '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">'+
+    '<div style="font-size:12.5px;color:var(--text3)">The business pages you manage. Edit, preview, copy a link, or archive each one.</div>'+
+    '<button class="btn btn-pri btn-sm" data-create-presence="true">+ New Business Page</button>'+
+  '</div>'+
   '<div id="mp-flash"></div>'+
   '<div id="mp-body"><div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading your business pages…</div></div>');
 
