@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/pegasus.css">
+<link rel="stylesheet" href="/css/profile-banner.css?v=banner-parity-20260617">
 <link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
@@ -18,11 +19,12 @@
 .ep-section-title{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
 .ep-section-body{padding:20px 22px}
 .ep-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
-.ep-banner-zone{position:relative;aspect-ratio:40/9;min-height:120px;max-height:240px;cursor:pointer;background:linear-gradient(135deg,#1B3150 0%,#235FA6 60%,#1B5A8A 100%);overflow:hidden;border-radius:0;border-bottom:1px solid var(--border)}
+/* Frame geometry comes from the shared .peg-cover system (profile-banner.css)
+   so the edit preview and the live /u/{slug} cover render IDENTICALLY. */
+.ep-banner-zone{cursor:pointer;border-bottom:1px solid var(--border)}
 .ep-banner-zone.has-banner{cursor:grab}
 .ep-banner-zone.dragging{cursor:grabbing}
-.ep-banner-img{width:100%;height:100%;object-fit:cover;display:block}
-.ep-banner-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,17,28,0.38),rgba(8,17,28,0.58));pointer-events:none;display:none}
+.ep-banner-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,13,22,0.45) 0%,rgba(6,13,22,0.12) 22%,rgba(6,13,22,0) 44%);pointer-events:none;display:none}
 .ep-banner-zone.has-banner .ep-banner-scrim{display:block}
 .ep-banner-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.18s;display:flex;align-items:center;justify-content:center;z-index:4}
 .ep-banner-zone:hover .ep-banner-overlay{background:rgba(0,0,0,0.3)}
@@ -228,7 +230,7 @@ Pegasus.boot(async function(st){
   var comp=calcComp(p);
   var sl=p.profile_slug||slugify(p.full_name||'');
   var avHtml=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" style="width:100%;height:100%;object-fit:cover">':'<span>'+esc(initials(p.full_name||'')||'?')+'</span>';
-  var bnHtml=p.banner_url?'<img class="ep-banner-img" id="ep-bn-img" src="'+esc(p.banner_url)+'">':'<img class="ep-banner-img" id="ep-bn-img" style="display:none">';
+  var bnHtml=p.banner_url?'<img class="peg-cover-img" id="ep-bn-img" src="'+esc(p.banner_url)+'" style="object-position:'+esc(p.banner_focal||'center')+'">':'<img class="peg-cover-img" id="ep-bn-img" style="display:none">';
   /* Role taxonomy — [value, Title-Case label]. Existing lowercase values kept for
      backward compatibility; new roles added per the taxonomy spec. */
   var ROLE_OPTS=[
@@ -258,7 +260,7 @@ Pegasus.boot(async function(st){
     /* Media */
     '<div class="ep-section">'+
       '<div class="ep-section-head"><span class="ep-section-title">Profile Photo &amp; Cover Banner</span><span style="font-size:11px;color:var(--text3)">Click to upload · drag banner to reposition</span></div>'+
-      '<div class="ep-banner-zone'+(p.banner_url?' has-banner':'')+'" id="ep-bn-zone">'+
+      '<div class="ep-banner-zone peg-cover'+(p.banner_url?' has-banner':'')+'" id="ep-bn-zone">'+
         bnHtml+
         '<div class="ep-banner-scrim"></div>'+
         '<div class="ep-banner-overlay" onclick="el(\'ep-bn-file\').click()"><div class="ep-banner-prompt">📷 '+(p.banner_url?'Change':'Upload')+' Cover Banner</div></div>'+
