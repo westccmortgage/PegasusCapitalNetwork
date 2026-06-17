@@ -69,7 +69,12 @@ async function doSignin(){
   try{
     await PegAuth.signIn({email,password});
     await Pegasus.store.hydrate();
-    location.href = Pegasus.store.isAdmin() ? 'admin.html' : 'profile.html';
+    /* Routing law: never default to admin console. Return to the protected
+       route the member was heading to, otherwise their own profile hub. */
+    var _dl=''; try{ _dl=localStorage.getItem('pegasus.redirectAfterAuth')||''; if(_dl) localStorage.removeItem('pegasus.redirectAfterAuth'); }catch(_){}
+    var _valid=_dl && _dl.charAt(0)==='/' && !_dl.startsWith('/signin') && !_dl.startsWith('/signup') && !_dl.startsWith('/auth-callback');
+    if(_valid){ location.href=_dl; }
+    else { var _p=Pegasus.store.get().profile||{}; location.href = _p.profile_slug ? '/u/'+_p.profile_slug : _p.id ? '/public-profile.html?id='+_p.id : '/dashboard.html'; }
   }catch(e){
     btn.disabled=false; btn.textContent='Access Workspace →';
     var raw=(e&&e.message)||'';

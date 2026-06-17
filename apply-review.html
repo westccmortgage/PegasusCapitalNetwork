@@ -64,9 +64,10 @@ function render(status, notes, eligible, p){
   }
 
   html += '<div class="ar-card">'+
-    '<div class="eyebrow">Reviewed by Pegasus</div>'+
-    '<h1 style="font-family:var(--serif);font-weight:300;font-size:28px;letter-spacing:-.02em;margin:6px 0 10px">Apply for reviewed status</h1>'+
-    '<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:8px">A curated review of your professional presence and participation. Reviewed members receive elevated ecosystem visibility, stronger trust positioning, and preferred showcase placement.</p>'+
+    '<div class="eyebrow">Trust &amp; Visibility · Reviewed by Pegasus</div>'+
+    '<h1 style="font-family:var(--serif);font-weight:300;font-size:28px;letter-spacing:-.02em;margin:6px 0 10px">Trust &amp; reviewed status</h1>'+
+    '<p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:8px">Reviewed status is a trust signal. A curated review of your professional presence and participation. Reviewed members receive elevated ecosystem visibility, stronger trust positioning, and preferred showcase placement.</p>'+
+    '<p style="color:var(--text3);font-size:12.5px;line-height:1.6;margin-bottom:8px">Trust improves as you complete your profile, connect verified business pages, add your professional links, and participate in the network. Your public profile shows only a compact badge when you are reviewed or pending.</p>'+
     (eligible?'<p style="font-size:12px;color:var(--green)">✓ Your membership tier is eligible for review.</p>'
             :'<p style="font-size:12px;color:var(--text3)">Review is prioritized for Gold members. You may still apply; eligibility does not guarantee approval.</p>')+
     '<div style="height:14px"></div>'+

@@ -123,39 +123,46 @@
     const drCap=lim('dealRooms'); const drBadge = drCap===Infinity?`${S.usage.rooms}`:(drCap>0?`${S.usage.rooms}/${drCap}`:null);
     const meLocked = lim('matchEngine')==='none';
     const item=(ic,label,href,o={})=>{
-      const locked=o.locked, badge=o.badge;
-      return `<a class="sb-item ${active===label?'active':''}" href="${href}">
+      const locked=o.locked, badge=o.badge, act=o.act||label;
+      return `<a class="sb-item ${active===act?'active':''}" href="${href}">
         <span class="sb-ic">${ic}</span>${label}
         ${badge?`<span class="sb-badge ${locked?'lock':'b'}">${badge}</span>`:''}${locked?`<span class="sb-badge lock">🔒</span>`:''}</a>`;
     };
+    const isAdm = (typeof Store!=='undefined'&&Store.isAdmin&&Store.isAdmin());
     const sidebar=`<aside class="sidebar">
-      <div class="sb-head"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><div><div class="sb-logo">Pegasus</div><div class="sb-ws">Capital Workspace</div></div></div>
+      <div class="sb-head"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><div><div class="sb-logo">Pegasus</div><div class="sb-ws">Workspace</div></div></div>
       <div class="sb-nav">
         <div class="sb-sec">Workspace</div>
-        ${item('▦','Dashboard','/dashboard.html')}
-        ${item('✦','Get Started','/get-started.html')}
-        ${item('◇','Network Requests','/network-requests.html')}
-        ${item('◈','Reviewed Status','/apply-review.html')}
+        ${item('▦','Home','/dashboard.html',{act:'Dashboard'})}
+        ${item('◇','Requests','/network-requests.html',{act:'Network Requests'})}
+        ${item('◠','Network Signals','/deal-feed.html')}
         ${item('◈','Deal Rooms','/deal-rooms.html',{badge:drBadge,locked:drCap===0})}
-        ${item('◎','Match Engine','/match-engine.html',{locked:meLocked})}
-        ${item('◆','Intelligence','/intelligence.html')}
-        ${item('✦','Capital Assistant','/ai-assistant.html')}
         ${item('▣','CRM','/crm.html')}
-        <div class="sb-sec">Account</div>
-        ${item('❖','Showcase','/showcase.html')}
-        ${item('◫','Business Pages','/my-presences.html')}
-        ${item('▤','Billing & Plan','/membership.html')}
+        <div class="sb-sec">Presentation</div>
+        ${item('◉','My Profile',ownProfilePath(),{act:'My Profile'})}
         ${item('⚙','Edit Profile','/profile-edit.html')}
-        ${(typeof Store!=='undefined'&&Store.isAdmin&&Store.isAdmin())?item('⚑','Admin Console','/admin.html'):''}
-        ${(typeof Store!=='undefined'&&Store.isAdmin&&Store.isAdmin())?item('◇','Admin · Requests','/admin-requests.html'):''}
-        ${(typeof Store!=='undefined'&&Store.isAdmin&&Store.isAdmin())?item('◈','Admin · Trust','/admin-trust-reviews.html'):''}
+        ${item('◫','Business Pages','/my-presences.html')}
+        ${item('❖','Opportunities & Showcases','/showcase.html',{act:'Showcase'})}
+        ${item('⤴','Share Studio','/share-studio.html')}
+        <div class="sb-sec">Growth</div>
+        ${item('◎','Match Engine','/match-engine.html',{locked:meLocked})}
+        ${item('◆','Capital Intelligence','/intelligence.html',{act:'Intelligence'})}
+        ${item('✦','Ask Pegasus','/ai-assistant.html',{act:'Capital Assistant'})}
+        <div class="sb-sec">Account</div>
+        ${item('▤','Access & Growth','/membership.html',{act:'Billing & Plan'})}
+        ${item('◈','Trust / Reviewed Status','/apply-review.html',{act:'Reviewed Status'})}
+        ${item('⚙','Settings','/profile-edit.html',{act:'Settings'})}
+        ${isAdm?`<div class="sb-sec">Admin</div>
+        ${item('⚑','Admin Console','/admin.html',{act:'Admin'})}
+        ${item('◇','Admin Requests','/admin-requests.html')}
+        ${item('◈','Admin Trust','/admin-trust-reviews.html',{act:'Admin · Trust'})}`:''}
       </div>
       <div class="sb-foot">
         <div class="sb-tier"><div class="sb-tier-name"><span class="dot" style="background:${meta.dot}"></span>${meta.name}</div>
           <div class="sb-tier-blurb">${meta.layer}</div>
           ${t!=='gold'?`<button class="sb-tier-cta" style="background:var(--blue);color:#fff" onclick="location.href='/membership.html'">Upgrade Access →</button>`:`<button class="sb-tier-cta" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(170,137,38,0.25)" onclick="location.href='/membership.html'">Manage Plan</button>`}
         </div>
-        <a class="sb-prof" href="/profile.html"><div class="avatar">${esc(S.initials)}</div><div><div class="sb-uname">${esc(S.name)}</div><div class="sb-uemail">${esc(S.email)}</div></div></a>
+        <a class="sb-prof" href="${ownProfilePath()}"><div class="avatar">${esc(S.initials)}</div><div><div class="sb-uname">${esc(S.name)}</div><div class="sb-uemail">${esc(S.email)}</div></div></a>
       </div>
     </aside>`;
     const unread=st.counts.unreadNotifications||0;
@@ -165,13 +172,13 @@
         <div class="tier-chip" style="background:${t==='gold'?'var(--gold-dim)':'var(--blue-dim)'};color:${t==='gold'?'var(--gold)':'var(--blue-lt)'};border:1px solid ${t==='gold'?'rgba(170,137,38,0.25)':'rgba(34,113,195,0.25)'}"><span class="dot" style="background:${meta.dot}"></span>${meta.name}<span class="tier-layer"> · ${meta.layer}</span></div>
         <div style="position:relative"><button class="tb-icon" aria-label="${unread?('Notifications, '+unread+' unread'):'Notifications'}" onclick="Pegasus.toggleNotif(event)">🔔${unread?`<span style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:8px;font-family:var(--mono);min-width:14px;height:14px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px">${unread}</span>`:''}</button><div id="notifPanel"></div></div>
         <div style="position:relative">
-          <button class="tb-icon" title="My Account" aria-label="My Account" onclick="Pegasus.toggleAccount(event)">${esc(S.initials)||"◉"} ▾</button>
+          <button class="tb-acct" title="My Account" aria-label="My Account — open account menu" onclick="Pegasus.toggleAccount(event)" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 6px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;font-size:13px"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:var(--blue-dim);color:var(--blue-lt);font-size:11px;font-weight:600">${esc(S.initials)||"◉"}</span><span class="tb-acct-name" style="font-weight:500">${esc((S.name||'Account').split(' ')[0])}</span><span aria-hidden="true" style="color:var(--text3)">▾</span></button>
           <div id="acctMenu"></div>
         </div>
       </div></div>`;
     document.body.innerHTML =
       `<a href="#maincontent" class="skip-link" onclick="var m=document.getElementById('maincontent')||document.querySelector('main,section,.section,.auth-wrap,.ar-wrap,.view');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</a><div class="shell">${sidebar}<div class="main">${topbar}<main class="view" id="maincontent" tabindex="-1"><div class="wrap-narrow" id="pegView"></div></main></div></div>`+
-      `<div id="modalRoot"></div><nav class="mob-tabbar"><a class="mob-tab ${active==='Dashboard'?'active':''}" href="/dashboard.html"><span class="mob-tab-ic">▦</span>Dashboard</a><a class="mob-tab ${active==='Deal Rooms'?'active':''}" href="/deal-rooms.html"><span class="mob-tab-ic">◈</span>Rooms</a><a class="mob-tab ${active==='Match Engine'?'active':''}" href="/match-engine.html"><span class="mob-tab-ic">◎</span>Match</a><a class="mob-tab ${active==='Capital Intelligence'?'active':''}" href="/ai-assistant.html"><span class="mob-tab-ic">✦</span>Ask</a><a class="mob-tab" href="/profile.html"><span class="mob-tab-ic">◉</span>Profile</a></nav>`;
+      `<div id="modalRoot"></div><nav class="mob-tabbar"><a class="mob-tab ${active==='Dashboard'?'active':''}" href="/dashboard.html"><span class="mob-tab-ic">▦</span>Dashboard</a><a class="mob-tab ${active==='Deal Rooms'?'active':''}" href="/deal-rooms.html"><span class="mob-tab-ic">◈</span>Rooms</a><a class="mob-tab ${active==='Match Engine'?'active':''}" href="/match-engine.html"><span class="mob-tab-ic">◎</span>Match</a><a class="mob-tab ${active==='Capital Assistant'?'active':''}" href="/ai-assistant.html"><span class="mob-tab-ic">✦</span>Ask</a><a class="mob-tab ${active==='My Profile'?'active':''}" href="${ownProfilePath()}"><span class="mob-tab-ic">◉</span>Profile</a></nav>`;
     const v=el('pegView');
     /* Admin Console — live DB check (bypasses stale store cache entirely)
      * Queries profiles.role directly from Supabase after sidebar renders.
@@ -216,7 +223,7 @@
         }
       } catch(e) { /* Non-fatal — admin link just won't show if DB unreachable */ }
     })();
-    if(Store.needsOnboarding && Store.needsOnboarding()){
+    if(Store.needsOnboarding && Store.needsOnboarding() && String(active).indexOf('Admin')!==0){
       v.insertAdjacentHTML('afterbegin',`<div class="banner bn-info"><div class="banner-msg">◷ <span>Your profile is ${S.profile.profile_completion||0}% complete. Finish onboarding to improve match quality and visibility.</span></div><a class="btn btn-sm btn-pri" href="/profile-edit.html">Complete Profile →</a></div>`);
     }
     if(S.demo){ v.insertAdjacentHTML('afterbegin',
@@ -537,6 +544,18 @@
     if(!slug) return '/opportunity.html';
     return '/opportunity/'+encodeURIComponent(slug);
   }
+  /* Own public-profile path for in-app links (My Profile).
+     Always points to the clean /u/{slug} route so /profile.html is never a
+     primary destination. Falls back to /profile.html (a lightweight redirect
+     bridge) only when no slug is known yet. */
+  function ownProfilePath(){
+    var slug='';
+    try{ var st=Store.get(); if(st&&st.profile&&st.profile.profile_slug) slug=st.profile.profile_slug; }catch(e){}
+    if(!slug){ try{ slug=localStorage.getItem('peg_slug')||''; }catch(e){} }
+    if(slug) return '/u/'+slug;
+    try{ var st2=Store.get(); if(st2&&st2.user&&st2.user.id&&st2.user.id!=='demo') return '/public-profile.html?id='+st2.user.id; }catch(e){}
+    return '/profile.html';
+  }
   /* Build the shareable public-profile URL for the current user.
      Prefers profile_slug; falls back to ?id=. */
   var CANONICAL_ORIGIN='https://pegasuscapitalnetwork.com';
@@ -568,21 +587,28 @@
     var m=el('acctMenu'); if(!m) return;
     if(m.innerHTML){ m.innerHTML=''; return; }
     var st=Store.get(); var isAdm = (typeof Store.isAdmin==='function') ? Store.isAdmin() : false;
+    var p=st.profile||{}; var name=p.full_name||'My Account';
     var rows=[
-      ['\u25C9','My Profile','/profile.html'],
+      ['\u25C9','My Profile',ownProfilePath()],
       ['\u270E','Edit Profile','/profile-edit.html'],
       ['\u25EB','Business Pages','/my-presences.html'],
       ['\u2795','Create Free Business Page','/my-presences.html'],
       ['\u25A6','My Workspace','/dashboard.html'],
-      ['\u25A4','Billing & Plan','/membership.html'],
+      ['\u25A4','Access & Growth','/membership.html'],
     ];
+    var adminRows=[];
     if(isAdm){
-      rows.push(['\u26E8','Admin Console','/admin.html']);
-      rows.push(['\u25C7','Admin \u00B7 Requests','/admin-requests.html']);
-      rows.push(['\u25C8','Admin \u00B7 Trust','/admin-trust-reviews.html']);
+      adminRows.push(['\u26E8','Admin Console','/admin.html']);
+      adminRows.push(['\u25C7','Admin Requests','/admin-requests.html']);
+      adminRows.push(['\u25C8','Admin Trust','/admin-trust-reviews.html']);
     }
     m.innerHTML='<div class="acct-menu">'
+      + '<div class="acct-head" style="padding:11px 14px 9px;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(name)+'</div><div style="font-size:11px;color:var(--text3)">'+esc((st.user&&st.user.email)||p.email||'')+'</div></div>'
       + rows.map(function(r){return '<a class="acct-item" href="'+r[2]+'"><span class="acct-ic">'+r[0]+'</span>'+r[1]+'</a>';}).join('')
+      + (adminRows.length
+          ? '<div class="acct-sep"></div><div class="acct-label" style="padding:7px 14px 3px;font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3)">Admin</div>'
+            + adminRows.map(function(r){return '<a class="acct-item" href="'+r[2]+'"><span class="acct-ic">'+r[0]+'</span>'+r[1]+'</a>';}).join('')
+          : '')
       + '<div class="acct-sep"></div>'
       + '<button class="acct-item acct-out" onclick="PegAuth.signOut()"><span class="acct-ic">\u23FB</span>Sign Out</button>'
       + '</div>';
@@ -713,7 +739,7 @@
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
     fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal,
-    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, slugify, presencePath, opportunityPath, engageOpen, shareSheet, opportunityShare, buildShareCard,
+    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, ownProfilePath, slugify, presencePath, opportunityPath, engageOpen, shareSheet, opportunityShare, buildShareCard,
     refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },
   };
@@ -809,4 +835,110 @@
     }).observe(document.body,{childList:true,subtree:true}); }catch(e){}
   }
   if(document.readyState!=='loading') initA(); else document.addEventListener('DOMContentLoaded',initA);
+})();
+
+/* ── Ask Pegasus — global floating assistant ─────────────────────────────────
+   A site-wide guide that appears bottom-right on every product/marketing page.
+   It is a *guide*, not an agent: it answers "how do I…" questions with short
+   help text and safe links. It has NO destructive powers — it never deletes
+   users, changes billing, or alters privacy. Anonymous visitors are guided to
+   create a profile / sign in; signed-in members get how-tos for profile,
+   business pages, opportunities, showcases, Share Studio, requests & workspace.
+   Skipped on auth screens and the full assistant page to avoid duplication. */
+(function(){
+  'use strict';
+  var path=(location.pathname||'').toLowerCase();
+  var SKIP=['/signin','/signup','/auth-callback','/reset-password','/forgot-password','/ai-assistant'];
+  for(var i=0;i<SKIP.length;i++){ if(path.indexOf(SKIP[i])===0) return; }
+
+  function authed(){
+    try{
+      var raw=localStorage.getItem('pegasus.auth'); if(!raw) return false;
+      var pj=JSON.parse(raw);
+      return !!(pj && (pj.access_token||(pj.currentSession&&pj.currentSession.access_token)));
+    }catch(e){ return false; }
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  var QA_ANON=[
+    {q:'What is Pegasus?', a:'Pegasus is a professional capital network. You create a profile, connect your business pages, present opportunities and showcases, share them outside Pegasus, and receive interest from the right people.', cta:['Create Free Profile','/signup.html']},
+    {q:'Why should I create a profile?', a:'People cannot connect with what they cannot see. A profile makes who you are, what you represent, and what you offer visible to the right people.', cta:['Create Free Profile','/signup.html']},
+    {q:'Is it free to join?', a:'Yes — free to enter. You can create a profile, connect your first business page, present initial opportunities or showcases, share them, and receive interest. Growth access unlocks more later.', cta:['See Access & Growth','/membership.html']},
+    {q:'How does Pegasus work?', a:'Personal profile = trust. Business page = promotion. Opportunity / showcase = presentation. Then share outside Pegasus and receive interest.', cta:['How It Works','/explore.html']},
+    {q:'I already have an account', a:'Welcome back — sign in to open your workspace and profile.', cta:['Sign In','/signin.html']}
+  ];
+  var QA_MEMBER=[
+    {q:'What should I do next?', a:'Build your presence: complete your profile, add a business page, add social links, then publish an opportunity or showcase you can share.', cta:['Open Workspace','/dashboard.html']},
+    {q:'How do I create a business page?', a:'Open Business Pages and choose Create Free Business Page. Describe what you do, what you offer, and who should connect.', cta:['Business Pages','/my-presences.html']},
+    {q:'How do I present an opportunity or showcase?', a:'Use the Presentation Builder: choose a format (capital program, project, property, startup need, showcase, event or partnership), build it, preview and publish.', cta:['Opportunities & Showcases','/showcase.html']},
+    {q:'How do I upload photos to a Showcase?', a:'Open the showcase, then add a cover image, gallery photos and an optional video URL in the media section of the Presentation Builder.', cta:['Opportunities & Showcases','/showcase.html']},
+    {q:'How do I share to Instagram / social?', a:'Open Share Studio (or the Share button on any profile, business or opportunity). Pegasus prepares Instagram-ready images and a caption — download the image and copy the caption, then post. No auto-posting yet.', cta:['Share Studio','/share-studio.html']},
+    {q:'Where are my requests?', a:'Interest people send you appears under Requests in your workspace.', cta:['Requests','/network-requests.html']},
+    {q:'What is the difference between a Business Page and a Showcase?', a:'A Business Page promotes what a business does and who should connect. A Showcase is a specific presentation — a project, listing, program or proof — that you share to bring people back.', cta:['Business Pages','/my-presences.html']},
+    {q:'What does Reviewed status mean?', a:'Reviewed status is a trust signal. It shows your identity and credentials were checked, which improves visibility. Apply from Trust / Reviewed Status.', cta:['Trust / Reviewed Status','/apply-review.html']}
+  ];
+
+  var open=false;
+  function panelHTML(){
+    var list=authed()?QA_MEMBER:QA_ANON;
+    var rows=list.map(function(item,idx){
+      return '<button class="peg-ask-q" data-i="'+idx+'" style="display:block;width:100%;text-align:left;border:1px solid var(--border,#1e2c42);background:var(--bg2,#0f1a2c);color:var(--text,#e8eef6);padding:9px 11px;border-radius:9px;margin-bottom:7px;cursor:pointer;font-size:12.5px;line-height:1.35">'+esc(item.q)+'</button>';
+    }).join('');
+    return '<div id="pegAskPanel" role="dialog" aria-label="Ask Pegasus assistant" style="position:fixed;bottom:84px;right:20px;width:340px;max-width:calc(100vw - 32px);background:var(--bg,#0a1322);border:1px solid var(--border,#1e2c42);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.45);z-index:1200;overflow:hidden;font-family:\'IBM Plex Sans\',system-ui,sans-serif">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border,#1e2c42)">'+
+        '<div style="display:flex;align-items:center;gap:9px"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--blue-dim,#13284a);color:var(--blue-lt,#6aa6ec);font-size:14px">✦</span><div><div style="font-size:13px;font-weight:600;color:var(--text,#e8eef6)">Ask Pegasus</div><div style="font-size:10.5px;color:var(--text3,#7e91ad)">Your guide to the network</div></div></div>'+
+        '<button id="pegAskClose" aria-label="Close" style="border:none;background:var(--bg2,#0f1a2c);color:var(--text2,#aebfd4);width:28px;height:28px;border-radius:8px;cursor:pointer">✕</button>'+
+      '</div>'+
+      '<div id="pegAskBody" style="padding:14px 16px;max-height:60vh;overflow-y:auto">'+
+        '<div style="font-size:11px;color:var(--text3,#7e91ad);margin-bottom:10px">'+(authed()?'How can I help you in Pegasus?':'New here? Here’s how Pegasus works.')+'</div>'+
+        rows+
+      '</div>'+
+      '<div style="padding:11px 16px;border-top:1px solid var(--border,#1e2c42)"><a href="/ai-assistant.html" style="font-size:11.5px;color:var(--blue-lt,#6aa6ec);text-decoration:none">Open the full Capital Assistant →</a></div>'+
+    '</div>';
+  }
+  function answerHTML(item){
+    var cta=item.cta?'<a href="'+item.cta[1]+'" style="display:inline-block;margin-top:12px;background:var(--blue,#2271c3);color:#fff;padding:8px 14px;border-radius:9px;font-size:12px;text-decoration:none">'+esc(item.cta[0])+' →</a>':'';
+    return '<button id="pegAskBack" style="border:none;background:none;color:var(--blue-lt,#6aa6ec);cursor:pointer;font-size:11.5px;padding:0;margin-bottom:10px">‹ Back</button>'+
+      '<div style="font-size:13px;font-weight:600;color:var(--text,#e8eef6);margin-bottom:7px">'+esc(item.q)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--text2,#aebfd4);line-height:1.55">'+esc(item.a)+'</div>'+cta;
+  }
+  function render(){
+    var existing=document.getElementById('pegAskPanel'); if(existing) existing.remove();
+    if(!open) return;
+    document.body.insertAdjacentHTML('beforeend', panelHTML());
+    var panel=document.getElementById('pegAskPanel');
+    var list=authed()?QA_MEMBER:QA_ANON;
+    panel.querySelector('#pegAskClose').onclick=toggle;
+    panel.querySelectorAll('.peg-ask-q').forEach(function(b){
+      b.onclick=function(){
+        var item=list[+b.getAttribute('data-i')];
+        var body=panel.querySelector('#pegAskBody');
+        body.innerHTML=answerHTML(item);
+        var back=body.querySelector('#pegAskBack'); if(back) back.onclick=function(){ open=true; render(); };
+      };
+    });
+  }
+  function toggle(){ open=!open; render();
+    var fab=document.getElementById('pegAskFab'); if(fab) fab.setAttribute('aria-expanded',open?'true':'false');
+  }
+  function mount(){
+    if(document.getElementById('pegAskFab')) return;
+    var fab=document.createElement('button');
+    fab.id='pegAskFab';
+    fab.setAttribute('aria-label','Ask Pegasus — open assistant');
+    fab.setAttribute('aria-expanded','false');
+    fab.title='Ask Pegasus';
+    fab.innerHTML='<span aria-hidden="true" style="font-size:16px">✦</span><span class="peg-ask-fab-lbl">Ask Pegasus</span>';
+    fab.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1199;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border:none;border-radius:24px;background:linear-gradient(135deg,#2271c3,#1b5aa0);color:#fff;font-family:\'IBM Plex Sans\',system-ui,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 10px 30px rgba(20,70,140,.45)';
+    fab.onclick=toggle;
+    document.body.appendChild(fab);
+    /* avoid overlapping the mobile tab bar */
+    var mq=window.matchMedia('(max-width:720px)');
+    function adapt(){ var lbl=fab.querySelector('.peg-ask-fab-lbl'); if(!lbl) return;
+      if(mq.matches){ lbl.style.display='none'; fab.style.padding='0'; fab.style.width='46px'; fab.style.justifyContent='center'; fab.style.bottom='74px'; }
+      else { lbl.style.display=''; fab.style.padding='0 18px'; fab.style.width=''; fab.style.bottom='20px'; } }
+    adapt(); try{ mq.addEventListener('change',adapt); }catch(e){ try{ mq.addListener(adapt); }catch(_){} }
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape' && open) toggle(); });
+  }
+  if(document.readyState!=='loading') mount(); else document.addEventListener('DOMContentLoaded',mount);
 })();

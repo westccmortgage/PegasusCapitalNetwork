@@ -126,6 +126,11 @@
   status = 200
 
 [[redirects]]
+  from = "/workspace"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
   from = "/profile"
   to = "/profile.html"
   status = 200
