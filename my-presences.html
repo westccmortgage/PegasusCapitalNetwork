@@ -23,6 +23,13 @@
 .ws-textarea{width:100%;background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:13.5px;line-height:1.6;outline:none;transition:all .15s;resize:vertical;min-height:84px}
 .ws-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .ws-textarea::placeholder{color:var(--text4)}
+/* Mobile: stack each business row so the action buttons drop BELOW the business
+   info instead of overlapping the title and crushing the badges/description. */
+@media(max-width:640px){
+  .mp-row-body{flex-direction:column;align-items:stretch !important;gap:14px !important}
+  .mp-row-actions{max-width:none !important;justify-content:flex-start !important;align-items:flex-start !important}
+  .mp-row-actions .btn{flex:1 1 auto;text-align:center}
+}
 </style>
 </head><body>
 <!-- PEGASUS_BUILD_VERSION = dealroom-entitlements-20260524-1529 -->
@@ -147,7 +154,7 @@ function presenceCard(p){
 
   var actions;
   if(p.presence_type==='personal'){
-    actions = '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'+
+    actions = '<div class="mp-row-actions" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'+
       '<div style="font-size:11px;color:var(--text3)">Managed through your main profile.</div>'+
       '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Edit Main Profile →</a></div>';
   } else {
@@ -158,11 +165,11 @@ function presenceCard(p){
     if(canManage(p._role) && p.status!=='archived')
       btns += ' <button class="btn btn-ghost btn-sm" style="color:#c0392b;border-color:#c0392b" onclick="mpArchive(\''+esc(p.id)+'\')">Archive</button>';
     if(p.slug) btns += ' <button class="btn btn-ghost btn-sm" onclick="mpCopyLink(\''+esc(p.presence_type)+'\',\''+esc(p.slug)+'\')">Copy Link</button>';
-    actions = '<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:360px">'+btns+'</div>';
+    actions = '<div class="mp-row-actions" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:360px">'+btns+'</div>';
   }
 
-  return '<div class="card" style="margin-bottom:12px"><div class="card-body" style="padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start">'+
-    '<div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">'+
+  return '<div class="card mp-row" style="margin-bottom:12px"><div class="card-body mp-row-body" style="padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start">'+
+    '<div class="mp-row-info" style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">'+
       (p.presence_type!=='personal'?logoChip(p.name,p.logo_url,44):'')+
       '<div style="min-width:0">'+
         '<div style="font-size:15px;font-weight:600;color:var(--text)">'+esc(p.name)+'</div>'+
