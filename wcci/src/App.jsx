@@ -278,39 +278,38 @@ export default function App() {
   // ─── Landing ───
   if (screen === 'landing') {
     return (
-      <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
+      <div style={{ minHeight: 'calc(100vh - env(safe-area-inset-bottom, 0px))', background: '#f8fafc', fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
         <div style={{ height: 3, background: 'linear-gradient(90deg, #2563eb, #7c3aed, #0ea5e9)' }} />
 
-        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 40px', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #e2e8f0', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 100 }}>
-          <a href="https://wcci.online" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #e2e8f0', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 100 }}>
+          <a href="https://wcci.online" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 14, fontWeight: 700 }}>W</div>
-            <span style={{ fontWeight: 600, fontSize: 15, color: '#0f172a' }}>{t.brand}</span>
           </a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <LangSwitch />
-            <a href="tel:+13106865053" style={{ fontSize: 14, color: '#64748b', textDecoration: 'none', fontWeight: 500 }}>(310) 686-5053</a>
-            <button onClick={() => setScreen('chat')} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{t.getStarted}</button>
+            <a href="tel:+13106865053" style={{ fontSize: 13, color: '#64748b', textDecoration: 'none', fontWeight: 500, whiteSpace: 'nowrap' }}>(310) 686-5053</a>
+            <button onClick={() => setScreen('chat')} style={{ background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>{t.getStarted}</button>
           </div>
         </nav>
 
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '88px 40px 80px', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 20, padding: '6px 14px', marginBottom: 36 }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', padding: 'clamp(40px, 10vw, 88px) clamp(16px, 4vw, 40px) clamp(40px, 8vw, 80px)', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 20, padding: '6px 14px', marginBottom: 28 }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
             <span style={{ fontSize: 13, color: '#2563eb', fontWeight: 500 }}>{t.badge}</span>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(38px, 7vw, 70px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 'clamp(32px, 7vw, 70px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: 20 }}>
             {t.h1a}<br />
             <span style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t.h1b}</span>
           </h1>
 
-          <p style={{ fontSize: 'clamp(16px, 2vw, 18px)', color: '#475569', lineHeight: 1.75, maxWidth: 520, margin: '0 auto 48px' }}>
+          <p style={{ fontSize: 'clamp(15px, 2vw, 18px)', color: '#475569', lineHeight: 1.75, maxWidth: 520, margin: '0 auto 36px', padding: '0 8px' }}>
             {t.subhead}
           </p>
 
           <button
             onClick={() => setScreen('chat')}
-            style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white', border: 'none', borderRadius: 12, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 24px rgba(37,99,235,0.35)', transition: 'all 0.15s' }}
+            style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white', border: 'none', borderRadius: 12, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 24px rgba(37,99,235,0.35)', transition: 'all 0.15s', width: '100%', maxWidth: 320 }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.45)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(37,99,235,0.35)'; }}
           >
@@ -319,8 +318,8 @@ export default function App() {
           <p style={{ marginTop: 14, fontSize: 13, color: '#94a3b8' }}>{t.ctaSub}</p>
 
           {/* Demo chat preview */}
-          <div style={{ marginTop: 60, background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', padding: 24, maxWidth: 540, margin: '60px auto 0', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
+          <div style={{ marginTop: 48, background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', padding: 'clamp(14px, 3vw, 24px)', maxWidth: 540, margin: '48px auto 0', textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' }}>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700 }}>AI</div>
               <span style={{ fontSize: 13, fontWeight: 600 }}>Loan Strategy AI</span>
               <span style={{ marginLeft: 'auto', fontSize: 11, color: '#22c55e', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -338,10 +337,10 @@ export default function App() {
         </div>
 
         {/* Features */}
-        <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: '72px 40px' }}>
-          <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 28 }}>
+        <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: 'clamp(40px, 8vw, 72px) clamp(16px, 4vw, 40px)' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 20 }}>
             {t.features.map((f, i) => (
-              <div key={i} style={{ padding: 28, borderRadius: 12, border: '1px solid #f1f5f9', background: '#fafafa' }}>
+              <div key={i} style={{ padding: 'clamp(18px, 3vw, 28px)', borderRadius: 12, border: '1px solid #f1f5f9', background: '#fafafa' }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: f.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{f.icon}</div>
                 <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{f.title}</h3>
                 <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.7 }}>{f.desc}</p>
@@ -351,11 +350,11 @@ export default function App() {
         </div>
 
         {/* Disclaimer (English, legal) */}
-        <div style={{ background: '#f8fafc', padding: '24px 40px', borderTop: '1px solid #e2e8f0' }}>
+        <div style={{ background: '#f8fafc', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e2e8f0' }}>
           <p style={{ maxWidth: 800, margin: '0 auto', fontSize: 11, color: '#94a3b8', lineHeight: 1.7, textAlign: 'center' }}>{DISCLAIMER}</p>
         </div>
 
-        <footer style={{ textAlign: 'center', padding: '28px 40px', borderTop: '1px solid #e2e8f0', fontSize: 12, color: '#94a3b8' }}>
+        <footer style={{ textAlign: 'center', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e2e8f0', fontSize: 12, color: '#94a3b8' }}>
           © 2026 West Coast Capital Mortgage · <a href="https://wcci.online" style={{ color: '#94a3b8' }}>wcci.online</a> · NMLS #2817729 · Equal Housing Lender
         </footer>
       </div>
@@ -370,15 +369,15 @@ export default function App() {
     const chips = userMsgCount === 0 ? t.starterChips : t.helperChips;
 
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ height: 'calc(100vh - env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
         {/* Chat header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'white', borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-          <button onClick={() => setScreen('landing')} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>{t.back}</button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, fontWeight: 700 }}>AI</div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Loan Strategy AI</div>
-              <div style={{ fontSize: 11, color: '#22c55e', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'white', borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', flexShrink: 0 }}>
+          <button onClick={() => setScreen('landing')} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: '4px 8px', flexShrink: 0 }}>{t.back}</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>AI</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>Loan Strategy AI</div>
+              <div style={{ fontSize: 10, color: '#22c55e', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 3 }}>
                 <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />{t.statusOnline}
               </div>
             </div>
@@ -387,18 +386,18 @@ export default function App() {
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720, width: '100%', margin: '0 auto', alignSelf: 'stretch' }}>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 720, width: '100%', margin: '0 auto', alignSelf: 'stretch' }}>
           {messages.map((msg, i) => (
-            <div key={i} className="chat-msg" style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8 }}>
+            <div key={i} className="chat-msg" style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 6 }}>
               {msg.role === 'assistant' && (
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>AI</div>
+                <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
               )}
               <div style={{
                 background: msg.role === 'user' ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : 'white',
                 color: msg.role === 'user' ? 'white' : '#1e293b',
                 border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none',
                 borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-                padding: '12px 16px', fontSize: 14, lineHeight: 1.7, maxWidth: '78%',
+                padding: '10px 14px', fontSize: 14, lineHeight: 1.65, maxWidth: '82%',
                 boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
               }}>
                 {msg.content.split('\n').map((line, j, arr) => (
@@ -409,9 +408,9 @@ export default function App() {
           ))}
 
           {loading && (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>AI</div>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '4px 16px 16px 16px', padding: '14px 18px', display: 'flex', gap: 5, alignItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '4px 16px 16px 16px', padding: '12px 16px', display: 'flex', gap: 5, alignItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                 {[0, 0.2, 0.4].map((d, i) => (
                   <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb', display: 'inline-block', animation: `pulse 1.2s ease-in-out ${d}s infinite` }} />
                 ))}
@@ -423,12 +422,12 @@ export default function App() {
 
         {/* Quick-reply chips */}
         {showChips && (
-          <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 16px 4px', display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 12px 4px', display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', flexShrink: 0 }}>
             {chips.map((chip, i) => (
               <button
                 key={i}
                 onClick={() => sendMessage(chip)}
-                style={{ background: 'white', border: '1px solid #c7d2fe', color: '#2563eb', borderRadius: 18, padding: '7px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}
+                style={{ background: 'white', border: '1px solid #c7d2fe', color: '#2563eb', borderRadius: 18, padding: '7px 12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#eff6ff'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
               >{chip}</button>
@@ -437,8 +436,8 @@ export default function App() {
         )}
 
         {/* Input */}
-        <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: '14px 16px' }}>
-          <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+        <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: '10px 12px', paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))', flexShrink: 0 }}>
+          <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <textarea
               ref={inputRef}
               value={input}
@@ -446,23 +445,23 @@ export default function App() {
               onKeyDown={handleKeyDown}
               placeholder={t.placeholder}
               rows={1}
-              style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', fontSize: 14, resize: 'none', fontFamily: "'Inter', sans-serif", lineHeight: 1.5, color: '#0f172a', background: '#f8fafc', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+              style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 22, padding: '10px 16px', fontSize: 15, resize: 'none', fontFamily: "'Inter', sans-serif", lineHeight: 1.5, color: '#0f172a', background: '#f8fafc', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 44 }}
             />
             {speechSupported && (
               <button
                 onClick={toggleMic}
                 title={listening ? t.micStop : t.micStart}
                 aria-label={listening ? t.micStop : t.micStart}
-                style={{ width: 44, height: 44, background: listening ? '#ef4444' : '#f1f5f9', border: listening ? 'none' : '1px solid #e2e8f0', borderRadius: 10, color: listening ? 'white' : '#64748b', fontSize: 18, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: listening ? 'pulse 1.4s ease-in-out infinite' : 'none' }}
+                style={{ width: 44, height: 44, background: listening ? '#ef4444' : '#f1f5f9', border: listening ? 'none' : '1px solid #e2e8f0', borderRadius: 22, color: listening ? 'white' : '#64748b', fontSize: 18, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: listening ? 'pulse 1.4s ease-in-out infinite' : 'none' }}
               >🎤</button>
             )}
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || loading}
-              style={{ width: 44, height: 44, background: input.trim() ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : '#e2e8f0', border: 'none', borderRadius: 10, color: 'white', fontSize: 18, cursor: input.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 44, height: 44, background: input.trim() ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : '#e2e8f0', border: 'none', borderRadius: 22, color: 'white', fontSize: 18, cursor: input.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >→</button>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#cbd5e1', marginTop: 8 }}>{t.nmls}</p>
+          <p style={{ textAlign: 'center', fontSize: 10, color: '#cbd5e1', marginTop: 6, marginBottom: 0 }}>{t.nmls}</p>
         </div>
       </div>
     );
@@ -473,10 +472,10 @@ export default function App() {
   const checklist = buildDocumentChecklist(s);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#eef0f4', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-      <div className="fade-up" style={{ background: 'white', maxWidth: 520, width: '100%', boxShadow: '0 12px 56px rgba(10,36,99,0.14)', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#eef0f4', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px)' }}>
+      <div className="fade-up" style={{ background: 'white', maxWidth: 520, width: '100%', boxShadow: '0 12px 56px rgba(10,36,99,0.14)', overflow: 'hidden', borderRadius: 12 }}>
         {/* Header */}
-        <div style={{ background: '#0a2463', padding: '36px 40px 32px', textAlign: 'center' }}>
+        <div style={{ background: '#0a2463', padding: 'clamp(24px, 4vw, 36px) clamp(20px, 4vw, 40px) clamp(20px, 3vw, 32px)', textAlign: 'center' }}>
           <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', color: 'white', fontSize: 20 }}>✓</div>
           <h2 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, fontWeight: 400, color: 'white', marginBottom: 6, letterSpacing: '0.01em' }}>Loan Strategy Summary</h2>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>West Coast Capital Mortgage</p>
@@ -484,7 +483,7 @@ export default function App() {
 
         {/* Delivery failure banner */}
         {deliveryFailed && (
-          <div style={{ background: '#fef3c7', borderBottom: '1px solid #fcd34d', padding: '12px 40px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: '#fef3c7', borderBottom: '1px solid #fcd34d', padding: '12px clamp(20px, 4vw, 40px)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 16 }}>⚠️</span>
             <p style={{ fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
               We couldn't deliver your scenario automatically. Please call <a href="tel:+13106865053" style={{ color: '#92400e', fontWeight: 600 }}>(310) 686-5053</a> to connect with a strategist.
@@ -493,7 +492,7 @@ export default function App() {
         )}
 
         {/* Scenario fields */}
-        <div style={{ padding: '4px 40px 0' }}>
+        <div style={{ padding: '4px clamp(20px, 4vw, 40px) 0' }}>
           {[
             ['Name', s.name], ['Phone', s.phone], ['Email', s.email],
             ['Loan Purpose', s.loanPurpose], ['State', s.state],
@@ -513,7 +512,7 @@ export default function App() {
 
         {/* Possible path */}
         {s.possiblePath && (
-          <div style={{ margin: '20px 40px 0' }}>
+          <div style={{ margin: '20px clamp(20px, 4vw, 40px) 0' }}>
             <div style={{ borderLeft: '3px solid #0a2463', background: '#f7f8fc', padding: '13px 16px' }}>
               <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, color: '#0a2463', lineHeight: 1.75, fontStyle: 'italic' }}>
                 Possible path: {s.possiblePath}
@@ -523,7 +522,7 @@ export default function App() {
         )}
 
         {/* Document checklist */}
-        <div style={{ margin: '20px 40px 0' }}>
+        <div style={{ margin: '20px clamp(20px, 4vw, 40px) 0' }}>
           <p style={{ fontSize: 10, color: '#9aa3b2', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
             Documents Likely Needed ({checklist.primaryLabel})
           </p>
@@ -536,7 +535,7 @@ export default function App() {
         </div>
 
         {/* Next steps */}
-        <div style={{ padding: '24px 40px 40px' }}>
+        <div style={{ padding: 'clamp(16px, 3vw, 24px) clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px)' }}>
           {confirmed ? (
             <div style={{ textAlign: 'center', paddingTop: 8 }}>
               <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 21, color: '#0a2463', marginBottom: 10 }}>You're all set.</p>
@@ -566,7 +565,7 @@ export default function App() {
         </div>
 
         {/* Disclaimer */}
-        <div style={{ padding: '16px 40px 20px', borderTop: '1px solid #f0f2f6' }}>
+        <div style={{ padding: '16px clamp(20px, 4vw, 40px) 20px', borderTop: '1px solid #f0f2f6' }}>
           <p style={{ fontSize: 10, color: '#b0b8c9', lineHeight: 1.6, textAlign: 'center' }}>{DISCLAIMER}</p>
         </div>
       </div>
