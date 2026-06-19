@@ -10,47 +10,45 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529">
 <link rel="stylesheet" href="/css/showcase.css">
-<link rel="stylesheet" href="/css/profile-banner.css?v=banner-parity-20260617">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <style>
 /* ── Public Profile — refined layout hierarchy (premium operational identity) ── */
 *{box-sizing:border-box}
 
-/* ── Cover + identity (canonical 40:9 cover frame, identity block BELOW it).
-   ONLY the avatar overlaps the banner; name/role/headline/badges/stats sit on
-   the light body so every line is fully readable. ── */
-.pp-coverwrap{max-width:1160px;margin:0 auto;padding:18px 40px 0}
-.pp-coverwrap .peg-cover{border-radius:14px}
-.pp-cover-back{position:absolute;top:14px;left:20px;z-index:3;color:rgba(255,255,255,.8);font-size:12px;text-decoration:none;font-family:'IBM Plex Mono',monospace;letter-spacing:.02em;background:rgba(6,13,22,.35);padding:5px 11px;border-radius:6px}
-.pp-idbar{max-width:1160px;margin:0 auto;padding:0 44px 10px;position:relative;z-index:2}
-/* Top row: avatar (overlapping banner) on the left, owner/visitor actions right */
-.pp-idbar-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.pp-idbar-av{width:92px;height:92px;border-radius:50%;flex-shrink:0;overflow:hidden;border:4px solid var(--bg);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:33px;color:rgba(255,255,255,0.94);box-shadow:0 6px 20px rgba(20,24,28,0.16);margin-top:-44px}
-.pp-idbar-av img{width:100%;height:100%;object-fit:cover}
-.pp-idbar-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:4px}
-.pp-idbar-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
-/* Identity text — clearly below the banner, on the light body */
-.pp-idbar-main{margin-top:13px}
-.pp-idbar-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--text);line-height:1.08;letter-spacing:-0.01em;margin:0}
-.pp-idbar-org{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:400;color:var(--text3)}
-.pp-idbar-role{font-size:13.5px;color:var(--text2);margin-top:4px;font-weight:500}
-.pp-idbar-headline{font-size:13px;color:var(--text2);margin-top:5px;line-height:1.45;max-width:680px}
-.pp-idbar-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:11px}
-.pp-idbar-stats-row{margin-top:11px}
-/* identity sub-bits restyled for the light body (originals are white-on-dark) */
-.pp-idbar .pp-tag-v{background:rgba(14,154,102,0.12);color:#0E7A52;border:1px solid rgba(14,154,102,0.3)}
-.pp-idbar .pp-tag-a{background:rgba(154,123,34,0.13);color:#8A6D1E;border:1px solid rgba(154,123,34,0.3)}
-.pp-idbar .pp-tag-r{background:rgba(35,95,166,0.12);color:#235FA6;border:1px solid rgba(35,95,166,0.3)}
-.pp-idbar .pp-tag-m{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
-.pp-idbar .pp-stat-v{color:var(--text)}
-.pp-idbar .pp-stat-l{color:var(--text3)}
-.pp-idbar .pp-stat-sep{background:var(--border2)}
+/* ── Personal identity header — IDENTITY-FIRST, no cover banner. Personal public
+   profiles represent people, not brands; cover/visual branding lives on business
+   pages, showcases, and opportunities. The name is never overlaid on an image. ── */
+.pp-idhead-wrap{max-width:1160px;margin:0 auto;padding:26px 40px 0}
+.pp-idhead-back{display:inline-block;color:var(--text3);font-size:12px;text-decoration:none;font-family:'IBM Plex Mono',monospace;letter-spacing:.02em;margin-bottom:20px}
+.pp-idhead-back:hover{color:var(--text2)}
+.pp-idhead{display:flex;align-items:flex-start;gap:22px}
+.pp-idhead-av{width:104px;height:104px;border-radius:50%;flex-shrink:0;overflow:hidden;border:3px solid var(--bg);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:38px;color:rgba(255,255,255,0.94);box-shadow:0 4px 18px rgba(20,24,28,0.12)}
+.pp-idhead-av img{width:100%;height:100%;object-fit:cover}
+.pp-idhead-main{flex:1;min-width:0;padding-top:4px}
+.pp-idhead-name{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:var(--text);line-height:1.08;letter-spacing:-0.01em;margin:0}
+.pp-idhead-org{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:400;color:var(--text3)}
+.pp-idhead-role{font-size:13.5px;color:var(--text2);margin-top:5px;font-weight:500}
+.pp-idhead-headline{font-size:13px;color:var(--text2);margin-top:6px;line-height:1.45;max-width:680px}
+.pp-idhead-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}
+.pp-idhead-stats{margin-top:12px}
+.pp-idhead-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0;padding-top:4px}
+.pp-idhead-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
+.pp-idhead .pp-tag-v{background:rgba(14,154,102,0.12);color:#0E7A52;border:1px solid rgba(14,154,102,0.3)}
+.pp-idhead .pp-tag-a{background:rgba(154,123,34,0.13);color:#8A6D1E;border:1px solid rgba(154,123,34,0.3)}
+.pp-idhead .pp-tag-r{background:rgba(35,95,166,0.12);color:#235FA6;border:1px solid rgba(35,95,166,0.3)}
+.pp-idhead .pp-tag-m{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+.pp-idhead .pp-stat-v{color:var(--text)}
+.pp-idhead .pp-stat-l{color:var(--text3)}
+.pp-idhead .pp-stat-sep{background:var(--border2)}
+.pp-idhead-rule{max-width:1160px;margin:24px auto 0;padding:0 40px}
+.pp-idhead-rule hr{border:0;border-top:1px solid var(--border);margin:0}
 @media(max-width:760px){
-  .pp-coverwrap{padding:14px 16px 0}
-  .pp-idbar{padding:0 18px 10px}
-  .pp-idbar-av{width:74px;height:74px;font-size:27px;margin-top:-38px}
-  .pp-idbar-name{font-size:25px}
-  .pp-idbar-actions{padding-bottom:2px}
+  .pp-idhead-wrap{padding:18px 18px 0}
+  .pp-idhead{flex-direction:column;gap:14px}
+  .pp-idhead-av{width:84px;height:84px;font-size:30px}
+  .pp-idhead-name{font-size:27px}
+  .pp-idhead-actions{width:100%}
+  .pp-idhead-rule{padding:0 18px}
 }
 
 /* Legacy hero (kept for any non-banner reference; cover now drives the header) */
@@ -386,17 +384,9 @@ Pegasus.boot(async function () {
   var headlineText = p.professional_title || p.headline || '';
   if(headlineText && headlineText.toLowerCase().trim() === roleLabel(p.role).toLowerCase().trim()) headlineText = '';
 
-  /* ── Cover banner — canonical 40:9 frame (shared with the edit preview via
-     /css/profile-banner.css). When a banner is uploaded it is shown at full
-     fidelity inside the frame (object-fit:cover + focal); with no upload we draw
-     the branded gradient + wordmark in the SAME frame. ── */
-  var coverWordmark = esc(((p.company_name||name||'P').split(/\s+/)[0]||'P').toUpperCase());
-  var coverInner = p.banner_url
-    ? '<img class="peg-cover-img" src="'+esc(p.banner_url)+'" alt="" style="object-position:'+esc(p.banner_focal||'center')+'">'+
-      '<div class="peg-cover-scrim"></div>'
-    : '<div class="peg-cover-grid"></div>'+
-      '<div class="peg-cover-wm" aria-hidden="true">'+coverWordmark+'</div>'+
-      '<div class="peg-cover-horizon"></div>';
+  /* ── Personal profiles are identity-first: NO cover banner is rendered here.
+     Any previously-uploaded banner_url is intentionally ignored on this page
+     (data is preserved). Visual branding belongs to business pages / showcases. ── */
 
   /* ── Signal strip (markets + specialties as live intelligence) ── */
   var rail = function(label, val, dot){ return '<div class="pp-strip-item"><div class="pp-rail-label">'+(dot?'<span class="pp-rail-dot '+dot+'"></span>':'')+label+'</div><div class="pp-rail-val">'+esc(val)+'</div></div>'; };
@@ -543,28 +533,24 @@ Pegasus.boot(async function () {
   /* ── Assemble page (single calm vertical flow) ── */
   document.body.insertAdjacentHTML('beforeend',
 
-    /* 1. COVER — canonical 40:9 frame; identity sits in a bar BELOW it so the
-       uploaded cover composition is preserved exactly (matches edit preview). */
+    /* 1. IDENTITY HEADER — identity-first, no cover banner. Name is always on the
+       light body, never overlaid on an image. */
     '<section>'+
-      '<div class="pp-coverwrap">'+
-        '<div class="peg-cover">'+
-          coverInner +
-          '<a href="/members.html" class="pp-cover-back">\u2190 Member Network</a>'+
+      '<div class="pp-idhead-wrap">'+
+        '<a href="/members.html" class="pp-idhead-back">\u2190 Member Network</a>'+
+        '<div class="pp-idhead">'+
+          '<div class="pp-idhead-av">'+avHtml+'</div>'+
+          '<div class="pp-idhead-main">'+
+            '<h1 class="pp-idhead-name">'+esc(name)+(p.company_name?' <span class="pp-idhead-org">@'+esc(p.company_name)+'</span>':'')+'</h1>'+
+            '<div class="pp-idhead-role">'+esc(roleLabel(p.role))+'</div>'+
+            (headlineText?'<div class="pp-idhead-headline">'+esc(headlineText)+'</div>':'')+
+            ((trustBadges(p)||tags)?'<div class="pp-idhead-badges">'+(trustBadges(p)||'')+(tags||'')+'</div>':'')+
+            '<div class="pp-stats pp-idhead-stats">'+statsHtml+'</div>'+
+          '</div>'+
+          (actions?'<div class="pp-actions pp-idhead-actions">'+actions+'</div>':'')+
         '</div>'+
       '</div>'+
-      '<div class="pp-idbar">'+
-        '<div class="pp-idbar-row">'+
-          '<div class="pp-idbar-av">'+avHtml+'</div>'+
-          (actions?'<div class="pp-actions pp-idbar-actions">'+actions+'</div>':'')+
-        '</div>'+
-        '<div class="pp-idbar-main">'+
-          '<h1 class="pp-idbar-name">'+esc(name)+(p.company_name?' <span class="pp-idbar-org">@'+esc(p.company_name)+'</span>':'')+'</h1>'+
-          '<div class="pp-idbar-role">'+esc(roleLabel(p.role))+'</div>'+
-          (headlineText?'<div class="pp-idbar-headline">'+esc(headlineText)+'</div>':'')+
-          ((trustBadges(p)||tags)?'<div class="pp-idbar-badges">'+(trustBadges(p)||'')+(tags||'')+'</div>':'')+
-          '<div class="pp-stats pp-idbar-stats-row">'+statsHtml+'</div>'+
-        '</div>'+
-      '</div>'+
+      '<div class="pp-idhead-rule"><hr></div>'+
     '</section>'+
 
     /* The cluttered horizontal identity strip under the hero is intentionally

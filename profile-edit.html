@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/pegasus.css">
-<link rel="stylesheet" href="/css/profile-banner.css?v=banner-parity-20260617">
 <link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
@@ -19,31 +18,15 @@
 .ep-section-title{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
 .ep-section-body{padding:20px 22px}
 .ep-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
-/* Frame geometry comes from the shared .peg-cover system (profile-banner.css)
-   so the edit preview and the live /u/{slug} cover render IDENTICALLY. */
-.ep-banner-zone{cursor:pointer;border-bottom:1px solid var(--border)}
-.ep-banner-zone.has-banner{cursor:grab}
-.ep-banner-zone.dragging{cursor:grabbing}
-.ep-banner-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,13,22,0.45) 0%,rgba(6,13,22,0.12) 22%,rgba(6,13,22,0) 44%);pointer-events:none;display:none}
-.ep-banner-zone.has-banner .ep-banner-scrim{display:block}
-.ep-banner-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.18s;display:flex;align-items:center;justify-content:center;z-index:4}
-.ep-banner-zone:hover .ep-banner-overlay{background:rgba(0,0,0,0.3)}
-.ep-banner-zone.dragging .ep-banner-overlay{opacity:0;pointer-events:none}
-.ep-banner-prompt{opacity:0;transition:opacity 0.18s;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.55);color:#fff;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:500;border:1px solid rgba(255,255,255,0.25);font-family:var(--sans)}
-.ep-banner-zone:hover .ep-banner-prompt{opacity:1}
-.ep-banner-safe{position:absolute;bottom:0;left:0;right:0;padding:10px 22px;display:none;align-items:center;gap:14px;pointer-events:none;z-index:2}
-.ep-banner-zone.has-banner .ep-banner-safe{display:flex}
-.ep-safe-av{width:44px;height:44px;border-radius:50%;border:1.5px dashed rgba(255,255,255,0.35);flex-shrink:0}
-.ep-safe-label{font-size:10px;color:rgba(255,255,255,0.4);font-family:var(--sans);letter-spacing:0.03em}
-.ep-banner-hint{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.8);font-size:10px;padding:3px 9px;border-radius:3px;pointer-events:none;display:none;font-family:var(--sans);z-index:3}
-.ep-banner-zone.has-banner .ep-banner-hint{display:block}
-.ep-banner-zone.dragging .ep-banner-hint{background:rgba(0,0,0,0.75);color:#fff}
-.ep-avatar-zone{position:absolute;bottom:-28px;left:22px;width:72px;height:72px;border-radius:50%;border:3px solid var(--bg);cursor:pointer;background:linear-gradient(135deg,#1a3260,#235FA6);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;color:rgba(255,255,255,0.9);transition:filter 0.18s}
-.ep-avatar-zone:hover{filter:brightness(0.75)}
-.ep-avatar-zone img{width:100%;height:100%;object-fit:cover}
-.ep-media-body{padding:40px 22px 16px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--border)}
+/* Profile photo (avatar) — personal profiles are identity-first; personal cover
+   banners are deprecated (see .ep-banner-deprecated). */
+.ep-photo-row{display:flex;align-items:center;gap:18px;padding:20px 22px}
+.ep-photo-av{width:84px;height:84px;border-radius:50%;flex-shrink:0;border:3px solid var(--bg);cursor:pointer;background:linear-gradient(135deg,#1a3260,#235FA6);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:28px;color:rgba(255,255,255,0.9);transition:filter 0.18s;box-shadow:0 3px 12px rgba(20,24,28,0.1)}
+.ep-photo-av:hover{filter:brightness(0.8)}
+.ep-photo-av img{width:100%;height:100%;object-fit:cover}
+.ep-photo-info{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .ep-media-hint{font-size:11.5px;color:var(--text3);font-family:var(--sans)}
-.ep-media-btns{display:flex;gap:8px}
+.ep-banner-deprecated{margin:0 22px 18px;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);font-size:11.5px;color:var(--text3);font-family:var(--sans);line-height:1.5}
 .ep-comp{margin-bottom:16px}
 .ep-comp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .ep-comp-label{font-size:11.5px;color:var(--text2)}
@@ -77,7 +60,7 @@
 .ep-save-error{font-size:12px;color:var(--red);font-weight:500;display:none}
 .ep-slug-preview{font-family:var(--mono);font-size:11.5px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r1);padding:8px 12px;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ep-slug-domain{color:var(--text4)}
-@media(max-width:640px){.ep-grid2{grid-template-columns:1fr}.ep-media-btns{flex-direction:column}}
+@media(max-width:640px){.ep-grid2{grid-template-columns:1fr}.ep-photo-row{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -136,7 +119,6 @@ Pegasus.boot(async function(st){
     document.body.appendChild(inp); return inp;
   }
   var avFileEl=mkInput('ep-av-file','image/*');
-  var bnFileEl=mkInput('ep-bn-file','image/*');
 
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function el(id){return document.getElementById(id);}
@@ -230,7 +212,6 @@ Pegasus.boot(async function(st){
   var comp=calcComp(p);
   var sl=p.profile_slug||slugify(p.full_name||'');
   var avHtml=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" style="width:100%;height:100%;object-fit:cover">':'<span>'+esc(initials(p.full_name||'')||'?')+'</span>';
-  var bnHtml=p.banner_url?'<img class="peg-cover-img" id="ep-bn-img" src="'+esc(p.banner_url)+'" style="object-position:'+esc(p.banner_focal||'center')+'">':'<img class="peg-cover-img" id="ep-bn-img" style="display:none">';
   /* Role taxonomy — [value, Title-Case label]. Existing lowercase values kept for
      backward compatibility; new roles added per the taxonomy spec. */
   var ROLE_OPTS=[
@@ -257,24 +238,18 @@ Pegasus.boot(async function(st){
       '<div class="ep-comp-track"><div class="ep-comp-fill" id="ep-comp-fill" style="width:'+comp+'%"></div></div>'+
     '</div>'+
 
-    /* Media */
+    /* Media — personal profile photo only. Personal cover banners are deprecated
+       and no longer rendered on public profiles. */
     '<div class="ep-section">'+
-      '<div class="ep-section-head"><span class="ep-section-title">Profile Photo &amp; Cover Banner</span><span style="font-size:11px;color:var(--text3)">Click to upload · drag banner to reposition</span></div>'+
-      '<div class="ep-banner-zone peg-cover'+(p.banner_url?' has-banner':'')+'" id="ep-bn-zone">'+
-        bnHtml+
-        '<div class="ep-banner-scrim"></div>'+
-        '<div class="ep-banner-overlay" onclick="el(\'ep-bn-file\').click()"><div class="ep-banner-prompt">📷 '+(p.banner_url?'Change':'Upload')+' Cover Banner</div></div>'+
-        '<div class="ep-banner-safe"><div class="ep-safe-av"></div><div class="ep-safe-label">Avatar &amp; name safe zone</div></div>'+
-        '<div class="ep-banner-hint" id="ep-bn-hint">'+(p.banner_url?'↕ Drag to reposition':'')+'</div>'+
-        '<div class="ep-avatar-zone" id="ep-av-zone" onclick="event.stopPropagation();el(\'ep-av-file\').click()">'+avHtml+'</div>'+
-      '</div>'+
-      '<div class="ep-media-body">'+
-        '<span class="ep-media-hint" id="ep-media-status">'+(p.avatar_url?'✓ Profile photo set':'No photo yet')+'</span>'+
-        '<div class="ep-media-btns">'+
+      '<div class="ep-section-head"><span class="ep-section-title">Profile Photo</span><span style="font-size:11px;color:var(--text3)">Click your photo to upload</span></div>'+
+      '<div class="ep-photo-row">'+
+        '<div class="ep-photo-av" id="ep-av-zone" onclick="el(\'ep-av-file\').click()">'+avHtml+'</div>'+
+        '<div class="ep-photo-info">'+
+          '<span class="ep-media-hint" id="ep-media-status">'+(p.avatar_url?'✓ Profile photo set':'No photo yet')+'</span>'+
           '<button class="btn btn-ghost btn-sm" onclick="el(\'ep-av-file\').click()">Upload Photo</button>'+
-          '<button class="btn btn-ghost btn-sm" onclick="el(\'ep-bn-file\').click()">Upload Banner</button>'+
         '</div>'+
       '</div>'+
+      '<div class="ep-banner-deprecated">Personal banners are no longer used on public profiles. Use business pages or showcases for visual branding.</div>'+
     '</div>'+
 
     /* Identity */
@@ -426,80 +401,18 @@ Pegasus.boot(async function(st){
       if(st){st.textContent='Photo upload is disabled when editing another member. Ask the member to upload their own photo.';st.style.color='var(--amber)';}
       return;
     }
-    if(st){st.textContent='Uploading '+kind+'…';st.style.color='var(--blue)';}
-    window.PegProfileMedia.uploadAndSave(kind,file).then(function(url){
-      if(kind==='avatar'){
-        p.avatar_url=url;
-        var z=el('ep-av-zone'); if(z){z.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';}
-        if(st){st.textContent='✓ Profile photo saved';st.style.color='var(--green)';}
-      } else {
-        p.banner_url=url;
-        p.banner_focal='center';
-        var bi=el('ep-bn-img'); if(bi){bi.src=url;bi.style.display='';bi.style.objectPosition='center';}
-        var bz=el('ep-bn-zone'); if(bz)bz.classList.add('has-banner');
-        var bh=el('ep-bn-hint'); if(bh)bh.textContent='↕ Drag to reposition';
-        var bp=bz&&bz.querySelector('.ep-banner-prompt'); if(bp)bp.textContent='📷 Change Cover Banner';
-        if(st){st.textContent='✓ Cover banner saved';st.style.color='var(--green)';}
-      }
+    if(st){st.textContent='Uploading photo…';st.style.color='var(--blue)';}
+    /* Personal profiles only upload an avatar; cover banners are deprecated. */
+    window.PegProfileMedia.uploadAndSave('avatar',file).then(function(url){
+      p.avatar_url=url;
+      var z=el('ep-av-zone'); if(z){z.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';}
+      if(st){st.textContent='✓ Profile photo saved';st.style.color='var(--green)';}
       window.onChg();
     }).catch(function(err){
       if(st){st.textContent='Upload failed: '+(err&&err.message||err);st.style.color='var(--red)';}
     });
   }
   avFileEl.addEventListener('change',function(){handleUpload('avatar',this.files[0]);this.value='';});
-  bnFileEl.addEventListener('change',function(){handleUpload('banner',this.files[0]);this.value='';});
-
-  /* ── Banner focal-point repositioning (vertical drag) ── */
-  (function(){
-    var zone=el('ep-bn-zone'); if(!zone)return;
-    var startY=0,startObjY=50,isDrag=false,wasDrag=false;
-    p.banner_focal=p.banner_focal||'center';
-    function parseFocal(f){
-      if(!f||f==='center')return 50;
-      var m=(f||'').match(/([\d.]+)%\s*$/);
-      return m?parseFloat(m[1]):50;
-    }
-    var focalY=parseFocal(p.banner_focal);
-    function applyFocal(){
-      var img=el('ep-bn-img');
-      if(img)img.style.objectPosition='center '+focalY.toFixed(0)+'%';
-    }
-    zone.addEventListener('mousedown',function(e){
-      if(!p.banner_url)return;
-      if(e.target.closest('.ep-avatar-zone')||e.target.closest('.ep-banner-overlay'))return;
-      isDrag=true;wasDrag=false;startY=e.clientY;startObjY=focalY;
-      zone.classList.add('dragging');e.preventDefault();
-    });
-    document.addEventListener('mousemove',function(e){
-      if(!isDrag)return;
-      var dy=e.clientY-startY,rect=zone.getBoundingClientRect();
-      focalY=Math.max(0,Math.min(100,startObjY+(dy/rect.height)*100));
-      applyFocal();
-      if(Math.abs(dy)>3)wasDrag=true;
-    });
-    document.addEventListener('mouseup',function(){
-      if(!isDrag)return;isDrag=false;zone.classList.remove('dragging');
-      if(wasDrag){p.banner_focal='center '+focalY.toFixed(0)+'%';window.onChg();}
-    });
-    zone.addEventListener('touchstart',function(e){
-      if(!p.banner_url)return;
-      if(e.target.closest('.ep-avatar-zone')||e.target.closest('.ep-banner-overlay'))return;
-      isDrag=true;wasDrag=false;startY=e.touches[0].clientY;startObjY=focalY;
-      zone.classList.add('dragging');
-    },{passive:true});
-    document.addEventListener('touchmove',function(e){
-      if(!isDrag)return;
-      var dy=e.touches[0].clientY-startY,rect=zone.getBoundingClientRect();
-      focalY=Math.max(0,Math.min(100,startObjY+(dy/rect.height)*100));
-      applyFocal();
-      if(Math.abs(dy)>3)wasDrag=true;
-    },{passive:true});
-    document.addEventListener('touchend',function(){
-      if(!isDrag)return;isDrag=false;zone.classList.remove('dragging');
-      if(wasDrag){p.banner_focal='center '+focalY.toFixed(0)+'%';window.onChg();}
-    });
-    if(p.banner_url)applyFocal();
-  })();
 
   /* ── Save ── */
   window.doSave=async function(){
@@ -572,14 +485,6 @@ Pegasus.boot(async function(st){
           else p=Object.assign(p,extra);
         }
       }catch(_e){ console.warn('[profile-edit] extra fields skipped:', _e && _e.message); }
-      try{
-        var _sc2=await window.PegSB.ready;
-        var _tid2=(ADMIN_EDIT&&ADMIN_EDIT.id)||(saved&&saved.id)||((window.PegProfile.currentUser&&window.PegProfile.currentUser())||{}).id;
-        if(_sc2 && _tid2 && p.banner_focal){
-          var _bfr=await _sc2.from('profiles').update({banner_focal:p.banner_focal}).eq('id',_tid2);
-          if(_bfr.error) console.warn('[profile-edit] banner_focal not saved (apply migration 063):', _bfr.error.message);
-        }
-      }catch(_e2){}
       var sl2=(saved&&saved.profile_slug)||slugify(name);
       var slEl=el('ep-slug'); if(slEl)slEl.textContent=sl2;
       var pl=el('ep-pub-link'); if(pl)pl.href=(saved&&saved.profile_slug)?'/u/'+saved.profile_slug:((saved&&saved.id)?'/public-profile.html?id='+saved.id:'/public-profile.html');
