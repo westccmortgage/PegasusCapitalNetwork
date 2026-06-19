@@ -16,36 +16,41 @@
 /* ── Public Profile — refined layout hierarchy (premium operational identity) ── */
 *{box-sizing:border-box}
 
-/* ── Cover + identity (canonical 40:9 cover frame, identity in a bar BELOW it
-   so the cover composition is never distorted — matches the edit preview). ── */
+/* ── Cover + identity (canonical 40:9 cover frame, identity block BELOW it).
+   ONLY the avatar overlaps the banner; name/role/headline/badges/stats sit on
+   the light body so every line is fully readable. ── */
 .pp-coverwrap{max-width:1160px;margin:0 auto;padding:18px 40px 0}
 .pp-coverwrap .peg-cover{border-radius:14px}
 .pp-cover-back{position:absolute;top:14px;left:20px;z-index:3;color:rgba(255,255,255,.8);font-size:12px;text-decoration:none;font-family:'IBM Plex Mono',monospace;letter-spacing:.02em;background:rgba(6,13,22,.35);padding:5px 11px;border-radius:6px}
-.pp-idbar{max-width:1160px;margin:0 auto;padding:0 44px 6px;display:flex;align-items:flex-end;gap:18px;position:relative;z-index:2;margin-top:-34px}
-.pp-idbar-av{width:90px;height:90px;border-radius:50%;flex-shrink:0;overflow:hidden;border:4px solid var(--bg);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:32px;color:rgba(255,255,255,0.94);box-shadow:0 6px 20px rgba(20,24,28,0.16)}
+.pp-idbar{max-width:1160px;margin:0 auto;padding:0 44px 10px;position:relative;z-index:2}
+/* Top row: avatar (overlapping banner) on the left, owner/visitor actions right */
+.pp-idbar-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pp-idbar-av{width:92px;height:92px;border-radius:50%;flex-shrink:0;overflow:hidden;border:4px solid var(--bg);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:33px;color:rgba(255,255,255,0.94);box-shadow:0 6px 20px rgba(20,24,28,0.16);margin-top:-44px}
 .pp-idbar-av img{width:100%;height:100%;object-fit:cover}
-.pp-idbar-main{flex:1;min-width:0;padding-bottom:6px}
-.pp-idbar-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--text);line-height:1.06;letter-spacing:-0.01em;margin:0}
-.pp-idbar-role{font-size:13px;color:var(--text2);margin-top:3px}
-.pp-idbar-role strong{color:var(--text)}
-.pp-idbar-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;align-self:flex-end;padding-bottom:8px}
-/* identity sub-bits restyled for the light bar (originals are white-on-dark) */
-.pp-idbar .pp-tags{margin-top:9px}
+.pp-idbar-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:4px}
+.pp-idbar-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
+/* Identity text — clearly below the banner, on the light body */
+.pp-idbar-main{margin-top:13px}
+.pp-idbar-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--text);line-height:1.08;letter-spacing:-0.01em;margin:0}
+.pp-idbar-org{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:400;color:var(--text3)}
+.pp-idbar-role{font-size:13.5px;color:var(--text2);margin-top:4px;font-weight:500}
+.pp-idbar-headline{font-size:13px;color:var(--text2);margin-top:5px;line-height:1.45;max-width:680px}
+.pp-idbar-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:11px}
+.pp-idbar-stats-row{margin-top:11px}
+/* identity sub-bits restyled for the light body (originals are white-on-dark) */
 .pp-idbar .pp-tag-v{background:rgba(14,154,102,0.12);color:#0E7A52;border:1px solid rgba(14,154,102,0.3)}
 .pp-idbar .pp-tag-a{background:rgba(154,123,34,0.13);color:#8A6D1E;border:1px solid rgba(154,123,34,0.3)}
 .pp-idbar .pp-tag-r{background:rgba(35,95,166,0.12);color:#235FA6;border:1px solid rgba(35,95,166,0.3)}
 .pp-idbar .pp-tag-m{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
-.pp-idbar .pp-stats{margin-top:9px}
 .pp-idbar .pp-stat-v{color:var(--text)}
 .pp-idbar .pp-stat-l{color:var(--text3)}
 .pp-idbar .pp-stat-sep{background:var(--border2)}
-.pp-idbar .pp-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
 @media(max-width:760px){
   .pp-coverwrap{padding:14px 16px 0}
-  .pp-idbar{padding:0 18px 6px;flex-direction:column;align-items:flex-start;gap:10px;margin-top:-30px}
-  .pp-idbar-av{width:72px;height:72px;font-size:26px}
+  .pp-idbar{padding:0 18px 10px}
+  .pp-idbar-av{width:74px;height:74px;font-size:27px;margin-top:-38px}
   .pp-idbar-name{font-size:25px}
-  .pp-idbar-actions{align-self:stretch}
+  .pp-idbar-actions{padding-bottom:2px}
 }
 
 /* Legacy hero (kept for any non-banner reference; cover now drives the header) */
@@ -367,7 +372,7 @@ Pegasus.boot(async function () {
   /* Owner controls live ONLY in the single floating "Manage" dropdown (below),
      so the hero stays a clean presentation. Visitors get the connect CTAs. */
   var actions = route.isOwner
-    ? ''
+    ? '<a class="btn btn-pri" href="/profile-edit.html">Manage Profile</a>'
     : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
       '<a class="btn btn-ghost" href="/members.html">Browse Network</a>';
 
@@ -375,6 +380,11 @@ Pegasus.boot(async function () {
   var avHtml = p.avatar_url
     ? '<img src="'+esc(p.avatar_url)+'" alt="'+esc(name)+'">'
     : initials(name)||'?';
+
+  /* ── Header headline — professional title / headline, shown only if it adds
+     information beyond the role line (Current Focus keeps its own section). ── */
+  var headlineText = p.professional_title || p.headline || '';
+  if(headlineText && headlineText.toLowerCase().trim() === roleLabel(p.role).toLowerCase().trim()) headlineText = '';
 
   /* ── Cover banner — canonical 40:9 frame (shared with the edit preview via
      /css/profile-banner.css). When a banner is uploaded it is shown at full
@@ -543,15 +553,17 @@ Pegasus.boot(async function () {
         '</div>'+
       '</div>'+
       '<div class="pp-idbar">'+
-        '<div class="pp-idbar-av">'+avHtml+'</div>'+
-        '<div class="pp-idbar-main">'+
-          '<h1 class="pp-idbar-name">'+esc(name)+'</h1>'+
-          (trustBadges(p)?('<div class="pp-trust" style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'+trustBadges(p)+'</div>'):'')+
-          '<div class="pp-idbar-role"><strong>'+esc(roleLabel(p.role))+'</strong></div>'+
-          (tags?'<div class="pp-tags">'+tags+'</div>':'')+
-          '<div class="pp-stats">'+statsHtml+'</div>'+
+        '<div class="pp-idbar-row">'+
+          '<div class="pp-idbar-av">'+avHtml+'</div>'+
+          (actions?'<div class="pp-actions pp-idbar-actions">'+actions+'</div>':'')+
         '</div>'+
-        (actions?'<div class="pp-actions pp-idbar-actions">'+actions+'</div>':'')+
+        '<div class="pp-idbar-main">'+
+          '<h1 class="pp-idbar-name">'+esc(name)+(p.company_name?' <span class="pp-idbar-org">@'+esc(p.company_name)+'</span>':'')+'</h1>'+
+          '<div class="pp-idbar-role">'+esc(roleLabel(p.role))+'</div>'+
+          (headlineText?'<div class="pp-idbar-headline">'+esc(headlineText)+'</div>':'')+
+          ((trustBadges(p)||tags)?'<div class="pp-idbar-badges">'+(trustBadges(p)||'')+(tags||'')+'</div>':'')+
+          '<div class="pp-stats pp-idbar-stats-row">'+statsHtml+'</div>'+
+        '</div>'+
       '</div>'+
     '</section>'+
 
