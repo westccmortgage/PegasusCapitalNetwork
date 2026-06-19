@@ -166,6 +166,7 @@
                   <label for="hs-income">Approximate income (per year) — estimates the loan you could support</label>
                   <input id="hs-income" type="number" inputmode="numeric" min="0" step="5000" value="180000" placeholder="$ per year">
                   <p class="ig__hint" data-ho-qualnote></p>
+                  <p class="ig__hint" data-ho-taxnote></p>
                 </div>
 
                 <div class="ig ig--full ig--score">
@@ -243,6 +244,7 @@
               <dl class="scanner__out">
                 <div class="so"><dt>Current review path</dt><dd data-ho="path">—</dd></div>
                 <div class="so so--qual"><dt>Loan you could support (income-based)</dt><dd data-ho="qual">—</dd></div>
+                <div class="so"><dt>Est. income taxes (federal + state)</dt><dd data-ho="tax">—</dd></div>
                 <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
                 <div class="so" data-ho-ltv-row><dt>Loan-to-value (LTV)</dt><dd data-ho="ltv">—</dd></div>
                 <div class="so" data-ho-mi-row hidden><dt>Mortgage insurance (PMI) est.</dt><dd data-ho="mi">—</dd></div>
@@ -284,6 +286,12 @@
           <!-- E. Payment & buydown strategy (integrated) -->
           <div class="console__section">
             <h3 class="console__h">Payment &amp; buydown strategy</h3>
+            <div class="bd-points" role="group" aria-label="Buydown points">
+              <span class="bd-points__k">How much do you want to pay for the permanent buydown?</span>
+              <button type="button" class="chip" data-bd-points="0.5">0.5 pts</button>
+              <button type="button" class="chip is-sel" data-bd-points="1">1 pt</button>
+              <button type="button" class="chip" data-bd-points="1.5">1.5 pts</button>
+            </div>
             <div class="console__grid console__grid--bd">
               <dl class="scanner__out">
                 <div class="so"><dt>Permanent buydown · P&amp;I before → after</dt><dd data-ho-bd-pi>—</dd></div>

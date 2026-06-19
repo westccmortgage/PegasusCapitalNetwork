@@ -119,6 +119,8 @@ body.home { background: var(--ivory); }
 .ig--score input[type=range] { margin-top: 4px; }
 [data-ho="mi"] { color: #b5651d; }
 .so--qual dd { color: var(--ocean); }
+.bd-points { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.bd-points__k { font-size: 0.78rem; font-weight: 600; color: var(--navy); margin-right: 4px; }
 [data-ho="qual"][data-short="yes"] { color: #b5651d; }
 [data-ho="ratefactors"] { font-size: 0.72rem; color: var(--navy); margin: 8px 0 2px; font-weight: 600; }
 

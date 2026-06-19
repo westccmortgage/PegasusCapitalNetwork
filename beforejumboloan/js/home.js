@@ -46,7 +46,7 @@
     value: 1600000, downPct: 18,
     payoff: 900000, newLoan: 900000, cashOut: 150000, includeCosts: false,
     loanAmt: 1200000, rent: 7500,
-    paymentMode: "pi", creditScore: 760, docType: "w2", annualIncome: 180000
+    paymentMode: "pi", creditScore: 760, docType: "w2", annualIncome: 180000, buydownPoints: 1
   };
 
   var E = {
@@ -270,8 +270,12 @@
     // Income-based qualifying loan (uses the assumed rate, so score + Non-QM flow in).
     var qual = KW.qualifyingLoan ? KW.qualifyingLoan({ annualIncome: S.annualIncome, ratePct: ra.rate, termYears: 30 }) : null;
 
-    // Buydown illustrations (deterministic, integrated into the console).
-    var pb = KW.permanentBuydown ? KW.permanentBuydown(sc) : null;
+    // Income-tax estimate (very rough, educational) for the confirmed state.
+    var tax = KW.estimateIncomeTax ? KW.estimateIncomeTax({ annualIncome: S.annualIncome, state: S.state }) : null;
+
+    // Buydown illustrations — borrower chooses the points to pay.
+    var scBd = Object.assign({ bdPoints: S.buydownPoints }, sc);
+    var pb = KW.permanentBuydown ? KW.permanentBuydown(scBd) : null;
     var tb = KW.temporaryBuydown ? KW.temporaryBuydown(Object.assign({ bdTempType: "2-1" }, sc)) : null;
     var tb10 = KW.temporaryBuydown ? KW.temporaryBuydown(Object.assign({ bdTempType: "1-0" }, sc)) : null;
 
@@ -281,7 +285,7 @@
       pathLabel: node ? (pathLabels[node] || "Licensed Review") : "Confirm a property county",
       pi: pp.pi, io: pp.interestOnly, iodiff: pp.difference, paymentMode: S.paymentMode,
       rate: { rate: pp.rate, label: pp.rateLabel, key: pp.rateKey },
-      ra: ra, mi: mi, nonqm: nonqm, qual: qual,
+      ra: ra, mi: mi, nonqm: nonqm, qual: qual, tax: tax,
       dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier,
       pb: pb, tb: tb, tb10: tb10
     });
@@ -356,6 +360,18 @@
         qn = "Enter an approximate annual income to estimate the loan it could support.";
       }
       set("[data-ho-qualnote]", qn);
+    }
+
+    // Income-tax estimate (very rough, educational) — shows the state difference.
+    if (o.tax) {
+      set('[data-ho="tax"]', o.tax.total > 0
+        ? (fmt(o.tax.total) + "/yr · ~" + o.tax.effectiveRate + "% effective")
+        : "—");
+      var noStateTax = (o.tax.stateRate === 0);
+      set("[data-ho-taxnote]", o.tax.total > 0
+        ? ("Approx. income taxes: " + fmt(o.tax.federal) + " federal + " + fmt(o.tax.state) + " state ("
+           + S.state + " ~" + o.tax.stateRate + "%" + (noStateTax ? ", no state income tax" : "") + "). Very rough — single filer, standard deduction. Not tax advice.")
+        : "Enter an annual income to estimate approximate income taxes.");
       var rf = "Rate factors: " + o.ra.baseRate + "% base"
         + (o.ra.scoreAdj > 0 ? " + " + o.ra.scoreAdj + "% (score " + S.creditScore + ")" : " + 0% (score " + S.creditScore + ", 740+)")
         + (o.ra.docAdj > 0 ? " + " + o.ra.docAdj + "% (" + (o.nonqm ? "Non-QM income" : "income") + ")" : "")
@@ -619,6 +635,13 @@
         S.paymentMode = b.getAttribute("data-paymode");
         $$("[data-paymode]").forEach(function (x) { x.classList.toggle("is-sel", x === b); });
         if (S.confirmed) compute(); else updateContinue();
+      });
+    });
+    $$("[data-bd-points]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        S.buydownPoints = parseFloat(b.getAttribute("data-bd-points")) || 1;
+        $$("[data-bd-points]").forEach(function (x) { x.classList.toggle("is-sel", x === b); });
+        if (S.confirmed) compute();
       });
     });
     var mb1 = $("[data-confirm-manual]"); if (mb1) mb1.addEventListener("click", confirmManual);

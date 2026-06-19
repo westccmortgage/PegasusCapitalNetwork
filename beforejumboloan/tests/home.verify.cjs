@@ -168,6 +168,22 @@ function serve() {
   check(/income-based estimate|pre-qualification/i.test(await txt(page, '[data-ho-qualnote]')), 'qualifying-loan note explains it is educational (not a pre-qualification)');
   await page.fill('#hs-income', '180000');
 
+  // ---- income tax estimate (state-aware) ----
+  check(/\$[\d,]+\/yr · ~[\d.]+% effective/.test(await txt(page, '[data-ho="tax"]')), 'estimated income taxes shown (with effective rate)');
+  check(/federal|state|Not tax advice/i.test(await txt(page, '[data-ho-taxnote]')), 'tax note breaks out federal + state and disclaims');
+  // 90210 = CA (state income tax) — confirm a state-tax line is present
+  check(/CA ~/.test(await txt(page, '[data-ho-taxnote]')), 'tax note reflects the confirmed property state (CA)');
+
+  // ---- buydown points are user-selectable (0.5 / 1 / 1.5) ----
+  const bdCost1 = await txt(page, '[data-ho-bd-cost]');
+  await page.click('[data-bd-points="1.5"]');
+  await page.waitForFunction((prev) => (document.querySelector('[data-ho-bd-cost]')?.textContent || '') !== prev, bdCost1, { timeout: 3000 });
+  check(/1\.5 pts/.test(await txt(page, '[data-ho-bd-cost]')), 'choosing 1.5 points updates the buydown cost');
+  await page.click('[data-bd-points="0.5"]');
+  await page.waitForFunction(() => /0\.5 pts/.test(document.querySelector('[data-ho-bd-cost]')?.textContent || ''), { timeout: 3000 });
+  check(/0\.5 pts/.test(await txt(page, '[data-ho-bd-cost]')), 'choosing 0.5 points updates the buydown cost');
+  await page.click('[data-bd-points="1"]');
+
   // ---- interest-only payment option (Phase 4) ----
   check(/\/mo/.test(await txt(page, '[data-ho="pi"]')) && /\/mo/.test(await txt(page, '[data-ho="io"]')), 'cockpit shows both P&I and interest-only previews');
   check(/lower than amortizing/i.test(await txt(page, '[data-ho="iodiff"]')), 'cockpit shows interest-only vs amortizing difference');

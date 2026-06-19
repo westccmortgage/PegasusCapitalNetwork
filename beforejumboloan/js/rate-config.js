@@ -72,6 +72,34 @@
     affordability: {
       max_dti: 0.43,
       ti_share: 0.18
+    },
+    /* Permanent buydown: the borrower chooses how many points to pay; each point
+       buys roughly point_value_pct off the rate (educational rule of thumb). */
+    buydown: {
+      point_value_pct: 0.25,
+      points_options: [0.5, 1, 1.5]
+    },
+    /* VERY ROUGH educational income-tax estimate — single filer, standard
+       deduction, no other income/credits/deductions. NOT tax advice. */
+    tax: {
+      standard_deduction: 14600,
+      federal_brackets: [
+        { upTo: 11600, rate: 0.10 }, { upTo: 47150, rate: 0.12 },
+        { upTo: 100525, rate: 0.22 }, { upTo: 191950, rate: 0.24 },
+        { upTo: 243725, rate: 0.32 }, { upTo: 609350, rate: 0.35 },
+        { upTo: null, rate: 0.37 }
+      ],
+      /* Approximate EFFECTIVE state income-tax rates (%). No-income-tax states
+         are 0. Progressive states use a rough higher-income effective rate. */
+      state_effective_rate: {
+        AL: 4.5, AK: 0, AZ: 2.5, AR: 4.4, CA: 8.0, CO: 4.4, CT: 5.5, DE: 5.5, DC: 8.5,
+        FL: 0, GA: 5.39, HI: 8.0, ID: 5.8, IL: 4.95, IN: 3.15, IA: 5.7, KS: 5.2, KY: 4.0,
+        LA: 4.25, ME: 6.75, MD: 5.0, MA: 5.0, MI: 4.25, MN: 7.0, MS: 4.7, MO: 4.8, MT: 5.9,
+        NE: 5.84, NV: 0, NH: 0, NJ: 6.5, NM: 4.9, NY: 6.85, NC: 4.5, ND: 2.0, OH: 3.5,
+        OK: 4.75, OR: 9.0, PA: 3.07, RI: 5.5, SC: 6.4, SD: 0, TN: 0, TX: 0, UT: 4.65,
+        VT: 6.6, VA: 5.75, WA: 0, WV: 5.1, WI: 5.3, WY: 0, PR: 0, GU: 0, VI: 0
+      },
+      default_state_rate: 5.0
     }
   };
 })(typeof window !== "undefined" ? window : globalThis);

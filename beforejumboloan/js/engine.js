@@ -301,6 +301,40 @@
     };
   }
 
+  /* ---------- Income tax — VERY rough educational estimate (not tax advice) ----------
+     Single filer, standard deduction, no other income/credits/deductions. */
+  var FED_FALLBACK = [
+    { upTo: 11600, rate: 0.10 }, { upTo: 47150, rate: 0.12 }, { upTo: 100525, rate: 0.22 },
+    { upTo: 191950, rate: 0.24 }, { upTo: 243725, rate: 0.32 }, { upTo: 609350, rate: 0.35 }, { upTo: null, rate: 0.37 }
+  ];
+  function estimateIncomeTax(o) {
+    o = o || {};
+    var cfg = (global.BJLRates && global.BJLRates.tax) || {};
+    var income = parseNum(o.annualIncome);
+    if (income <= 0) return { federal: 0, state: 0, total: 0, effectiveRate: 0, stateRate: 0, taxable: 0 };
+    var stdDed = cfg.standard_deduction != null ? cfg.standard_deduction : 14600;
+    var taxable = Math.max(0, income - stdDed);
+    var brackets = (cfg.federal_brackets && cfg.federal_brackets.length) ? cfg.federal_brackets : FED_FALLBACK;
+    var fed = 0, prev = 0;
+    for (var i = 0; i < brackets.length; i++) {
+      var cap = brackets[i].upTo == null ? Infinity : brackets[i].upTo;
+      if (taxable > prev) { fed += (Math.min(taxable, cap) - prev) * brackets[i].rate; prev = cap; }
+      if (taxable <= cap) break;
+    }
+    var st = String(o.state || "").trim().toUpperCase();
+    // Defensive fallback so no-income-tax states read 0 even if the central
+    // rate config hasn't loaded; the config (when present) overrides this.
+    var rates = cfg.state_effective_rate || { AK: 0, FL: 0, NV: 0, NH: 0, SD: 0, TN: 0, TX: 0, WA: 0, WY: 0 };
+    var stateRate = (rates[st] != null) ? rates[st] : (cfg.default_state_rate != null ? cfg.default_state_rate : 5.0);
+    var stateTax = taxable * (stateRate / 100);
+    var total = fed + stateTax;
+    return {
+      federal: Math.round(fed), state: Math.round(stateTax), total: Math.round(total),
+      stateRate: stateRate, taxable: taxable,
+      effectiveRate: income > 0 ? Math.round((total / income) * 1000) / 10 : 0
+    };
+  }
+
   /* ---------- formatting / parsing ---------- */
   function fmtCurrency(n) {
     n = Math.max(0, Math.round(Number(n) || 0));
@@ -638,8 +672,12 @@
     var loan = s.loan != null ? s.loan : estimatedLoan(s);
     var term = s.term ? parseNum(s.term) : 30;
     var curRate = (s.bdCurrentRate != null && s.bdCurrentRate !== "") ? parseNum(s.bdCurrentRate) : rateFor(s).rate;
-    var bdRate = (s.bdBuydownRate != null && s.bdBuydownRate !== "") ? parseNum(s.bdBuydownRate) : Math.max(0, curRate - 0.5);
-    var points = (s.bdPoints != null && s.bdPoints !== "") ? parseNum(s.bdPoints) : 1.5;
+    // The borrower chooses how many points to pay; each point buys roughly
+    // point_value_pct off the rate (configurable educational rule of thumb).
+    var bdCfg = (global.BJLRates && global.BJLRates.buydown) || {};
+    var pointValue = bdCfg.point_value_pct != null ? bdCfg.point_value_pct : 0.25;
+    var points = (s.bdPoints != null && s.bdPoints !== "") ? parseNum(s.bdPoints) : 1.0;
+    var bdRate = (s.bdBuydownRate != null && s.bdBuydownRate !== "") ? parseNum(s.bdBuydownRate) : Math.max(0, curRate - points * pointValue);
     var piCur = monthlyPI(loan, curRate, term);
     var piBd = monthlyPI(loan, bdRate, term);
     var monthlySavings = piCur - piBd;
@@ -905,6 +943,7 @@
     docTypeAdjust: docTypeAdjust,
     docTypeInfo: docTypeInfo,
     qualifyingLoan: qualifyingLoan,
+    estimateIncomeTax: estimateIncomeTax,
     rateConfigLabel: function () { return (global.BJLRates && global.BJLRates.label) || RATE_CONFIG.sourceLabel; },
     monthlyPI: monthlyPI,
     interestOnly: interestOnly,

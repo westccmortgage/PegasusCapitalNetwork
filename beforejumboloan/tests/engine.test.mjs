@@ -77,6 +77,29 @@ test('qualifying loan scales with income and shrinks as the rate rises', () => {
   assert.equal(KW.qualifyingLoan({ annualIncome: 0, ratePct: r }).maxLoan, 0);
 });
 
+test('income-tax estimate reflects the state (no-tax states = federal only)', () => {
+  const ca = KW.estimateIncomeTax({ annualIncome: 300000, state: 'CA' });
+  const fl = KW.estimateIncomeTax({ annualIncome: 300000, state: 'FL' });
+  const tx = KW.estimateIncomeTax({ annualIncome: 300000, state: 'TX' });
+  assert.ok(ca.federal > 0 && ca.state > 0, 'CA has federal + state');
+  assert.equal(fl.state, 0, 'FL has no state income tax');
+  assert.equal(tx.state, 0, 'TX has no state income tax');
+  assert.equal(fl.total, fl.federal, 'FL total is federal only');
+  assert.ok(ca.total > fl.total, 'CA total exceeds FL for the same income');
+  assert.ok(ca.effectiveRate > 0);
+  assert.equal(KW.estimateIncomeTax({ annualIncome: 0, state: 'CA' }).total, 0);
+});
+
+test('permanent buydown scales with the points the borrower chooses', () => {
+  const r = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 760, docType: 'w2' }).rate;
+  const p05 = KW.permanentBuydown({ loan: 800000, bdCurrentRate: r, bdPoints: 0.5 });
+  const p15 = KW.permanentBuydown({ loan: 800000, bdCurrentRate: r, bdPoints: 1.5 });
+  assert.ok(p15.cost > p05.cost, 'more points cost more');
+  assert.ok(p15.bdRate < p05.bdRate, 'more points buy the rate down further');
+  assert.ok(p15.monthlySavings > p05.monthlySavings, 'more points save more monthly');
+  assert.equal(Math.round(p05.cost), Math.round(800000 * 0.5 / 100));
+});
+
 test('rateFor is scenario-aware (DSCR for investment, interest-only key when selected)', () => {
   const inv = KW.rateFor({ loan: 700000, scenario_type: 'investment', occupancy: 'Investment property' });
   assert.equal(inv.key, 'dscr');
