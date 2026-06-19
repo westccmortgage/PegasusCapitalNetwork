@@ -137,30 +137,6 @@ async function sendEmail(scenario) {
   } catch (e) { console.error("Email failed:", e.message); return false; }
 }
 
-// Write the completed lead into the Supabase CRM (runs alongside email).
-// Uses the service_role key (server-side only) to bypass RLS for the insert.
-async function saveToSupabase(scenario) {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-  if (!SUPABASE_URL || !SERVICE_KEY) { console.error("Supabase not configured"); return false; }
-  const s = scenario || {};
-  const toSnake = (str) => str.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase());
-  const fields = ["name", "phone", "email", "preferredContact", "loanPurpose", "state",
-    "propertyAddress", "purchasePrice", "loanAmount", "downPayment", "occupancy", "propertyType",
-    "incomeType", "creditScore", "timeline", "concern", "riskFlag", "mainConcern",
-    "possiblePath", "documentsNeeded", "nextStep"];
-  const row = { status: "New" };
-  fields.forEach((k) => { row[toSnake(k)] = s[k] || null; });
-  try {
-    const r = await postJSON(`${SUPABASE_URL}/rest/v1/leads`, row, {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      Prefer: "return=minimal"
-    });
-    if (r.status >= 400) console.error("Supabase insert error:", r.status, r.body);
-    return r.status < 400;
-  } catch (e) { console.error("Supabase insert failed:", e.message); return false; }
-}
 
 exports.handler = async function(event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
@@ -178,8 +154,8 @@ exports.handler = async function(event) {
       try {
         const jsonLine = fullText.split("SCENARIO_COMPLETE:")[1].split("\n")[0].trim();
         const scenario = JSON.parse(jsonLine);
-        const [em, db] = await Promise.all([sendEmail(scenario), saveToSupabase(scenario)]);
-        delivery = { email: em, crm: db, anyDelivered: em || db };
+        const em = await sendEmail(scenario);
+        delivery = { email: em, anyDelivered: em };
         console.log("Lead delivery:", delivery);
       } catch (e) {
         console.error("Lead delivery error:", e.message);
