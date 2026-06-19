@@ -46,7 +46,7 @@
     value: 1600000, downPct: 18,
     payoff: 900000, newLoan: 900000, cashOut: 150000, includeCosts: false,
     loanAmt: 1200000, rent: 7500,
-    paymentMode: "pi"
+    paymentMode: "pi", creditScore: 760, docType: "w2"
   };
 
   var E = {
@@ -60,7 +60,8 @@
     scenario: $("[data-scenario]"),
     units: $("#hs-units"), value: $("#hs-value"), down: $("#hs-down"),
     payoff: $("#hs-payoff"), newloan: $("#hs-newloan"), cashout: $("#hs-cashout"),
-    costs: $("#hs-costs"), loanamt: $("#hs-loanamt"), rent: $("#hs-rent")
+    costs: $("#hs-costs"), loanamt: $("#hs-loanamt"), rent: $("#hs-rent"),
+    score: $("#hs-score"), doc: $("#hs-doc")
   };
   function set(sel, t) { var e = $(sel); if (e) e.textContent = t; }
   function show(el, on) { if (el) el.hidden = !on; }
@@ -194,6 +195,8 @@
     if (E.costs) S.includeCosts = !!E.costs.checked;
     if (E.loanamt) S.loanAmt = num(E.loanamt.value);
     if (E.rent) S.rent = num(E.rent.value);
+    if (E.score) S.creditScore = parseInt(E.score.value, 10) || 760;
+    if (E.doc) S.docType = E.doc.value;
   }
 
   function loanAndLtv() {
@@ -231,7 +234,13 @@
     var occ = occFor(S.scenarioType);
     var io = S.paymentMode === "io";
     var occLabel = occ === "Investment" ? "Investment property" : (occ === "Second home" ? "Second home" : "Primary");
-    var sc = { loan: loan, scenario_type: S.scenarioType, occupancy: occLabel, payment_mode: io ? "interest-only" : "pi" };
+    var nonqm = (S.docType === "bank_statement" || S.docType === "ten99");
+    var sc = { loan: loan, scenario_type: S.scenarioType, occupancy: occLabel, payment_mode: io ? "interest-only" : "pi",
+      creditScore: S.creditScore, docType: S.docType };
+
+    // Mortgage insurance (PMI) when LTV > 80% (less than 20% down).
+    var ltvPct = (ltv != null && isFinite(ltv)) ? ltv * 100 : null;
+    var mi = (ltvPct != null && KW.monthlyMI) ? KW.monthlyMI(loan, ltvPct, S.creditScore) : 0;
 
     // Current review path (one of the Potential Review Paths the engine compares).
     var zone = "conforming";
@@ -240,6 +249,7 @@
     var node = null;
     if (hasData) {
       if (S.scenarioType === "investment") node = "dscr";
+      else if (nonqm) node = "bank-statement";
       else if (io && loan > countyLimit) node = "interest-only-jumbo";
       else if (loan > countyLimit) node = "jumbo";
       else if (S.scenarioType === "second_home") node = "second-home";
@@ -250,6 +260,7 @@
       jumbo: "Jumbo Review", "interest-only-jumbo": "Interest-Only Jumbo Review", dscr: "DSCR / Investor Review",
       "second-home": "Second Home Review", "bank-statement": "Bank Statement Review", fha: "FHA Review", va: "VA Review" };
 
+    var ra = KW.rateFor ? KW.rateFor(sc) : { rate: 6.84, baseRate: 6.84, scoreAdj: 0, docAdj: 0, scoreTier: null, docLabel: null, label: "assumption", key: "jumbo" };
     var pp = KW.paymentPreview ? KW.paymentPreview(sc)
       : { pi: KW.monthlyPI ? KW.monthlyPI(loan, 6.84, 30) : 0, interestOnly: 0, difference: 0, rate: 6.84, rateLabel: "30-yr assumption", rateKey: "jumbo" };
     var dscrBasis = io ? pp.interestOnly : pp.pi;
@@ -261,11 +272,12 @@
     var tb10 = KW.temporaryBuydown ? KW.temporaryBuydown(Object.assign({ bdTempType: "1-0" }, sc)) : null;
 
     render({
-      loan: loan, ltv: ltv, baseline: baseline, countyLimit: countyLimit, hasData: hasData,
+      loan: loan, ltv: ltv, ltvPct: ltvPct, baseline: baseline, countyLimit: countyLimit, hasData: hasData,
       delta: delta, addlDown: addlDown, zone: zone, node: node, occ: occ,
       pathLabel: node ? (pathLabels[node] || "Licensed Review") : "Confirm a property county",
       pi: pp.pi, io: pp.interestOnly, iodiff: pp.difference, paymentMode: S.paymentMode,
       rate: { rate: pp.rate, label: pp.rateLabel, key: pp.rateKey },
+      ra: ra, mi: mi, nonqm: nonqm,
       dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier,
       pb: pb, tb: tb, tb10: tb10
     });
@@ -292,17 +304,41 @@
 
     set('[data-ho="loan"]', fmt(o.loan));
 
+    // LTV — always shown (it drives the 20%-down / PMI threshold).
     var ltvRow = $("[data-ho-ltv-row]");
     if (ltvRow) {
-      // LTV is shown for refinance / cash-out / investment scenarios.
-      var ltvRelevant = (S.scenarioType === "rate_term" || S.scenarioType === "cash_out" || S.scenarioType === "investment");
-      var showLtv = ltvRelevant && o.ltv != null && isFinite(o.ltv);
+      var showLtv = o.ltv != null && isFinite(o.ltv);
       ltvRow.hidden = !showLtv;
       if (showLtv) {
         var pct = Math.round(o.ltv * 1000) / 10;
         var lEl = $('[data-ho="ltv"]');
-        if (lEl) { lEl.textContent = pct + "%"; lEl.setAttribute("data-high", o.ltv > 0.8 ? "yes" : "no"); }
+        if (lEl) {
+          lEl.textContent = pct + "%" + (o.ltv > 0.8 ? " · under 20% down (PMI applies)" : " · 20%+ down (no PMI)");
+          lEl.setAttribute("data-high", o.ltv > 0.8 ? "yes" : "no");
+        }
       }
+    }
+
+    // Mortgage insurance (PMI) row — only when LTV > 80%.
+    var miRow = $("[data-ho-mi-row]");
+    if (miRow) {
+      var showMi = o.mi > 0;
+      miRow.hidden = !showMi;
+      if (showMi) set('[data-ho="mi"]', fmt(o.mi) + "/mo (until you reach 20% equity)");
+    }
+
+    // Score tier + income-type notes (educational drivers).
+    if (o.ra) {
+      set("[data-ho-scoretier]", (o.ra.scoreTier || "") + (o.ra.scoreAdj > 0 ? " · +" + o.ra.scoreAdj.toFixed(3).replace(/0+$/, "").replace(/\.$/, "") + "% to your rate" : " · no rate add-on"));
+      set("[data-ho-docnote]", o.nonqm
+        ? ((o.ra.docLabel || "Non-QM") + " — Non-QM, rate is higher (+" + (o.ra.docAdj || 0) + "%)")
+        : ((o.ra.docLabel || "W-2") + " — full documentation, baseline pricing"));
+      set('[data-ho="raterow"]', o.ra.rate + "% assumption");
+      var rf = "Rate factors: " + o.ra.baseRate + "% base"
+        + (o.ra.scoreAdj > 0 ? " + " + o.ra.scoreAdj + "% (score " + S.creditScore + ")" : " + 0% (score " + S.creditScore + ", 740+)")
+        + (o.ra.docAdj > 0 ? " + " + o.ra.docAdj + "% (" + (o.nonqm ? "Non-QM income" : "income") + ")" : "")
+        + " = " + o.ra.rate + "% assumption";
+      set('[data-ho="ratefactors"]', rf);
     }
 
     var limEl = $('[data-ho="limit"]');
@@ -469,8 +505,11 @@
     q.set("price", String(S.value)); // back-compat with the studio prefill
     // Payment mode + rate assumption + payment previews (Phase 4).
     var occ2 = occFor(S.scenarioType);
-    var pp = KW.paymentPreview ? KW.paymentPreview({ loan: ll.loan, scenario_type: S.scenarioType, occupancy: occ2 === "Investment" ? "Investment property" : (occ2 === "Second home" ? "Second home" : "Primary"), payment_mode: S.paymentMode === "io" ? "interest-only" : "pi" }) : null;
+    var pp = KW.paymentPreview ? KW.paymentPreview({ loan: ll.loan, scenario_type: S.scenarioType, occupancy: occ2 === "Investment" ? "Investment property" : (occ2 === "Second home" ? "Second home" : "Primary"), payment_mode: S.paymentMode === "io" ? "interest-only" : "pi", creditScore: S.creditScore, docType: S.docType }) : null;
     q.set("payment_mode", S.paymentMode === "io" ? "interest_only" : "pi");
+    q.set("credit_score", String(S.creditScore));
+    q.set("income_doc_type", S.docType);
+    if (ll.ltv != null && isFinite(ll.ltv) && KW.monthlyMI) q.set("mortgage_insurance_monthly", String(Math.round(KW.monthlyMI(ll.loan, ll.ltv * 100, S.creditScore))));
     if (pp) {
       q.set("rate_assumption", String(pp.rate));
       q.set("estimated_pi_payment", String(Math.round(pp.pi)));
@@ -534,6 +573,7 @@
     set("#hs-newloan-out", fmt(E.newloan ? num(E.newloan.value) : S.newLoan));
     set("#hs-cashout-out", fmt(E.cashout ? num(E.cashout.value) : S.cashOut));
     set("#hs-loanamt-out", fmt(E.loanamt ? num(E.loanamt.value) : S.loanAmt));
+    set("#hs-score-out", String(E.score ? (parseInt(E.score.value, 10) || S.creditScore) : S.creditScore));
   }
 
   function bind() {
@@ -563,10 +603,10 @@
       updateContinue();
       if (E.q) { E.q.value = ""; E.q.focus(); }
     });
-    [E.value, E.down, E.payoff, E.newloan, E.cashout, E.loanamt, E.rent].forEach(function (el) {
+    [E.value, E.down, E.payoff, E.newloan, E.cashout, E.loanamt, E.rent, E.score].forEach(function (el) {
       if (el) el.addEventListener("input", function () { syncReadouts(); compute(); });
     });
-    [E.units, E.costs].forEach(function (el) { if (el) el.addEventListener("change", compute); });
+    [E.units, E.costs, E.doc].forEach(function (el) { if (el) el.addEventListener("change", compute); });
     $$("[data-lever-action]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var a = btn.getAttribute("data-lever-action");
@@ -591,6 +631,8 @@
     if (E.loanamt) E.loanamt.value = S.loanAmt;
     if (E.rent) E.rent.value = S.rent;
     if (E.units) E.units.value = String(S.units);
+    if (E.score) E.score.value = String(S.creditScore);
+    if (E.doc) E.doc.value = S.docType;
     setPurpose(S.scenarioType);
 
     // Page-load EXAMPLE — clearly labeled, not the user's property.

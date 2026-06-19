@@ -128,6 +128,35 @@ function serve() {
   await page.waitForFunction(() => document.querySelector('[data-purpose-opt="investment"]')?.classList.contains('is-sel'), { timeout: 2000 });
   check(await page.isVisible('[data-ho-dscr-row]') && /×|rent/.test(await txt(page, '[data-ho="dscr"]')), 'investment / DSCR shows a DSCR preview');
 
+  // ---- FICO score + income type + PMI (back to a purchase scenario) ----
+  await page.click('[data-purpose-opt="purchase"]');
+  await page.waitForFunction(() => document.querySelector('[data-purpose-opt="purchase"]')?.classList.contains('is-sel'), { timeout: 2000 });
+  // "What matters most" education up front
+  check(/740\+ is already strong pricing|740\+/.test(await txt(page, '.matters')) && /mortgage insurance|PMI/i.test(await txt(page, '.matters')), '"What matters most" explains FICO 740+ and PMI');
+  // credit score slider visibly changes the rate
+  const rate760 = await txt(page, '[data-ho="raterow"]');
+  await page.fill('#hs-score', '680');
+  await page.waitForFunction((prev) => (document.querySelector('[data-ho="raterow"]')?.textContent || '') !== prev, rate760, { timeout: 3000 });
+  const rate680 = await txt(page, '[data-ho="raterow"]');
+  check(parseFloat(rate680) > parseFloat(rate760), `lowering the credit score raises the assumed rate (${rate760} → ${rate680})`);
+  check(/to your rate|no rate add-on|\(\d{3}/i.test(await txt(page, '[data-ho-scoretier]')), 'score tier note shown');
+  await page.fill('#hs-score', '760');
+  // income type: bank statements (Non-QM) raises the rate
+  const rateW2 = await txt(page, '[data-ho="raterow"]');
+  await page.selectOption('#hs-doc', 'bank_statement');
+  await page.waitForFunction((prev) => (document.querySelector('[data-ho="raterow"]')?.textContent || '') !== prev, rateW2, { timeout: 3000 });
+  check(parseFloat(await txt(page, '[data-ho="raterow"]')) > parseFloat(rateW2), 'bank statements (Non-QM) raises the assumed rate vs W-2');
+  check(/Non-QM/i.test(await txt(page, '[data-ho-docnote]')), 'income-type note flags Non-QM');
+  await page.selectOption('#hs-doc', 'w2');
+  // PMI: under 20% down shows mortgage insurance; 20%+ hides it
+  await page.fill('#hs-down', '10');
+  await page.waitForFunction(() => !document.querySelector('[data-ho-mi-row]')?.hidden, { timeout: 3000 });
+  check(/\/mo/.test(await txt(page, '[data-ho="mi"]')), 'under 20% down shows a PMI estimate');
+  check(/under 20% down|PMI/i.test(await txt(page, '[data-ho="ltv"]')), 'LTV row flags the 20%-down / PMI threshold');
+  await page.fill('#hs-down', '25');
+  await page.waitForFunction(() => document.querySelector('[data-ho-mi-row]')?.hidden, { timeout: 3000 });
+  check(true, '20%+ down removes the PMI row');
+
   // ---- interest-only payment option (Phase 4) ----
   check(/\/mo/.test(await txt(page, '[data-ho="pi"]')) && /\/mo/.test(await txt(page, '[data-ho="io"]')), 'cockpit shows both P&I and interest-only previews');
   check(/lower than amortizing/i.test(await txt(page, '[data-ho="iodiff"]')), 'cockpit shows interest-only vs amortizing difference');

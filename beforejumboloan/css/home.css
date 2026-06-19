@@ -107,6 +107,19 @@ body.home { background: var(--ivory); }
 .scanner input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--navy); border: 3px solid #fff; box-shadow: var(--shadow-sm); cursor: pointer; }
 .scanner input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border: 3px solid #fff; border-radius: 50%; background: var(--navy); cursor: pointer; }
 
+/* ---------- "What matters most" education block ---------- */
+.matters { background: linear-gradient(180deg, #fff, var(--sand-soft)); border: 1px solid var(--champagne-soft); border-left: 3px solid var(--champagne); border-radius: 13px; padding: 14px 16px 14px 18px; margin-bottom: 16px; }
+.matters__title { font-family: var(--font-display); color: var(--navy); font-weight: 600; font-size: 1.02rem; margin: 0 0 8px; }
+.matters__list { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.matters__list li { font-size: 0.86rem; color: var(--ink); line-height: 1.5; }
+.matters__list b { color: var(--navy); }
+
+/* input hint (score tier / income note) */
+.ig__hint { font-size: 0.74rem; color: var(--muted); margin: 5px 0 0; line-height: 1.4; }
+.ig--score input[type=range] { margin-top: 4px; }
+[data-ho="mi"] { color: #b5651d; }
+[data-ho="ratefactors"] { font-size: 0.72rem; color: var(--navy); margin: 8px 0 2px; font-weight: 600; }
+
 /* ---------- Scenario purpose: "What are you trying to structure?" ---------- */
 .purpose { margin-bottom: 14px; }
 .purpose__label { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; color: var(--navy); margin: 0 0 8px; }

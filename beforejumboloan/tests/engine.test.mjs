@@ -33,6 +33,36 @@ test('rate assumptions come from the central config (window.BJLRates) when prese
   delete globalThis.BJLRates;
 });
 
+test('credit score adds a rate add-on; 740+ is the no-penalty tier', () => {
+  assert.equal(KW.scoreRateAdjust(780), 0);
+  assert.equal(KW.scoreRateAdjust(740), 0, '740 already strong — no add-on');
+  assert.ok(KW.scoreRateAdjust(700) > 0, 'below 740 adds to the rate');
+  assert.ok(KW.scoreRateAdjust(640) > KW.scoreRateAdjust(700), 'lower score = bigger add-on');
+  const hi = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 760, docType: 'w2' });
+  const lo = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 680, docType: 'w2' });
+  assert.ok(lo.rate > hi.rate, 'a lower score raises the assumed rate');
+  assert.equal(hi.scoreAdj, 0);
+});
+
+test('income type: bank statements / 1099 are Non-QM and price higher than W-2', () => {
+  const w2 = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 760, docType: 'w2' });
+  const bs = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 760, docType: 'bank_statement' });
+  const k99 = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 760, docType: 'ten99' });
+  assert.equal(w2.nonqm, false);
+  assert.equal(bs.nonqm, true);
+  assert.ok(bs.rate > w2.rate, 'bank statements (Non-QM) priced higher');
+  assert.ok(k99.rate > w2.rate, '1099 (Non-QM) priced higher');
+  assert.equal(bs.key, 'bank-statement');
+});
+
+test('mortgage insurance (PMI) applies only when LTV > 80%', () => {
+  assert.equal(KW.monthlyMI(800000, 80, 760), 0, 'no PMI at 20% down');
+  assert.equal(KW.monthlyMI(800000, 75, 760), 0);
+  assert.ok(KW.monthlyMI(800000, 90, 760) > 0, 'PMI applies under 20% down');
+  assert.ok(KW.monthlyMI(800000, 95, 760) > KW.monthlyMI(800000, 90, 760), 'higher LTV = more PMI');
+  assert.ok(KW.monthlyMI(800000, 90, 680) > KW.monthlyMI(800000, 90, 760), 'lower score = more PMI');
+});
+
 test('rateFor is scenario-aware (DSCR for investment, interest-only key when selected)', () => {
   const inv = KW.rateFor({ loan: 700000, scenario_type: 'investment', occupancy: 'Investment property' });
   assert.equal(inv.key, 'dscr');

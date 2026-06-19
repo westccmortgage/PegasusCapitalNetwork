@@ -63,6 +63,17 @@
           <span class="scanner__live"><i></i>property-location intelligence engine</span>
         </div>
 
+        <!-- What matters most — the first things to understand -->
+        <div class="matters">
+          <p class="matters__title">What matters most before you go jumbo</p>
+          <ol class="matters__list">
+            <li><b>Credit score (FICO).</b> 740+ is already strong pricing — you don’t need 780. Below 740 your rate goes up.</li>
+            <li><b>Down payment.</b> 20% down removes monthly mortgage insurance (PMI). Less than 20% adds PMI.</li>
+            <li><b>Income type.</b> W-2 is full-doc; bank statements / 1099 are Non-QM and price higher.</li>
+            <li><b>County line.</b> Your loan amount vs the property county’s conforming limit sets the review path.</li>
+          </ol>
+        </div>
+
         <!-- A. Scenario type -->
         <div class="purpose">
           <p class="purpose__label" id="hs-purpose-label">What are you trying to structure?</p>
@@ -140,6 +151,23 @@
                   <select id="hs-units"><option value="1">1 unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select></div>
                 <div class="ig"><label>Occupancy</label><output class="ig__out" data-occ-out>Primary residence</output></div>
 
+                <div class="ig ig--full">
+                  <label for="hs-doc">Income type — drives your rate</label>
+                  <select id="hs-doc">
+                    <option value="w2">W-2 (full documentation)</option>
+                    <option value="self_employed">Self-employed (tax returns)</option>
+                    <option value="ten99">1099 (Non-QM)</option>
+                    <option value="bank_statement">Bank statements (Non-QM)</option>
+                  </select>
+                  <p class="ig__hint" data-ho-docnote></p>
+                </div>
+
+                <div class="ig ig--full ig--score">
+                  <label for="hs-score">Credit score (FICO) — drives your rate <b id="hs-score-out">760</b></label>
+                  <input id="hs-score" type="range" min="580" max="800" step="5" value="760">
+                  <p class="ig__hint" data-ho-scoretier>Strong (740+) — already great for pricing</p>
+                </div>
+
                 <div class="ig ig--full" data-show="purchase rate_term cash_out investment second_home unknown">
                   <label for="hs-value"><span data-value-label>Estimated property value or purchase price</span> <b id="hs-value-out">$1,600,000</b></label>
                   <input id="hs-value" type="range" min="200000" max="5000000" step="10000" value="1600000"></div>
@@ -209,13 +237,16 @@
               <dl class="scanner__out">
                 <div class="so"><dt>Current review path</dt><dd data-ho="path">—</dd></div>
                 <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
-                <div class="so" data-ho-ltv-row hidden><dt>Loan-to-value (LTV)</dt><dd data-ho="ltv">—</dd></div>
+                <div class="so" data-ho-ltv-row><dt>Loan-to-value (LTV)</dt><dd data-ho="ltv">—</dd></div>
+                <div class="so" data-ho-mi-row hidden><dt>Mortgage insurance (PMI) est.</dt><dd data-ho="mi">—</dd></div>
                 <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
+                <div class="so"><dt>Assumed rate (score + income type)</dt><dd data-ho="raterow">—</dd></div>
                 <div class="so" data-ho-dscr-row hidden><dt>DSCR preview</dt><dd data-ho="dscr">—</dd></div>
                 <div class="so"><dt>Estimated P&amp;I preview</dt><dd data-ho="pi">—</dd></div>
                 <div class="so"><dt>Estimated interest-only preview</dt><dd data-ho="io">—</dd></div>
                 <div class="so"><dt>Interest-only vs amortizing</dt><dd data-ho="iodiff">—</dd></div>
               </dl>
+              <p class="scanner__rate" data-ho="ratefactors"></p>
               <p class="scanner__rate" data-ho="rate"></p>
 
               <div class="cockpit__lever-callout">

@@ -201,6 +201,79 @@
     return fallback;
   }
 
+  /* ---------- Credit score → rate add-on (educational, deterministic) ---------- */
+  var SCORE_BANDS_FALLBACK = [
+    { min: 740, add: 0.00, tier: "Strong (740+) — already great for pricing" },
+    { min: 720, add: 0.25, tier: "Good (720–739)" },
+    { min: 700, add: 0.50, tier: "Fair (700–719)" },
+    { min: 680, add: 0.875, tier: "Below par (680–699)" },
+    { min: 660, add: 1.25, tier: "Lower (660–679)" },
+    { min: 640, add: 1.75, tier: "Low (640–659)" },
+    { min: 0,   add: 2.50, tier: "Under 640 — needs licensed review" }
+  ];
+  function scoreBands() {
+    var b = global.BJLRates && global.BJLRates.score_adjustments;
+    return (b && b.length) ? b : SCORE_BANDS_FALLBACK;
+  }
+  function scoreRateAdjust(score) {
+    score = parseInt(score, 10) || 0;
+    var bands = scoreBands();
+    for (var i = 0; i < bands.length; i++) if (score >= bands[i].min) return bands[i].add;
+    return bands[bands.length - 1].add;
+  }
+  function scoreTier(score) {
+    score = parseInt(score, 10) || 0;
+    var bands = scoreBands();
+    for (var i = 0; i < bands.length; i++) if (score >= bands[i].min) return bands[i].tier;
+    return bands[bands.length - 1].tier;
+  }
+
+  /* ---------- Mortgage insurance (PMI) — only when LTV > 80% ---------- */
+  var MI_FACTORS_FALLBACK = [
+    { maxLtv: 80, pct: 0 }, { maxLtv: 85, pct: 0.30 }, { maxLtv: 90, pct: 0.49 },
+    { maxLtv: 95, pct: 0.67 }, { maxLtv: 97, pct: 0.92 }, { maxLtv: 100, pct: 1.10 }
+  ];
+  var MI_SCORE_MULT_FALLBACK = [
+    { min: 760, mult: 1.0 }, { min: 740, mult: 1.05 }, { min: 720, mult: 1.15 },
+    { min: 700, mult: 1.30 }, { min: 680, mult: 1.50 }, { min: 0, mult: 1.80 }
+  ];
+  function miFactor(ltvPct) {
+    var f = (global.BJLRates && global.BJLRates.mi_annual_factors) || MI_FACTORS_FALLBACK;
+    for (var i = 0; i < f.length; i++) if (ltvPct <= f[i].maxLtv) return f[i].pct;
+    return f[f.length - 1].pct;
+  }
+  function miScoreMult(score) {
+    score = parseInt(score, 10) || 0;
+    var m = (global.BJLRates && global.BJLRates.mi_score_multiplier) || MI_SCORE_MULT_FALLBACK;
+    for (var i = 0; i < m.length; i++) if (score >= m[i].min) return m[i].mult;
+    return m[m.length - 1].mult;
+  }
+  /* Monthly PMI estimate. ltvPct is loan/value as a percent. 0 at/below 80% LTV. */
+  function monthlyMI(loan, ltvPct, score) {
+    loan = parseNum(loan); ltvPct = Number(ltvPct) || 0;
+    if (loan <= 0 || ltvPct <= 80) return 0;
+    var annualPct = miFactor(ltvPct) * miScoreMult(score);
+    return loan * (annualPct / 100) / 12;
+  }
+
+  /* ---------- Income documentation type → rate add-on (Non-QM prices higher) ---------- */
+  var DOC_FALLBACK = [
+    { key: "w2", add: 0.00, label: "W-2 (full documentation)", nonqm: false },
+    { key: "self_employed", add: 0.125, label: "Self-employed (tax returns)", nonqm: false },
+    { key: "ten99", add: 0.75, label: "1099 (Non-QM)", nonqm: true },
+    { key: "bank_statement", add: 0.90, label: "Bank statements (Non-QM)", nonqm: true }
+  ];
+  function docTypes() {
+    var d = global.BJLRates && global.BJLRates.doc_type_adjustments;
+    return (d && d.length) ? d : DOC_FALLBACK;
+  }
+  function docTypeInfo(key) {
+    var d = docTypes();
+    for (var i = 0; i < d.length; i++) if (d[i].key === key) return d[i];
+    return d[0];
+  }
+  function docTypeAdjust(key) { return docTypeInfo(key).add; }
+
   /* ---------- formatting / parsing ---------- */
   function fmtCurrency(n) {
     n = Math.max(0, Math.round(Number(n) || 0));
@@ -439,19 +512,33 @@
     var st = s.scenario_type || "";
     var occ = occShort(s.occupancy || "");
     var io = /interest[ _-]?only/i.test(s.payment_mode || "") || s.interest_only === true;
-    if (/va/i.test(con)) return { rate: rateAssumption("va", RATE_CONFIG.va30), label: "VA 30-yr assumption", key: "va" };
-    if (/fha/i.test(con)) return { rate: rateAssumption("fha", RATE_CONFIG.fha30), label: "FHA 30-yr assumption", key: "fha" };
-    if (occ === "Investment" || st === "investment") {
-      if (io) return { rate: rateAssumption("interest_only_jumbo", 7.10), label: "Interest-only investment assumption", key: "interest_only_jumbo" };
-      return { rate: rateAssumption("dscr", 7.49), label: "DSCR / investment assumption", key: "dscr" };
+    var r;
+    if (/va/i.test(con)) r = { rate: rateAssumption("va", RATE_CONFIG.va30), label: "VA 30-yr assumption", key: "va" };
+    else if (/fha/i.test(con)) r = { rate: rateAssumption("fha", RATE_CONFIG.fha30), label: "FHA 30-yr assumption", key: "fha" };
+    else if (occ === "Investment" || st === "investment") {
+      r = io ? { rate: rateAssumption("interest_only_jumbo", 7.10), label: "Interest-only investment assumption", key: "interest_only_jumbo" }
+             : { rate: rateAssumption("dscr", 7.49), label: "DSCR / investment assumption", key: "dscr" };
+    } else if (county && loan > county) {
+      r = io ? { rate: rateAssumption("interest_only_jumbo", 7.10), label: "Interest-only jumbo assumption", key: "interest_only_jumbo" }
+             : { rate: rateAssumption("jumbo", RATE_CONFIG.jumbo30), label: "Jumbo 30-yr assumption", key: "jumbo" };
+    } else if (occ === "Second home" || st === "second_home") r = { rate: rateAssumption("second_home", 6.99), label: "Second-home assumption", key: "second_home" };
+    else if (base != null && county && loan > base && loan <= county) r = { rate: rateAssumption("high_balance", 6.66), label: "High-balance assumption", key: "high_balance" };
+    else r = { rate: rateAssumption("conforming", RATE_CONFIG.conforming30), label: "Conforming 30-yr assumption", key: "conforming" };
+    // Apply the credit-score and income-doc-type rate add-ons (educational).
+    r.baseRate = r.rate;
+    r.scoreAdj = 0; r.scoreTier = null;
+    if (s.creditScore != null && s.creditScore !== "") {
+      r.scoreAdj = scoreRateAdjust(s.creditScore);
+      r.scoreTier = scoreTier(s.creditScore);
     }
-    if (county && loan > county) {
-      if (io) return { rate: rateAssumption("interest_only_jumbo", 7.10), label: "Interest-only jumbo assumption", key: "interest_only_jumbo" };
-      return { rate: rateAssumption("jumbo", RATE_CONFIG.jumbo30), label: "Jumbo 30-yr assumption", key: "jumbo" };
+    r.docAdj = 0; r.docLabel = null; r.nonqm = false;
+    if (s.docType) {
+      var di = docTypeInfo(s.docType);
+      r.docAdj = di.add; r.docLabel = di.label; r.nonqm = !!di.nonqm;
+      if (di.nonqm) { r.key = "bank-statement"; r.label = di.label + " — Non-QM pricing"; }
     }
-    if (occ === "Second home" || st === "second_home") return { rate: rateAssumption("second_home", 6.99), label: "Second-home assumption", key: "second_home" };
-    if (base != null && county && loan > base && loan <= county) return { rate: rateAssumption("high_balance", 6.66), label: "High-balance assumption", key: "high_balance" };
-    return { rate: rateAssumption("conforming", RATE_CONFIG.conforming30), label: "Conforming 30-yr assumption", key: "conforming" };
+    r.rate = Math.round((r.baseRate + r.scoreAdj + r.docAdj) * 1000) / 1000;
+    return r;
   }
 
   /* ---------- payment estimator (deterministic amortization) ---------- */
@@ -785,6 +872,11 @@
     rates: RATE_CONFIG,
     rateFor: rateFor,
     rateAssumption: rateAssumption,
+    scoreRateAdjust: scoreRateAdjust,
+    scoreTier: scoreTier,
+    monthlyMI: monthlyMI,
+    docTypeAdjust: docTypeAdjust,
+    docTypeInfo: docTypeInfo,
     rateConfigLabel: function () { return (global.BJLRates && global.BJLRates.label) || RATE_CONFIG.sourceLabel; },
     monthlyPI: monthlyPI,
     interestOnly: interestOnly,
