@@ -274,6 +274,33 @@
   }
   function docTypeAdjust(key) { return docTypeInfo(key).add; }
 
+  /* ---------- Income → qualifying loan estimate (educational, DTI-based) ----------
+     Given an approximate gross ANNUAL income and the assumed rate (which already
+     includes the score + income-type add-ons), back out the largest loan the
+     payment could support. Not an approval or pre-qualification. */
+  function qualifyingLoan(o) {
+    o = o || {};
+    var cfg = (global.BJLRates && global.BJLRates.affordability) || {};
+    var annual = parseNum(o.annualIncome);
+    var rate = parseNum(o.ratePct);
+    var term = o.termYears ? parseNum(o.termYears) : 30;
+    var dti = o.maxDti != null ? o.maxDti : (cfg.max_dti != null ? cfg.max_dti : 0.43);
+    var tiShare = o.tiShare != null ? o.tiShare : (cfg.ti_share != null ? cfg.ti_share : 0.18);
+    var otherDebts = parseNum(o.monthlyDebts);
+    var monthlyIncome = annual / 12;
+    if (annual <= 0 || rate <= 0) {
+      return { annualIncome: annual, monthlyIncome: monthlyIncome, dti: dti, maxPITI: 0, maxPI: 0, maxLoan: 0 };
+    }
+    var maxPITI = Math.max(0, monthlyIncome * dti - otherDebts);
+    var maxPI = maxPITI * (1 - tiShare);
+    var r = rate / 100 / 12, n = term * 12;
+    var maxLoan = r > 0 ? (maxPI * (1 - Math.pow(1 + r, -n)) / r) : (maxPI * n);
+    return {
+      annualIncome: annual, monthlyIncome: monthlyIncome, dti: dti, tiShare: tiShare,
+      maxPITI: maxPITI, maxPI: maxPI, maxLoan: Math.max(0, Math.round(maxLoan))
+    };
+  }
+
   /* ---------- formatting / parsing ---------- */
   function fmtCurrency(n) {
     n = Math.max(0, Math.round(Number(n) || 0));
@@ -877,6 +904,7 @@
     monthlyMI: monthlyMI,
     docTypeAdjust: docTypeAdjust,
     docTypeInfo: docTypeInfo,
+    qualifyingLoan: qualifyingLoan,
     rateConfigLabel: function () { return (global.BJLRates && global.BJLRates.label) || RATE_CONFIG.sourceLabel; },
     monthlyPI: monthlyPI,
     interestOnly: interestOnly,

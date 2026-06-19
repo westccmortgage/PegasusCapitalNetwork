@@ -162,6 +162,12 @@
                   <p class="ig__hint" data-ho-docnote></p>
                 </div>
 
+                <div class="ig ig--full">
+                  <label for="hs-income">Approximate income (per year) — estimates the loan you could support</label>
+                  <input id="hs-income" type="number" inputmode="numeric" min="0" step="5000" value="180000" placeholder="$ per year">
+                  <p class="ig__hint" data-ho-qualnote></p>
+                </div>
+
                 <div class="ig ig--full ig--score">
                   <label for="hs-score">Credit score (FICO) — drives your rate <b id="hs-score-out">760</b></label>
                   <input id="hs-score" type="range" min="580" max="800" step="5" value="760">
@@ -236,6 +242,7 @@
 
               <dl class="scanner__out">
                 <div class="so"><dt>Current review path</dt><dd data-ho="path">—</dd></div>
+                <div class="so so--qual"><dt>Loan you could support (income-based)</dt><dd data-ho="qual">—</dd></div>
                 <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
                 <div class="so" data-ho-ltv-row><dt>Loan-to-value (LTV)</dt><dd data-ho="ltv">—</dd></div>
                 <div class="so" data-ho-mi-row hidden><dt>Mortgage insurance (PMI) est.</dt><dd data-ho="mi">—</dd></div>

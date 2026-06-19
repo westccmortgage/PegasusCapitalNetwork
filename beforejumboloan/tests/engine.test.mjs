@@ -63,6 +63,20 @@ test('mortgage insurance (PMI) applies only when LTV > 80%', () => {
   assert.ok(KW.monthlyMI(800000, 90, 680) > KW.monthlyMI(800000, 90, 760), 'lower score = more PMI');
 });
 
+test('qualifying loan scales with income and shrinks as the rate rises', () => {
+  const r = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 760, docType: 'w2' }).rate;
+  const q = KW.qualifyingLoan({ annualIncome: 180000, ratePct: r, termYears: 30 });
+  assert.ok(q.maxLoan > 0);
+  // double the income → roughly double the supportable loan
+  const q2 = KW.qualifyingLoan({ annualIncome: 360000, ratePct: r, termYears: 30 });
+  assert.ok(q2.maxLoan > q.maxLoan * 1.9);
+  // higher rate (lower score + Non-QM) → smaller qualifying loan for the same income
+  const rHi = KW.rateFor({ loan: 800000, scenario_type: 'purchase', creditScore: 700, docType: 'bank_statement' }).rate;
+  const qHi = KW.qualifyingLoan({ annualIncome: 180000, ratePct: rHi, termYears: 30 });
+  assert.ok(rHi > r && qHi.maxLoan < q.maxLoan, 'a higher assumed rate lowers the qualifying loan');
+  assert.equal(KW.qualifyingLoan({ annualIncome: 0, ratePct: r }).maxLoan, 0);
+});
+
 test('rateFor is scenario-aware (DSCR for investment, interest-only key when selected)', () => {
   const inv = KW.rateFor({ loan: 700000, scenario_type: 'investment', occupancy: 'Investment property' });
   assert.equal(inv.key, 'dscr');

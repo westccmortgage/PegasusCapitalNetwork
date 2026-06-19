@@ -46,7 +46,7 @@
     value: 1600000, downPct: 18,
     payoff: 900000, newLoan: 900000, cashOut: 150000, includeCosts: false,
     loanAmt: 1200000, rent: 7500,
-    paymentMode: "pi", creditScore: 760, docType: "w2"
+    paymentMode: "pi", creditScore: 760, docType: "w2", annualIncome: 180000
   };
 
   var E = {
@@ -61,7 +61,7 @@
     units: $("#hs-units"), value: $("#hs-value"), down: $("#hs-down"),
     payoff: $("#hs-payoff"), newloan: $("#hs-newloan"), cashout: $("#hs-cashout"),
     costs: $("#hs-costs"), loanamt: $("#hs-loanamt"), rent: $("#hs-rent"),
-    score: $("#hs-score"), doc: $("#hs-doc")
+    score: $("#hs-score"), doc: $("#hs-doc"), income: $("#hs-income")
   };
   function set(sel, t) { var e = $(sel); if (e) e.textContent = t; }
   function show(el, on) { if (el) el.hidden = !on; }
@@ -197,6 +197,7 @@
     if (E.rent) S.rent = num(E.rent.value);
     if (E.score) S.creditScore = parseInt(E.score.value, 10) || 760;
     if (E.doc) S.docType = E.doc.value;
+    if (E.income) S.annualIncome = num(E.income.value);
   }
 
   function loanAndLtv() {
@@ -266,6 +267,9 @@
     var dscrBasis = io ? pp.interestOnly : pp.pi;
     var dscr = (S.scenarioType === "investment" && S.rent > 0 && dscrBasis > 0) ? (S.rent / dscrBasis) : null;
 
+    // Income-based qualifying loan (uses the assumed rate, so score + Non-QM flow in).
+    var qual = KW.qualifyingLoan ? KW.qualifyingLoan({ annualIncome: S.annualIncome, ratePct: ra.rate, termYears: 30 }) : null;
+
     // Buydown illustrations (deterministic, integrated into the console).
     var pb = KW.permanentBuydown ? KW.permanentBuydown(sc) : null;
     var tb = KW.temporaryBuydown ? KW.temporaryBuydown(Object.assign({ bdTempType: "2-1" }, sc)) : null;
@@ -277,7 +281,7 @@
       pathLabel: node ? (pathLabels[node] || "Licensed Review") : "Confirm a property county",
       pi: pp.pi, io: pp.interestOnly, iodiff: pp.difference, paymentMode: S.paymentMode,
       rate: { rate: pp.rate, label: pp.rateLabel, key: pp.rateKey },
-      ra: ra, mi: mi, nonqm: nonqm,
+      ra: ra, mi: mi, nonqm: nonqm, qual: qual,
       dscr: dscr, datasetType: loc && loc.datasetType, tier: loc && loc.tier,
       pb: pb, tb: tb, tb10: tb10
     });
@@ -334,6 +338,24 @@
         ? ((o.ra.docLabel || "Non-QM") + " — Non-QM, rate is higher (+" + (o.ra.docAdj || 0) + "%)")
         : ((o.ra.docLabel || "W-2") + " — full documentation, baseline pricing"));
       set('[data-ho="raterow"]', o.ra.rate + "% assumption");
+    }
+
+    // Income-based qualifying loan + comparison to the estimated loan.
+    if (o.qual) {
+      var qEl = $('[data-ho="qual"]');
+      if (qEl) {
+        qEl.textContent = o.qual.maxLoan > 0 ? (fmt(o.qual.maxLoan) + " · at " + Math.round(o.qual.dti * 100) + "% DTI") : "Add an annual income";
+        qEl.setAttribute("data-short", (o.qual.maxLoan > 0 && o.loan > o.qual.maxLoan) ? "yes" : "no");
+      }
+      var qn = "";
+      if (o.qual.maxLoan > 0) {
+        qn = (o.loan > o.qual.maxLoan)
+          ? "Estimated loan " + fmt(o.loan) + " is above the income-based estimate — a higher income, lower loan, or more reserves may be needed (licensed review required)."
+          : "Estimated loan " + fmt(o.loan) + " is within the income-based estimate. Educational only — not a pre-qualification or approval.";
+      } else {
+        qn = "Enter an approximate annual income to estimate the loan it could support.";
+      }
+      set("[data-ho-qualnote]", qn);
       var rf = "Rate factors: " + o.ra.baseRate + "% base"
         + (o.ra.scoreAdj > 0 ? " + " + o.ra.scoreAdj + "% (score " + S.creditScore + ")" : " + 0% (score " + S.creditScore + ", 740+)")
         + (o.ra.docAdj > 0 ? " + " + o.ra.docAdj + "% (" + (o.nonqm ? "Non-QM income" : "income") + ")" : "")
@@ -509,6 +531,10 @@
     q.set("payment_mode", S.paymentMode === "io" ? "interest_only" : "pi");
     q.set("credit_score", String(S.creditScore));
     q.set("income_doc_type", S.docType);
+    if (S.annualIncome > 0) {
+      q.set("annual_income", String(S.annualIncome));
+      if (KW.qualifyingLoan && pp) q.set("qualifying_loan_estimate", String(KW.qualifyingLoan({ annualIncome: S.annualIncome, ratePct: pp.rate, termYears: 30 }).maxLoan));
+    }
     if (ll.ltv != null && isFinite(ll.ltv) && KW.monthlyMI) q.set("mortgage_insurance_monthly", String(Math.round(KW.monthlyMI(ll.loan, ll.ltv * 100, S.creditScore))));
     if (pp) {
       q.set("rate_assumption", String(pp.rate));
@@ -603,7 +629,7 @@
       updateContinue();
       if (E.q) { E.q.value = ""; E.q.focus(); }
     });
-    [E.value, E.down, E.payoff, E.newloan, E.cashout, E.loanamt, E.rent, E.score].forEach(function (el) {
+    [E.value, E.down, E.payoff, E.newloan, E.cashout, E.loanamt, E.rent, E.score, E.income].forEach(function (el) {
       if (el) el.addEventListener("input", function () { syncReadouts(); compute(); });
     });
     [E.units, E.costs, E.doc].forEach(function (el) { if (el) el.addEventListener("change", compute); });
@@ -633,6 +659,7 @@
     if (E.units) E.units.value = String(S.units);
     if (E.score) E.score.value = String(S.creditScore);
     if (E.doc) E.doc.value = S.docType;
+    if (E.income) E.income.value = String(S.annualIncome);
     setPurpose(S.scenarioType);
 
     // Page-load EXAMPLE — clearly labeled, not the user's property.

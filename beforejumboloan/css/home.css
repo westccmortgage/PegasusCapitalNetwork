@@ -118,6 +118,8 @@ body.home { background: var(--ivory); }
 .ig__hint { font-size: 0.74rem; color: var(--muted); margin: 5px 0 0; line-height: 1.4; }
 .ig--score input[type=range] { margin-top: 4px; }
 [data-ho="mi"] { color: #b5651d; }
+.so--qual dd { color: var(--ocean); }
+[data-ho="qual"][data-short="yes"] { color: #b5651d; }
 [data-ho="ratefactors"] { font-size: 0.72rem; color: var(--navy); margin: 8px 0 2px; font-weight: 600; }
 
 /* ---------- Scenario purpose: "What are you trying to structure?" ---------- */

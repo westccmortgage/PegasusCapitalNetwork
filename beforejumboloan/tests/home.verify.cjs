@@ -157,6 +157,17 @@ function serve() {
   await page.waitForFunction(() => document.querySelector('[data-ho-mi-row]')?.hidden, { timeout: 3000 });
   check(true, '20%+ down removes the PMI row');
 
+  // ---- income → qualifying loan estimate ----
+  check(/\$[\d,]+ · at \d+% DTI/.test(await txt(page, '[data-ho="qual"]')), 'income-based qualifying loan is shown (with DTI)');
+  const qual180 = await txt(page, '[data-ho="qual"]');
+  await page.fill('#hs-income', '90000');
+  await page.waitForFunction((prev) => (document.querySelector('[data-ho="qual"]')?.textContent || '') !== prev, qual180, { timeout: 3000 });
+  const n180 = parseInt(qual180.replace(/[^\d]/g, ''), 10);
+  const n90 = parseInt((await txt(page, '[data-ho="qual"]')).replace(/[^\d]/g, ''), 10);
+  check(n90 < n180, `lower income lowers the qualifying loan (${n180} → ${n90})`);
+  check(/income-based estimate|pre-qualification/i.test(await txt(page, '[data-ho-qualnote]')), 'qualifying-loan note explains it is educational (not a pre-qualification)');
+  await page.fill('#hs-income', '180000');
+
   // ---- interest-only payment option (Phase 4) ----
   check(/\/mo/.test(await txt(page, '[data-ho="pi"]')) && /\/mo/.test(await txt(page, '[data-ho="io"]')), 'cockpit shows both P&I and interest-only previews');
   check(/lower than amortizing/i.test(await txt(page, '[data-ho="iodiff"]')), 'cockpit shows interest-only vs amortizing difference');

@@ -65,6 +65,13 @@
       { key: "self_employed",  add: 0.125, label: "Self-employed (tax returns)",   nonqm: false },
       { key: "ten99",          add: 0.75,  label: "1099 (Non-QM)",                 nonqm: true },
       { key: "bank_statement", add: 0.90,  label: "Bank statements (Non-QM)",      nonqm: true }
-    ]
+    ],
+    /* Affordability (educational, DTI-based). max_dti = share of gross monthly
+       income available for housing debt; ti_share = portion of that budget
+       reserved for taxes / insurance / HOA / PMI (so the rest is P&I). */
+    affordability: {
+      max_dti: 0.43,
+      ti_share: 0.18
+    }
   };
 })(typeof window !== "undefined" ? window : globalThis);
