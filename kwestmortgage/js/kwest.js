@@ -232,7 +232,7 @@
         var sd = $("[data-qc-sd]", qc), sl = $("[data-qc-sl]", qc), sr = $("[data-qc-sr]", qc);
         if (sd) sd.style.width = (price > 0 ? Math.max(0, Math.min(100, down / price * 100)) : 0) + "%";
         if (sl) sl.style.width = (price > 0 ? Math.max(0, Math.min(100, loan / price * 100)) : 0) + "%";
-        if (sr) sr.style.left = (price > 0 ? Math.max(0, Math.min(100, window.KW.config.countyConformingLimitOneUnit / price * 100)) : 0) + "%";
+        if (sr) { var _cc = window.KW.config.highBalanceLimit || window.KW.config.countyConformingLimitOneUnit; sr.style.left = (price > 0 ? Math.max(0, Math.min(100, _cc / price * 100)) : 0) + "%"; }
       }
       // Persist non-PII scenario for the Studio + pass via URL.
       var data = { price: price, down: down, downPct: pct, occ: occ, loan: loan };
