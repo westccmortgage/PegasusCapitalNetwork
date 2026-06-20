@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/kwest.css?v=7">
-<link rel="stylesheet" href="css/studio-console.css?v=7">
+<link rel="stylesheet" href="css/studio-console.css?v=8">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body class="home">
@@ -89,56 +89,12 @@
           </div>
         </div>
 
-        <!-- B. Property location -->
+        <!-- Property location — Florida county picker (hard choice) -->
         <div class="cmd">
-          <label class="cmd__label" for="hs-q">Where is the property?</label>
-          <input id="hs-q" class="cmd__input" type="text" inputmode="search" autocomplete="off"
-                 placeholder="ZIP, city, county, or property location" aria-label="Where is the property?">
-          <p class="cmd__hint">Press Enter. Try:
-            <button type="button" class="ex" data-ex>33040</button>
-            <button type="button" class="ex" data-ex>Key West</button>
-            <button type="button" class="ex" data-ex>Marathon FL</button>
-            <button type="button" class="ex" data-ex>Key Largo</button>
-            <button type="button" class="ex" data-ex>Miami-Dade</button>
-          </p>
+          <label class="cmd__label" for="hs-county">Choose your Florida county</label>
+          <select id="hs-county" class="cmd__input"><option value="">Loading Florida counties…</option></select>
+          <p class="cmd__hint">K West Mortgage serves Key West &amp; Monroe County and all of Florida. Monroe County (Key West) is selected by default — change it above to run another Florida county.</p>
         </div>
-
-        <div class="needcty" data-needcty hidden>
-          <p class="needcty__msg">Property county required to calculate the county line.</p>
-          <div class="manual">
-            <select id="hs-mstate" aria-label="Property state"><option value="">State…</option></select>
-            <input id="hs-mcounty" type="text" placeholder="Property county" aria-label="Property county">
-            <button type="button" class="btn btn--primary btn--sm" data-confirm-manual>Use this property county</button>
-          </div>
-        </div>
-
-        <div class="resolve" data-resolve hidden>
-          <div class="resolve__confident" data-resolve-confident hidden>
-            <p class="resolve__k">Detected property county</p>
-            <p class="resolve__detected" data-detected>—</p>
-            <button type="button" class="btn btn--primary btn--sm" data-confirm>Confirm property county</button>
-          </div>
-          <div class="resolve__choices" data-resolve-choices hidden>
-            <p class="resolve__k">More than one match — which property county?</p>
-            <div class="choices" data-choices></div>
-          </div>
-          <div class="resolve__manual" data-resolve-manual hidden>
-            <p class="resolve__warn" data-resolve-warn>Enter the property’s state and county.</p>
-            <div class="manual">
-              <select id="hs-mstate2" aria-label="Property state"><option value="">State…</option></select>
-              <input id="hs-mcounty2" type="text" placeholder="Property county" aria-label="Property county">
-              <button type="button" class="btn btn--primary btn--sm" data-confirm-manual2>Use this property county</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="confirmed" data-confirmed hidden>
-          <span class="confirmed__k">Property county</span>
-          <span class="confirmed__v" data-confirmed-county>—</span>
-          <button type="button" class="confirmed__change" data-change>Change</button>
-        </div>
-
-        <p class="example-banner" data-example-banner hidden>Example scenario — not based on your property location. Enter your property above to run your own.</p>
 
         <!-- Scenario canvas (revealed after a county is confirmed) -->
         <div class="scenario" data-scenario hidden>
@@ -399,6 +355,6 @@
 <script src="js/engine.js?v=7" defer></script>
 <script src="js/studio-compliance.js?v=7" defer></script>
 <script src="js/kwest.js?v=7" defer></script>
-<script src="js/studio-app.js?v=7" defer></script>
+<script src="js/studio-app.js?v=8" defer></script>
 </body>
 </html>

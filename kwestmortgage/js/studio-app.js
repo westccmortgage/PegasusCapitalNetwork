@@ -712,12 +712,35 @@
     if (E.income) E.income.value = String(S.annualIncome);
     setPurpose(S.scenarioType);
 
-    // Page-load EXAMPLE — clearly labeled, not the user's property.
-    S.isExample = true; S.confirmed = true;
-    show(E.resolve, false); show(E.needcty, false);
-    show(E.confirmed, true); show(E.scenario, true); show(E.exampleBanner, true);
-    if (E.confirmedCounty) E.confirmedCounty.textContent = "Example · " + S.county + ", " + S.state;
-    compute();
+    // Florida-only: populate the county picker and confirm the selected county
+    // (defaults to Monroe County / Key West). No state selection, no guessing.
+    if (fillCounties()) confirmSelectedCounty();
+    else { S.confirmed = true; show(E.scenario, true); compute(); }
+  }
+
+  /* ---------- Florida county picker (hard choice; no state selection) ---------- */
+  var _countyBound = false;
+  function fillCounties() {
+    var sel = $("#hs-county");
+    if (!sel) return false;
+    var cs = (BJL && BJL.getCounties) ? BJL.getCounties("FL") : [];
+    if (!cs || !cs.length) return false;
+    var cur = sel.value;
+    sel.innerHTML = cs.map(function (c) {
+      return '<option value="' + c.fips + '" data-name="' + c.name + '"' + (c.fips === "12087" ? " selected" : "") + ">" + c.name + "</option>";
+    }).join("");
+    if (cur) sel.value = cur;
+    if (!_countyBound) {
+      sel.addEventListener("change", confirmSelectedCounty);
+      _countyBound = true;
+    }
+    return true;
+  }
+  function confirmSelectedCounty() {
+    var sel = $("#hs-county");
+    if (!sel || !sel.value) return;
+    var o = sel.options[sel.selectedIndex];
+    confirmCounty({ state_abbr: "FL", county_name: o.getAttribute("data-name"), county_fips: sel.value, matched_by: "county-select" }, false);
   }
 
   bind();

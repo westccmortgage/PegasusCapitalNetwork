@@ -167,6 +167,7 @@ body.home { background: var(--ivory); }
   border-radius: 11px; padding: 13px 14px; font-size: 1rem; font-family: var(--font-body);
 }
 .cmd__input:focus { outline: none; border-color: var(--champagne); box-shadow: 0 0 0 3px rgba(200,168,107,0.18); }
+select.cmd__input { cursor: pointer; appearance: auto; -webkit-appearance: auto; }
 .cmd__hint { font-size: 0.72rem; color: var(--muted); margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ex { border: 1px solid var(--line-strong); background: #fff; color: var(--ocean); border-radius: 999px; padding: 4px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: all .16s var(--ease); }
 .ex:hover { background: var(--ocean); color: #fff; border-color: var(--ocean); }
