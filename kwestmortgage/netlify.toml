@@ -109,3 +109,33 @@
   from = "/refinance-cash-out"
   to = "/refinance-cash-out.html"
   status = 200
+[[redirects]]
+  from = "/conventional-loans"
+  to = "/conventional-loans.html"
+  status = 200
+[[redirects]]
+  from = "/non-qm-loans"
+  to = "/non-qm-loans.html"
+  status = 200
+
+# Concierge, trust & education pages (clean URLs)
+[[redirects]]
+  from = "/get-preapproved"
+  to = "/get-preapproved.html"
+  status = 200
+[[redirects]]
+  from = "/human-review"
+  to = "/human-review.html"
+  status = 200
+[[redirects]]
+  from = "/no-credit-check"
+  to = "/no-credit-check.html"
+  status = 200
+[[redirects]]
+  from = "/which-program-fits"
+  to = "/which-program-fits.html"
+  status = 200
+[[redirects]]
+  from = "/complex-scenarios"
+  to = "/complex-scenarios.html"
+  status = 200
