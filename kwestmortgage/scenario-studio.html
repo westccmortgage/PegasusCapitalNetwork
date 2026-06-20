@@ -3,23 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Before Jumbo Strategy Studio | K West Mortgage</title>
-<meta name="description" content="Build your Key West mortgage scenario before you go jumbo. Adjust purchase price, down payment, occupancy, property type and income to organize your scenario for a licensed mortgage review. Educational only.">
-<link rel="canonical" href="https://kwestmortgages.com/scenario-studio.html">
+<title>Key West Mortgage Strategy Studio | K West Mortgage</title>
+<meta name="description" content="Run your Key West or Monroe County property through county-line, payment, interest-only, buydown, credit-score, PMI, income-type and program-path logic before you decide the structure. Educational only — not a quote or commitment to lend.">
 <meta name="robots" content="index,follow">
+<link rel="canonical" href="https://kwestmortgages.com/scenario-studio">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Before Jumbo Strategy Studio | K West Mortgage">
-<meta property="og:description" content="Build your Key West mortgage scenario before you go jumbo — then send it for licensed review.">
-<meta property="og:url" content="https://kwestmortgages.com/scenario-studio.html">
+<meta property="og:title" content="Key West Mortgage Strategy Studio | K West Mortgage">
+<meta property="og:description" content="A deterministic mortgage strategy console for Key West & Monroe County — county line, payment, buydown, DSCR, credit-score and program paths. Educational only.">
+<meta property="og:url" content="https://kwestmortgages.com/scenario-studio">
 <meta property="og:image" content="https://kwestmortgages.com/assets/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/kwest.css?v=6">
+<link rel="stylesheet" href="css/kwest.css?v=7">
+<link rel="stylesheet" href="css/studio-console.css?v=7">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body class="home">
 <a href="#main" class="skip-link">Skip to content</a>
 <header class="site-header"><div class="wrap"><nav class="nav" aria-label="Primary">
   <a class="brand" href="index.html"><span class="brand__name">K <b>West</b> Mortgage</span></a>
@@ -33,427 +34,345 @@
   </ul>
   <div class="nav__cta">
     <a class="btn btn--ghost" href="jumbo-vs-conforming.html">Compare</a>
-    <a class="btn btn--primary" href="concierge.html">Review My Scenario</a>
+    <a class="btn btn--primary" href="#lead">Review My Scenario</a>
     <button class="nav__toggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
 </nav></div></header>
 <div class="mobile-menu" aria-label="Mobile">
   <a href="concierge.html">Concierge</a><a href="jumbo-vs-conforming.html">Conforming</a><a href="loan-options.html">Loan Options</a><a href="education.html">Education</a><a href="about.html">About</a><a href="contact.html">Contact</a>
-  <a class="btn btn--primary btn--block" href="concierge.html">Review My Key West Scenario</a>
+  <a class="btn btn--primary btn--block" href="#lead">Review My Key West Scenario</a>
 </div>
 
 <main id="main">
-<section class="page-hero page-hero--studio">
-  <div class="hero__bg" aria-hidden="true"><div class="coastal-bg"></div><div class="coastal-bg__grad"></div><div class="sheen"></div></div>
-  <div class="wrap page-hero__inner">
-    <div class="breadcrumb"><a href="index.html">Home</a> · Before Jumbo Strategy Studio</div>
-    <span class="hero__label">Before Jumbo Strategy Studio</span>
-    <h1>Build Your Key West Mortgage Scenario Before You Go Jumbo</h1>
-    <p class="lead">Adjust your purchase price, down payment, occupancy, property type, and income situation to organize your scenario before a licensed mortgage professional reviews your options.</p>
-  </div>
-</section>
 
-<section class="section studio-section">
-  <div class="wrap">
-    <div class="studio__grid">
+  <!-- ============ HEADLINE ============ -->
+  <section class="cockpit cockpit--head">
+    <div class="wrap cockpit__head">
+      <p class="cockpit__eyebrow">Key West Mortgage Strategy Engine</p>
+      <h1>
+        <span class="ln">The bank may call it jumbo.</span>
+        <span class="ln muted-ln">The structure may tell a different story.</span>
+      </h1>
+      <p class="cockpit__sub">Run your Key West or Monroe County property through county-line, payment, interest-only, buydown, and program-path logic before deciding the structure. Educational only — not a rate quote or commitment to lend.</p>
+    </div>
+  </section>
 
-      <!-- ============ LEFT: GUIDED FLOW ============ -->
-      <div class="studio__main glass">
-        <div class="studio__progress">
-          <div class="studio__bar"><span data-st-bar style="width:11%"></span></div>
-          <div class="studio__count">Step <span data-st-cur>1</span> of 9</div>
+  <!-- ============ FULL-WIDTH STRATEGY CONSOLE ============ -->
+  <section class="console">
+    <div class="wrap">
+      <div class="scanner scanner--console" data-scanner aria-label="Mortgage strategy console">
+        <div class="scanner__head">
+          <h2 class="scanner__title">Strategy Console</h2>
+          <span class="scanner__live"><i></i>property-location intelligence engine</span>
         </div>
 
-        <!-- Step 1 -->
-        <div class="st is-active" data-step="1">
-          <span class="eyebrow">Step 1</span>
-          <h2 class="st__q">What are you trying to do?</h2>
-          <div class="opt-grid" role="group" aria-label="Goal">
-            <button type="button" class="opt" data-field="intent" data-value="Buy a primary home">Buy a primary home</button>
-            <button type="button" class="opt" data-field="intent" data-value="Buy a second home">Buy a second home</button>
-            <button type="button" class="opt" data-field="intent" data-value="Buy an investment property">Buy an investment property</button>
-            <button type="button" class="opt" data-field="intent" data-value="Refinance">Refinance</button>
-            <button type="button" class="opt" data-field="intent" data-value="Cash-out refinance">Cash-out refinance</button>
-            <button type="button" class="opt" data-field="intent" data-value="Compare jumbo vs conforming">Compare jumbo vs conforming</button>
+        <div class="matters">
+          <p class="matters__title">What matters most before you go jumbo</p>
+          <ol class="matters__list">
+            <li><b>Credit score (FICO).</b> 740+ is already strong pricing — you don’t need 780. Below 740 your rate goes up.</li>
+            <li><b>Down payment.</b> 20% down removes monthly mortgage insurance (PMI). Less than 20% adds PMI.</li>
+            <li><b>Income type.</b> W-2 is full-doc; bank statements / 1099 are Non-QM and price higher.</li>
+            <li><b>County line.</b> Your loan amount vs the property county’s conforming limit sets the review path.</li>
+          </ol>
+        </div>
+
+        <!-- A. Scenario type -->
+        <div class="purpose">
+          <p class="purpose__label" id="hs-purpose-label">What are you trying to structure?</p>
+          <div class="purpose__opts" data-purpose role="group" aria-labelledby="hs-purpose-label">
+            <button type="button" class="purpose__opt" data-purpose-opt="purchase">Purchase</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="rate_term">Rate-and-term refinance</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="cash_out">Cash-out refinance</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="investment">Investment / DSCR</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="second_home">Second home</button>
+            <button type="button" class="purpose__opt" data-purpose-opt="unknown">Not sure</button>
           </div>
         </div>
 
-        <!-- Step 2 -->
-        <div class="st" data-step="2" hidden>
-          <span class="eyebrow">Step 2</span>
-          <h2 class="st__q">Where is the property?</h2>
-          <div class="opt-grid" role="group" aria-label="Location">
-            <button type="button" class="opt" data-field="property_location" data-value="Key West">Key West</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Stock Island">Stock Island</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Big Pine Key">Big Pine Key</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Marathon">Marathon</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Islamorada">Islamorada</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Key Largo">Key Largo</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Other Monroe County">Other Monroe County</button>
-            <button type="button" class="opt" data-field="property_location" data-value="Not sure yet">Not sure yet</button>
+        <!-- B. Property location -->
+        <div class="cmd">
+          <label class="cmd__label" for="hs-q">Where is the property?</label>
+          <input id="hs-q" class="cmd__input" type="text" inputmode="search" autocomplete="off"
+                 placeholder="ZIP, city, county, or property location" aria-label="Where is the property?">
+          <p class="cmd__hint">Press Enter. Try:
+            <button type="button" class="ex" data-ex>33040</button>
+            <button type="button" class="ex" data-ex>Key West</button>
+            <button type="button" class="ex" data-ex>Marathon FL</button>
+            <button type="button" class="ex" data-ex>Key Largo</button>
+            <button type="button" class="ex" data-ex>Miami-Dade</button>
+          </p>
+        </div>
+
+        <div class="needcty" data-needcty hidden>
+          <p class="needcty__msg">Property county required to calculate the county line.</p>
+          <div class="manual">
+            <select id="hs-mstate" aria-label="Property state"><option value="">State…</option></select>
+            <input id="hs-mcounty" type="text" placeholder="Property county" aria-label="Property county">
+            <button type="button" class="btn btn--primary btn--sm" data-confirm-manual>Use this property county</button>
           </div>
         </div>
 
-        <!-- Step 3 -->
-        <div class="st" data-step="3" hidden>
-          <span class="eyebrow">Step 3</span>
-          <h2 class="st__q" data-st3-title>Purchase price or estimated value</h2>
-          <div class="st-slider">
-            <div class="st-slider__val" data-st-price-out>$1,150,000</div>
-            <label class="sr-only" for="st-price">Purchase price or value</label>
-            <input id="st-price" type="range" min="200000" max="5000000" step="10000" value="1150000" data-st-price>
-            <div class="st-slider__scale"><span>$200K</span><span>$5M</span></div>
+        <div class="resolve" data-resolve hidden>
+          <div class="resolve__confident" data-resolve-confident hidden>
+            <p class="resolve__k">Detected property county</p>
+            <p class="resolve__detected" data-detected>—</p>
+            <button type="button" class="btn btn--primary btn--sm" data-confirm>Confirm property county</button>
           </div>
-          <p class="st__hint">You can fine-tune this anytime — the snapshot updates live.</p>
+          <div class="resolve__choices" data-resolve-choices hidden>
+            <p class="resolve__k">More than one match — which property county?</p>
+            <div class="choices" data-choices></div>
+          </div>
+          <div class="resolve__manual" data-resolve-manual hidden>
+            <p class="resolve__warn" data-resolve-warn>Enter the property’s state and county.</p>
+            <div class="manual">
+              <select id="hs-mstate2" aria-label="Property state"><option value="">State…</option></select>
+              <input id="hs-mcounty2" type="text" placeholder="Property county" aria-label="Property county">
+              <button type="button" class="btn btn--primary btn--sm" data-confirm-manual2>Use this property county</button>
+            </div>
+          </div>
         </div>
 
-        <!-- Step 4 -->
-        <div class="st" data-step="4" hidden>
-          <span class="eyebrow">Step 4</span>
-          <h2 class="st__q" data-st4-title>Down payment or equity</h2>
+        <div class="confirmed" data-confirmed hidden>
+          <span class="confirmed__k">Property county</span>
+          <span class="confirmed__v" data-confirmed-county>—</span>
+          <button type="button" class="confirmed__change" data-change>Change</button>
+        </div>
 
-          <div data-mode-purchase>
-            <div class="st-slider">
-              <div class="st-slider__val"><span data-st-down-pct>20%</span> &middot; <span data-st-down-out>$230,000</span></div>
-              <label class="sr-only" for="st-down">Down payment percentage</label>
-              <input id="st-down" type="range" min="0" max="60" step="1" value="20" data-st-down>
-              <div class="st-slider__scale"><span>0%</span><span>60%</span></div>
+        <p class="example-banner" data-example-banner hidden>Example scenario — not based on your property location. Enter your property above to run your own.</p>
+
+        <!-- Scenario canvas (revealed after a county is confirmed) -->
+        <div class="scenario" data-scenario hidden>
+          <div class="console__grid">
+
+            <!-- C. Structure inputs -->
+            <div class="console__col">
+              <h3 class="console__h">Structure inputs</h3>
+              <div class="scanner__inputs">
+                <div class="ig"><label for="hs-units">Units</label>
+                  <select id="hs-units"><option value="1">1 unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select></div>
+                <div class="ig"><label>Occupancy</label><output class="ig__out" data-occ-out>Primary residence</output></div>
+
+                <div class="ig ig--full">
+                  <label for="hs-doc">Income type — drives your rate</label>
+                  <select id="hs-doc">
+                    <option value="w2">W-2 (full documentation)</option>
+                    <option value="self_employed">Self-employed (tax returns)</option>
+                    <option value="ten99">1099 (Non-QM)</option>
+                    <option value="bank_statement">Bank statements (Non-QM)</option>
+                  </select>
+                  <p class="ig__hint" data-ho-docnote></p>
+                </div>
+
+                <div class="ig ig--full">
+                  <label for="hs-income">Approximate income (per year) — estimates the loan you could support</label>
+                  <input id="hs-income" type="number" inputmode="numeric" min="0" step="5000" value="180000" placeholder="$ per year">
+                  <p class="ig__hint" data-ho-qualnote></p>
+                  <p class="ig__hint" data-ho-taxnote></p>
+                </div>
+
+                <div class="ig ig--full ig--score">
+                  <label for="hs-score">Credit score (FICO) — drives your rate <b id="hs-score-out">760</b></label>
+                  <input id="hs-score" type="range" min="580" max="800" step="5" value="760">
+                  <p class="ig__hint" data-ho-scoretier>Strong (740+) — already great for pricing</p>
+                </div>
+
+                <div class="ig ig--full" data-show="purchase rate_term cash_out investment second_home unknown">
+                  <label for="hs-value"><span data-value-label>Estimated property value or purchase price</span> <b id="hs-value-out">$1,150,000</b></label>
+                  <input id="hs-value" type="range" min="200000" max="5000000" step="10000" value="1150000"></div>
+
+                <div class="ig ig--full" data-show="purchase second_home">
+                  <label for="hs-down">Down payment <b id="hs-down-out">20%</b></label>
+                  <input id="hs-down" type="range" min="0" max="60" step="1" value="20"></div>
+
+                <div class="ig ig--full" data-show="rate_term cash_out">
+                  <label for="hs-payoff">Current loan payoff / balance <b id="hs-payoff-out">$0</b></label>
+                  <input id="hs-payoff" type="range" min="0" max="5000000" step="10000" value="900000"></div>
+
+                <div class="ig ig--full" data-show="rate_term">
+                  <label for="hs-newloan">Desired new loan amount <b id="hs-newloan-out">$0</b></label>
+                  <input id="hs-newloan" type="range" min="0" max="5000000" step="10000" value="900000"></div>
+
+                <div class="ig ig--full" data-show="cash_out">
+                  <label for="hs-cashout">Requested cash out <b id="hs-cashout-out">$0</b></label>
+                  <input id="hs-cashout" type="range" min="0" max="2000000" step="5000" value="150000"></div>
+                <div class="ig ig--full ig--check" data-show="cash_out">
+                  <label><input id="hs-costs" type="checkbox"> Include estimated closing costs (~2%) in the new loan</label></div>
+
+                <div class="ig ig--full" data-show="investment unknown">
+                  <label for="hs-loanamt">Estimated loan amount <b id="hs-loanamt-out">$0</b></label>
+                  <input id="hs-loanamt" type="range" min="0" max="5000000" step="10000" value="1200000"></div>
+
+                <div class="ig ig--full" data-show="investment">
+                  <label for="hs-rent">Estimated monthly rent</label>
+                  <input id="hs-rent" type="number" inputmode="numeric" min="0" step="50" value="7500" placeholder="$/month"></div>
+              </div>
+
+              <div class="paymode" role="group" aria-label="Payment mode">
+                <span class="paymode__k">Payment mode</span>
+                <button type="button" class="paymode__opt is-sel" data-paymode="pi">Principal &amp; Interest</button>
+                <button type="button" class="paymode__opt" data-paymode="io">Interest Only</button>
+              </div>
+
+              <div class="levers-inline">
+                <span class="levers-inline__k">Quick levers</span>
+                <button type="button" class="chip" data-lever-action="down+5">Down +5%</button>
+                <button type="button" class="chip" data-lever-action="down-5">Down −5%</button>
+                <button type="button" class="chip" data-lever-action="units1">1 unit</button>
+                <button type="button" class="chip" data-lever-action="units2">2 units</button>
+                <button type="button" class="chip" data-lever-action="primary">Primary</button>
+                <button type="button" class="chip" data-lever-action="invest">Investment</button>
+              </div>
+            </div>
+
+            <!-- D. Main result + county line -->
+            <div class="console__col console__col--result">
+              <div class="hero-result" data-hero-wrap>
+                <p class="hero-result__k" data-hero-k>Vs. the selected county line</p>
+                <p class="hero-result__v" data-hero>—</p>
+                <p class="hero-result__sub" data-hero-sub></p>
+              </div>
+
+              <div class="meter" data-meter>
+                <div class="meter__track">
+                  <span class="meter__fill" data-meter-loan></span>
+                  <span class="meter__over" data-meter-over hidden></span>
+                  <span class="meter__mark meter__mark--baseline" data-meter-baseline hidden></span>
+                  <span class="meter__mark meter__mark--line" data-meter-line></span>
+                </div>
+                <div class="meter__lbls"><span data-meter-loanlbl>Loan —</span><span data-meter-linelbl>County line —</span></div>
+              </div>
+
+              <dl class="scanner__out">
+                <div class="so"><dt>Current review path</dt><dd data-ho="path">—</dd></div>
+                <div class="so so--qual"><dt>Loan you could support (income-based)</dt><dd data-ho="qual">—</dd></div>
+                <div class="so"><dt>Est. income taxes (federal + state)</dt><dd data-ho="tax">—</dd></div>
+                <div class="so"><dt>Estimated loan amount</dt><dd data-ho="loan">—</dd></div>
+                <div class="so" data-ho-ltv-row><dt>Loan-to-value (LTV)</dt><dd data-ho="ltv">—</dd></div>
+                <div class="so" data-ho-mi-row hidden><dt>Mortgage insurance (PMI) est.</dt><dd data-ho="mi">—</dd></div>
+                <div class="so"><dt>County limit reference</dt><dd data-ho="limit">—</dd></div>
+                <div class="so"><dt>Assumed rate (score + income type)</dt><dd data-ho="raterow">—</dd></div>
+                <div class="so" data-ho-dscr-row hidden><dt>DSCR preview</dt><dd data-ho="dscr">—</dd></div>
+                <div class="so"><dt>Estimated P&amp;I preview</dt><dd data-ho="pi">—</dd></div>
+                <div class="so"><dt>Estimated interest-only preview</dt><dd data-ho="io">—</dd></div>
+                <div class="so"><dt>Interest-only vs amortizing</dt><dd data-ho="iodiff">—</dd></div>
+              </dl>
+              <p class="scanner__rate" data-ho="ratefactors"></p>
+              <p class="scanner__rate" data-ho="rate"></p>
+
+              <div class="cockpit__lever-callout">
+                <span class="cockpit__lever-k">Next best lever</span>
+                <span class="cockpit__lever-v" data-ho="nextlever">Confirm a property county to scan the structure.</span>
+              </div>
             </div>
           </div>
 
-          <div data-mode-refi hidden>
-            <div class="st-slider">
-              <div class="st-slider__lbl">Current loan balance <strong data-st-bal-out>$700,000</strong></div>
-              <label class="sr-only" for="st-bal">Current loan balance</label>
-              <input id="st-bal" type="range" min="0" max="5000000" step="10000" value="700000" data-st-bal>
+          <!-- F. Potential Review Paths -->
+          <div class="console__section">
+            <h3 class="console__h">Potential Review Paths <span class="console__h-sub">— structure paths the engine is comparing</span></h3>
+            <div class="pathmap pathmap--wide" role="img" aria-label="Potential review paths">
+              <div class="pathmap__node" data-node="conforming"><span class="pathmap__dot"></span><span class="pathmap__lbl">Conforming</span></div>
+              <div class="pathmap__node" data-node="high-balance"><span class="pathmap__dot"></span><span class="pathmap__lbl">High-Balance Conforming</span></div>
+              <div class="pathmap__node" data-node="jumbo"><span class="pathmap__dot"></span><span class="pathmap__lbl">Jumbo</span></div>
+              <div class="pathmap__node" data-node="interest-only-jumbo"><span class="pathmap__dot"></span><span class="pathmap__lbl">Interest-Only Jumbo</span></div>
+              <div class="pathmap__node" data-node="dscr"><span class="pathmap__dot"></span><span class="pathmap__lbl">DSCR</span></div>
+              <div class="pathmap__node" data-node="bank-statement"><span class="pathmap__dot"></span><span class="pathmap__lbl">Bank Statement</span></div>
+              <div class="pathmap__node" data-node="second-home"><span class="pathmap__dot"></span><span class="pathmap__lbl">Second Home</span></div>
+              <div class="pathmap__node" data-node="fha"><span class="pathmap__dot"></span><span class="pathmap__lbl">FHA</span></div>
+              <div class="pathmap__node" data-node="va"><span class="pathmap__dot"></span><span class="pathmap__lbl">VA</span></div>
+              <div class="pathmap__node pathmap__node--final" data-node="licensed-review"><span class="pathmap__dot"></span><span class="pathmap__lbl">Licensed Review / Other</span></div>
             </div>
-            <div class="st-slider" style="margin-top:18px">
-              <div class="st-slider__lbl">Desired cash-out (optional) <strong data-st-cash-out>$0</strong></div>
-              <label class="sr-only" for="st-cash">Desired cash-out amount</label>
-              <input id="st-cash" type="range" min="0" max="1500000" step="5000" value="0" data-st-cash>
+            <p class="erow__note">Structure-path comparison only — not qualification, eligibility, approval, or a commitment to lend. All paths end in licensed review.</p>
+          </div>
+
+          <!-- E. Payment & buydown strategy -->
+          <div class="console__section">
+            <h3 class="console__h">Payment &amp; buydown strategy</h3>
+            <div class="bd-points" role="group" aria-label="Buydown points">
+              <span class="bd-points__k">How much do you want to pay for the permanent buydown?</span>
+              <button type="button" class="chip" data-bd-points="0.5">0.5 pts</button>
+              <button type="button" class="chip is-sel" data-bd-points="1">1 pt</button>
+              <button type="button" class="chip" data-bd-points="1.5">1.5 pts</button>
             </div>
-            <p class="st__hint">This does not include financed closing costs, prepaid items, mortgage insurance, VA funding fee, FHA upfront MIP, or other costs that may affect the final loan amount.</p>
+            <div class="console__grid console__grid--bd">
+              <dl class="scanner__out">
+                <div class="so"><dt>Permanent buydown · P&amp;I before → after</dt><dd data-ho-bd-pi>—</dd></div>
+                <div class="so"><dt>Estimated monthly savings</dt><dd data-ho-bd-savings>—</dd></div>
+                <div class="so"><dt>Estimated buydown cost</dt><dd data-ho-bd-cost>—</dd></div>
+                <div class="so"><dt>Break-even</dt><dd data-ho-bd-be>—</dd></div>
+              </dl>
+              <dl class="scanner__out">
+                <div class="so"><dt>Temporary 2-1 · Yr1 / Yr2 / Standard</dt><dd data-ho-tb>—</dd></div>
+                <div class="so"><dt>Temporary 1-0 · Yr1 / Standard</dt><dd data-ho-tb10>—</dd></div>
+                <div class="so"><dt>Estimated subsidy (2-1)</dt><dd data-ho-tb-sub>—</dd></div>
+              </dl>
+            </div>
+            <p class="scanner__note" data-ho-bdnote></p>
           </div>
 
-          <p class="st__hint">Estimated loan amount: <strong data-st-loan>$920,000</strong></p>
-        </div>
-
-        <!-- Step 5 -->
-        <div class="st" data-step="5" hidden>
-          <span class="eyebrow">Step 5</span>
-          <h2 class="st__q">Occupancy</h2>
-          <div class="opt-grid" role="group" aria-label="Occupancy">
-            <button type="button" class="opt" data-field="occupancy" data-value="Primary residence">Primary residence</button>
-            <button type="button" class="opt" data-field="occupancy" data-value="Second home">Second home</button>
-            <button type="button" class="opt" data-field="occupancy" data-value="Investment property">Investment property</button>
+          <!-- Engine sees -->
+          <div class="console__section">
+            <h3 class="console__h">Engine sees <span class="console__h-sub">— deterministic, nothing is sent anywhere</span></h3>
+            <ul class="insights" data-ho-insights><li>Adjust the console to generate insights.</li></ul>
           </div>
+
+          <p class="scanner__note" data-ho-note></p>
+          <p class="scanner__note" data-ho-ionote></p>
         </div>
 
-        <!-- Step 6 -->
-        <div class="st" data-step="6" hidden>
-          <span class="eyebrow">Step 6</span>
-          <h2 class="st__q">Property type</h2>
-          <div class="opt-grid" role="group" aria-label="Property type">
-            <button type="button" class="opt" data-field="property_type" data-value="Single-family home">Single-family home</button>
-            <button type="button" class="opt" data-field="property_type" data-value="Condo">Condo</button>
-            <button type="button" class="opt" data-field="property_type" data-value="Townhome">Townhome</button>
-            <button type="button" class="opt" data-field="property_type" data-value="2–4 unit property">2–4 unit property</button>
-            <button type="button" class="opt" data-field="property_type" data-value="Not sure">Not sure</button>
+        <!-- Conversion CTA — routes to the on-page Key West scenario form -->
+        <div class="console__cta" data-cta>
+          <a class="btn btn--primary btn--lg" data-cta-app href="#lead" hidden>Review My Key West Scenario →</a>
+          <p class="cta-helper" data-cta-helper hidden>Send this scenario to a licensed mortgage professional with West Coast Capital Mortgage Inc. for a no-pressure review. No credit check to start. This is not a loan application, approval, or commitment to lend.</p>
+
+          <div class="state-block" data-cta-state hidden>
+            <p class="state-block__title">Confirm a Florida property county to continue.</p>
+            <p class="state-block__text">K West Mortgage focuses on Key West &amp; Monroe County and Florida scenarios. Confirm a Florida property county above, or send your scenario and a licensed mortgage professional can review it.</p>
+            <a class="btn btn--ghost btn--lg" data-cta-contact href="#lead">Review My Key West Scenario →</a>
           </div>
-        </div>
 
-        <!-- Step 7 -->
-        <div class="st" data-step="7" hidden>
-          <span class="eyebrow">Step 7</span>
-          <h2 class="st__q">Income situation</h2>
-          <div class="opt-grid" role="group" aria-label="Income situation">
-            <button type="button" class="opt" data-field="income_situation" data-value="W2 employee">W2 employee</button>
-            <button type="button" class="opt" data-field="income_situation" data-value="Self-employed">Self-employed</button>
-            <button type="button" class="opt" data-field="income_situation" data-value="Business owner">Business owner</button>
-            <button type="button" class="opt" data-field="income_situation" data-value="Retired">Retired</button>
-            <button type="button" class="opt" data-field="income_situation" data-value="Investor / rental income">Investor / rental income</button>
-            <button type="button" class="opt" data-field="income_situation" data-value="Mixed income">Mixed income</button>
-            <button type="button" class="opt" data-field="income_situation" data-value="Other">Other</button>
-          </div>
-        </div>
+          <p class="cta-prompt" data-cta-prompt hidden>Confirm the property county before sending your scenario.</p>
 
-        <!-- Step 8 -->
-        <div class="st" data-step="8" hidden>
-          <span class="eyebrow">Step 8</span>
-          <h2 class="st__q">Main concern</h2>
-          <div class="opt-grid" role="group" aria-label="Main concern">
-            <button type="button" class="opt" data-field="main_concern" data-value="I want to avoid jumbo if possible">Avoid jumbo if possible</button>
-            <button type="button" class="opt" data-field="main_concern" data-value="I want the lowest payment strategy">Lowest payment strategy</button>
-            <button type="button" class="opt" data-field="main_concern" data-value="I need self-employed options">Self-employed options</button>
-            <button type="button" class="opt" data-field="main_concern" data-value="I want DSCR / rental-income options">DSCR / rental-income options</button>
-            <button type="button" class="opt" data-field="main_concern" data-value="I need VA review">VA review</button>
-            <button type="button" class="opt" data-field="main_concern" data-value="I need FHA review">FHA review</button>
-            <button type="button" class="opt" data-field="main_concern" data-value="I want to understand my options before making an offer">Understand my options before an offer</button>
-          </div>
+          <p class="cockpit__hint">Deterministic engine. We never calculate on a guessed or default county — you confirm the property location first. Not approval, qualification, rate quote, APR, loan estimate, or commitment to lend.</p>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Step 9 -->
-        <div class="st" data-step="9" hidden>
-          <span class="eyebrow">Step 9</span>
-          <h2 class="st__q">Where should the review go?</h2>
-          <p class="st__sub">Your scenario details are organized — add your contact info so a licensed mortgage professional can follow up.</p>
+  <!-- ============ COMPLIANCE STRIP ============ -->
+  <section class="compliance-strip"><div class="wrap">
+    <p>Educational structure estimate only. Not approval, qualification, rate quote, APR, loan estimate, or commitment to lend. County lines use the official FHFA 2026 conforming and HUD/FHA forward limits for Florida counties (Monroe County / Key West and statewide). ZIP lookup uses the official HUD CHUMS ZIP file (single-county auto-detect; multi-county ZIPs ask you to confirm). Verify current FHFA/Fannie/Freddie/HUD values before relying on any figure.</p>
+  </div></section>
+
+  <!-- ============ LEAD CAPTURE (Key West Strategy Studio) ============ -->
+  <section class="section section--sand" id="lead">
+    <div class="wrap split">
+      <div class="reveal">
+        <span class="eyebrow">Send Your Scenario</span>
+        <h2>Have a Licensed Professional Review Your Key West Scenario</h2>
+        <p class="lead">The console organizes the numbers; a licensed mortgage professional with West Coast Capital Mortgage Inc. reviews the next step. Share a few details and we’ll review which option <em>may</em> fit — subject to guidelines. No credit check to start.</p>
+        <div class="note-strip" style="margin-top:20px">This is not a loan application, approval, rate quote, or commitment to lend.</div>
+        <p class="form-note" style="margin-top:16px">Prefer to talk now? Call <a href="tel:+15619568866">(561) 956-8866</a> or email <a href="mailto:info@kwestmortgages.com">info@kwestmortgages.com</a>.</p>
+      </div>
+      <div class="form-shell reveal">
+        <form name="key-west-strategy-studio" method="POST" action="/thank-you.html" data-netlify="true" netlify-honeypot="bot-field">
+          <input type="hidden" name="form-name" value="key-west-strategy-studio" />
+          <input type="hidden" name="scenario_snapshot" data-studio-snapshot value="" />
+          <p hidden aria-hidden="true"><label>Leave this field empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
           <div class="form-grid">
-            <div class="field"><label for="st-name">Name <span class="req">*</span></label><input id="st-name" data-c="name" type="text" placeholder="Your name" autocomplete="name" required></div>
-            <div class="field"><label for="st-phone">Phone <span class="req">*</span></label><input id="st-phone" data-c="phone" type="tel" placeholder="(000) 000-0000" autocomplete="tel" required></div>
-            <div class="field full"><label for="st-email">Email <span class="req">*</span></label><input id="st-email" data-c="email" type="email" placeholder="you@email.com" autocomplete="email" required></div>
-            <div class="field"><label for="st-contact">Preferred contact method</label><select id="st-contact" data-c="preferred_contact_method"><option value="">Select…</option><option>Phone</option><option>Email</option><option>Text</option></select></div>
-            <div class="field full"><label for="st-msg">Message / notes</label><textarea id="st-msg" data-c="message" placeholder="Anything else we should know about your Key West purchase…"></textarea></div>
+            <div class="field"><label>Name <span class="req">*</span></label><input name="name" type="text" placeholder="Your name" required></div>
+            <div class="field"><label>Phone <span class="req">*</span></label><input name="phone" type="tel" placeholder="(000) 000-0000" required></div>
+            <div class="field full"><label>Email <span class="req">*</span></label><input name="email" type="email" placeholder="you@email.com" required></div>
+            <div class="field"><label>Occupancy</label><select name="occupancy"><option value="">Select…</option><option>Primary residence</option><option>Second home</option><option>Investment property</option></select></div>
+            <div class="field"><label>Preferred contact</label><select name="preferred_contact_method"><option value="">Select…</option><option>Call</option><option>Text</option><option>Email</option></select></div>
+            <div class="field full"><label>Message</label><textarea name="message" placeholder="Tell us about your Key West scenario…"></textarea></div>
           </div>
-
-          <details class="adv">
-            <summary>Advanced details (optional)</summary>
-            <div class="form-grid" style="margin-top:16px">
-              <div class="field"><label for="st-timeline">Timeline</label><select id="st-timeline" data-adv="timeline"><option value="">Select…</option><option>Already under contract</option><option>Making an offer soon</option><option>0–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just researching</option></select></div>
-              <div class="field"><label for="st-preapproval">Need a pre-approval letter?</label><select id="st-preapproval" data-adv="preapproval"><option value="">Select…</option><option>Yes, soon</option><option>Not yet</option></select></div>
-              <div class="field"><label for="st-realtor">Working with a realtor?</label><select id="st-realtor" data-adv="realtor"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
-              <div class="field"><label for="st-rental">Expect to use rental income?</label><select id="st-rental" data-adv="rental_income"><option value="">Select…</option><option>Yes</option><option>No</option><option>Not sure</option></select></div>
-              <div class="field"><label for="st-veteran">Veteran (want VA review)?</label><select id="st-veteran" data-adv="veteran"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
-              <div class="field"><label for="st-funds">Using funds from another sale / 1031 / gift?</label><select id="st-funds" data-adv="funds_source"><option value="">Select…</option><option>Sale proceeds</option><option>1031 exchange</option><option>Gift funds</option><option>None of these</option></select></div>
-            </div>
-          </details>
-
-          <label class="consent">
-            <input type="checkbox" data-consent>
-            <span>By submitting, I agree to be contacted by a licensed mortgage professional by phone, email, or text regarding my mortgage scenario. Message and data rates may apply. I understand this is not a loan application, loan approval, rate quote, underwriting decision, or commitment to lend.</span>
-          </label>
-          <p class="st__hint" style="margin-top:8px">No credit check is performed to start.</p>
-        </div>
-
-        <!-- Result -->
-        <div class="st-result" data-result hidden>
-          <span class="eyebrow">Scenario Ready</span>
-          <h2 class="st__q">Your Key West Mortgage Scenario Is Ready for Review</h2>
-          <div class="result-card">
-            <dl class="snap__list" data-result-summary></dl>
-            <div class="result-paths">
-              <span class="snap__k">Suggested review paths</span>
-              <div class="chiprow" data-result-paths></div>
-            </div>
-            <div class="result-attention" data-result-attention-wrap hidden>
-              <span class="snap__k">Attention items</span>
-              <ul class="snap__insights" data-result-attention></ul>
-            </div>
-          </div>
-          <p class="st__sub">Based on what you shared, a licensed mortgage professional can review whether your scenario may fit one or more available mortgage options. Jumbo may be the right path for some buyers — the goal is to compare whether conforming, high-balance conforming, jumbo, or another option should be reviewed.</p>
-          <div class="result-actions">
-            <button type="button" class="btn btn--primary btn--lg" data-st-send>Send My Scenario for Licensed Review</button>
-            <button type="button" class="btn btn--ghost" data-st-edit>Edit My Scenario</button>
-            <button type="button" class="btn btn--soft" data-st-copy>Copy Scenario Summary</button>
-          </div>
-          <p class="form-note" data-st-sendnote>This is not a loan approval or commitment to lend.</p>
-        </div>
-
-        <!-- Thank-you (after submit) -->
-        <div class="st-thanks" data-thanks hidden>
-          <div class="form-success__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
-          <h2 class="st__q">Your scenario has been sent for licensed review.</h2>
-          <p class="lead">Thank you. A licensed mortgage professional will review your information and contact you.</p>
-          <div class="next-steps">
-            <span class="snap__k">What happens next</span>
-            <ol>
-              <li>We review the scenario details</li>
-              <li>We compare possible loan paths</li>
-              <li>We contact you with next steps</li>
-            </ol>
-          </div>
-          <p class="form-note">This is not a loan approval or commitment to lend. No credit check is performed to start.</p>
-          <a class="btn btn--ghost" href="index.html">Back to Home</a>
-        </div>
-
-        <!-- Flow controls -->
-        <div class="studio__nav" data-st-controls>
-          <button type="button" class="btn btn--soft" data-st-back disabled>← Back</button>
-          <button type="button" class="btn btn--primary" data-st-next>Next →</button>
-        </div>
+          <button type="submit" class="btn btn--primary btn--lg btn--block" style="margin-top:22px">Review My Key West Scenario</button>
+          <p class="form-note">By submitting, you agree to be contacted by a licensed mortgage professional. The strategy snapshot above is an educational illustration only — not a loan application, approval, or commitment to lend.</p>
+        </form>
       </div>
-
-      <!-- ============ RIGHT: LIVE SNAPSHOT ============ -->
-      <aside class="studio__panel" aria-label="Live scenario snapshot">
-        <div class="snap glass">
-          <h3 class="snap__title">Live Scenario Snapshot</h3>
-          <dl class="snap__list">
-            <div class="snap__row"><dt>Purchase price / value</dt><dd data-snap-price>$1,150,000</dd></div>
-            <div class="snap__row"><dt>Down payment / equity</dt><dd data-snap-down>$230,000 (20%)</dd></div>
-            <div class="snap__row"><dt>Estimated loan amount</dt><dd data-snap-loan>$920,000</dd></div>
-            <div class="snap__row"><dt>Occupancy</dt><dd data-snap-occ>—</dd></div>
-            <div class="snap__row"><dt>Property type</dt><dd data-snap-type>—</dd></div>
-            <div class="snap__row"><dt>Income type</dt><dd data-snap-income>—</dd></div>
-          </dl>
-          <div class="snap__path">
-            <span class="snap__k">Current review path</span>
-            <span class="qc__badge" data-snap-path aria-live="polite">High-Balance Conforming Review</span>
-          </div>
-          <div class="qc__meter">
-            <div class="qc__meter-track">
-              <span class="qc__meter-fill" data-snap-fill></span>
-              <span class="qc__tick" data-snap-tick1></span>
-              <span class="qc__tick" data-snap-tick2></span>
-            </div>
-            <div class="qc__meter-labels"><span>Conforming</span><span>High-Balance</span><span>Jumbo</span></div>
-          </div>
-          <div class="pstruct" data-pstruct aria-hidden="true"></div>
-          <p class="pstruct__note" data-pstruct-note></p>
-          <div class="snap__cx">
-            <span class="snap__k">Scenario complexity</span>
-            <span class="cx-badge" data-snap-cx>Simple Review</span>
-          </div>
-          <p class="snap__cxnote">Complexity does not mean bad. It simply means the scenario should be organized before a licensed review.</p>
-          <ul class="snap__insights" data-snap-insights aria-live="polite"></ul>
-        </div>
-
-        <div class="whatif glass" data-whatif aria-live="polite">
-          <h3 class="snap__title">What If I Want to Stay Before Jumbo?</h3>
-          <div data-whatif-body></div>
-          <p class="qc__ref" data-whatif-note></p>
-        </div>
-
-        <div class="pathcards glass">
-          <h3 class="snap__title">Review Path Cards</h3>
-          <div class="pathcards__grid" data-pathcards></div>
-          <p class="qc__ref">Statuses are educational only and may change after a full review. Final review by a licensed mortgage professional; subject to guidelines.</p>
-        </div>
-      </aside>
     </div>
-
-    <p class="studio__compliance">
-      This tool is for education and scenario organization only. It is not a loan application, loan approval, rate quote, underwriting decision, or commitment to lend. Final review is completed by a licensed mortgage professional. No credit check is performed to start. All loan options are subject to borrower qualification, property eligibility, underwriting approval, and current program guidelines.
-    </p>
-  </div>
-</section>
-
-<!-- ============ KEY WEST STRATEGY DASHBOARD ============ -->
-<section class="section section--sand studio-dash" id="dashboard">
-  <div class="wrap">
-    <div class="section-head center"><span class="eyebrow">Your Key West Strategy Dashboard</span><h2>Estimates Update As You Build Your Scenario</h2></div>
-
-    <!-- Assumptions FIRST — a few inputs make the payment estimate more accurate -->
-    <div class="glass dash-block dash-assume">
-      <h3 class="snap__title">Start With a Few Assumptions</h3>
-      <p class="st__sub" style="margin-top:-6px">Add your estimated rate, taxes, insurance, flood, and HOA below — the more you add, the more accurate your estimated monthly housing cost becomes. Leave blank to start with Principal &amp; Interest only.</p>
-      <details class="adv" open>
-        <summary>Assumptions (editable)</summary>
-        <div class="form-grid" style="margin-top:14px">
-          <div class="field"><label for="a-rate">Interest rate assumption (%)</label><input id="a-rate" data-a="rate" type="text" inputmode="decimal" placeholder="(auto by program)"></div>
-          <div class="field"><label for="a-term">Loan term (years)</label><input id="a-term" data-a="term" type="text" inputmode="numeric" placeholder="30"></div>
-          <div class="field"><label for="a-tax">Property tax (annual)</label><input id="a-tax" data-a="taxAnnual" type="text" inputmode="numeric" placeholder="$"></div>
-          <div class="field"><label for="a-hoi">Homeowners / wind (annual)</label><input id="a-hoi" data-a="homeownersAnnual" type="text" inputmode="numeric" placeholder="$"></div>
-          <div class="field"><label for="a-flood">Flood insurance (annual)</label><input id="a-flood" data-a="floodAnnual" type="text" inputmode="numeric" placeholder="$"></div>
-          <div class="field"><label for="a-hoa">HOA (monthly)</label><input id="a-hoa" data-a="hoaMonthly" type="text" inputmode="numeric" placeholder="$"></div>
-          <div class="field"><label for="a-mi">Mortgage insurance (monthly)</label><input id="a-mi" data-a="miMonthly" type="text" inputmode="numeric" placeholder="$"></div>
-          <div class="field"><label for="a-other">Other monthly cost</label><input id="a-other" data-a="otherMonthly" type="text" inputmode="numeric" placeholder="$"></div>
-          <div class="field full"><label for="a-rent">Estimated monthly rent (investment / DSCR)</label><input id="a-rent" data-a="monthlyRent" type="text" inputmode="numeric" placeholder="$"></div>
-        </div>
-        <p class="qc__ref">Key West insurance, flood, taxes, HOA, and condo costs can vary significantly by property. These assumptions are for scenario planning only.</p>
-      </details>
-    </div>
-
-    <div class="dash-cards" data-dash-cards></div>
-
-    <!-- Payment stack (full width) -->
-    <div class="glass dash-block">
-      <h3 class="snap__title">Estimated Monthly Housing Cost (PITIA)</h3>
-      <div class="paystack" data-paystack></div>
-      <div class="paystack__total">Estimated monthly housing cost <strong data-pitia-total>—</strong></div>
-      <p class="qc__ref">Educational estimate only. Not a rate quote, APR, loan estimate, approval, or commitment to lend. Rate assumption: <span data-rate-assump>—</span> · assumptions last updated <span data-rate-updated>—</span>.</p>
-    </div>
-
-    <!-- DSCR (investment / DSCR concern only) -->
-    <div class="glass dash-block" data-dscr-block hidden>
-      <h3 class="snap__title">DSCR Math Illustration</h3>
-      <div class="dscr" data-dscr></div>
-      <p class="qc__ref">DSCR math illustration only. Lender DSCR requirements vary by program, property, credit, reserves, and guidelines. Not approval or qualification. Add an estimated monthly rent in Assumptions to view DSCR math.</p>
-    </div>
-
-    <!-- Rate Buydown Strategy -->
-    <div class="glass dash-block">
-      <h3 class="snap__title">Rate Buydown Strategy</h3>
-      <div class="bd-tabs" role="tablist">
-        <button type="button" class="bd-tab is-on" data-bd-tab="perm" aria-selected="true">Permanent</button>
-        <button type="button" class="bd-tab" data-bd-tab="temp" aria-selected="false">Temporary</button>
-      </div>
-
-      <div data-bd-pane="perm">
-        <div class="form-grid">
-          <div class="field"><label for="bd-cur">Current rate assumption (%)</label><input id="bd-cur" data-bd="bdCurrentRate" type="text" inputmode="decimal" placeholder="(auto)"></div>
-          <div class="field"><label for="bd-bd">Buydown rate assumption (%)</label><input id="bd-bd" data-bd="bdBuydownRate" type="text" inputmode="decimal" placeholder="(auto −0.5)"></div>
-          <div class="field"><label for="bd-pts">Buydown cost (points)</label><input id="bd-pts" data-bd="bdPoints" type="text" inputmode="decimal" placeholder="1.5"></div>
-        </div>
-        <div class="bd-grid" data-bd-perm></div>
-        <div class="bd-hold">
-          <label for="bd-hold">Expected time in home / loan: <strong data-bd-hold-out>5 years</strong></label>
-          <input id="bd-hold" type="range" min="1" max="10" step="1" value="5" data-bd-hold>
-        </div>
-        <div class="bd-timeline" data-bd-timeline></div>
-        <p class="bd-verdict" data-bd-verdict></p>
-      </div>
-
-      <div data-bd-pane="temp" hidden>
-        <div class="form-grid">
-          <div class="field"><label for="bd-type">Temporary buydown</label><select id="bd-type" data-bd="bdTempType"><option value="2-1">2-1 Buydown</option><option value="1-0">1-0 Buydown</option><option value="custom">Custom</option></select></div>
-          <div class="field"><label for="bd-note">Note rate assumption (%)</label><input id="bd-note" data-bd="bdNoteRate" type="text" inputmode="decimal" placeholder="(auto)"></div>
-          <div class="field"><label for="bd-fund">Funding source</label><select id="bd-fund" data-bd="bdFunding"><option value="">Select…</option><option>Seller credit</option><option>Builder credit</option><option>Lender credit</option><option>Borrower funds</option><option>Not sure</option></select></div>
-        </div>
-        <p class="qc__ref">A temporary buydown usually lowers the payment for an initial period while the note rate remains the actual loan rate. The subsidy is typically funded upfront by an approved source, subject to program guidelines.</p>
-        <div class="bd-ladder" data-bd-ladder></div>
-        <div class="bd-subsidy" data-bd-subsidy></div>
-      </div>
-
-      <div class="bd-compare">
-        <div class="bd-ccard"><h4>Permanent Buydown</h4><ul><li>Lower rate for the life of the loan</li><li>Higher upfront cost</li><li>Break-even depends on how long you keep the loan</li></ul></div>
-        <div class="bd-ccard"><h4>Temporary Buydown</h4><ul><li>Lower payment for the first 1–2 years</li><li>Note rate does not permanently change</li><li>Often depends on seller / builder / lender credit availability</li></ul></div>
-      </div>
-
-      <p class="bd-insight" data-bd-insight></p>
-      <p class="qc__ref">Rates, points, credits, and buydown structures are assumptions for educational scenario planning only. They are not rate quotes, APRs, locked rates, approvals, or commitments to lend. Final terms depend on borrower qualification, property eligibility, market conditions, lender pricing, seller credits, program rules, underwriting approval, and current guidelines.</p>
-    </div>
-
-    <!-- Smart explanation -->
-    <div class="glass dash-block">
-      <h3 class="snap__title">Smart Scenario Explanation</h3>
-      <div class="explain" data-explain></div>
-    </div>
-
-    <p class="qc__ref" data-limit-note style="text-align:center;max-width:80ch;margin:18px auto 0"></p>
-  </div>
-</section>
+  </section>
 </main>
-
-<!-- Hidden static form so Netlify detects "key-west-strategy-studio" at deploy -->
-<form name="key-west-strategy-studio" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="hidden" name="form-name" value="key-west-strategy-studio" />
-  <input name="bot-field" />
-  <input name="lead_source" />
-  <input name="page_url" />
-  <input name="timestamp" />
-  <input name="market_name" />
-  <input name="county_name" />
-  <input name="configured_limit_year" />
-  <input name="purchase_price_or_value" />
-  <input name="down_payment_or_equity" />
-  <input name="down_payment_percentage" />
-  <input name="estimated_loan_amount" />
-  <input name="property_location" />
-  <input name="occupancy" />
-  <input name="property_type" />
-  <input name="income_situation" />
-  <input name="main_concern" />
-  <textarea name="suggested_review_paths"></textarea>
-  <input name="scenario_complexity" />
-  <input name="what_if_additional_down_payment" />
-  <input name="lead_intent_level" />
-  <input name="lead_tags" />
-  <textarea name="scenario_summary"></textarea>
-  <input name="name" />
-  <input name="email" />
-  <input name="phone" />
-  <input name="preferred_contact_method" />
-  <textarea name="message"></textarea>
-</form>
 
 <footer class="site-footer"><div class="wrap">
   <div class="footer-grid">
@@ -475,8 +394,11 @@
   <div class="cookie-actions"><button class="btn btn--primary" data-consent-accept>Accept</button><button class="btn btn--ghost" data-consent-decline>Decline</button></div>
 </div>
 
-<script src="js/market-config.js?v=6" defer></script>
-<script src="js/kwest.js?v=6" defer></script>
-<script src="js/studio.js?v=6" defer></script>
+<script src="js/rate-config.js?v=7" defer></script>
+<script src="js/loan-limits.js?v=7" defer></script>
+<script src="js/engine.js?v=7" defer></script>
+<script src="js/studio-compliance.js?v=7" defer></script>
+<script src="js/kwest.js?v=7" defer></script>
+<script src="js/studio-app.js?v=7" defer></script>
 </body>
 </html>
