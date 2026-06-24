@@ -184,6 +184,7 @@ export default function App() {
     setPartialLeadCount(0);
     setDeliveryFailed(false);
     setInput('');
+    setScreen('chat');
     try { localStorage.removeItem('wcci-session'); } catch {}
   }
 
@@ -372,7 +373,12 @@ export default function App() {
       <div style={{ height: 'calc(100vh - env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
         {/* Chat header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'white', borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', flexShrink: 0 }}>
-          <button onClick={() => setScreen('landing')} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: '4px 8px', flexShrink: 0 }}>{t.back}</button>
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+            <button onClick={() => setScreen('landing')} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: '4px 8px' }}>{t.back}</button>
+            {messages.length > 1 && (
+              <button onClick={resetSession} style={{ background: 'none', border: '1px solid #e2e8f0', color: '#94a3b8', cursor: 'pointer', fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 6 }}>{t.startOver}</button>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>AI</div>
             <div style={{ minWidth: 0 }}>
