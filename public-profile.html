@@ -18,7 +18,7 @@
 /* ── Personal identity header — IDENTITY-FIRST, no cover banner. Personal public
    profiles represent people, not brands; cover/visual branding lives on business
    pages, showcases, and opportunities. The name is never overlaid on an image. ── */
-.pp-idhead-wrap{max-width:1160px;margin:0 auto;padding:26px 40px 0}
+.pp-idhead-wrap{max-width:900px;margin:0 auto;padding:26px 40px 0}
 .pp-idhead-back{display:inline-block;color:var(--text3);font-size:12px;text-decoration:none;font-family:'IBM Plex Mono',monospace;letter-spacing:.02em;margin-bottom:20px}
 .pp-idhead-back:hover{color:var(--text2)}
 .pp-idhead{display:flex;align-items:flex-start;gap:22px}
@@ -40,7 +40,7 @@
 .pp-idhead .pp-stat-v{color:var(--text)}
 .pp-idhead .pp-stat-l{color:var(--text3)}
 .pp-idhead .pp-stat-sep{background:var(--border2)}
-.pp-idhead-rule{max-width:1160px;margin:24px auto 0;padding:0 40px}
+.pp-idhead-rule{max-width:900px;margin:24px auto 0;padding:0 40px}
 .pp-idhead-rule hr{border:0;border-top:1px solid var(--border);margin:0}
 @media(max-width:760px){
   .pp-idhead-wrap{padding:18px 18px 0}
@@ -93,10 +93,9 @@
 .pp-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
 @media(max-width:760px){.pp-actions{justify-content:flex-start;margin-top:10px}}
 /* Recently Active panel — sits to the left of content, pulls into left margin on wide screens */
-.pp-active-panel{float:left;width:280px;margin:0 28px 20px 0;background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-@media(min-width:1500px){.pp-active-panel{margin-left:-200px}}
-@media(min-width:1700px){.pp-active-panel{margin-left:-300px}}
-@media(max-width:1200px){.pp-active-panel{float:none;width:auto;margin:0 0 20px 0}}
+/* Connections — a clean in-flow section (no longer a floating left rail), so the
+   page reads as one balanced, shareable column. */
+.pp-active-panel{width:100%;margin:0;background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
 
 @keyframes pp-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
@@ -352,18 +351,18 @@ Pegasus.boot(async function () {
   if(mDesc) mDesc.content = (p.professional_title||roleLabel(p.role)) + (p.company_name?' · '+p.company_name:'') + (p.markets&&p.markets.length?' · '+p.markets.slice(0,2).join(', '):'');
   if(p.avatar_url){var og=document.createElement('meta');og.setAttribute('property','og:image');og.content=p.avatar_url;document.head.appendChild(og);}
 
-  /* ── Tags ── */
+  /* ── Header badges — trust signals ONLY (Verified / Ambassador). Role is shown
+     once as the role line; markets belong to the member's business pages, not the
+     person, so they are NOT shown as personal badges here. ── */
   var tags = '';
   if(p.verification_status==='verified') tags+='<span class="pp-tag pp-tag-v">✓ Verified</span>';
   if(p.ambassador_status) tags+='<span class="pp-tag pp-tag-a">⬡ Ambassador</span>';
-  if(p.role) tags+='<span class="pp-tag pp-tag-r">'+esc(roleLabel(p.role))+'</span>';
-  (p.markets||[]).slice(0,3).forEach(function(m){tags+='<span class="pp-tag pp-tag-m">'+esc(m)+'</span>';});
 
-  /* ── Mini stats ── */
+  /* ── Mini stats — clean, presentation-grade (location · member since). The
+     internal completion % and market counts are not shown on the public page. ── */
   var statsHtml =
-    '<div class="pp-stat"><span class="pp-stat-v">'+(p.profile_completion||20)+'%</span><span class="pp-stat-l">complete</span></div>'+
-    (p.markets&&p.markets.length?'<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+p.markets.length+'</span><span class="pp-stat-l">markets</span></div>':'')+
-    '<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+new Date(p.created_at||Date.now()).getFullYear()+'</span><span class="pp-stat-l">member since</span></div>';
+    (p.location?'<div class="pp-stat"><span class="pp-stat-l">📍</span><span class="pp-stat-v">'+esc(p.location)+'</span></div><div class="pp-stat-sep"></div>':'')+
+    '<div class="pp-stat"><span class="pp-stat-v">Member since '+new Date(p.created_at||Date.now()).getFullYear()+'</span></div>';
 
   /* ── Hero action area — owner controls live in a clean bar below the hero, so
      the hero stays a presentation. Visitors get the connect CTAs. ── */
@@ -423,11 +422,8 @@ Pegasus.boot(async function () {
         p.expertise_areas.map(function(x){return'<span class="cid-chip">'+esc(x)+'</span>';}).join('')+
       '</div></div>';
     }
-    if(p.markets&&p.markets.length){
-      out+='<div class="cid-section"><div class="cid-label">Active Markets</div><div class="cid-chips">'+
-        p.markets.map(function(m){return'<span class="cid-chip">'+esc(m)+'</span>';}).join('')+
-      '</div></div>';
-    }
+    /* Active Markets intentionally NOT shown on the personal identity — markets
+       belong to the member's business pages, not the person. */
     if(p.specialties&&p.specialties.length){
       var sp7=p.specialties.slice(0,7);
       var spMore=p.specialties.length>7 ? '<span class="cid-chip" style="color:var(--text3)">+'+(p.specialties.length-7)+' more</span>' : '';
@@ -541,7 +537,7 @@ Pegasus.boot(async function () {
         '<div class="pp-idhead">'+
           '<div class="pp-idhead-av">'+avHtml+'</div>'+
           '<div class="pp-idhead-main">'+
-            '<h1 class="pp-idhead-name">'+esc(name)+(p.company_name?' <span class="pp-idhead-org">@'+esc(p.company_name)+'</span>':'')+'</h1>'+
+            '<h1 class="pp-idhead-name">'+esc(name)+'</h1>'+
             '<div class="pp-idhead-role">'+esc(roleLabel(p.role))+'</div>'+
             (headlineText?'<div class="pp-idhead-headline">'+esc(headlineText)+'</div>':'')+
             ((trustBadges(p)||tags)?'<div class="pp-idhead-badges">'+(trustBadges(p)||'')+(tags||'')+'</div>':'')+
@@ -562,15 +558,7 @@ Pegasus.boot(async function () {
       /* Owner controls now live in the single 'Manage Profile' dropdown in the
          top-right header (rendered by core, owner-gated via __PEG_OWNER_NAV). */
 
-      /* 1. Businesses & Projects — compact logo TILE strip near the top
-         (populated async). No full cards/buttons here — tiles are clickable. */
-      '<div id="pp-biz-strip" style="display:none;margin-bottom:24px"></div>'+
-
-      /* Network Signals — left column, directly under the hero, for all viewers
-         (visibility-safe). Owner controls live only in the floating Manage menu. */
-      '<div id="pp-active-members" class="pp-active-panel"></div>'+
-
-      /* 2. CURRENT FOCUS — main column, top */
+      /* 1. CURRENT FOCUS — the headline statement, right under the identity */
       (p.current_focus?
         '<div class="pp-focus">'+
           '<div class="pp-focus-label">Current Focus</div>'+
@@ -578,7 +566,7 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
-      /* 3. ABOUT */
+      /* 2. ABOUT */
       (p.bio?
         '<section class="pp-sec">'+
           '<div class="pp-sec-label">About</div>'+
@@ -586,10 +574,14 @@ Pegasus.boot(async function () {
         '</section>'
       :'')+
 
-      /* 4. PROFESSIONAL IDENTITY — role, company, markets, specialties, and
-         Online Presence / social links (the identity card was previously built
-         but never placed in the page). */
+      /* 3. PROFESSIONAL IDENTITY — role, affiliations, expertise, specialties,
+         and Online Presence / social links. */
       '<section class="pp-sec"><div class="pp-sec-label">Professional Identity</div><div class="pp-card">'+idFields+'</div></section>'+
+
+      /* 4. BUSINESSES & PROJECTS — the businesses this person owns / manages, sat
+         directly below the "Business Owner" identity (populated async). Tiles are
+         clickable; markets and visual branding live on those business pages. */
+      '<section class="pp-sec" id="pp-biz-strip" style="display:none"></section>'+
 
       /* Ecosystem identity (ecosystem members) */
       ((p.ecosystem_contribution||p.ecosystem_goals)?
@@ -598,6 +590,10 @@ Pegasus.boot(async function () {
           (p.ecosystem_goals?'<div class="pp-sec-label" style="margin-top:22px">Open To</div><div class="pp-about"><p>'+esc(p.ecosystem_goals)+'</p></div>':'')+
         '</section>'
       :'')+
+
+      /* 5. CONNECTIONS — accepted connections as one clean section (no longer a
+         floating rail). */
+      '<section class="pp-sec"><div id="pp-active-members" class="pp-active-panel"></div></section>'+
 
       /* Showcase band intentionally REMOVED from the personal profile: featured
          opportunities, deals, and listings belong to a business/project page,
@@ -796,9 +792,9 @@ Pegasus.boot(async function () {
                 '<a class="btn btn-ghost btn-sm" href="/network-requests.html#connection-inbox">Open Workspace Requests</a>'+
               '</div>';
           } else {
-            panel.innerHTML=
-              '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Connected Network</div>'+
-              '<div style="font-size:11.5px;color:var(--text3);line-height:1.5">No public connections yet.</div>';
+            /* Visitors / shared view: don't show an empty "no connections" card —
+               keep the public, shareable page clean. */
+            var _s=panel.closest('.pp-sec'); (_s||panel).remove();
           }
           return;
         }
@@ -829,8 +825,8 @@ Pegasus.boot(async function () {
             ? '<div style="display:flex;flex-direction:column;gap:6px;padding-top:10px"><a href="/members.html" style="display:block;font-size:11px;color:var(--blue-lt);text-align:center;text-decoration:none">Explore Members Network →</a></div>'
             : '');
       }catch(e){
-        /* If the RPC is not yet deployed, hide the panel rather than leak stale data. */
-        if(!isOwner) panel.remove();
+        /* If the RPC is not yet deployed, hide the section rather than leak stale data. */
+        if(!isOwner){ var _s=panel.closest('.pp-sec'); (_s||panel).remove(); }
         else {
           panel.innerHTML='<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">My Connections</div>'+
             '<div style="font-size:11.5px;color:var(--text3);line-height:1.55;margin-bottom:10px">Connections will appear here once you accept your first connection request.</div>'+
@@ -881,9 +877,8 @@ Pegasus.boot(async function () {
             '<div style="width:84px;height:84px;border-radius:14px;border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:600;font-size:13px">+'+(list.length-5)+'</div>'+
             '<div style="font-size:11px;color:var(--blue)">View all</div></button>'
         : '';
-      var manageLink = anyOwn ? '<a href="/my-presences.html" style="font-size:11px;color:var(--blue);text-decoration:none">Manage Businesses →</a>' : '';
-      strip.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 16px">'+
-          '<span style="font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--text3)">Businesses &amp; Projects</span>'+manageLink+'</div>'+
+      var manageLink = anyOwn ? '<a href="/my-presences.html" class="pp-card-action">Manage Businesses →</a>' : '<span></span>';
+      strip.innerHTML='<div class="pp-sec-label"><span>Businesses &amp; Projects</span>'+manageLink+'</div>'+
         '<div style="display:flex;flex-wrap:wrap;gap:20px 18px;align-items:flex-start">'+tiles+more+'</div>';
       strip.style.display='';
     }catch(e){ /* non-fatal */ }
