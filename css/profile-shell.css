@@ -9,22 +9,22 @@
    ============================================================================ */
 
 /* Hero — operational identity banner (dark, premium) */
-.pp-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#08111C 0%,#0F1E38 42%,#162645 66%,#0A1830 100%);min-height:clamp(140px,22vw,280px)}
-.pp-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
-.pp-hero-wm{position:absolute;right:34px;top:50%;transform:translateY(-50%);max-width:46%;text-align:right;
-  font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,84px);font-weight:300;line-height:0.92;
-  color:rgba(255,255,255,0.035);letter-spacing:-0.02em;text-transform:uppercase;pointer-events:none;user-select:none;z-index:1}
-.pp-hero-horizon{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(154,123,34,0.5) 40%,rgba(154,123,34,0.5) 60%,transparent 100%)}
-.pp-hero-c{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:24px 40px 22px;display:grid;grid-template-columns:auto 1fr auto;gap:0 22px;align-items:center}
+.pp-hero{position:relative;overflow:hidden;background:linear-gradient(140deg,#091420 0%,#0E1E36 40%,#152A48 70%,#0A1830 100%);min-height:clamp(148px,22vw,288px)}
+.pp-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+.pp-hero-wm{position:absolute;right:36px;top:50%;transform:translateY(-50%);max-width:44%;text-align:right;
+  font-family:var(--serif,'Cormorant Garamond',serif);font-size:clamp(42px,7vw,88px);font-weight:300;line-height:0.9;
+  color:rgba(255,255,255,0.03);letter-spacing:-0.02em;text-transform:uppercase;pointer-events:none;user-select:none;z-index:1}
+.pp-hero-horizon{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(142,112,32,0.45) 35%,rgba(142,112,32,0.45) 65%,transparent 100%)}
+.pp-hero-c{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:26px 40px 24px;display:grid;grid-template-columns:auto 1fr auto;gap:0 24px;align-items:center}
 @media(max-width:760px){.pp-hero-c{grid-template-columns:auto 1fr;padding:20px}}
 
 /* Mark / avatar */
-.pp-av{width:66px;height:66px;border-radius:14px;flex-shrink:0;border:2px solid rgba(255,255,255,0.16);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:rgba(255,255,255,0.92);overflow:hidden}
+.pp-av{width:68px;height:68px;border-radius:16px;flex-shrink:0;border:2px solid rgba(255,255,255,0.14);background:linear-gradient(135deg,#162E52,#1D5A9E);display:flex;align-items:center;justify-content:center;font-family:var(--serif,'Cormorant Garamond',serif);font-size:24px;color:rgba(255,255,255,0.92);overflow:hidden}
 .pp-av img{width:100%;height:100%;object-fit:cover}
 
 /* Identity */
-.pp-name{font-family:'Cormorant Garamond',serif;font-size:29px;font-weight:400;color:#fff;line-height:1.08;letter-spacing:-0.01em;margin:0;animation:pp-up .6s ease both}
-.pp-sub{font-size:12px;color:rgba(255,255,255,0.55);margin-top:3px;animation:pp-up .6s .08s ease both}
+.pp-name{font-family:var(--serif,'Cormorant Garamond',serif);font-size:30px;font-weight:400;color:#fff;line-height:1.06;letter-spacing:-0.015em;margin:0;animation:pp-up .6s ease both}
+.pp-sub{font-size:12px;color:rgba(255,255,255,0.52);margin-top:4px;animation:pp-up .6s .08s ease both}
 .pp-sub strong{color:rgba(255,255,255,0.82)}
 .pp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;animation:pp-up .6s .16s ease both}
 .pp-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:500;letter-spacing:.03em}
@@ -46,30 +46,31 @@
 @keyframes pp-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
 /* Identity rail — quick facts strip under the hero */
-.pp-strip{background:#0B1628;border-bottom:1px solid rgba(255,255,255,0.07)}
+.pp-strip{background:#0A1526;border-bottom:1px solid rgba(255,255,255,0.06)}
 .pp-strip-inner{max-width:1160px;margin:0 auto;padding:0 40px;display:flex;overflow-x:auto;scrollbar-width:none}
 .pp-strip-inner::-webkit-scrollbar{display:none}
-.pp-strip-item{display:flex;flex-direction:column;gap:4px;padding:15px 26px 15px 0;margin-right:26px;border-right:1px solid rgba(255,255,255,0.08);white-space:nowrap;flex-shrink:0}
+.pp-strip-item{display:flex;flex-direction:column;gap:5px;padding:16px 28px 16px 0;margin-right:28px;border-right:1px solid rgba(255,255,255,0.06);white-space:nowrap;flex-shrink:0}
 .pp-strip-item:last-child{border-right:none;margin-right:0}
-.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.38)}
-.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.9);font-weight:400;letter-spacing:-0.005em}
+.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:var(--mono,'IBM Plex Mono',monospace);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.35)}
+.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.88);font-weight:400;letter-spacing:-0.005em}
 .pp-rail-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .pp-rail-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,0.4)}
 .pp-rail-dot.gold{background:#CDA748}
 .pp-rail-dot.blue{background:#6B9FE8}
 
 /* Body — left support / main / right summary */
-.pp-body{max-width:1160px;margin:0 auto;padding:28px 40px 56px;display:grid;grid-template-columns:284px 1fr 240px;gap:22px;align-items:start}
-@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:20px}}
+.pp-body{max-width:1160px;margin:0 auto;padding:30px 40px 60px;display:grid;grid-template-columns:284px 1fr 240px;gap:24px;align-items:start}
+@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:22px}}
 
 /* Card */
-.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:18px}
+.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:20px;box-shadow:var(--sh-card);transition:box-shadow 0.25s ease}
 .pp-card:last-child{margin-bottom:0}
-.pp-card-head{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pp-card-head{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .pp-card-label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3)}
-.pp-card-label-serif{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--text);letter-spacing:.01em}
-.pp-card-body{padding:18px 20px}
-.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none}
+.pp-card-label-serif{font-family:var(--serif,'Cormorant Garamond',serif);font-size:18px;font-weight:400;color:var(--text);letter-spacing:.01em}
+.pp-card-body{padding:20px 22px}
+.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none;transition:color 0.15s ease}
+.pp-card-action:hover{color:var(--blue-lt)}
 
 /* Identity fields */
 .pp-field{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
