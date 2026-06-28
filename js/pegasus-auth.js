@@ -5,13 +5,19 @@
   const SB = window.PegSB; const C = window.PEG_CONFIG;
   async function client(){ return await SB.ready; }
 
-  async function signUp({email,password,full_name,role,access_code}){
+  async function signUp({email,password,full_name,role,access_code,headline,location}){
     const sb = await client(); if(!sb) throw new Error('Auth unavailable');
     const redirectTo = (typeof window!=='undefined' && window.location && window.location.origin)
       ? window.location.origin + '/auth-callback.html'
       : 'https://pegasuscapitalnetwork.com/auth-callback.html';
     const meta = { full_name, role };
     if(access_code) meta.access_code = access_code;
+    /* Small-profile onboarding: carry the one-line focus + optional location
+       through user_metadata so they survive the email-confirmation round-trip
+       and seed the profile on first callback. Both optional — omitted when blank
+       so nothing about the existing auth payload changes for users who skip them. */
+    if(headline) meta.headline = String(headline).slice(0,160);
+    if(location) meta.location = String(location).slice(0,120);
     const { data, error } = await sb.auth.signUp({ email, password,
       options:{ data:meta, emailRedirectTo: redirectTo } });
     if(error) throw error; return data;

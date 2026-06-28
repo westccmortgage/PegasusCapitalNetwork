@@ -28,6 +28,8 @@
     <div class="row2"><div class="field"><label class="label" for="em">Where should Pegasus reach you?</label><input class="input" id="em" maxlength="120" placeholder="you@firm.com"></div>
     <div class="field"><label class="label" for="role">How would you like to participate?</label><select class="input" id="role" onchange="onRoleChange()"><option value="borrower">Growth Partner</option><option value="lender">Lender</option><option value="broker">Broker</option><option value="agent">Real Estate Professional</option><option value="investor">Capital Partner</option><option value="developer">Developer</option><option value="rwa_partner">RWA Partner</option><option value="business_funding_provider">Business Funding Provider</option><option value="ecosystem_member">Ecosystem Member</option></select></div></div>
     <div id="role-hint" style="display:none;font-size:11px;color:var(--text3);line-height:1.5;margin:-4px 0 10px">Choose Ecosystem Member if you're part of the Pegasus network but don't fit a traditional capital, lending, real estate, or founder role — advisors, creatives, marketers, educators, strategists, wellness professionals, technology partners, and other contributors.</div>
+    <div class="field"><label class="label" for="focus">Your one-line focus <span style="color:var(--text3);font-weight:400">· so the right people understand you</span></label><input class="input" id="focus" maxlength="160" placeholder="e.g. Bridge lending for value-add multifamily in the Southeast"></div>
+    <div class="field"><label class="label" for="loc">Primary market / location <span style="color:var(--text3);font-weight:400">· optional</span></label><input class="input" id="loc" maxlength="120" placeholder="e.g. Miami, FL · Southeast US"></div>
     <div class="field"><label class="label" for="pw">Secure your access</label><div class="pw-wrap"><input class="input" type="password" id="pw" placeholder="Choose something secure"><button class="pw-toggle" type="button" aria-label="Show password" title="Show password">👁</button></div></div>
     <div class="field"><label class="label" for="ac">Invitation / Access Code <span style="color:var(--text3);font-weight:400">· optional</span></label><input class="input" id="ac" maxlength="40" placeholder="Enter your Pegasus invitation" style="text-transform:uppercase" autocomplete="off"><div id="ac-preview" style="font-size:11px;font-family:var(--mono);min-height:14px;margin-top:6px"></div></div>
     <div id="err" style="color:var(--red);font-size:11px;font-family:var(--mono);min-height:14px;margin-bottom:10px"></div>
@@ -77,8 +79,17 @@ function onRoleChange(){
 var _signupEmail='';
 async function doGoogleSignup(){
   var btn=document.getElementById('goGoogle'); btn.disabled=true; var prev=btn.innerHTML; btn.innerHTML='Redirecting to Google…';
-  /* Carry any entered access code into Supabase user_metadata via localStorage so it survives the Google round-trip */
+  /* Carry any entered access code + small-profile fields into localStorage so
+     they survive the Google round-trip (Google won't carry our form values). */
   try{ var ac=(document.getElementById('ac')&&document.getElementById('ac').value||'').trim().toUpperCase(); if(ac) localStorage.setItem('pegasus.pendingAccessCode', ac); }catch(_){ }
+  try{
+    var rl=(document.getElementById('role')&&document.getElementById('role').value||'').toLowerCase();
+    var hl=(document.getElementById('focus')&&document.getElementById('focus').value||'').trim();
+    var lc=(document.getElementById('loc')&&document.getElementById('loc').value||'').trim();
+    if(rl) localStorage.setItem('pegasus.pendingRole', rl);
+    if(hl) localStorage.setItem('pegasus.pendingHeadline', hl.slice(0,160));
+    if(lc) localStorage.setItem('pegasus.pendingLocation', lc.slice(0,120));
+  }catch(_){ }
   try{ await PegAuth.signInWithGoogle(); }
   catch(e){ btn.disabled=false; btn.innerHTML=prev; var err=document.getElementById('err'); if(err) err.textContent=(e&&e.message)||'Google sign-in unavailable.'; }
 }
@@ -86,6 +97,8 @@ async function doSignup(){
   var full_name=document.getElementById('nm').value.trim();
   var email=document.getElementById('em').value.trim();
   var role=(document.getElementById('role').value||'member').toLowerCase();
+  var headline=(document.getElementById('focus')&&document.getElementById('focus').value||'').trim();
+  var location=(document.getElementById('loc')&&document.getElementById('loc').value||'').trim();
   var password=document.getElementById('pw').value;
   var access_code=(document.getElementById('ac').value||'').trim().toUpperCase();
   var err=document.getElementById('err'); err.textContent='';
@@ -94,7 +107,7 @@ async function doSignup(){
   if(password.length<8){err.textContent='Password must be at least 8 characters.';return;}
   var btn=document.getElementById('go'); btn.disabled=true; btn.textContent='Creating…';
   try{
-    await PegAuth.signUp({email,password,full_name,role,access_code:access_code||null});
+    await PegAuth.signUp({email,password,full_name,role,access_code:access_code||null,headline:headline||null,location:location||null});
     _signupEmail=email;
     // Do NOT redirect — show "check your email" state.
     // Supabase sends a confirmation email; user must click it before accessing the platform.

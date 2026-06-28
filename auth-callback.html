@@ -43,6 +43,13 @@ Pegasus.mountPublic('');
     var meta = (sessionUser && sessionUser.user_metadata) || {};
     var fromAuthName   = meta.full_name || meta.name || null;
     var fromAuthAvatar = meta.avatar_url || meta.picture || null;
+    /* Small-profile onboarding: metadata (email/password flow) OR localStorage
+       (Google OAuth flow, where our form values don't survive the round-trip). */
+    var pendH=null, pendL=null;
+    try{ pendH=localStorage.getItem('pegasus.pendingHeadline')||null; }catch(_){}
+    try{ pendL=localStorage.getItem('pegasus.pendingLocation')||null; }catch(_){}
+    var fromHeadline   = meta.headline || pendH || null;
+    var fromLocation   = meta.location || pendL || null;
     var emailPrefix    = sessionUser && sessionUser.email ? sessionUser.email.split('@')[0] : null;
 
     /* Current name is "blank-equivalent" if it's empty or only the email prefix
@@ -55,6 +62,10 @@ Pegasus.mountPublic('');
     if (nameIsBlank && fromAuthName)                                    patch.full_name = fromAuthName;
     if ((!existingProfile || !existingProfile.avatar_url) && fromAuthAvatar) patch.avatar_url = fromAuthAvatar;
     if (!existingProfile || !existingProfile.email)                     patch.email = sessionUser.email;
+    /* Seed the small-profile fields only when still blank — never overwrite
+     * anything the member later edits. */
+    if ((!existingProfile || !existingProfile.headline) && fromHeadline) patch.headline = fromHeadline;
+    if ((!existingProfile || !existingProfile.location) && fromLocation) patch.location = fromLocation;
 
     if (Object.keys(patch).length === 0) return false; /* nothing to do */
 
@@ -62,6 +73,8 @@ Pegasus.mountPublic('');
     try {
       var res = await sb.from('profiles').upsert(patch, { onConflict: 'id' });
       if (res.error) { console.warn('[Callback] profile hydrate error:', res.error.message); return false; }
+      /* One-time small-profile seeds consumed — clear so they never re-apply. */
+      try{ localStorage.removeItem('pegasus.pendingHeadline'); localStorage.removeItem('pegasus.pendingLocation'); localStorage.removeItem('pegasus.pendingRole'); }catch(_){}
       return true;
     } catch (e) {
       console.warn('[Callback] profile hydrate exception:', e && e.message);
