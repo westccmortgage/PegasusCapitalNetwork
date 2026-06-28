@@ -209,14 +209,35 @@ Pegasus.boot(async function(){
   }
   var MY_UID = session.user.id;
 
+  /* Clean failure surface — never a blank page or raw SQL for normal members.
+     Admins additionally see the technical detail so they can diagnose. */
+  function failState(detail){
+    var isAdm=false; try{ isAdm = Pegasus.store && Pegasus.store.isAdmin && Pegasus.store.isAdmin(); }catch(_){}
+    var shell=document.getElementById('cbShell');
+    if(!shell) return;
+    shell.style.display='';
+    shell.innerHTML='<div class="cb-guest"><h2>The Members Network is briefly unavailable</h2>'+
+      '<p>We could not load the network right now. This is on our side, not yours — please refresh in a moment. If it keeps happening, contact the Pegasus team.</p>'+
+      '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+        '<button class="btn btn-pri btn-lg" onclick="location.reload()">Refresh</button>'+
+        '<a class="btn btn-ghost btn-lg" href="/dashboard.html">Go to Workspace</a>'+
+      '</div>'+
+      (isAdm && detail ? '<div style="margin-top:22px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);font-family:var(--mono);font-size:11px;color:var(--text3);text-align:left;max-width:560px;margin-left:auto;margin-right:auto">Admin detail: '+esc(String(detail))+'</div>' : '')+
+      '</div>';
+  }
+
   /* ── Load members + my profile + relationship states (parallel-safe) ───── */
-  var profilesRes = await sb.from('profiles')
-    .select('id,full_name,role,headline,bio,professional_title,company_name,markets,specialties,avatar_url,profile_slug,profile_completion,reviewed_by_pegasus,location,updated_at')
-    .not('full_name','is',null)
-    .order('reviewed_by_pegasus',{ascending:false,nullsFirst:false})
-    .order('profile_completion',{ascending:false,nullsFirst:false})
-    .order('updated_at',{ascending:false,nullsFirst:false})
-    .limit(400);
+  var profilesRes;
+  try{
+    profilesRes = await sb.from('profiles')
+      .select('id,full_name,role,headline,bio,professional_title,company_name,markets,specialties,avatar_url,profile_slug,profile_completion,reviewed_by_pegasus,location,updated_at')
+      .not('full_name','is',null)
+      .order('reviewed_by_pegasus',{ascending:false,nullsFirst:false})
+      .order('profile_completion',{ascending:false,nullsFirst:false})
+      .order('updated_at',{ascending:false,nullsFirst:false})
+      .limit(400);
+  }catch(e){ failState(e && e.message); return; }
+  if(profilesRes && profilesRes.error){ failState(profilesRes.error.message || profilesRes.error.code); return; }
   var ALL = (profilesRes.data || []).filter(function(p){ return p.full_name && p.full_name.trim(); });
   var ME = ALL.filter(function(m){ return m.id===MY_UID; })[0] || null;
 
