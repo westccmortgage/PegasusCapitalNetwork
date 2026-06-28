@@ -15,8 +15,44 @@
 /* ── Public Profile — refined layout hierarchy (premium operational identity) ── */
 *{box-sizing:border-box}
 
-/* Hero — compressed: operational identity, not a landing banner (~220px) */
-.pp-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#08111C 0%,#0F1E38 42%,#162645 66%,#0A1830 100%)}
+/* ── Personal identity header — IDENTITY-FIRST, no cover banner. Personal public
+   profiles represent people, not brands; cover/visual branding lives on business
+   pages, showcases, and opportunities. The name is never overlaid on an image. ── */
+.pp-idhead-wrap{max-width:900px;margin:0 auto;padding:28px 40px 0}
+.pp-idhead-back{display:inline-flex;align-items:center;gap:4px;color:var(--text3);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em;margin-bottom:22px;transition:color var(--dur-fast)}
+.pp-idhead-back:hover{color:var(--text2)}
+.pp-idhead{display:flex;align-items:flex-start;gap:24px}
+.pp-idhead-av{width:108px;height:108px;border-radius:50%;flex-shrink:0;overflow:hidden;border:3px solid var(--bg);background:linear-gradient(135deg,#162E52,#1D5A9E);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:40px;color:rgba(255,255,255,0.94);box-shadow:0 4px 20px rgba(20,24,28,0.10)}
+.pp-idhead-av img{width:100%;height:100%;object-fit:cover}
+.pp-idhead-main{flex:1;min-width:0;padding-top:4px}
+.pp-idhead-name{font-family:var(--serif);font-size:34px;font-weight:400;color:var(--text);line-height:1.06;letter-spacing:-.015em;margin:0}
+.pp-idhead-org{font-size:15px;font-weight:400;color:var(--text3)}
+.pp-idhead-role{font-size:13.5px;color:var(--text2);margin-top:5px;font-weight:500}
+.pp-idhead-headline{font-size:13px;color:var(--text2);margin-top:7px;line-height:1.5;max-width:680px}
+.pp-idhead-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pp-idhead-stats{margin-top:14px}
+.pp-idhead-actions{display:flex;gap:var(--sp-sm);flex-wrap:wrap;align-items:center;flex-shrink:0;padding-top:4px}
+.pp-idhead-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
+.pp-idhead .pp-tag-v{background:rgba(12,143,92,0.10);color:#0C8F5C;border:1px solid rgba(12,143,92,0.25)}
+.pp-idhead .pp-tag-a{background:rgba(142,112,32,0.10);color:#8E7020;border:1px solid rgba(142,112,32,0.25)}
+.pp-idhead .pp-tag-r{background:rgba(29,90,158,0.10);color:#1D5A9E;border:1px solid rgba(29,90,158,0.25)}
+.pp-idhead .pp-tag-m{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+.pp-idhead .pp-stat-v{color:var(--text)}
+.pp-idhead .pp-stat-l{color:var(--text3)}
+.pp-idhead .pp-stat-sep{background:var(--border2)}
+.pp-idhead-rule{max-width:900px;margin:26px auto 0;padding:0 40px}
+.pp-idhead-rule hr{border:0;border-top:1px solid var(--border);margin:0}
+@media(max-width:760px){
+  .pp-idhead-wrap{padding:18px 18px 0}
+  .pp-idhead{flex-direction:column;gap:14px}
+  .pp-idhead-av{width:84px;height:84px;font-size:30px}
+  .pp-idhead-name{font-size:27px}
+  .pp-idhead-actions{width:100%}
+  .pp-idhead-rule{padding:0 18px}
+}
+
+/* Legacy hero (kept for any non-banner reference; cover now drives the header) */
+.pp-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#08111C 0%,#0F1E38 42%,#162645 66%,#0A1830 100%);min-height:clamp(140px,22vw,280px)}
 .pp-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
 /* Company wordmark — integrated backdrop, vertically centered on the right, subtle */
 .pp-hero-wm{position:absolute;right:34px;top:50%;transform:translateY(-50%);max-width:46%;text-align:right;
@@ -57,63 +93,63 @@
 .pp-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
 @media(max-width:760px){.pp-actions{justify-content:flex-start;margin-top:10px}}
 /* Recently Active panel — sits to the left of content, pulls into left margin on wide screens */
-.pp-active-panel{float:left;width:280px;margin:0 28px 20px 0;background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-@media(min-width:1500px){.pp-active-panel{margin-left:-200px}}
-@media(min-width:1700px){.pp-active-panel{margin-left:-300px}}
-@media(max-width:1200px){.pp-active-panel{float:none;width:auto;margin:0 0 20px 0}}
+/* Connections — a clean in-flow section (no longer a floating left rail), so the
+   page reads as one balanced, shareable column. */
+.pp-active-panel{width:100%;margin:0;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:20px 22px;box-shadow:var(--sh-card)}
 
 @keyframes pp-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── Identity rail — strong segmented infrastructure (was a thin footer strip) ── */
-.pp-strip{background:#0B1628;border-bottom:1px solid rgba(255,255,255,0.07)}
+/* ── Identity rail ── */
+.pp-strip{background:#0A1526;border-bottom:1px solid rgba(255,255,255,0.06)}
 .pp-strip-inner{max-width:1160px;margin:0 auto;padding:0 40px;display:flex;overflow-x:auto;scrollbar-width:none}
 .pp-strip-inner::-webkit-scrollbar{display:none}
-.pp-strip-item{display:flex;flex-direction:column;gap:4px;padding:15px 26px 15px 0;margin-right:26px;border-right:1px solid rgba(255,255,255,0.08);white-space:nowrap;flex-shrink:0}
+.pp-strip-item{display:flex;flex-direction:column;gap:5px;padding:16px 28px 16px 0;margin-right:28px;border-right:1px solid rgba(255,255,255,0.06);white-space:nowrap;flex-shrink:0}
 .pp-strip-item:last-child{border-right:none;margin-right:0}
-.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.38)}
-.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.9);font-weight:400;letter-spacing:-0.005em}
+.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.35)}
+.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.88);font-weight:400;letter-spacing:-0.005em}
 .pp-rail-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.pp-rail-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,0.4)}
+.pp-rail-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,0.35)}
 .pp-rail-dot.gold{background:#CDA748}
 .pp-rail-dot.blue{background:#6B9FE8}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* Body layout — identity column widened for a real card */
-.pp-body{max-width:1160px;margin:0 auto;padding:28px 40px 56px;display:grid;grid-template-columns:284px 1fr 240px;gap:22px;align-items:start}
-@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:20px}}
+/* Body layout */
+.pp-body{max-width:1160px;margin:0 auto;padding:30px 40px 60px;display:grid;grid-template-columns:284px 1fr 240px;gap:var(--sp-lg);align-items:start}
+@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:22px}}
 
 /* Card */
-.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:18px}
+.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:20px;box-shadow:var(--sh-card);transition:box-shadow var(--dur-normal) var(--ease-out)}
 .pp-card:last-child{margin-bottom:0}
-.pp-card-head{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pp-card-head{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .pp-card-label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3)}
-.pp-card-label-serif{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--text);letter-spacing:.01em}
-.pp-card-body{padding:18px 20px}
-.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none}
+.pp-card-label-serif{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--text);letter-spacing:.01em}
+.pp-card-body{padding:20px 22px}
+.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none;transition:color var(--dur-fast)}
+.pp-card-action:hover{color:var(--blue-lt)}
 
 /* Identity fields */
 .pp-field{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
 .pp-field:last-child{border-bottom:none;padding-bottom:0}
-.pp-field-icon{width:22px;height:22px;border-radius:4px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.pp-field-icon{width:22px;height:22px;border-radius:var(--r1);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
 .pp-field-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600}
-.pp-field-val{font-size:12.5px;color:var(--text);margin-top:2px}
+.pp-field-val{font-size:12.5px;color:var(--text);margin-top:2px;word-break:break-word}
 .pp-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.pp-chip{padding:2px 7px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:'IBM Plex Mono',monospace}
+.pp-chip{padding:2px 8px;border-radius:4px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:var(--mono)}
 
 /* Badges */
-.pp-badge{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
+.pp-badge{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r1);background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
 .pp-badge:last-child{margin-bottom:0}
-.pp-badge-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.pp-badge-icon{width:24px;height:24px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .pp-badge-name{font-size:11.5px;font-weight:500;color:var(--text)}
 .pp-badge-desc{font-size:10px;color:var(--text3);margin-top:1px}
-.pp-badge.gold{background:#FBF6EB;border-color:rgba(154,123,34,0.2)}
-.pp-badge.green{background:#E8F5EE;border-color:rgba(14,154,102,0.15)}
-.pp-badge.blue{background:#EEF3FB;border-color:rgba(35,95,166,0.12)}
+.pp-badge.gold{background:rgba(142,112,32,.06);border-color:rgba(142,112,32,0.18)}
+.pp-badge.green{background:rgba(12,143,92,.06);border-color:rgba(12,143,92,0.15)}
+.pp-badge.blue{background:rgba(29,90,158,.06);border-color:rgba(29,90,158,0.12)}
 
 /* Member Updates */
 .pp-updates{margin-bottom:16px}
-.pp-update{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;transition:box-shadow .15s}
-.pp-update:hover{box-shadow:var(--sh-card)}
+.pp-update{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;box-shadow:var(--sh-card);transition:box-shadow var(--dur-normal) var(--ease-out)}
+.pp-update:hover{box-shadow:var(--sh-raise)}
 .pp-update:nth-child(odd){margin-left:0;margin-right:40px}
 .pp-update:nth-child(even){margin-left:32px;margin-right:8px}
 .pp-update-bar{border-radius:0}
@@ -125,7 +161,7 @@
 .pp-update-body{font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:10px}
 .pp-update-foot{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)}
 .pp-update-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3)}
-.pp-update-cta{font-size:11.5px;font-weight:500;text-decoration:none;padding:4px 12px;border:1px solid var(--border2);border-radius:var(--r1);color:var(--text)}
+.pp-update-cta{font-size:11.5px;font-weight:500;text-decoration:none;padding:4px 12px;border:1px solid var(--border2);border-radius:var(--r1);color:var(--text);transition:all var(--dur-fast)}
 .pp-update-cta:hover{border-color:var(--blue);color:var(--blue)}
 
 /* About */
@@ -150,9 +186,9 @@
 @media(max-width:1020px){.pp-showcase-inner{padding:8px 20px}}
 
 /* CTA */
-.pp-cta{text-align:center;padding:40px 20px 0;border-top:1px solid var(--border);margin-top:8px;max-width:1160px;margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px}
-.pp-cta-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:8px}
-.pp-cta-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.pp-cta{text-align:center;padding:var(--sp-2xl) 20px 0;border-top:1px solid var(--border);margin-top:8px;max-width:1160px;margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px}
+.pp-cta-title{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--text);margin-bottom:10px;letter-spacing:-.015em}
+.pp-cta-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
 .pp-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 
 /* Status band */
@@ -195,8 +231,8 @@
 @media(max-width:720px){.pp-presence{grid-template-columns:1fr}}
 .pp-presence-metrics{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
 .pp-presence-map{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:16px 18px}
-.pp-feat{display:block;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r2);margin-bottom:8px;text-decoration:none;transition:border-color .15s}
-.pp-feat:hover{border-color:var(--blue)}
+.pp-feat{display:block;padding:13px 16px;border:1px solid var(--border);border-radius:var(--r2);margin-bottom:8px;text-decoration:none;box-shadow:var(--sh-card);transition:all var(--dur-normal) var(--ease-out)}
+.pp-feat:hover{border-color:var(--blue);box-shadow:var(--sh-raise);transform:translateY(-1px)}
 .pp-feat-kind{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:4px}
 .pp-feat-title{font-size:13px;font-weight:500;color:var(--text)}
 .pp-feat-note{font-size:11.5px;color:var(--text2);margin-top:3px}
@@ -204,12 +240,13 @@
 .pp-showcase-inner{max-width:none;margin:0;padding:0}
 .pp-showcase-inner .sc-section{margin:32px 0}
 /* Owner-only floating management controls */
-.pp-manage{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.pp-manage-btn{padding:9px 18px;border-radius:24px;background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18)}
-.pp-manage-menu{display:none;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:hidden;min-width:184px}
+.pp-manage{position:relative;z-index:30;display:flex;justify-content:flex-end;margin-bottom:14px}
+.pp-manage-btn{padding:8px 16px;border-radius:var(--r2);background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;transition:all var(--dur-fast)}
+.pp-manage-btn:hover{opacity:.88}
+.pp-manage-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:var(--sh-float);overflow:auto;max-height:78vh;min-width:220px;z-index:40;padding:5px 0}
 .pp-manage-menu.open{display:flex}
-.pp-manage-item{padding:11px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;border-bottom:1px solid var(--border);text-align:left;cursor:pointer;font-family:var(--sans)}
-.pp-manage-item:last-child{border-bottom:none}
+.pp-manage-label{font-size:9px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:10px 16px 4px}
+.pp-manage-item{padding:9px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:var(--sans);display:block;width:100%;transition:background var(--dur-fast)}
 .pp-manage-item:hover{background:var(--bg2)}
 
 </style>
@@ -241,7 +278,17 @@ Pegasus.boot(async function () {
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function cap(s){return(s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
-  var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Agent',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
+  var ROLE_LABELS={
+    growth_partner:'Growth Partner',borrower:'Growth Partner',
+    founder:'Founder',entrepreneur:'Entrepreneur',startup_founder:'Startup Founder',business_owner:'Business Owner',
+    developer:'Developer',real_estate_developer:'Real Estate Developer',
+    broker:'Broker',mortgage_broker:'Mortgage Broker',real_estate_broker:'Real Estate Broker',
+    lender:'Lender',private_lender:'Private Lender',hard_money_lender:'Hard Money Lender',
+    investor:'Investor',capital_partner:'Capital Partner',fund_manager:'Fund Manager',family_office:'Family Office',
+    advisor:'Advisor',consultant:'Consultant',insurance:'Insurance Professional',
+    agent:'Agent',real_estate_agent:'Real Estate Agent',service_provider:'Service Provider',
+    business_funding_provider:'Business Funding Provider',rwa_partner:'RWA Partner',
+    ecosystem_member:'Ecosystem Member',member:'Member'};
   function roleLabel(r){r=(r||'').toLowerCase();return ROLE_LABELS[r]||cap(r||'member');}
   function webHref(u){u=(u||'').trim();if(!u)return '#';return /^[a-z][a-z0-9+.-]*:\/\//i.test(u)?u:('https://'+u.replace(/^\/+/,''));}
   function trustBadges(p){var o='';
@@ -270,6 +317,12 @@ Pegasus.boot(async function () {
   }
 
   var p = route.profile;
+
+  /* Tell core's header nav this is the owner's own profile, so the single
+     "Manage Profile" dropdown renders in the top-right (replacing the old 3
+     buttons). Re-applied; core respects this flag on every nav refresh. */
+  window.__PEG_OWNER_NAV = !!route.isOwner;
+  if(route.isOwner && Pegasus.refreshNav){ try{ Pegasus.refreshNav(); }catch(e){} }
 
   /* SEO: set canonical, title, and description from the real profile */
   (function(){
@@ -300,34 +353,41 @@ Pegasus.boot(async function () {
   if(mDesc) mDesc.content = (p.professional_title||roleLabel(p.role)) + (p.company_name?' · '+p.company_name:'') + (p.markets&&p.markets.length?' · '+p.markets.slice(0,2).join(', '):'');
   if(p.avatar_url){var og=document.createElement('meta');og.setAttribute('property','og:image');og.content=p.avatar_url;document.head.appendChild(og);}
 
-  /* ── Tags ── */
+  /* ── Header badges — trust signals ONLY (Verified / Ambassador). Role is shown
+     once as the role line; markets belong to the member's business pages, not the
+     person, so they are NOT shown as personal badges here. ── */
   var tags = '';
   if(p.verification_status==='verified') tags+='<span class="pp-tag pp-tag-v">✓ Verified</span>';
   if(p.ambassador_status) tags+='<span class="pp-tag pp-tag-a">⬡ Ambassador</span>';
-  if(p.role) tags+='<span class="pp-tag pp-tag-r">'+esc(roleLabel(p.role))+'</span>';
-  (p.markets||[]).slice(0,3).forEach(function(m){tags+='<span class="pp-tag pp-tag-m">'+esc(m)+'</span>';});
 
-  /* ── Mini stats ── */
+  /* ── Mini stats — clean, presentation-grade (location · member since). The
+     internal completion % and market counts are not shown on the public page. ── */
   var statsHtml =
-    '<div class="pp-stat"><span class="pp-stat-v">'+(p.profile_completion||20)+'%</span><span class="pp-stat-l">complete</span></div>'+
-    (p.markets&&p.markets.length?'<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+p.markets.length+'</span><span class="pp-stat-l">markets</span></div>':'')+
-    '<div class="pp-stat-sep"></div><div class="pp-stat"><span class="pp-stat-v">'+new Date(p.created_at||Date.now()).getFullYear()+'</span><span class="pp-stat-l">member since</span></div>';
+    (p.location?'<div class="pp-stat"><span class="pp-stat-l">📍</span><span class="pp-stat-v">'+esc(p.location)+'</span></div><div class="pp-stat-sep"></div>':'')+
+    '<div class="pp-stat"><span class="pp-stat-v">Member since '+new Date(p.created_at||Date.now()).getFullYear()+'</span></div>';
 
-  /* ── Action buttons ── */
+  /* ── Hero action area — owner controls live in a clean bar below the hero, so
+     the hero stays a presentation. Visitors get the connect CTAs. ── */
+  /* Owner controls live ONLY in the single floating "Manage" dropdown (below),
+     so the hero stays a clean presentation. Visitors get the connect CTAs. */
   var actions = route.isOwner
-    ? '<a class="btn btn-pri" href="/ai-assistant.html" style="background:rgba(34,113,195,0.85);border-color:rgba(58,143,232,0.4)">✦ Capital Assistant</a>'
+    ? '<a class="btn btn-pri" href="/profile-edit.html">Manage Profile</a>'
     : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
-      '<a class="btn btn-ghost" href="/members.html" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)">Browse Network</a>';
+      '<a class="btn btn-ghost" href="/members.html">Browse Network</a>';
 
   /* ── Avatar ── */
   var avHtml = p.avatar_url
     ? '<img src="'+esc(p.avatar_url)+'" alt="'+esc(name)+'">'
     : initials(name)||'?';
 
-  /* ── Banner style ── */
-  var bannerExtra = p.banner_url
-    ? '<img src="'+esc(p.banner_url)+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35">'
-    : '';
+  /* ── Header headline — professional title / headline, shown only if it adds
+     information beyond the role line (Current Focus keeps its own section). ── */
+  var headlineText = p.professional_title || p.headline || '';
+  if(headlineText && headlineText.toLowerCase().trim() === roleLabel(p.role).toLowerCase().trim()) headlineText = '';
+
+  /* ── Personal profiles are identity-first: NO cover banner is rendered here.
+     Any previously-uploaded banner_url is intentionally ignored on this page
+     (data is preserved). Visual branding belongs to business pages / showcases. ── */
 
   /* ── Signal strip (markets + specialties as live intelligence) ── */
   var rail = function(label, val, dot){ return '<div class="pp-strip-item"><div class="pp-rail-label">'+(dot?'<span class="pp-rail-dot '+dot+'"></span>':'')+label+'</div><div class="pp-rail-val">'+esc(val)+'</div></div>'; };
@@ -349,8 +409,13 @@ Pegasus.boot(async function () {
     var out = '';
     if(p.role) out+='<div class="cid-role">'+esc(roleLabel(p.role))+'</div>';
     if(p.ecosystem_role) out+='<div class="cid-company">'+esc(p.ecosystem_role)+'</div>';
-    if(p.company_name) out+='<div class="cid-company">'+esc(p.company_name)+'</div>';
+    if(p.company_name) out+='<div class="cid-company">Affiliated with '+esc(p.company_name)+'</div>';
     if(p.role||p.company_name||p.ecosystem_role) out+='<div class="cid-divider"></div>';
+    if(p.additional_roles && p.additional_roles.length){
+      out+='<div class="cid-section"><div class="cid-label">Also</div><div class="cid-chips">'+
+        p.additional_roles.map(function(r){return'<span class="cid-chip">'+esc(roleLabel(r))+'</span>';}).join('')+
+      '</div></div>';
+    }
     if(p.ecosystem_contribution){
       out+='<div class="cid-section"><div class="cid-label">Contribution</div><div style="font-size:12.5px;color:var(--text2);line-height:1.6">'+esc(p.ecosystem_contribution)+'</div></div>';
     }
@@ -359,15 +424,24 @@ Pegasus.boot(async function () {
         p.expertise_areas.map(function(x){return'<span class="cid-chip">'+esc(x)+'</span>';}).join('')+
       '</div></div>';
     }
-    if(p.markets&&p.markets.length){
-      out+='<div class="cid-section"><div class="cid-label">Active Markets</div><div class="cid-chips">'+
-        p.markets.map(function(m){return'<span class="cid-chip">'+esc(m)+'</span>';}).join('')+
+    /* Active Markets intentionally NOT shown on the personal identity — markets
+       belong to the member's business pages, not the person. */
+    if(p.specialties&&p.specialties.length){
+      var sp7=p.specialties.slice(0,7);
+      var spMore=p.specialties.length>7 ? '<span class="cid-chip" style="color:var(--text3)">+'+(p.specialties.length-7)+' more</span>' : '';
+      out+='<div class="cid-section"><div class="cid-label">Specialties</div><div class="cid-chips">'+
+        sp7.map(function(sp){return'<span class="cid-chip">'+esc(sp)+'</span>';}).join('')+spMore+
       '</div></div>';
     }
-    if(p.specialties&&p.specialties.length){
-      out+='<div class="cid-section"><div class="cid-label">Specialties</div><div class="cid-chips">'+
-        p.specialties.map(function(sp){return'<span class="cid-chip">'+esc(sp)+'</span>';}).join('')+
-      '</div></div>';
+    /* Online Presence — only links the member intentionally added (safe URLs). */
+    var socDefs=[['LinkedIn',p.linkedin_url],['X',p.x_url],['Instagram',p.instagram_url],['Facebook',p.facebook_url],['YouTube',p.youtube_url],['TikTok',p.tiktok_url]];
+    var socLinks=socDefs.filter(function(d){return d[1];}).map(function(d){
+      return '<a href="'+esc(webHref(d[1]))+'" target="_blank" rel="noopener noreferrer" class="cid-link" style="display:inline-block;margin:0 14px 6px 0;font-size:12.5px">'+esc(d[0])+' ↗</a>';
+    });
+    if(socLinks.length){
+      out+='<div class="cid-section"><div class="cid-label">Online Presence</div><div>'+socLinks.join('')+'</div></div>';
+    } else if(route.isOwner){
+      out+='<div class="cid-section"><div class="cid-label">Online Presence</div><div style="font-size:12px;color:var(--text4)">Add your LinkedIn, Instagram, X, Facebook, or website so people can connect with you. <a href="/profile-edit.html" style="color:var(--blue)">Add links →</a></div></div>';
     }
     var foot=[];
     if(p.location) foot.push('<span class="cid-meta-item">📍 '+esc(p.location)+'</span>');
@@ -457,35 +531,36 @@ Pegasus.boot(async function () {
   /* ── Assemble page (single calm vertical flow) ── */
   document.body.insertAdjacentHTML('beforeend',
 
-    /* 1. COMPACT HERO — no action buttons; status lives in the tags */
-    '<section class="pp-hero">'+
-      '<div class="pp-hero-grid"></div>'+ bannerExtra +
-      '<a href="/members.html" class="pp-back" style="position:absolute;top:14px;left:40px;z-index:3;color:rgba(255,255,255,.75);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em">\u2190 Member Network</a>'+
-      '<div class="pp-hero-wm" aria-hidden="true">'+esc((p.company_name||name||'').toUpperCase()||'P')+'</div>'+
-      '<div class="pp-hero-c">'+
-        '<div class="pp-av">'+avHtml+'</div>'+
-        '<div>'+
-          '<h1 class="pp-name">'+esc(name)+'</h1>'+ (trustBadges(p)?('<div class="pp-trust" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+trustBadges(p)+'</div>'):'')+
-          '<div class="pp-sub"><strong>'+esc(p.professional_title||p.ecosystem_role||roleLabel(p.role))+'</strong>'+(p.company_name?' \u00B7 '+esc(p.company_name):'')+'</div>'+
-          (tags?'<div class="pp-tags">'+tags+'</div>':'')+
-          '<div class="pp-stats">'+statsHtml+'</div>'+
+    /* 1. IDENTITY HEADER — identity-first, no cover banner. Name is always on the
+       light body, never overlaid on an image. */
+    '<section>'+
+      '<div class="pp-idhead-wrap">'+
+        '<a href="/members.html" class="pp-idhead-back">\u2190 Member Network</a>'+
+        '<div class="pp-idhead">'+
+          '<div class="pp-idhead-av">'+avHtml+'</div>'+
+          '<div class="pp-idhead-main">'+
+            '<h1 class="pp-idhead-name">'+esc(name)+'</h1>'+
+            '<div class="pp-idhead-role">'+esc(roleLabel(p.role))+'</div>'+
+            (headlineText?'<div class="pp-idhead-headline">'+esc(headlineText)+'</div>':'')+
+            ((trustBadges(p)||tags)?'<div class="pp-idhead-badges">'+(trustBadges(p)||'')+(tags||'')+'</div>':'')+
+            '<div class="pp-stats pp-idhead-stats">'+statsHtml+'</div>'+
+          '</div>'+
+          (actions?'<div class="pp-actions pp-idhead-actions">'+actions+'</div>':'')+
         '</div>'+
-        '<div class="pp-actions">'+actions+'</div>'+
       '</div>'+
-      '<div class="pp-hero-horizon"></div>'+
+      '<div class="pp-idhead-rule"><hr></div>'+
     '</section>'+
 
-    /* Inline identity line */
-    (idLine.length?'<div class="pp-id-line">'+idLine.join('')+'</div>':'')+
+    /* The cluttered horizontal identity strip under the hero is intentionally
+       NOT rendered on the public profile (location/company/markets/website read
+       as admin clutter here; they live in edit view + the businesses below). */
 
     '<div class="pp-flow">'+
 
-      /* OWNER: Recently Active members — up top, pulled left */
-      (route.isOwner?
-        '<div id="pp-active-members" class="pp-active-panel"></div>'
-      :'')+
+      /* Owner controls now live in the single 'Manage Profile' dropdown in the
+         top-right header (rendered by core, owner-gated via __PEG_OWNER_NAV). */
 
-      /* 2. CURRENT FOCUS — directional statement above About */
+      /* 1. CURRENT FOCUS — the headline statement, right under the identity */
       (p.current_focus?
         '<div class="pp-focus">'+
           '<div class="pp-focus-label">Current Focus</div>'+
@@ -493,13 +568,22 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
-      /* 3. ABOUT */
+      /* 2. ABOUT */
       (p.bio?
         '<section class="pp-sec">'+
           '<div class="pp-sec-label">About</div>'+
           '<div class="pp-about">'+esc(p.bio).split(/\n+/).map(function(t){return t.trim()?'<p>'+t+'</p>':'';}).join('')+'</div>'+
         '</section>'
       :'')+
+
+      /* 3. PROFESSIONAL IDENTITY — role, affiliations, expertise, specialties,
+         and Online Presence / social links. */
+      '<section class="pp-sec"><div class="pp-sec-label">Professional Identity</div><div class="pp-card">'+idFields+'</div></section>'+
+
+      /* 4. BUSINESSES & PROJECTS — the businesses this person owns / manages, sat
+         directly below the "Business Owner" identity (populated async). Tiles are
+         clickable; markets and visual branding live on those business pages. */
+      '<section class="pp-sec" id="pp-biz-strip" style="display:none"></section>'+
 
       /* Ecosystem identity (ecosystem members) */
       ((p.ecosystem_contribution||p.ecosystem_goals)?
@@ -509,8 +593,13 @@ Pegasus.boot(async function () {
         '</section>'
       :'')+
 
-      /* 4. SHOWCASE — major section directly below About */
-      '<section class="pp-showcase"><div class="pp-showcase-inner" id="ppShowcase"></div></section>'+
+      /* 5. CONNECTIONS — accepted connections as one clean section (no longer a
+         floating rail). */
+      '<section class="pp-sec"><div id="pp-active-members" class="pp-active-panel"></div></section>'+
+
+      /* Showcase band intentionally REMOVED from the personal profile: featured
+         opportunities, deals, and listings belong to a business/project page,
+         not the person. (See Businesses & Projects above.) */
 
       /* Member Updates */
       (rawUpdates.length?
@@ -520,30 +609,15 @@ Pegasus.boot(async function () {
         '</section>'
       :'')+
 
-      /* 5. NETWORK PRESENCE — moved lower, calmer, ecosystem-oriented */
-      '<section class="pp-sec">'+
-        '<div class="pp-sec-label">Network Presence</div>'+
-        '<div class="pp-presence">'+
-          '<div class="pp-presence-metrics">'+metricsHtml+'</div>'+
-          '<div class="pp-presence-map">'+networkSvg+'</div>'+
-        '</div>'+
-      '</section>'+
+      /* Network value — replaces the old dashboard-style Network Presence /
+         market-bar metric cards (those belong in Workspace, not the public
+         profile). Populated async; hidden if there's nothing safe to show. */
+      '<section class="pp-sec" id="pp-around" style="display:none"></section>'+
 
-      /* 6. SECONDARY — featured work */
-      (function(){
-        var fm=(p.featured_modules||[]).filter(function(m){return m&&m.kind!=='update';});
-        if(!fm.length && !route.isOwner) return '';
-        return '<section class="pp-sec">'+
-          '<div class="pp-sec-label">Featured'+(route.isOwner?' <a class="pp-card-action" href="/profile-edit.html">+ Add</a>':'')+'</div>'+
-          (fm.length? fm.map(function(m){
-            return '<a href="'+esc(m.href||'#')+'" class="pp-feat">'+
-              '<div class="pp-feat-kind">'+esc(m.kind||'Featured')+'</div>'+
-              '<div class="pp-feat-title">'+esc(m.title||'')+'</div>'+
-              (m.note?'<div class="pp-feat-note">'+esc(m.note)+'</div>':'')+
-            '</a>';
-          }).join('') : '<div style="font-size:12.5px;color:var(--text3)">Feature a Deal Room, market report, or pitch deck.</div>')+
-        '</section>';
-      })()+
+      /* Featured Opportunities intentionally NOT shown on the personal profile.
+         Opportunities / deals / listings belong to a business or project page,
+         not the person. (See Businesses & Projects above.) */
+      ''+
 
     '</div>'+
 
@@ -560,64 +634,288 @@ Pegasus.boot(async function () {
       '</div><br>'
     :'')+
 
-    /* OWNER-ONLY floating management controls */
-    (route.isOwner?
-      '<div class="pp-manage" id="ppManage">'+
-        '<div class="pp-manage-menu" id="ppManageMenu">'+
-          '<a class="pp-manage-item" href="/profile-edit.html">\u270E Edit Profile</a>'+
-          '<button class="pp-manage-item" onclick="Pegasus.copyProfileLink()">\uD83D\uDD17 Copy Link</button>'+
-          '<a class="pp-manage-item" href="/showcase.html">\u2756 Manage Showcase</a>'+
-          '<a class="pp-manage-item" href="/profile-edit.html">\u2699 Settings</a>'+
-        '</div>'+
-        '<button class="pp-manage-btn" onclick="ppToggleManage()">Manage</button>'+
-      '</div>'
-    :'')
+    /* (Owner controls moved to the 'Manage Profile' dropdown at the top of the
+       profile \u2014 no floating button.) */
+    ''
   );
 
   window.ppToggleManage=function(){var m=document.getElementById('ppManageMenu');if(m)m.classList.toggle('open');};
+  /* Share the clean Pegasus profile URL to external networks. */
+  window.ppShare=function(net){
+    var url='https://pegasuscapitalnetwork.com'+(p.profile_slug?('/u/'+p.profile_slug):('/public-profile.html?id='+p.id));
+    var title=(p.full_name||'Pegasus member')+' on Pegasus Capital Network';
+    var caption="I'm sharing my Pegasus Network profile — a central place for my professional work, connected businesses, and long-term relationships across capital, real estate, and business growth.\n\nWe rise. We build. We fly.\n\n"+url;
+    var u=encodeURIComponent(url), t=encodeURIComponent(title), cap=encodeURIComponent(caption);
+    if(net==='instagram'){ ppInstagramShare(caption, url, title); return; }
+    var dest={
+      linkedin:'https://www.linkedin.com/sharing/share-offsite/?url='+u,
+      facebook:'https://www.facebook.com/sharer/sharer.php?u='+u,
+      x:'https://twitter.com/intent/tweet?text='+cap,
+      email:'mailto:?subject='+t+'&body='+cap
+    }[net];
+    if(!dest) return;
+    if(net==='email') location.href=dest; else window.open(dest,'_blank','noopener,noreferrer');
+  };
 
-  /* ── Recently Active Members panel (owner only) ────────────────
-     Shows members who joined or updated profile recently.
-     Gives the owner context of who is active in the network.    */
-  if(route.isOwner){
+  /* ── Instagram share ───────────────────────────────────────────────────────
+     Instagram does NOT allow true zero-tap posting from a browser (no web post
+     intent; feed posts can't carry links; posts need an image). So instead of a
+     dead button, we remove all the *design* work: we generate a branded,
+     Instagram-ready 1080×1080 image of this profile. On a phone, the native
+     share sheet sends it straight to Instagram (Stories/feed) with the caption
+     already on the clipboard. On desktop, a small panel offers Download + Copy +
+     Open Instagram. The only step left is the member tapping "Post" inside
+     Instagram — which Instagram requires and we can't bypass. */
+  var _ppShareImg=null;
+  function ppGetShareImage(){
+    if(!_ppShareImg) _ppShareImg=ppBuildShareImage(true).catch(function(){ return ppBuildShareImage(false); });
+    return _ppShareImg;
+  }
+  function ppLoadImg(src, cors){ return new Promise(function(res,rej){ var im=new Image(); if(cors) im.crossOrigin='anonymous'; im.onload=function(){res(im);}; im.onerror=function(){rej(new Error('img'));}; im.src=src; }); }
+  async function ppBuildShareImage(useAvatar){
+    var W=1080,H=1080, cx=540;
+    var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
+    if(!ctx) throw new Error('no canvas');
+    try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+    // Background + brand glow + top accent
+    var g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#0B1626'); g.addColorStop(1,'#060B14');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    var rg=ctx.createRadialGradient(cx,400,40,cx,400,560); rg.addColorStop(0,'rgba(58,143,232,.16)'); rg.addColorStop(1,'rgba(58,143,232,0)');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#3A8FE8'; ctx.fillRect(0,0,W,7);
+    // Wordmark (same-origin → never taints the canvas)
+    try{ var wm=await ppLoadImg('/assets/brand/pegasus-wordmark.png',false); var ww=300, wh=ww*(wm.height/wm.width||0.18); ctx.globalAlpha=.92; ctx.drawImage(wm, cx-ww/2, 78, ww, wh); ctx.globalAlpha=1; }catch(e){}
+    // Avatar (cover-cropped into a circle) or initials fallback
+    var cyAv=400, r=130, drew=false;
+    if(useAvatar && p.avatar_url){
+      try{
+        var av=await ppLoadImg(p.avatar_url,true);
+        var s=Math.max((2*r)/av.width,(2*r)/av.height), dw=av.width*s, dh=av.height*s;
+        ctx.save(); ctx.beginPath(); ctx.arc(cx,cyAv,r,0,Math.PI*2); ctx.closePath(); ctx.clip();
+        ctx.drawImage(av, cx-dw/2, cyAv-dh/2, dw, dh); ctx.restore(); drew=true;
+      }catch(e){ drew=false; }
+    }
+    if(!drew){
+      ctx.fillStyle=(p.avatar_color||'#235FA6'); ctx.beginPath(); ctx.arc(cx,cyAv,r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='600 96px "IBM Plex Sans", sans-serif'; ctx.fillText((initials(name)||'P'), cx, cyAv+4);
+    }
+    ctx.lineWidth=6; ctx.strokeStyle='rgba(58,143,232,.55)'; ctx.beginPath(); ctx.arc(cx,cyAv,r,0,Math.PI*2); ctx.stroke();
+    // Name
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#F4F8FC'; ctx.font='500 66px "Cormorant Garamond", serif';
+    if(ctx.measureText(name).width>W-120) ctx.font='500 52px "Cormorant Garamond", serif';
+    ctx.fillText(name, cx, 640);
+    // Role + company
+    ctx.fillStyle='#9FB4CC'; ctx.font='400 30px "IBM Plex Sans", sans-serif';
+    ctx.fillText((roleLabel(p.role)+(p.company_name?('   ·   '+p.company_name):'')).slice(0,62), cx, 692);
+    // Location / markets
+    var line2=[].concat(p.location?[p.location]:[], (p.markets&&p.markets.length?[p.markets.slice(0,3).join(', ')]:[])).join('   ·   ');
+    if(line2){ ctx.fillStyle='#6F88A6'; ctx.font='400 24px "IBM Plex Sans", sans-serif'; ctx.fillText(line2.slice(0,72), cx, 732); }
+    // Divider + motto
+    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-90,788); ctx.lineTo(cx+90,788); ctx.stroke();
+    ctx.fillStyle='#CFE0F2'; ctx.font='italic 400 40px "Cormorant Garamond", serif'; ctx.fillText('We rise. We build. We fly.', cx, 856);
+    // URL + wordmark line
+    ctx.fillStyle='#5B8FD6'; ctx.font='400 26px "IBM Plex Mono", monospace';
+    ctx.fillText((p.profile_slug?('pegasuscapitalnetwork.com/u/'+p.profile_slug):'pegasuscapitalnetwork.com'), cx, 980);
+    ctx.fillStyle='rgba(255,255,255,.32)'; ctx.font='400 18px "IBM Plex Mono", monospace';
+    ctx.fillText('P E G A S U S   C A P I T A L   N E T W O R K', cx, 1026);
+    // Export (toBlob throws on a tainted canvas → caller retries without avatar)
+    var blob=await new Promise(function(res,rej){ cv.toBlob(function(b){ b?res(b):rej(new Error('toBlob')); },'image/png',0.92); });
+    var file=new File([blob],'pegasus-profile.png',{type:'image/png'});
+    var dataUrl=null; try{ dataUrl=cv.toDataURL('image/png'); }catch(e){}
+    return { file:file, dataUrl:dataUrl };
+  }
+  async function ppInstagramShare(caption, url, title){
+    try{ if(navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(caption); }catch(e){}
+    var img=null; try{ img=await ppGetShareImage(); }catch(e){ console.warn('[profile] share image failed:', e); img=null; }
+    var file=img&&img.file;
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({ files:[file], title:title, text:caption }); return; }
+      catch(err){ if(err && err.name==='AbortError') return; /* else fall through */ }
+    }
+    ppShareDesktopPanel(img, caption);
+  }
+  function ppShareDesktopPanel(img, caption){
+    var sc='position:fixed;inset:0;background:rgba(8,12,18,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:36px 18px;z-index:1000;overflow-y:auto';
+    var bx='background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.42)';
+    var preview=(img&&img.dataUrl)?'<img src="'+img.dataUrl+'" alt="" style="width:100%;display:block;border-bottom:1px solid var(--border)">':'';
+    Pegasus.modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+      preview+
+      '<div style="padding:18px 20px">'+
+        '<div style="font-family:var(--serif);font-size:19px;color:var(--text);margin-bottom:6px">Share to Instagram</div>'+
+        '<div style="font-size:12.5px;color:var(--text3);line-height:1.55;margin-bottom:14px">Instagram can’t accept a post directly from a browser. '+(img?'Download this ready-made image, ':'')+'then open Instagram and post it — your caption is already copied to the clipboard.</div>'+
+        '<div style="display:flex;flex-direction:column;gap:9px">'+
+          (img&&img.dataUrl?'<button class="btn btn-pri" id="ppDl">Download image</button>':'')+
+          '<button class="btn btn-ghost" id="ppCap">Copy caption again</button>'+
+          '<a class="btn btn-ghost" href="https://instagram.com" target="_blank" rel="noopener noreferrer">Open Instagram</a>'+
+          '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Close</button>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text4);margin-top:11px">Tip: on your phone, this button sends the image straight to Instagram Stories.</div>'+
+      '</div>'+
+    '</div></div>');
+    var dl=document.getElementById('ppDl');
+    if(dl) dl.onclick=function(){ try{ var a=document.createElement('a'); a.href=img.dataUrl; a.download='pegasus-profile.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); Pegasus.toast('✓','var(--green-dim)','Downloaded','Now open Instagram and post it'); }catch(e){} };
+    var cp=document.getElementById('ppCap');
+    if(cp) cp.onclick=function(){ try{ navigator.clipboard.writeText(caption); Pegasus.toast('⧉','var(--green-dim)','Caption copied','Paste it into your Instagram caption'); }catch(e){} };
+  }
+  // Pre-warm the share image after first paint so the share is instant on click.
+  setTimeout(function(){ try{ ppGetShareImage(); }catch(e){} }, 1500);
+
+  /* ── Active in Pegasus panel (owner only) ──────────────────────
+     Mixed recent activity — people AND business/project pages — via the
+     get_recent_network_activity RPC (visibility-safe; guests see business
+     pages only, members also see people).                            */
+  var ACT_TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+  /* ── My Connections (accepted only) ───────────────────────────────────────
+     Replaces the old "Network Signals" panel. Personal profiles only show
+     people who are ACTUALLY connected to this member — never random ecosystem
+     signals. Visibility-safe via get_member_connections_for_profile, which
+     returns only public profile fields. If nothing to show, the panel is
+     removed for visitors and shows an owner CTA for the profile owner. */
+  {
     (async function(){
       var panel=document.getElementById('pp-active-members'); if(!panel)return;
+      var isOwner = !!(window.__PEG_OWNER_NAV);
       try{
         var sb=await window.PegSB.ready;
-        var me=(await sb.auth.getUser()).data.user.id;
-        var {data}=await sb.from('profiles')
-          .select('id,full_name,role,profile_slug,headline,location')
-          .not('full_name','is',null)
-          .neq('id',me)
-          .order('updated_at',{ascending:false})
-          .limit(8);
-        if(!data||!data.length){panel.remove();return;}
+        var r=await sb.rpc('get_member_connections_for_profile',{
+          p_profile_slug: (p && p.profile_slug) || null,
+          p_limit: 12
+        });
+        var items=(r && !r.error && r.data) ? r.data : [];
+        if(!items.length){
+          if(isOwner){
+            panel.innerHTML=
+              '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">My Connections</div>'+
+              '<div style="font-size:11.5px;color:var(--text3);line-height:1.55;margin-bottom:12px">You have no accepted connections yet. Use Members Network to find people and send connection requests.</div>'+
+              '<div style="display:flex;flex-direction:column;gap:7px">'+
+                '<a class="btn btn-pri btn-sm" href="/members.html">Explore Members Network</a>'+
+                '<a class="btn btn-ghost btn-sm" href="/network-requests.html#connection-inbox">Open Workspace Requests</a>'+
+              '</div>';
+          } else {
+            /* Visitors / shared view: don't show an empty "no connections" card —
+               keep the public, shareable page clean. */
+            var _s=panel.closest('.pp-sec'); (_s||panel).remove();
+          }
+          return;
+        }
+        var header = isOwner ? 'My Connections' : 'Connected Network';
         panel.innerHTML=
-          '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Recently Active</div>'+
-          data.map(function(m){
-            var ini=(m.full_name||'?').split(' ').map(function(w){return w[0];}).slice(0,2).join('');
-            var link=m.profile_slug?'/u/'+m.profile_slug:'/public-profile.html?id='+m.id;
-            var rl=(m.role||'member').replace(/_/g,' ');
-            return '<a href="'+link+'" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">'+
-              '<div style="width:32px;height:32px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+ini+'</div>'+
+          '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:3px">'+esc(header)+'</div>'+
+          '<div style="font-size:10.5px;color:var(--text3);line-height:1.4;margin-bottom:12px">People actually connected to this profile on Pegasus.</div>'+
+          items.slice(0,12).map(function(c){
+            var nm=c.name||'—';
+            var ini=nm.split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase()||'•';
+            var role=(c.role||'').replace(/_/g,' ');
+            var sub=[role, c.company_name].filter(Boolean).join(' · ');
+            var href = c.profile_slug ? '/u/'+c.profile_slug : '#';
+            var av = c.avatar_url ? '<img src="'+esc(c.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover">' : esc(ini);
+            var status = c.recently_active
+              ? '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.06em;color:var(--green);text-transform:uppercase">Recently active</span>'
+              : '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.06em;color:var(--text3);text-transform:uppercase">Connected</span>';
+            return '<a href="'+esc(href)+'" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">'+
+              '<div style="width:32px;height:32px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue-lt);flex-shrink:0;overflow:hidden">'+av+'</div>'+
               '<div style="min-width:0;flex:1">'+
-                '<div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+m.full_name+'</div>'+
-                '<div style="font-size:10px;color:var(--text3);text-transform:capitalize">'+rl+'</div>'+
+                '<div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(nm)+'</div>'+
+                (sub?'<div style="font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(sub)+'</div>':'')+
+                '<div>'+status+'</div>'+
               '</div>'+
             '</a>';
           }).join('')+
-          '<a href="/members.html" style="display:block;font-size:11px;color:var(--blue-lt);text-align:center;padding-top:10px;text-decoration:none">See all members →</a>';
-      }catch(e){panel.remove();}
+          (isOwner
+            ? '<div style="display:flex;flex-direction:column;gap:6px;padding-top:10px"><a href="/members.html" style="display:block;font-size:11px;color:var(--blue-lt);text-align:center;text-decoration:none">Explore Members Network →</a></div>'
+            : '');
+      }catch(e){
+        /* If the RPC is not yet deployed, hide the section rather than leak stale data. */
+        if(!isOwner){ var _s=panel.closest('.pp-sec'); (_s||panel).remove(); }
+        else {
+          panel.innerHTML='<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">My Connections</div>'+
+            '<div style="font-size:11.5px;color:var(--text3);line-height:1.55;margin-bottom:10px">Connections will appear here once you accept your first connection request.</div>'+
+            '<a class="btn btn-ghost btn-sm" href="/members.html">Explore Members Network</a>';
+        }
+      }
     }());
   }
 
-  try{
-    if(window.PegShowcase){
-      await PegShowcase.mountInto('#ppShowcase', { ownerId: p.id, isOwner: route.isOwner, role: p.role });
-      var _scSec=document.querySelector('.pp-showcase');
-      if(_scSec && !document.querySelector('#ppShowcase .sc-section')) _scSec.remove();
-    }
-  }catch(e){ console.warn('[Showcase] mount skipped:', e&&e.message); }
+  /* ── Businesses & Projects this person represents (all viewers) ──────────────
+     Visibility-safe via RPC: anon sees public pages, members also see member-only,
+     owner/managers see their own (incl. private) with manage controls.        */
+  function bizLogo(name,logo,size){
+    size=size||44;
+    var ini=(name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase()||'◈';
+    if(logo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;background:var(--bg2)"><img src="'+esc(logo)+'" alt="" style="width:100%;height:100%;object-fit:cover"></div>';
+    return '<div style="width:'+size+'px;height:'+size+'px;border-radius:10px;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--blue-lt);font-size:'+Math.round(size/2.6)+'px;flex-shrink:0">'+esc(ini)+'</div>';
+  }
+  window.ppBizCopy=function(type, slug){
+    var u='https://pegasuscapitalnetwork.com'+Pegasus.presencePath(type, slug);
+    try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(u); } }catch(e){}
+    try{ Pegasus.toast('⧉','var(--green-dim)','Link copied', u.replace(/^https?:\/\//,'')); }catch(e){}
+  };
+  (async function loadProfileBiz(){
+    try{
+      var bslug = p.profile_slug; if(!bslug) return;
+      var sb=await window.PegSB.ready;
+      var r=await sb.rpc('get_profile_business_pages_by_slug', { p_profile_slug: bslug });
+      if(r.error){ console.warn('[profile] business pages:', r.error.message); return; }
+      var list=r.data||[]; if(!list.length) return;
+      var strip=document.getElementById('pp-biz-strip'); if(!strip) return;
+      var anyOwn = list.some(function(b){ return b.can_manage; });
+
+      /* Logo TILES only — clickable identity badges, no full cards/buttons/
+         descriptions on the personal profile. Show 5; reveal the rest via View all. */
+      var tiles=list.map(function(b,i){
+        var u=Pegasus.presencePath(b.presence_type,b.slug);
+        var hidden = i>=5 ? ' data-xtra="1" style="display:none;flex-direction:column;align-items:center;gap:9px;width:108px;text-decoration:none"' : ' style="display:flex;flex-direction:column;align-items:center;gap:9px;width:108px;text-decoration:none"';
+        return '<a href="'+u+'" title="'+esc(b.name)+'"'+hidden+'>'+
+          bizLogo(b.name,b.logo_url,84)+
+          '<div style="text-align:center;width:100%">'+
+            '<div style="font-size:11.5px;font-weight:600;color:var(--text);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(b.name)+'</div>'+
+            '<div style="font-size:9.5px;color:var(--text3);margin-top:3px">'+esc(ACT_TL[b.presence_type]||b.presence_type)+'</div>'+
+          '</div></a>';
+      }).join('');
+      var more = list.length>5
+        ? '<button onclick="this.parentNode.querySelectorAll(\'[data-xtra]\').forEach(function(t){t.style.display=\'flex\'});this.style.display=\'none\'" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:108px;background:none;border:none;cursor:pointer;font:inherit">'+
+            '<div style="width:84px;height:84px;border-radius:14px;border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:600;font-size:13px">+'+(list.length-5)+'</div>'+
+            '<div style="font-size:11px;color:var(--blue)">View all</div></button>'
+        : '';
+      var manageLink = anyOwn ? '<a href="/my-presences.html" class="pp-card-action">Manage Businesses →</a>' : '<span></span>';
+      strip.innerHTML='<div class="pp-sec-label"><span>Businesses &amp; Projects</span>'+manageLink+'</div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:20px 18px;align-items:flex-start">'+tiles+more+'</div>';
+      strip.style.display='';
+    }catch(e){ /* non-fatal */ }
+  })();
+
+  /* Showcase mount removed: opportunities/listings/deals are presented on
+     business/project pages, not on the personal profile. */
+
+  /* Network Around This Member — recent visibility-safe ecosystem movement
+     (people + business pages). Hidden if there's nothing safe to show. */
+  (async function loadAround(){
+    try{
+      var host=document.getElementById('pp-around'); if(!host) return;
+      var sb=await window.PegSB.ready;
+      var r=await sb.rpc('get_recent_network_activity');
+      var items=(r && !r.error && r.data) ? r.data : [];
+      if(!items.length) return;
+      var TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+      var cards=items.slice(0,6).map(function(a){
+        var isPerson=a.kind==='person';
+        var href=isPerson ? (a.url||'#') : Pegasus.presencePath(a.kind,a.slug);
+        var kind=TL[a.kind]||a.kind;
+        var sub=(a.meta||'')+(a.location?((a.meta?' · ':'')+a.location):'');
+        return '<a href="'+esc(href)+'" style="display:block;background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-decoration:none">'+
+          '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">'+esc(kind)+'</div>'+
+          '<div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.25">'+esc(a.name||'—')+'</div>'+
+          (sub?'<div style="font-size:11.5px;color:var(--text2);margin-top:4px">'+esc(sub)+'</div>':'')+
+        '</a>';
+      }).join('');
+      host.innerHTML='<div class="pp-sec-label">Network Around This Member</div>'+
+        '<div style="font-size:12.5px;color:var(--text3);margin:-6px 0 14px;max-width:620px">People and businesses active across the Pegasus ecosystem.</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">'+cards+'</div>';
+      host.style.display='';
+    }catch(e){ /* non-fatal */ }
+  })();
 
   addFooter();
 });

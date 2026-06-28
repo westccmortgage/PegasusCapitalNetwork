@@ -18,18 +18,15 @@
 .ep-section-title{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
 .ep-section-body{padding:20px 22px}
 .ep-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
-.ep-banner-zone{position:relative;height:148px;cursor:pointer;background:linear-gradient(135deg,#1B3150 0%,#235FA6 60%,#1B5A8A 100%);overflow:hidden;border-radius:0;border-bottom:1px solid var(--border)}
-.ep-banner-img{width:100%;height:100%;object-fit:cover;display:block}
-.ep-banner-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.18s;display:flex;align-items:center;justify-content:center}
-.ep-banner-zone:hover .ep-banner-overlay{background:rgba(0,0,0,0.3)}
-.ep-banner-prompt{opacity:0;transition:opacity 0.18s;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.55);color:#fff;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:500;border:1px solid rgba(255,255,255,0.25);font-family:var(--sans)}
-.ep-banner-zone:hover .ep-banner-prompt{opacity:1}
-.ep-avatar-zone{position:absolute;bottom:-28px;left:22px;width:72px;height:72px;border-radius:50%;border:3px solid var(--bg);cursor:pointer;background:linear-gradient(135deg,#1a3260,#235FA6);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;color:rgba(255,255,255,0.9);transition:filter 0.18s}
-.ep-avatar-zone:hover{filter:brightness(0.75)}
-.ep-avatar-zone img{width:100%;height:100%;object-fit:cover}
-.ep-media-body{padding:40px 22px 16px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--border)}
+/* Profile photo (avatar) — personal profiles are identity-first; personal cover
+   banners are deprecated (see .ep-banner-deprecated). */
+.ep-photo-row{display:flex;align-items:center;gap:18px;padding:20px 22px}
+.ep-photo-av{width:84px;height:84px;border-radius:50%;flex-shrink:0;border:3px solid var(--bg);cursor:pointer;background:linear-gradient(135deg,#1a3260,#235FA6);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:28px;color:rgba(255,255,255,0.9);transition:filter 0.18s;box-shadow:0 3px 12px rgba(20,24,28,0.1)}
+.ep-photo-av:hover{filter:brightness(0.8)}
+.ep-photo-av img{width:100%;height:100%;object-fit:cover}
+.ep-photo-info{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .ep-media-hint{font-size:11.5px;color:var(--text3);font-family:var(--sans)}
-.ep-media-btns{display:flex;gap:8px}
+.ep-banner-deprecated{margin:0 22px 18px;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);font-size:11.5px;color:var(--text3);font-family:var(--sans);line-height:1.5}
 .ep-comp{margin-bottom:16px}
 .ep-comp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .ep-comp-label{font-size:11.5px;color:var(--text2)}
@@ -63,7 +60,7 @@
 .ep-save-error{font-size:12px;color:var(--red);font-weight:500;display:none}
 .ep-slug-preview{font-family:var(--mono);font-size:11.5px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r1);padding:8px 12px;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ep-slug-domain{color:var(--text4)}
-@media(max-width:640px){.ep-grid2{grid-template-columns:1fr}.ep-media-btns{flex-direction:column}}
+@media(max-width:640px){.ep-grid2{grid-template-columns:1fr}.ep-photo-row{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -122,7 +119,6 @@ Pegasus.boot(async function(st){
     document.body.appendChild(inp); return inp;
   }
   var avFileEl=mkInput('ep-av-file','image/*');
-  var bnFileEl=mkInput('ep-bn-file','image/*');
 
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function el(id){return document.getElementById(id);}
@@ -216,8 +212,23 @@ Pegasus.boot(async function(st){
   var comp=calcComp(p);
   var sl=p.profile_slug||slugify(p.full_name||'');
   var avHtml=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" style="width:100%;height:100%;object-fit:cover">':'<span>'+esc(initials(p.full_name||'')||'?')+'</span>';
-  var bnHtml=p.banner_url?'<img class="ep-banner-img" id="ep-bn-img" src="'+esc(p.banner_url)+'">':'<img class="ep-banner-img" id="ep-bn-img" style="display:none">';
-  var roles=['borrower','lender','broker','agent','insurance','investor','developer','rwa_partner','business_funding_provider','ecosystem_member'];
+  /* Role taxonomy — [value, Title-Case label]. Existing lowercase values kept for
+     backward compatibility; new roles added per the taxonomy spec. */
+  var ROLE_OPTS=[
+    ['borrower','Growth Partner'],['founder','Founder'],['entrepreneur','Entrepreneur'],
+    ['startup_founder','Startup Founder'],['business_owner','Business Owner'],
+    ['developer','Developer'],['real_estate_developer','Real Estate Developer'],
+    ['broker','Broker'],['mortgage_broker','Mortgage Broker'],['real_estate_broker','Real Estate Broker'],
+    ['lender','Lender'],['private_lender','Private Lender'],['hard_money_lender','Hard Money Lender'],
+    ['investor','Investor'],['capital_partner','Capital Partner'],['fund_manager','Fund Manager'],['family_office','Family Office'],
+    ['advisor','Advisor'],['consultant','Consultant'],['insurance','Insurance Professional'],
+    ['agent','Agent'],['real_estate_agent','Real Estate Agent'],['service_provider','Service Provider'],
+    ['business_funding_provider','Business Funding Provider'],['rwa_partner','RWA Partner'],
+    ['ecosystem_member','Ecosystem Member (Advisory / Support)']
+  ];
+  /* Suggestions for the Additional Roles + Specialties datalists. */
+  var ROLE_SUGGEST=ROLE_OPTS.map(function(o){return o[1];});
+  var SPEC_SUGGEST=['Mortgage Lending','Residential Development','Investor Financing','Private Capital','Real Estate Strategy','Construction','Luxury Residential Projects','DSCR','Non-QM','Jumbo','Hard Money','Bridge Loans','Ground-Up Development','Redevelopment','Capital Structuring','Acquisitions','Refinance','Purchase Financing','Commercial Real Estate','RWA','Tokenization','Business Funding','Insurance','Escrow','Title','Legal','Advisory'];
 
   view.innerHTML=
     '<div class="ep-wrap">'+
@@ -227,21 +238,18 @@ Pegasus.boot(async function(st){
       '<div class="ep-comp-track"><div class="ep-comp-fill" id="ep-comp-fill" style="width:'+comp+'%"></div></div>'+
     '</div>'+
 
-    /* Media */
+    /* Media — personal profile photo only. Personal cover banners are deprecated
+       and no longer rendered on public profiles. */
     '<div class="ep-section">'+
-      '<div class="ep-section-head"><span class="ep-section-title">Profile Photo &amp; Cover Banner</span><span style="font-size:11px;color:var(--text3)">Click the photo or banner to upload</span></div>'+
-      '<div class="ep-banner-zone" id="ep-bn-zone" onclick="el(\'ep-bn-file\').click()">'+
-        bnHtml+
-        '<div class="ep-banner-overlay"><div class="ep-banner-prompt">📷 Upload Cover Banner</div></div>'+
-        '<div class="ep-avatar-zone" id="ep-av-zone" onclick="event.stopPropagation();el(\'ep-av-file\').click()">'+avHtml+'</div>'+
-      '</div>'+
-      '<div class="ep-media-body">'+
-        '<span class="ep-media-hint" id="ep-media-status">'+(p.avatar_url?'✓ Profile photo set':'No photo yet')+'</span>'+
-        '<div class="ep-media-btns">'+
+      '<div class="ep-section-head"><span class="ep-section-title">Profile Photo</span><span style="font-size:11px;color:var(--text3)">Click your photo to upload</span></div>'+
+      '<div class="ep-photo-row">'+
+        '<div class="ep-photo-av" id="ep-av-zone" onclick="el(\'ep-av-file\').click()">'+avHtml+'</div>'+
+        '<div class="ep-photo-info">'+
+          '<span class="ep-media-hint" id="ep-media-status">'+(p.avatar_url?'✓ Profile photo set':'No photo yet')+'</span>'+
           '<button class="btn btn-ghost btn-sm" onclick="el(\'ep-av-file\').click()">Upload Photo</button>'+
-          '<button class="btn btn-ghost btn-sm" onclick="el(\'ep-bn-file\').click()">Upload Banner</button>'+
         '</div>'+
       '</div>'+
+      '<div class="ep-banner-deprecated">Personal banners are no longer used on public profiles. Use business pages or showcases for visual branding.</div>'+
     '</div>'+
 
     /* Identity */
@@ -250,14 +258,18 @@ Pegasus.boot(async function(st){
       '<div class="ep-section-body">'+
         '<div class="field"><label class="label">Display Name *</label><input class="input" id="f_name" maxlength="80" placeholder="Your full name" value="'+esc(p.full_name||'')+'" oninput="onChg()"></div>'+
         '<div class="ep-grid2">'+
-          '<div class="field"><label class="label">Role in Network *</label><select class="input" id="f_role" onchange="onChg();toggleEco()">'+
-            roles.map(function(r){var lbl=({borrower:'Growth Partner',insurance:'Insurance Professional',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',ecosystem_member:'Ecosystem Member (Advisory / Support)'}[r])||r.replace(/_/g,' ');return '<option value="'+r+'"'+(p.role===r?' selected':'')+'>'+lbl+'</option>';}).join('')+
-          '</select></div>'+
+          '<div class="field"><label class="label">Primary Role *</label><select class="input" id="f_role" onchange="onChg();toggleEco()">'+
+            ROLE_OPTS.map(function(o){return '<option value="'+o[0]+'"'+(p.role===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+
+          '</select><div class="ep-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Choose the main role people should associate with you inside Pegasus.</div></div>'+
           '<div class="field"><label class="label">Headline</label><input class="input" id="f_head" maxlength="120" data-count placeholder="One line on who you are and what you do." value="'+esc(p.headline||'')+'" oninput="onChg()"></div>'+
         '</div>'+
+        '<div class="field"><label class="label">Additional Roles</label>'+
+          '<input class="input" id="f_addroles" list="role-suggest" maxlength="200" placeholder="e.g. Mortgage Broker, Investor, Founder" value="'+esc((p.additional_roles||[]).join(", "))+'" oninput="onChg()">'+
+          '<datalist id="role-suggest">'+ROLE_SUGGEST.map(function(l){return '<option>'+l+'</option>';}).join('')+'</datalist>'+
+          '<div class="ep-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Comma-separated. Add other professional identities you want people to understand.</div></div>'+
         '<div class="ep-grid2">'+
           '<div class="field"><label class="label">Professional Title</label><input class="input" id="f_title" maxlength="80" placeholder="e.g. Mortgage Broker" value="'+esc(p.professional_title||'')+'"></div>'+
-          '<div class="field"><label class="label">Company / Firm</label><input class="input" id="f_company" maxlength="80" placeholder="Your company name" value="'+esc(p.company_name||'')+'"></div>'+
+          '<div class="field"><label class="label">Company / Firm</label><input class="input" id="f_company" maxlength="80" placeholder="Your company or firm" value="'+esc(p.company_name||'')+'"><div class="ep-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Affiliation only. Full business details live on Business Pages.</div></div>'+
         '</div>'+
         '<div class="field"><label class="label">Current Focus</label><input class="input" id="f_focus" maxlength="140" data-count placeholder="What you\'re actively working on right now" value="'+esc(p.current_focus||'')+'"></div>'+
         '<div class="field"><label class="label">Your Pegasus Network URL</label>'+
@@ -287,11 +299,31 @@ Pegasus.boot(async function(st){
         '<div class="field"><label class="label">Bio</label><textarea class="input" id="f_bio" rows="5" maxlength="2000" data-count placeholder="Your professional story — who you are, what you do, what you bring to the network." oninput="onChg()">'+esc(p.bio||'')+'</textarea></div>'+
         '<div class="ep-grid2">'+
           '<div class="field"><label class="label">Markets (comma-separated)</label><input class="input" id="f_mkt" maxlength="200" placeholder="California, Florida, Washington" value="'+esc((p.markets||[]).join(', '))+'" oninput="onChg()"></div>'+
-          '<div class="field"><label class="label">Specialties (comma-separated)</label><input class="input" id="f_spec" maxlength="200" placeholder="Single Family, Bridge, DSCR" value="'+esc((p.specialties||[]).join(', '))+'" oninput="onChg()"></div>'+
+          '<div class="field"><label class="label">Specialties</label><input class="input" id="f_spec" list="spec-suggest" maxlength="240" placeholder="Mortgage Lending, Bridge, DSCR" value="'+esc((p.specialties||[]).join(', '))+'" oninput="onChg()"><datalist id="spec-suggest">'+SPEC_SUGGEST.map(function(s){return '<option>'+s+'</option>';}).join('')+'</datalist><div class="ep-hint" style="font-size:11px;color:var(--text3);margin-top:4px">Comma-separated. Add areas where you want to be discovered.</div></div>'+
         '</div>'+
         '<div class="ep-grid2">'+
           '<div class="field"><label class="label">Location</label><input class="input" id="f_loc" maxlength="80" placeholder="City, State" value="'+esc(p.location||'')+'"></div>'+
-          '<div class="field"><label class="label">Website</label><input class="input" id="f_web" maxlength="200" placeholder="https://yoursite.com" value="'+esc(p.website||'')+'"></div>'+
+          '<div class="field"><label class="label">Website <span style="color:var(--text3);font-weight:400">(optional)</span></label><input class="input" id="f_web" maxlength="200" placeholder="https://yoursite.com" value="'+esc(p.website||'')+'"></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    /* Online Presence — optional social/professional links */
+    '<div class="ep-section">'+
+      '<div class="ep-section-head"><span class="ep-section-title">Online Presence</span><span style="font-size:11px;color:var(--text3)">Add links where people can learn more about you</span></div>'+
+      '<div class="ep-section-body">'+
+        '<div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5">Most members don\'t need a personal website. Add your LinkedIn, Instagram, Facebook, X, or other professional profiles so people can verify and connect with you. All optional.</div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">LinkedIn</label><input class="input" id="f_linkedin" maxlength="200" placeholder="linkedin.com/in/name or @name" value="'+esc(p.linkedin_url||'')+'" oninput="onChg()"></div>'+
+          '<div class="field"><label class="label">X / Twitter</label><input class="input" id="f_x" maxlength="200" placeholder="@username or x.com/username" value="'+esc(p.x_url||'')+'" oninput="onChg()"></div>'+
+        '</div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">Instagram</label><input class="input" id="f_instagram" maxlength="200" placeholder="@username or instagram.com/username" value="'+esc(p.instagram_url||'')+'" oninput="onChg()"></div>'+
+          '<div class="field"><label class="label">Facebook</label><input class="input" id="f_facebook" maxlength="200" placeholder="facebook.com/yourpage" value="'+esc(p.facebook_url||'')+'" oninput="onChg()"></div>'+
+        '</div>'+
+        '<div class="ep-grid2">'+
+          '<div class="field"><label class="label">YouTube</label><input class="input" id="f_youtube" maxlength="200" placeholder="youtube.com/@channel" value="'+esc(p.youtube_url||'')+'" oninput="onChg()"></div>'+
+          '<div class="field"><label class="label">TikTok <span style="color:var(--text3);font-weight:400">(optional)</span></label><input class="input" id="f_tiktok" maxlength="200" placeholder="@username or tiktok.com/@username" value="'+esc(p.tiktok_url||'')+'" oninput="onChg()"></div>'+
         '</div>'+
       '</div>'+
     '</div>'+
@@ -369,24 +401,18 @@ Pegasus.boot(async function(st){
       if(st){st.textContent='Photo upload is disabled when editing another member. Ask the member to upload their own photo.';st.style.color='var(--amber)';}
       return;
     }
-    if(st){st.textContent='Uploading '+kind+'…';st.style.color='var(--blue)';}
-    window.PegProfileMedia.uploadAndSave(kind,file).then(function(url){
-      if(kind==='avatar'){
-        p.avatar_url=url;
-        var z=el('ep-av-zone'); if(z){z.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';}
-        if(st){st.textContent='✓ Profile photo saved';st.style.color='var(--green)';}
-      } else {
-        p.banner_url=url;
-        var bi=el('ep-bn-img'); if(bi){bi.src=url;bi.style.display='';}
-        if(st){st.textContent='✓ Cover banner saved';st.style.color='var(--green)';}
-      }
+    if(st){st.textContent='Uploading photo…';st.style.color='var(--blue)';}
+    /* Personal profiles only upload an avatar; cover banners are deprecated. */
+    window.PegProfileMedia.uploadAndSave('avatar',file).then(function(url){
+      p.avatar_url=url;
+      var z=el('ep-av-zone'); if(z){z.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';}
+      if(st){st.textContent='✓ Profile photo saved';st.style.color='var(--green)';}
       window.onChg();
     }).catch(function(err){
       if(st){st.textContent='Upload failed: '+(err&&err.message||err);st.style.color='var(--red)';}
     });
   }
   avFileEl.addEventListener('change',function(){handleUpload('avatar',this.files[0]);this.value='';});
-  bnFileEl.addEventListener('change',function(){handleUpload('banner',this.files[0]);this.value='';});
 
   /* ── Save ── */
   window.doSave=async function(){
@@ -433,6 +459,32 @@ Pegasus.boot(async function(st){
         saved=await window.PegProfile.saveProfile(patch);
       }
       p=Object.assign(p,saved||patch);
+      /* Additional roles + social links saved best-effort in a SEPARATE update so
+         the core save never fails if migration 053 isn't applied yet. */
+      try{
+        var _sc=await window.PegSB.ready;
+        var _tid=(ADMIN_EDIT&&ADMIN_EDIT.id)||(saved&&saved.id)||((window.PegProfile.currentUser&&window.PegProfile.currentUser())||{}).id;
+        if(_sc && _tid){
+          function _norm(net,v){ v=(v||'').trim(); if(!v) return null;
+            if(/^https?:\/\//i.test(v)) return v;
+            v=v.replace(/^@/,'');
+            var base={linkedin:'https://linkedin.com/in/',x:'https://x.com/',instagram:'https://instagram.com/',facebook:'https://facebook.com/',youtube:'https://youtube.com/',tiktok:'https://tiktok.com/@'}[net];
+            return base ? base+v : ('https://'+v);
+          }
+          var extra={
+            additional_roles: val('f_addroles').split(',').map(function(x){return x.trim();}).filter(Boolean),
+            linkedin_url:_norm('linkedin',val('f_linkedin')),
+            x_url:_norm('x',val('f_x')),
+            instagram_url:_norm('instagram',val('f_instagram')),
+            facebook_url:_norm('facebook',val('f_facebook')),
+            youtube_url:_norm('youtube',val('f_youtube')),
+            tiktok_url:_norm('tiktok',val('f_tiktok'))
+          };
+          var _ex=await _sc.from('profiles').update(extra).eq('id',_tid);
+          if(_ex.error) console.warn('[profile-edit] extra fields not saved (apply migration 053):', _ex.error.message);
+          else p=Object.assign(p,extra);
+        }
+      }catch(_e){ console.warn('[profile-edit] extra fields skipped:', _e && _e.message); }
       var sl2=(saved&&saved.profile_slug)||slugify(name);
       var slEl=el('ep-slug'); if(slEl)slEl.textContent=sl2;
       var pl=el('ep-pub-link'); if(pl)pl.href=(saved&&saved.profile_slug)?'/u/'+saved.profile_slug:((saved&&saved.id)?'/public-profile.html?id='+saved.id:'/public-profile.html');

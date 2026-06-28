@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="en"><head><title>Share Studio — Pegasus Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/share-studio.html"><meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<script>window.PEGASUS_BUILD_VERSION="dealroom-entitlements-20260524-1529";</script>
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script>
+Pegasus.boot(async function(){
+  // Member-only page — backstop auth gate.
+  var _st = (window.PegStore && PegStore.get) ? PegStore.get() : {};
+  if(_st.mode !== 'live'){ location.replace('/signin.html'); return; }
+
+  var v = Pegasus.mountApp({active:'Share Studio', title:'Share Studio', sub:'Make every profile, business page, opportunity and showcase share-ready'});
+  var esc = Pegasus.esc;
+  var p = (_st.profile)||{};
+  var name = p.full_name || 'My profile';
+
+  var card = function(title, body){
+    return '<div class="card" style="padding:18px 20px;margin-bottom:14px"><div style="font-family:var(--serif);font-size:17px;color:var(--text);margin-bottom:6px">'+esc(title)+'</div>'+body+'</div>';
+  };
+
+  v.innerHTML =
+    '<div class="banner bn-info" style="margin-bottom:16px"><div class="banner-msg">⤴ <span>Pegasus prepares everything for each platform — a preview, a caption, a clean link and download-ready images. You confirm the post. <strong>No automatic posting.</strong></span></div></div>'
+
+    + card('Share your profile',
+        '<div style="font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px">Bring the right people back to your Pegasus profile. Pegasus generates a branded image, caption and clean link.</div>'
+        + '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-pri" id="shareProfile">Open Share Kit</button><button class="btn btn-ghost" onclick="Pegasus.copyProfileLink()">Copy profile link</button><a class="btn btn-ghost" href="'+Pegasus.ownProfilePath()+'">View my profile</a></div>')
+
+    + card('Share a business page',
+        '<div style="font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px">Open any business page you manage and use its Share button to prepare social assets for what your business does and offers.</div>'
+        + '<a class="btn btn-ghost" href="/my-presences.html">Go to Business Pages →</a>')
+
+    + card('Share an opportunity or showcase',
+        '<div style="font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px">Every opportunity and showcase is share-ready. Open one and use Share to prepare a package for LinkedIn, Facebook, X, email and Instagram.</div>'
+        + '<a class="btn btn-ghost" href="/showcase.html">Go to Opportunities & Showcases →</a>')
+
+    + card('Network Badge',
+        '<div style="font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px">Show your Pegasus connection anywhere. Generate a badge for your website, LinkedIn, Instagram or email signature that links people back to your Pegasus profile or business page.</div>'
+        + '<a class="btn btn-ghost" href="/network-badge.html">Open Network Badge →</a>')
+
+    + card('What Share Studio prepares',
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;font-size:12.5px;color:var(--text2)">'
+        + '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div style="font-weight:600;color:var(--text)">LinkedIn / Facebook / X</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3)">1200×630</div></div>'
+        + '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div style="font-weight:600;color:var(--text)">Instagram Post</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3)">1080×1350</div></div>'
+        + '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div style="font-weight:600;color:var(--text)">Instagram Story</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3)">1080×1920</div></div>'
+        + '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div style="font-weight:600;color:var(--text)">Square</div><div style="font-family:var(--mono);font-size:10px;color:var(--text3)">1080×1080</div></div>'
+        + '</div>'
+        + '<div style="font-size:11.5px;color:var(--text4);margin-top:12px;line-height:1.5">Instagram is honest: Pegasus generates an Instagram-ready image and copies your caption. On a phone it can hand off to the Instagram app; on a computer the image downloads so you can upload it. Connected social accounts and auto-posting can be added later.</div>');
+
+  var sp = document.getElementById('shareProfile');
+  if(sp) sp.onclick = function(){
+    Pegasus.shareSheet({
+      url: Pegasus.profileUrl(),
+      title: name,
+      subtitle: p.headline || p.role || '',
+      badge: 'Pegasus Profile',
+      summary: p.about || p.bio || '',
+      caption: name + ' on Pegasus Capital Network.\n\nConnect with me here:\n' + Pegasus.profileUrl(),
+      shortText: name + ' on Pegasus',
+      visibility: 'public_preview', status: 'active',
+      card: { eyebrow:'Pegasus Profile', title:name, subtitle:(p.headline||p.role||''), summary:(p.about||''), url:'' }
+    });
+  };
+});
+</script>
+</body></html>

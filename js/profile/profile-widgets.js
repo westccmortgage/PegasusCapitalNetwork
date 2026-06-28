@@ -16,7 +16,7 @@
     p = p || {}; opts = opts || {};
     var name = p.full_name || p.display_name || 'Member';
     var bannerStyle = p.banner_url
-      ? 'background-image:linear-gradient(180deg,rgba(8,17,28,0.05),rgba(8,17,28,0.18)),url(' + esc(p.banner_url) + ');background-size:cover;background-position:center'
+      ? 'background-image:linear-gradient(180deg,rgba(8,17,28,0.05),rgba(8,17,28,0.18)),url(' + esc(p.banner_url) + ');background-size:cover;background-position:' + esc(p.banner_focal || 'center')
       : '';
     var avatar = p.avatar_url
       ? '<img class="peco-avatar-img" src="' + esc(p.avatar_url) + '" alt="' + esc(name) + '">'

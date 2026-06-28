@@ -1,345 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Pegasus Member Network</title>
-<link rel="canonical" href="https://pegasuscapitalnetwork.com/members.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Pegasus Member Network"><meta property="og:description" content="Members on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a private,…"><meta property="og:url" content="https://pegasuscapitalnetwork.com/members.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Pegasus Member Network"><meta name="twitter:description" content="Members on Pegasus Capital Network — connect with vetted capital providers and real estate professionals, structure deals, and grow inside a private,…"><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<title>Pegasus Members Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/members.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Pegasus Members Network"><meta property="og:description" content="A private connection board for capital, real estate, and growth professionals on Pegasus."><meta property="og:url" content="https://pegasuscapitalnetwork.com/members.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Pegasus Members Network"><meta name="twitter:description" content="A private connection board for capital, real estate, and growth professionals on Pegasus."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="description" content="Browse verified capital market participants — brokers, lenders, investors, Growth Partners, and more on the Pegasus Network.">
+<meta name="description" content="Browse capital, real estate, and growth professionals on Pegasus. Build a connection board and send connection requests.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/pegasus.css">
 <link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
 <style>
-/* ── Member Directory ── */
-.dir-hero{background:linear-gradient(160deg,#0A1622 0%,#13314e 55%,#0A1A2C 100%);padding:13px 40px 12px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
-.dir-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%}
-.dir-hero-wm{position:absolute;right:-40px;top:-40px;width:320px;opacity:0.04;font-family:var(--serif);font-size:160px;font-weight:300;color:#fff;line-height:1;pointer-events:none;user-select:none}
-.dir-hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:2;width:100%}
-.dir-hero h1{font-family:var(--serif);font-weight:300;font-size:clamp(18px,2vw,24px);color:#fff;letter-spacing:-0.02em;margin-bottom:3px}
-.dir-hero p{font-size:12px;color:rgba(255,255,255,0.5);max-width:560px;line-height:1.45;margin-bottom:0}
-.dir-hero-stats{display:flex;gap:18px;margin-top:9px}
-.dir-hero-stat{text-align:center}
-.dir-hero-stat-val{font-family:var(--mono);font-size:14px;color:rgba(255,255,255,0.85)}
-.dir-hero-stat-lbl{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:2px}
+/* ─── Connection Board layout ────────────────────────────────────────────── */
+.cb-shell{max-width:1240px;margin:0 auto;padding:var(--sp-lg) var(--sp-lg) var(--sp-3xl)}
+.cb-head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-lg);margin:var(--sp-xs) 0 var(--sp-lg);flex-wrap:wrap}
+.cb-head h1{font-family:var(--serif);font-weight:400;font-size:clamp(24px,2.6vw,32px);color:var(--text);margin:0;letter-spacing:-.015em}
+.cb-head p{font-size:13px;color:var(--text3);margin:4px 0 0;max-width:640px;line-height:1.6}
+.cb-grid{display:grid;grid-template-columns:minmax(0,30fr) minmax(0,70fr);gap:var(--sp-lg);align-items:start}
+@media(max-width:980px){.cb-grid{grid-template-columns:1fr}}
 
-/* Filters */
-.dir-filters{background:rgba(250,249,246,.78);backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);border-bottom:1px solid var(--border);padding:12px 40px;position:sticky;top:0;z-index:50}
-.dir-filters-inner{max-width:1200px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.dir-search{flex:1;min-width:200px;max-width:320px;position:relative}
-.dir-search input{width:100%;background:rgba(255,255,255,.6);border:1px solid var(--border2);border-radius:22px;padding:9px 16px 9px 36px;font-size:13px;color:var(--text);font-family:var(--sans);outline:none;transition:box-shadow .2s,border-color .2s,background .2s}
-.dir-search input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px var(--blue-dim),0 4px 18px rgba(24,95,165,.08)}
-.dir-search input::placeholder{color:var(--text3)}
-.dir-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);pointer-events:none}
-.dir-filter-pill{padding:6px 15px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:rgba(255,255,255,.4);font-family:var(--sans);transition:background .2s,border-color .2s,color .2s,box-shadow .2s;white-space:nowrap}
-.dir-filter-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 3px 12px rgba(24,95,165,.22)}
-.dir-filter-pill:hover:not(.active){background:var(--bg2);border-color:var(--blue);color:var(--blue)}
-.dir-count{margin-left:auto;font-size:11.5px;color:var(--text3);font-family:var(--mono);white-space:nowrap}
+/* ─── Left column — discovery ────────────────────────────────────────────── */
+.cb-disc{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);display:flex;flex-direction:column;min-height:420px;max-height:78vh;overflow:hidden;box-shadow:var(--sh-card)}
+.cb-disc-top{padding:14px 16px;border-bottom:1px solid var(--border)}
+.cb-search{display:flex;align-items:center;gap:var(--sp-sm);background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:10px 13px;margin-bottom:10px;transition:border-color var(--dur-fast)}
+.cb-search:focus-within{border-color:var(--blue)}
+.cb-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13.5px}
+.cb-search .ic{color:var(--text3);font-size:14px}
+.cb-pills{display:flex;flex-wrap:wrap;gap:6px}
+.cb-pill{background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:5px 11px;border-radius:20px;cursor:pointer;transition:all var(--dur-fast)}
+.cb-pill:hover{border-color:var(--border2);color:var(--text)}
+.cb-pill.on{background:var(--blue-dim);border-color:rgba(29,90,158,.30);color:var(--blue)}
+.cb-list{flex:1;overflow-y:auto;padding:6px 6px 8px}
+.cb-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r2);cursor:pointer;transition:background var(--dur-fast)}
+.cb-row:hover{background:var(--bg2)}
+.cb-row.is-selected{background:var(--blue-dim);outline:1px solid rgba(29,90,158,.25)}
+.cb-row.is-me{opacity:.5;cursor:not-allowed}
+.cb-av{width:38px;height:38px;border-radius:var(--r2);flex:none;background:linear-gradient(135deg,#162E52,#1D5A9E);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;overflow:hidden}
+.cb-av img{width:100%;height:100%;object-fit:cover}
+.cb-row-body{flex:1;min-width:0}
+.cb-row-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-row-role{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.cb-row-status{display:flex;align-items:center;gap:6px;font-size:9px;font-family:var(--mono);color:var(--text4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.cb-row-status .d{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(12,143,92,0.35)}
+.cb-row-tag{font-size:9.5px;font-family:var(--mono);padding:2px 7px;border-radius:20px;background:var(--bg3);color:var(--text2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex:none}
+.cb-row-tag.is-sent{background:rgba(142,112,32,.12);color:var(--gold)}
+.cb-row-tag.is-conn{background:rgba(12,143,92,.08);color:var(--green)}
+.cb-row-tag.is-in{background:var(--blue-dim);color:var(--blue)}
+.cb-empty{padding:var(--sp-lg) var(--sp-lg);text-align:center;color:var(--text3);font-size:12.5px}
+.cb-disc-foot{padding:9px 14px;border-top:1px solid var(--border);font-size:11px;font-family:var(--mono);letter-spacing:.06em;color:var(--text3);display:flex;justify-content:space-between;align-items:center}
 
-/* Grid */
-.dir-body{max-width:1400px;margin:0 auto;padding:22px 40px 40px;position:relative;z-index:1}
-.dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px}
-.dir-empty{text-align:center;padding:60px 20px;color:var(--text3)}
-.dir-empty-icon{font-size:32px;margin-bottom:12px}
-.dir-empty-msg{font-size:14px;color:var(--text2)}
-.dir-loading{text-align:center;padding:60px;color:var(--text3);font-family:var(--mono);font-size:12px}
+/* ─── Right column — connection board ────────────────────────────────────── */
+.cb-board{display:flex;flex-direction:column;gap:var(--sp-md)}
+.cb-me{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:18px 20px;box-shadow:var(--sh-card)}
+.cb-me-top{display:flex;align-items:center;gap:14px}
+.cb-me-av{width:56px;height:56px;border-radius:var(--r3);flex:none;background:linear-gradient(135deg,#162E52,#1D5A9E);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-family:var(--serif);overflow:hidden}
+.cb-me-av img{width:100%;height:100%;object-fit:cover}
+.cb-me-name{font-family:var(--serif);font-weight:400;font-size:20px;color:var(--text);letter-spacing:-.015em;line-height:1.15}
+.cb-me-role{font-size:12.5px;color:var(--text2);margin-top:2px}
+.cb-me-focus{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.55}
+.cb-me-tiles{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.cb-me-tile{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r1);padding:4px 9px 4px 4px;text-decoration:none;color:var(--text);transition:border-color var(--dur-fast)}
+.cb-me-tile:hover{border-color:var(--border2)}
+.cb-me-tile-lg{width:22px;height:22px;border-radius:var(--r1);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text2);overflow:hidden}
+.cb-me-tile-lg img{width:100%;height:100%;object-fit:cover}
+.cb-me-tile-nm{font-size:11.5px;font-weight:500;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-me-actions{display:flex;gap:var(--sp-sm);flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
 
-/* Member card */
-.mcard{
-  background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);
-  overflow:hidden;transition:all .18s;cursor:pointer;text-decoration:none;display:block;
-}
-.mcard:hover{border-color:var(--blue);box-shadow:var(--sh-card);transform:translateY(-2px)}
-.mcard-banner{height:60px;background:linear-gradient(135deg,#0F1E38,#235FA6);position:relative;flex-shrink:0}
-.mcard-banner img{width:100%;height:100%;object-fit:cover}
-.mcard-head{padding:0 16px 14px;position:relative}
-.mcard-av{
-  width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,#1a3260,#235FA6);
-  border:3px solid var(--bg1);margin-top:-26px;position:relative;z-index:1;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--serif);font-size:18px;color:rgba(255,255,255,0.9);
-  overflow:hidden;flex-shrink:0;
-}
-.mcard-av img{width:100%;height:100%;object-fit:cover}
-.mcard-badges{position:absolute;top:10px;right:12px;display:flex;gap:5px}
-.mcard-badge{
-  display:inline-flex;align-items:center;gap:3px;
-  padding:2px 7px;border-radius:3px;font-size:9.5px;font-weight:600;
-  letter-spacing:0.04em;
-}
-.mcard-badge.amb{background:rgba(205,167,72,0.15);color:#8A6520;border:1px solid rgba(205,167,72,0.25)}
-.mcard-badge.ver{background:rgba(14,154,102,0.12);color:#0E6B47;border:1px solid rgba(14,154,102,0.2)}
-.mcard-name{font-size:15px;font-weight:500;color:var(--text);margin-top:8px;line-height:1.2}
-.mcard-role{display:inline-block;margin-top:5px;padding:2px 8px;border-radius:3px;font-size:10.5px;font-weight:500;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);text-transform:capitalize}
-.mcard-title{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.45}
-.mcard-body{padding:0 16px 14px}
-.mcard-headline{font-size:12.5px;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
-.mcard-markets{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
-.mcard-mkt{padding:2px 7px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);font-family:var(--mono)}
-.mcard-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.mcard-comp{font-size:10px;color:var(--text4);font-family:var(--mono)}
-.mcard-cta{font-size:12px;color:var(--blue);font-weight:500}
+.cb-hint{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:20px 22px;box-shadow:var(--sh-card)}
+.cb-hint-h{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--text);margin-bottom:8px}
+.cb-hint-p{font-size:12.5px;color:var(--text3);line-height:1.6}
+.cb-hint-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.cb-hint-pill{background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:5px 11px;border-radius:20px;cursor:pointer;transition:all var(--dur-fast)}
+.cb-hint-pill:hover{border-color:var(--border2);color:var(--text);background:var(--bg3)}
 
-/* Load more */
-.dir-load-more{text-align:center;margin-top:32px}
-.dir-load-more button{padding:10px 28px;border-radius:var(--r2);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-family:var(--sans);cursor:pointer;transition:all .15s}
-.dir-load-more button:hover{background:var(--bg2);border-color:var(--blue);color:var(--blue)}
+.cb-sel{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;box-shadow:var(--sh-card);transition:box-shadow var(--dur-normal) var(--ease-out)}
+.cb-sel:hover{box-shadow:var(--sh-raise)}
+.cb-sel-head{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;transition:background var(--dur-fast)}
+.cb-sel-head:hover{background:var(--bg2)}
+.cb-sel-av{width:36px;height:36px;border-radius:var(--r2);flex:none;background:var(--blue-dim);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;overflow:hidden}
+.cb-sel-av img{width:100%;height:100%;object-fit:cover}
+.cb-sel-body{flex:1;min-width:0}
+.cb-sel-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-sel-sub{font-size:11px;color:var(--text3);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-sel-state{font-size:9px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--bg2);color:var(--text3)}
+.cb-sel-state.is-sent{background:rgba(142,112,32,.12);color:var(--gold)}
+.cb-sel-state.is-conn{background:rgba(12,143,92,.08);color:var(--green)}
+.cb-sel-state.is-in{background:var(--blue-dim);color:var(--blue)}
+.cb-sel-x{border:none;background:none;color:var(--text4);cursor:pointer;font-size:14px;width:28px;height:28px;border-radius:var(--r1);transition:all var(--dur-fast)}
+.cb-sel-x:hover{background:var(--bg2);color:var(--text2)}
+.cb-sel-exp{padding:0 14px 16px;border-top:1px solid var(--border);display:none}
+.cb-sel.expanded .cb-sel-exp{display:block}
+.cb-sel-exp .field{margin:10px 0 0}
+.cb-sel-exp .lbl{font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.cb-sel-exp .val{font-size:12.5px;color:var(--text2);line-height:1.6}
+.cb-sel-exp .actions{display:flex;gap:var(--sp-sm);flex-wrap:wrap;margin-top:14px}
 
-/* Ambassador featured row */
-.dir-amb-row{margin-bottom:18px}
-.dir-amb-head{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.dir-amb-head::after{content:'';flex:1;height:1px;background:var(--border)}
-.dir-amb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:12px}
+/* ─── Connect modal ──────────────────────────────────────────────────────── */
+.cn-scrim{position:fixed;inset:0;background:rgba(8,12,18,.55);backdrop-filter:blur(12px);z-index:1100;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.cn-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r5);width:100%;max-width:480px;box-shadow:var(--sh-float);overflow:hidden;animation:cnPop var(--dur-normal) var(--ease-out)}
+@keyframes cnPop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.cn-head{padding:20px 24px;border-bottom:1px solid var(--border)}
+.cn-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--text);margin:0;letter-spacing:-.015em}
+.cn-sub{font-size:12.5px;color:var(--text3);line-height:1.55;margin:4px 0 0}
+.cn-body{padding:16px 24px 8px}
+.cn-body label{display:block;font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:14px 0 6px}
+.cn-body select,.cn-body textarea{width:100%;padding:10px 13px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-size:13.5px;font-family:inherit;outline:none;transition:border-color var(--dur-fast)}
+.cn-body select:focus,.cn-body textarea:focus{border-color:var(--blue)}
+.cn-body textarea{min-height:96px;resize:vertical;line-height:1.55}
+.cn-foot{display:flex;justify-content:flex-end;gap:9px;padding:16px 24px 20px}
+.cn-err{font-size:11.5px;color:var(--gold);margin:8px 24px 0;line-height:1.5}
 
-/* Featured ambassador card (bigger) */
-.mcard-featured{background:linear-gradient(135deg,#0F1E38 0%,#1B3A62 100%)}
-.mcard-featured .mcard-banner{background:rgba(255,255,255,0.05);height:70px}
-.mcard-featured .mcard-head{background:transparent}
-.mcard-featured .mcard-av{border-color:rgba(205,167,72,0.5)}
-.mcard-featured .mcard-name{color:#fff}
-.mcard-featured .mcard-role{background:rgba(205,167,72,0.15);color:rgba(205,167,72,0.9);border-color:rgba(205,167,72,0.25)}
-.mcard-featured .mcard-title{color:rgba(255,255,255,0.55)}
-.mcard-featured .mcard-body{border-top:1px solid rgba(255,255,255,0.07)}
-.mcard-featured .mcard-headline{color:rgba(255,255,255,0.7)}
-.mcard-featured .mcard-mkt{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)}
-.mcard-featured .mcard-footer{border-top-color:rgba(255,255,255,0.07)}
-.mcard-featured .mcard-comp{color:rgba(255,255,255,0.25)}
-.mcard-featured .mcard-cta{color:#CDA748}
-
-@media(max-width:768px){
-  .dir-hero{padding:11px 20px 10px}
-  .dir-filters{padding:12px 20px}
-  .dir-body{padding:14px 16px 28px}
-  .dir-hero-stats{gap:16px}
-}
-</style>
-<style>
-/* ============ DIRECTORY LIFE PASS — alive, dense, interconnected ============ */
-
-/* faint breathing ecosystem field behind the whole directory body */
-.dir-ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.dir-ambient::before{content:"";position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:120vw;height:70vh;
-  background:radial-gradient(60% 60% at 50% 0%,rgba(24,95,165,.05),rgba(24,95,165,0) 70%);
-  animation:ambBreath 14s ease-in-out infinite}
-@keyframes ambBreath{0%,100%{opacity:.55;transform:translateX(-50%) scale(1)}50%{opacity:.9;transform:translateX(-50%) scale(1.04)}}
-
-/* member card — flat, dense, uniform + alive */
-.mcard{display:flex;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;text-decoration:none;position:relative;
-  opacity:0;transform:translateY(10px);
-  transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1),border-color .25s ease,box-shadow .3s ease}
-.mcard.in{opacity:1;transform:none}
-.mcard::before{content:"";display:block;height:3px;background:linear-gradient(90deg,#235FA6,#1B3A62);flex-shrink:0;transition:filter .25s ease,opacity .25s ease;opacity:.85}
-.mcard::after{content:"";position:absolute;inset:0;border-radius:var(--r3);pointer-events:none;opacity:0;transition:opacity .3s ease;
-  box-shadow:inset 0 0 0 1px rgba(24,95,165,.18),0 0 26px rgba(24,95,165,.08)}
-.mcard.in:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 16px 42px rgba(18,38,66,.10)}
-.mcard.in:hover::before{filter:brightness(1.35) saturate(1.15);opacity:1}
-.mcard.in:hover::after{opacity:1}
-.mcard-av{width:50px;height:50px;min-width:50px;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:18px;color:var(--text3);margin:0;transition:border-color .25s ease,transform .3s cubic-bezier(.2,.7,.2,1)}
-.mcard.in:hover .mcard-av{transform:scale(1.04)}
-.mcard-av img{width:100%;height:100%;object-fit:cover}
-.mcard-top{display:flex;gap:12px;align-items:center;padding:15px 15px 0}
-.mcard-id{min-width:0;flex:1}
-.mcard-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mcard-meta{font-size:12px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mcard-headline{padding:11px 15px 0;font-size:12.5px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:0}
-.mcard-sig{display:flex;align-items:center;gap:7px;padding:10px 15px 0;font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.01em}
-.mcard-sig .sig-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;flex-shrink:0;box-shadow:0 0 0 0 rgba(29,158,117,.5);animation:sigPulse 2.8s ease-out infinite}
-@keyframes sigPulse{0%{box-shadow:0 0 0 0 rgba(29,158,117,.45)}70%{box-shadow:0 0 0 6px rgba(29,158,117,0)}100%{box-shadow:0 0 0 0 rgba(29,158,117,0)}}
-.mcard-tags{display:flex;flex-wrap:wrap;gap:5px;padding:9px 15px 0;align-items:center}
-.mcard-mkt{padding:2px 7px;border-radius:4px;font-size:10px;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);font-family:var(--mono)}
-.mcard-foot{margin-top:auto;padding:11px 15px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border)}
-.mcard-loc{font-size:11px;color:var(--text4);font-family:var(--mono)}
-.mcard-cta{font-size:12px;color:var(--blue);font-weight:600;transition:transform .25s ease}
-.mcard.in:hover .mcard-cta{transform:translateX(3px)}
-.mcard-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600}
-.mcard-badge.amb{background:rgba(205,167,72,.14);color:#8A6520;border:1px solid rgba(205,167,72,.3)}
-.mcard-badge.ver{background:rgba(14,154,102,.12);color:#0E6B47;border:1px solid rgba(14,154,102,.22)}
-.mcard-featured{background:var(--bg1);border-color:rgba(205,167,72,.32)}
-.mcard-featured::before{background:linear-gradient(90deg,#cda748,#8a6520)}
-.mcard-featured .mcard-av{border-color:rgba(205,167,72,.5)}
-.mcard-featured .mcard-name{color:var(--text)}
-.mcard-featured .mcard-meta{color:var(--text3)}
-.mcard-featured .mcard-headline{color:var(--text2)}
-.mcard-featured .mcard-mkt{background:var(--bg2);color:var(--text3);border-color:var(--border2)}
-.mcard-featured .mcard-loc{color:var(--text4)}
-.mcard-featured .mcard-cta{color:var(--blue)}
-.mcard-featured .mcard-sig{color:var(--text3)}
-.mcard-featured.in:hover::after{box-shadow:inset 0 0 0 1px rgba(205,167,72,.28),0 0 26px rgba(205,167,72,.10)}
-
-/* the ecosystem notices interaction — neighbours recede when one card is focused */
-@media(hover:hover){
-  .dir-grid:hover .mcard.in:not(:hover),
-  .dir-amb-grid:hover .mcard.in:not(:hover){opacity:.62}
-}
-
-@media(prefers-reduced-motion:reduce){
-  .mcard{opacity:1;transform:none;transition:border-color .2s,box-shadow .2s}
-  .dir-ambient::before,.mcard-sig .sig-dot{animation:none}
-  .dir-grid:hover .mcard.in:not(:hover),.dir-amb-grid:hover .mcard.in:not(:hover){opacity:1}
-}
-</style>
-<style>
-/* early-network line, All Members header, category placeholders, CTA banner */
-.dir-hero-note{display:inline-flex;align-items:center;gap:8px;margin-top:11px;font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:rgba(255,255,255,.7)}
-.dir-hero-dot{width:6px;height:6px;border-radius:50%;background:#16C486;box-shadow:0 0 0 0 rgba(22,196,134,.5);animation:sigPulse 2.8s ease-out infinite}
-.dir-allhead{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;margin:4px 0 12px;display:flex;align-items:center;gap:8px}
-.dir-allhead::after{content:"";flex:1;height:1px;background:var(--border)}
-.mcard-cat{justify-content:center;text-align:center;background:var(--bg2);border-style:dashed;border-color:var(--border2)}
-.mcard-cat::before{display:none}
-.mcard-cat.in:hover{transform:translateY(-2px);box-shadow:none;border-color:var(--border3)}
-.mcard-cat.in:hover::after{opacity:0}
-.mcard-cat-in{padding:30px 18px}
-.mcard-cat-ic{font-size:15px;color:var(--text4);margin-bottom:10px}
-.mcard-cat-name{font-size:14px;font-weight:600;color:var(--text2);letter-spacing:-.01em}
-.mcard-cat-note{font-size:11.5px;color:var(--text4);margin-top:6px;font-family:var(--mono)}
-.dir-cta{max-width:1120px;margin:72px auto 0;padding:12px 40px 64px;position:relative;z-index:1}
-.dir-cta-in{background:linear-gradient(160deg,#0A1622,#13314e 60%,#0A1A2C);border-radius:var(--r4);padding:46px 32px;text-align:center}
-.dir-cta-in h2{font-family:var(--serif);font-weight:300;font-size:clamp(22px,2.6vw,30px);color:#fff;letter-spacing:-.02em;margin:0 0 12px}
-.dir-cta-in p{font-size:14px;color:rgba(255,255,255,.62);max-width:520px;margin:0 auto 22px;line-height:1.6}
-@media(max-width:760px){.dir-cta{padding:12px 16px 40px}.dir-cta-in{padding:32px 20px}}
-</style>
-<style>
-/* Founder / early-network banner (full-width horizontal) */
-.dir-founder{background:linear-gradient(160deg,#0A1622,#13314e 60%,#0A1A2C);border:1px solid var(--border2);border-radius:var(--r4);padding:26px 30px;margin-bottom:22px;position:relative;overflow:hidden}
-.dir-founder-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(205,167,72,.85);margin-bottom:16px}
-.dir-founder-grid{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:28px;align-items:center}
-.dir-founder-id{display:flex;gap:16px;align-items:center}
-.dir-founder-av{width:72px;height:72px;min-width:72px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:24px;color:#fff;border:2px solid rgba(205,167,72,.5)}
-.dir-founder-av img{width:100%;height:100%;object-fit:cover}
-.dir-founder-name{font-size:18px;font-weight:600;color:#fff;line-height:1.2}
-.dir-founder-title{font-size:13px;color:rgba(205,167,72,.92);margin-top:4px}
-.dir-founder-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px}
-.dir-founder-msg{border-left:1px solid rgba(255,255,255,.12);padding-left:28px}
-.dir-founder-msg h3{font-family:var(--serif);font-weight:300;font-size:clamp(18px,2vw,23px);color:#fff;letter-spacing:-.01em;margin:0 0 10px;line-height:1.25}
-.dir-founder-msg p{font-size:13px;color:rgba(255,255,255,.62);line-height:1.6;margin:0 0 18px;max-width:560px}
-.dir-founder-cta{display:flex;gap:10px;flex-wrap:wrap}
-.dir-founder-cta .btn-ghost{color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
-.dir-founder-cta .btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12)}
-@media(max-width:760px){.dir-founder-grid{grid-template-columns:1fr;gap:18px}.dir-founder-msg{border-left:none;border-top:1px solid rgba(255,255,255,.12);padding-left:0;padding-top:18px}.dir-founder{padding:22px 20px}}
-</style>
-<style>
-/* Two-column master-detail network interface */
-.net-intro{width:86%;max-width:1640px;margin:0 auto;padding:24px 0 0;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;position:relative;z-index:1}
-.net-intro p{font-size:15px;font-weight:500;color:var(--text);margin:0}
-.net-layout{display:grid;grid-template-columns:2fr 3fr;gap:24px;width:86%;max-width:1640px;margin:0 auto;padding:16px 0 48px;align-items:start;position:relative;z-index:1}
-.net-left{display:flex;flex-direction:column;gap:11px}
-.net-search{position:relative}
-.net-search input{width:100%;background:rgba(255,255,255,.7);border:1px solid var(--border2);border-radius:22px;padding:10px 16px 10px 36px;font-size:13px;color:var(--text);font-family:var(--sans);outline:none;transition:box-shadow .2s,border-color .2s,background .2s}
-.net-search input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px var(--blue-dim)}
-.net-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
-.net-filters{display:flex;gap:6px;flex-wrap:wrap}
-.net-pill{padding:5px 12px;border-radius:16px;font-size:11.5px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:rgba(255,255,255,.5);font-family:var(--sans);transition:background .2s,border-color .2s,color .2s;white-space:nowrap}
-.net-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.net-pill:hover:not(.active){border-color:var(--blue);color:var(--blue)}
-.net-list{display:flex;flex-direction:column;gap:8px;max-height:64vh;overflow-y:auto;padding:2px 6px 2px 2px;margin-top:3px}
-.net-list::-webkit-scrollbar{width:6px}.net-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-.net-loading,.net-empty{text-align:center;padding:40px 16px;color:var(--text3);font-family:var(--mono);font-size:12px}
-.net-item{display:flex;align-items:center;gap:11px;padding:12px 13px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);cursor:pointer;text-align:left;transition:border-color .18s,box-shadow .18s,background .18s,transform .18s}
-.net-item:hover{border-color:var(--border2);box-shadow:0 8px 20px rgba(20,40,70,.08);transform:translateY(-1px)}
-.net-item.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue),0 10px 26px rgba(24,95,165,.16)}
-.net-item.active .net-item-act{background:var(--blue);color:#fff}
-.net-item-av{width:42px;height:42px;min-width:42px;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:15px;color:var(--text3)}
-.net-item-av img{width:100%;height:100%;object-fit:cover}
-.net-item-av.cat{background:transparent;border-style:dashed;color:var(--text4);font-size:13px}
-.net-item-body{min-width:0;flex:1}
-.net-item-name{font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.net-item-meta{font-size:11.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.net-item-loc{font-size:10.5px;color:var(--text4);font-family:var(--mono);margin-top:2px}
-.net-item-sig{font-size:10.5px;color:var(--text3);font-family:var(--mono);margin-top:3px;display:flex;align-items:center;gap:5px}
-.net-item-cat{background:var(--bg2);border-style:dashed}
-.net-item-act{font-size:10.5px;color:var(--blue);font-weight:600;flex-shrink:0;background:var(--blue-dim);padding:5px 12px;border-radius:13px;transition:background .18s,color .18s}
-.net-item:hover .net-item-act{background:var(--blue);color:#fff}
-.net-soon{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text4);font-family:var(--mono);border:1px solid var(--border2);border-radius:13px;padding:4px 10px;flex-shrink:0;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
-.net-soon svg{width:10px;height:10px;opacity:.7}
-.net-item-cat{background:var(--bg2);border-style:dashed;opacity:.94}
-.net-item-cat:hover{opacity:1;border-color:var(--border3);transform:none;box-shadow:none}
-.net-item-av.cat svg{width:14px;height:14px}
-.sig-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;flex-shrink:0}
-.net-right{position:sticky;top:78px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r4);padding:34px;min-height:400px}
-.net-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(205,167,72,.9);margin-bottom:18px}
-.net-founder{display:flex;gap:14px;align-items:center;margin-bottom:32px;padding-bottom:26px;border-bottom:1px solid var(--border)}
-.net-founder-av{width:60px;height:60px;min-width:60px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;color:#fff;border:2px solid rgba(205,167,72,.5)}
-.net-founder-av img{width:100%;height:100%;object-fit:cover}
-.net-founder-name{font-size:16px;font-weight:600;color:var(--text)}
-.net-founder-title{font-size:12.5px;color:#8A6520;margin-top:3px}
-.net-founder-sub{font-size:11.5px;color:var(--text3);margin-top:2px}
-.net-h{font-family:var(--serif);font-weight:300;font-size:clamp(20px,2.2vw,26px);color:var(--text);letter-spacing:-.01em;line-height:1.25;margin:0 0 12px}
-.net-p{font-size:13.5px;color:var(--text2);line-height:1.7;margin:0 0 22px;max-width:600px}
-.net-show{margin:0 0 26px;padding:15px 18px;border:1px solid var(--border2);border-radius:14px;background:rgba(255,255,255,.45);max-width:600px}
-.net-show-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text4);font-family:var(--mono);margin-bottom:8px}
-.net-show-items{font-family:var(--serif);font-size:15px;color:var(--text);font-weight:500;margin-bottom:9px;letter-spacing:-.01em}
-.net-show-sub{font-size:12.5px;color:var(--text2);line-height:1.55}
-.net-bio{font-size:13.5px;color:var(--text2);line-height:1.7;margin:0 0 22px;max-width:600px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
-.net-cta{display:flex;gap:10px;flex-wrap:wrap}
-.net-prof-head{display:flex;gap:16px;align-items:center;margin-bottom:18px}
-.net-prof-av{width:72px;height:72px;min-width:72px;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:24px;color:var(--text3)}
-.net-prof-av img{width:100%;height:100%;object-fit:cover}
-.net-prof-name{font-size:20px;font-weight:600;color:var(--text)}
-.net-prof-meta{font-size:13px;color:var(--text2);margin-top:3px}
-.net-prof-loc{font-size:12px;color:var(--text4);font-family:var(--mono);margin-top:3px}
-.net-sig{font-size:12px;color:var(--text3);font-family:var(--mono);margin:0 0 16px;display:flex;align-items:center;gap:7px}
-.net-tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px}
-.net-tag{padding:3px 9px;border-radius:5px;font-size:11px;background:var(--bg2);color:var(--text3);border:1px solid var(--border2);font-family:var(--mono)}
-@media(max-width:860px){
-  .net-intro{width:auto;padding:18px 16px 0;flex-direction:column;align-items:flex-start;gap:12px}
-  .net-intro p{font-size:15px;line-height:1.45}
-  .net-layout{grid-template-columns:minmax(0,1fr);width:auto;gap:16px;padding:14px 14px 32px}
-  .net-left{min-width:0}
-  .net-right{position:static;min-height:0;min-width:0;padding:22px 18px}
-  .net-list{max-height:none}
-  .net-show{padding:14px 16px}
-  .dir-cta{margin-top:36px}
-}
+/* ─── Guest fallback (anonymous visitor) ─────────────────────────────────── */
+.cb-guest{max-width:760px;margin:var(--sp-3xl) auto;text-align:center;padding:var(--sp-xl)}
+.cb-guest h2{font-family:var(--serif);font-weight:400;font-size:32px;color:var(--text);margin:0 0 12px;letter-spacing:-.015em}
+.cb-guest p{color:var(--text2);font-size:14px;line-height:1.65;margin:0 auto 24px;max-width:540px}
 </style>
 </head>
 <body>
-<div class=\"dir-ambient\" aria-hidden=\"true\"></div>
 <div id="nav"></div>
 
-<div class="dir-hero">
-  <canvas id="cinCanvas" class="dir-canvas"></canvas>
-  <div class="cin-signals" id="cinSignals" aria-hidden="true"></div>
-  <div class="dir-hero-inner">
-    <div class="eyebrow" style="color:rgba(205,167,72,0.8);margin-bottom:10px">Capital Network</div>
-    <h1 id="dir-h1">Pegasus Member Network</h1>
-    <p id="dir-sub">Discover real estate, lending, investment, and capital professionals inside the Pegasus ecosystem.</p>
-    <div class="dir-hero-note"><span class="dir-hero-dot"></span>Early member network now forming</div>
+<div class="cb-shell" id="cbShell" style="display:none">
+  <div class="cb-head">
+    <div>
+      <h1>Pegasus Members Network</h1>
+      <p>On the left, discover people inside Pegasus. On the right, build your connection board — select members, expand their cards, and send a request to connect.</p>
+    </div>
+  </div>
+
+  <div class="cb-grid">
+    <!-- LEFT: discovery -->
+    <div class="cb-disc" id="cbDisc">
+      <div class="cb-disc-top">
+        <div class="cb-search">
+          <span class="ic">⌕</span>
+          <input id="cbSearch" type="text" placeholder="Search by name, role, company, or market…">
+        </div>
+        <div class="cb-pills" id="cbPills"></div>
+      </div>
+      <div class="cb-list" id="cbList"><div class="cb-empty">Loading network…</div></div>
+      <div class="cb-disc-foot"><span id="cbCount">—</span><span>Click to add to board</span></div>
+    </div>
+
+    <!-- RIGHT: connection board -->
+    <div class="cb-board" id="cbBoard">
+      <div id="cbMe"></div>
+      <div id="cbHint"></div>
+      <div id="cbSelected"></div>
+    </div>
   </div>
 </div>
 
-<div class="net-intro">
-  <p>Create your profile to become discoverable inside the Pegasus Member Network.</p>
-  <a class="btn btn-pri" href="/signup.html">Create My Profile</a>
-</div>
-<div class="net-layout">
-  <aside class="net-left">
-    <div class="net-search">
-      <span class="net-search-icon">⌕</span>
-      <input type="text" id="net-search" placeholder="Discover members, markets, or expertise…" oninput="netFilter()">
-    </div>
-    <div class="net-filters" id="net-filters">
-      <button class="net-pill active" data-role="" onclick="netRole('',this)">All Roles</button>
-      <button class="net-pill" data-role="broker" onclick="netRole('broker',this)">Brokers</button>
-      <button class="net-pill" data-role="lender" onclick="netRole('lender',this)">Lenders</button>
-      <button class="net-pill" data-role="investor" onclick="netRole('investor',this)">Capital Partners</button>
-      <button class="net-pill" data-role="borrower" onclick="netRole('borrower',this)">Growth Partners</button>
-      <button class="net-pill" data-role="developer" onclick="netRole('developer',this)">Developers</button>
-      <button class="net-pill" data-role="ecosystem_member" onclick="netRole('ecosystem_member',this)">Ecosystem</button>
-    </div>
-    <div class="net-list" id="net-list"><div class="net-loading">Loading network…</div></div>
-  </aside>
-  <section class="net-right" id="net-detail"></section>
-</div>
-<section class="dir-cta">
-  <div class="dir-cta-in">
-    <h2>Want to be visible inside the Pegasus Network?</h2>
-    <p>Create your profile and let other members discover your role, market, and business goals.</p>
-    <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create My Profile</a>
-  </div>
-</section>
 <div id="footer"></div>
 
 <script src="/js/pegasus-config.js"></script>
@@ -356,318 +169,389 @@
 <script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
 <script>
-Pegasus.mountPublic('Members');
-document.getElementById('footer').outerHTML = Pegasus.footer();
+Pegasus.boot(async function(){
+  Pegasus.mountPublic('Members');
+  document.getElementById('footer').outerHTML = Pegasus.footer();
 
-var ALL = [], FILTERED = [], PAGE_SIZE = 18, page = 0, activeRole = '';
+  var esc=Pegasus.esc;
+  function initials(n){ var w=(n||'?').trim().split(/\s+/); return ((w[0]?w[0][0]:'')+(w[1]?w[1][0]:'')).toUpperCase()||'•'; }
+  function avHTML(av,name,cls){ cls=cls||''; return av ? '<img src="'+esc(av)+'" alt="">' : esc(initials(name)); }
 
-function initials(n){ var w=(n||'').trim().split(/\s+/); return (w[0]?w[0][0]:'')+(w[1]?w[1][0]:''); }
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function cap(s){ return (s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+  var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Real Estate Professional',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
+  function roleLabel(r){ r=(r||'').toLowerCase(); return ROLE_LABELS[r] || (r||'member').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
 
-var ROLE_LABELS={borrower:'Growth Partner',lender:'Lender',broker:'Broker',agent:'Real Estate Professional',investor:'Capital Partner',developer:'Developer',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider',insurance:'Insurance Partner',ecosystem_member:'Ecosystem Member',member:'Member'};
-function roleLabel(r){r=(r||'').toLowerCase();return ROLE_LABELS[r]||cap(r||'member');}
+  var INTENTS=[
+    ['business_connection','Explore a business connection'],
+    ['capital_financing','Discuss capital / financing'],
+    ['real_estate_opportunity','Discuss real estate opportunity'],
+    ['professional_introduction','Referral / professional introduction'],
+    ['partnership','Partnership conversation'],
+    ['general_networking','General networking'],
+    ['other','Other']
+  ];
 
-/* Role-aware directory environments (curated hero per ecosystem role) */
-var ROLE_META={
-  '':{h1:'Pegasus Member Network',sub:'Discover real estate, lending, investment, and capital professionals inside the Pegasus ecosystem.'},
-  lender:{h1:'Private Lenders Network',sub:'Connect with private lenders, bridge capital providers, DSCR specialists, and institutional funding relationships inside the Pegasus ecosystem.'},
-  broker:{h1:'Mortgage Broker Network',sub:'Brokers and origination partners building deal flow and lender relationships across the network.'},
-  investor:{h1:'Capital Partners',sub:'Investors and capital partners evaluating real estate and private-credit opportunities across the ecosystem.'},
-  borrower:{h1:'Growth Partners',sub:'Operators, sponsors, and growth-minded participants bringing real opportunities to the network.'},
-  developer:{h1:'Developers & Sponsors',sub:'Developers and project sponsors seeking aligned capital and execution partners.'},
-  ecosystem_member:{h1:'Ecosystem Members',sub:'Advisors, strategists, builders, and contributors who make the Pegasus ecosystem work.'},
-  agent:{h1:'Real Estate Professionals',sub:'Agents and real estate professionals active across markets in the network.'}
-};
+  /* ── Anonymous? render a brief sign-in prompt and stop ──────────────────── */
+  var sb = null; try{ sb = await window.PegSB.ready; }catch(e){}
+  var session=null;
+  try{ var sres = sb ? await sb.auth.getSession() : null; session = sres && sres.data && sres.data.session; }catch(e){}
+  if(!session){
+    var shell=document.getElementById('cbShell');
+    if(shell){
+      shell.style.display='';
+      shell.innerHTML='<div class="cb-guest"><h2>Inside the Pegasus Members Network</h2>'+
+        '<p>A private connection board of capital, real estate, and growth professionals. Sign in to discover members, build your board, and send connection requests. Member names and contact details stay private until you join.</p>'+
+        '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+          '<a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a>'+
+          '<a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>'+
+        '</div></div>';
+    }
+    return;
+  }
+  var MY_UID = session.user.id;
 
-function ecoSignal(m){
-  if(m.institutional_visibility) return 'Institutional visibility';
-  if(m.markets && m.markets.length) return 'Active in '+m.markets[0];
-  if(m.role==='business_funding_provider'||m.role==='ecosystem_member') return 'In the founder network';
-  return 'Pegasus member';
-}
-function avHTML(m){ return m.avatar_url ? '<img src="'+esc(m.avatar_url)+'" alt="'+esc(m.full_name||'')+'" loading="lazy">' : esc(initials(m.full_name)||'?'); }
+  /* Clean failure surface — never a blank page or raw SQL for normal members.
+     Admins additionally see the technical detail so they can diagnose. */
+  function failState(detail){
+    var isAdm=false; try{ isAdm = Pegasus.store && Pegasus.store.isAdmin && Pegasus.store.isAdmin(); }catch(_){}
+    var shell=document.getElementById('cbShell');
+    if(!shell) return;
+    shell.style.display='';
+    shell.innerHTML='<div class="cb-guest"><h2>The Members Network is briefly unavailable</h2>'+
+      '<p>We could not load the network right now. This is on our side, not yours — please refresh in a moment. If it keeps happening, contact the Pegasus team.</p>'+
+      '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+        '<button class="btn btn-pri btn-lg" onclick="location.reload()">Refresh</button>'+
+        '<a class="btn btn-ghost btn-lg" href="/dashboard.html">Go to Workspace</a>'+
+      '</div>'+
+      (isAdm && detail ? '<div style="margin-top:22px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);font-family:var(--mono);font-size:11px;color:var(--text3);text-align:left;max-width:560px;margin-left:auto;margin-right:auto">Admin detail: '+esc(String(detail))+'</div>' : '')+
+      '</div>';
+  }
 
-var FOUNDER=null, founderLink='/members.html';
-var CATS=['Capital Partners','Developers','Mortgage Brokers','Real Estate Agents','Private Investors','Lenders','Construction Partners','Ecosystem Members'];
-var CAT_DESC={
- 'Capital Partners':'Capital partners inside Pegasus may include private lenders, funds, investors, and financing relationships interested in real estate, lending, business capital, and structured opportunities.',
- 'Developers':'Developers inside Pegasus may include real estate developers and sponsors seeking capital, lending relationships, and execution partners for ground-up, value-add, and repositioning projects.',
- 'Mortgage Brokers':'Mortgage brokers inside Pegasus may include residential and commercial brokers building lender relationships and connecting clients with aligned financing.',
- 'Real Estate Agents':'Real estate agents inside Pegasus may include licensed agents showcasing listings and connecting their clients with financing partners across the network.',
- 'Private Investors':'Private investors inside Pegasus may include individuals and groups deploying capital into real estate, lending, and business opportunities.',
- 'Lenders':'Lenders inside Pegasus may include private lenders, bridge and DSCR specialists, and institutional funding relationships across real estate and business capital.',
- 'Construction Partners':'Construction partners inside Pegasus may include builders, general contractors, and project partners supporting development and value-add execution.',
- 'Ecosystem Members':'Ecosystem members inside Pegasus may include the broader network of professionals \u2014 advisors, service providers, and partners who support capital and real estate activity.'
-};
-
-var NET_SHOW = '<div class="net-show">'+
-  '<div class="net-show-label">What your profile can show</div>'+
-  '<div class="net-show-items">Role \u00b7 Market \u00b7 Expertise \u00b7 Business Goals</div>'+
-  '<div class="net-show-sub">Members can discover you by category, location, and relationship goals.</div>'+
-'</div>';
-
-function netItem(m,i){
-  var meta=[roleLabel(m.role)]; var sub=m.company_name||m.professional_title; if(sub) meta.push(sub);
-  return '<div class="net-item" data-i="'+i+'" onclick="selectMember('+i+')">'+
-    '<div class="net-item-av">'+avHTML(m)+'</div>'+
-    '<div class="net-item-body">'+
-      '<div class="net-item-name">'+esc(m.full_name||'Member')+'</div>'+
-      '<div class="net-item-meta">'+esc(meta.filter(Boolean).join(' \u00b7 '))+'</div>'+
-      '<div class="net-item-sig"><span class="sig-dot"></span>'+esc(ecoSignal(m))+'</div>'+
-    '</div>'+
-    '<span class="net-item-act">View</span>'+
-  '</div>';
-}
-function catItem(name){
-  return '<div class="net-item net-item-cat" data-cat="'+esc(name)+'" onclick="selectCat(\''+name+'\')">'+
-    '<div class="net-item-av cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>'+
-    '<div class="net-item-body"><div class="net-item-name">'+name+'</div><div class="net-item-meta">Profiles visible as members join</div></div>'+
-    '<span class="net-soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Category forming</span>'+
-  '</div>';
-}
-function buildList(){
-  var list=document.getElementById('net-list'); if(!list) return;
-  var html = FILTERED.map(function(m){ return netItem(m, ALL.indexOf(m)); }).join('');
-  if(!activeRole) html += CATS.map(catItem).join('');
-  else if(FILTERED.length===0) html += CATS.map(catItem).join('');
-  if(!html) html='<div class="net-empty">No members match your search.</div>';
-  list.innerHTML=html;
-}
-function netFilter(){
-  var q=((document.getElementById('net-search')||{}).value||'').toLowerCase();
-  FILTERED = ALL.filter(function(m){
-    if(activeRole){ if(m.role!==activeRole) return false; }
-    if(!q) return true;
-    var hay=[m.full_name,m.headline,m.bio,m.professional_title,m.company_name].concat(m.markets||[]).join(' ').toLowerCase();
-    return hay.indexOf(q)!==-1;
-  });
-  buildList();
-}
-function setActive(el){
-  var l=document.getElementById('net-list'); if(!l) return;
-  l.querySelectorAll('.net-item').forEach(function(x){x.classList.remove('active');});
-  if(el) el.classList.add('active');
-}
-function scrollDetailMobile(){
-  if(window.innerWidth<=860){ var d=document.getElementById('net-detail'); if(d) d.scrollIntoView({behavior:'smooth',block:'start'}); }
-}
-function renderDefault(){
-  setActive(null);
-  var av = FOUNDER ? avHTML(FOUNDER) : 'AK';
-  var d=document.getElementById('net-detail'); if(!d) return;
-  d.innerHTML =
-    '<div class="net-eyebrow">Founder &amp; Early Network Member</div>'+
-    '<div class="net-founder">'+
-      '<div class="net-founder-av">'+av+'</div>'+
-      '<div><div class="net-founder-name">Anatoliy Kanevsky</div>'+
-        '<div class="net-founder-title">Founder of Pegasus Capital Network</div>'+
-        '<div class="net-founder-sub">Founder &amp; CEO of West Coast Capital Mortgage</div></div>'+
-    '</div>'+
-    '<h2 class="net-h">Pegasus is currently forming its early professional network.</h2>'+
-    '<p class="net-p">Create your profile to become visible as the ecosystem grows. Members can showcase their role, market, expertise, and business goals inside the Pegasus Member Network.</p>'+
-    NET_SHOW+
-    '<div class="net-cta"><a class="btn btn-ghost" href="'+founderLink+'">View Founder Profile</a><a class="btn btn-pri" href="/signup.html">Create My Profile</a></div>';
-}
-window.selectMember=function(i){
-  var m=ALL[i]; if(!m) return;
-  setActive(document.querySelector('.net-item[data-i="'+i+'"]'));
-  var href = m.profile_slug ? '/u/'+m.profile_slug : '/public-profile.html?id='+m.id;
-  var tags='';
-  if(m.reviewed_by_pegasus) tags+='<span class="trust-badge sm"><span class="tb-dot"></span>Reviewed</span>';
-  if(m.verified_identity||m.verification_status==='verified') tags+='<span class="net-tag">\u2713 Verified</span>';
-  (m.markets||[]).slice(0,4).forEach(function(mk){ tags+='<span class="net-tag">'+esc(mk)+'</span>'; });
-  (m.specialties||[]).slice(0,3).forEach(function(sp){ tags+='<span class="net-tag">'+esc(sp)+'</span>'; });
-  var meta=[roleLabel(m.role)]; if(m.company_name) meta.push(m.company_name);
-  var d=document.getElementById('net-detail'); if(!d) return;
-  d.innerHTML =
-    '<div class="net-eyebrow">Member Profile</div>'+
-    '<div class="net-prof-head">'+
-      '<div class="net-prof-av">'+avHTML(m)+'</div>'+
-      '<div><div class="net-prof-name">'+esc(m.full_name||'Member')+'</div>'+
-        '<div class="net-prof-meta">'+esc(meta.filter(Boolean).join(' \u00b7 '))+'</div>'+
-        '</div>'+
-    '</div>'+
-    '<div class="net-sig"><span class="sig-dot"></span>'+esc(ecoSignal(m))+'</div>'+
-    '<p class="net-bio">'+esc(m.bio||m.headline||'Pegasus Network member')+'</p>'+
-    (tags?'<div class="net-tags">'+tags+'</div>':'')+
-    NET_SHOW+
-    '<div class="net-cta"><a class="btn btn-pri" href="'+href+'">View Full Profile \u2192</a></div>';
-  scrollDetailMobile();
-};
-window.selectCat=function(name){
-  setActive(document.querySelector('.net-item[data-cat="'+name+'"]'));
-  var d=document.getElementById('net-detail'); if(!d) return;
-  d.innerHTML =
-    '<div class="net-eyebrow">Category</div>'+
-    '<h2 class="net-h">'+esc(name)+'</h2>'+
-    '<p class="net-p">'+esc(CAT_DESC[name]||'')+'</p>'+
-    NET_SHOW+
-    '<div class="net-cta"><a class="btn btn-pri" href="/signup.html">Create My Profile</a></div>';
-  scrollDetailMobile();
-};
-window.netRole=function(role,btn){
-  activeRole = (ROLE_META[role]!==undefined) ? role : (role||'');
-  document.querySelectorAll('.net-pill').forEach(function(p){ p.classList.toggle('active',(p.getAttribute('data-role')||'')===activeRole); });
-  var meta=ROLE_META[activeRole]||{h1:roleLabel(activeRole),sub:''};
-  var h1=document.getElementById('dir-h1'),sub=document.getElementById('dir-sub');
-  if(h1)h1.textContent=meta.h1; if(sub)sub.textContent=meta.sub||'';
-  try{ history.replaceState(null,'',activeRole?('?role='+activeRole):location.pathname); }catch(e){}
-  netFilter();
-  renderDefault();
-};
-
-async function loadNetwork(){
-  try {
-    var c = await window.PegSB.ready;
-
-    /* Privacy gate: public visitors must NOT see individual members.
-       Only authenticated members can load real profiles. Guests get the
-       category orientation + anonymized preview instead. */
-    var session=null;
-    try{ session = (window.PegAuth && PegAuth.getSession) ? await PegAuth.getSession() : ((await c.auth.getSession()).data||{}).session; }catch(e){ session=null; }
-    if(!session){ renderGuestNetwork(); return; }
-
-    var res = await c.from('profiles')
-      .select('id,full_name,role,headline,bio,professional_title,company_name,markets,specialties,avatar_url,banner_url,profile_slug,profile_completion,ambassador_status,verification_status,reviewed_by_pegasus,verified_identity,institutional_visibility')
+  /* ── Load members + my profile + relationship states (parallel-safe) ───── */
+  var profilesRes;
+  try{
+    profilesRes = await sb.from('profiles')
+      .select('id,full_name,role,headline,bio,professional_title,company_name,markets,specialties,avatar_url,profile_slug,profile_completion,reviewed_by_pegasus,location,updated_at')
       .not('full_name','is',null)
-      .order('ambassador_status',{ascending:false})
       .order('reviewed_by_pegasus',{ascending:false,nullsFirst:false})
-      .order('profile_completion',{ascending:false})
-      .limit(200);
-    ALL = res.data || [];
-    FILTERED = ALL.slice();
-    FOUNDER = ALL.filter(function(m){return m.ambassador_status;})[0]
-            || ALL.filter(function(m){return /anatoliy/i.test(m.full_name||'');})[0] || null;
-    if(FOUNDER){ founderLink = FOUNDER.profile_slug ? '/u/'+FOUNDER.profile_slug : (FOUNDER.id?'/public-profile.html?id='+FOUNDER.id:'/members.html'); }
-    var urlRole=(new URLSearchParams(location.search).get('role')||'').toLowerCase();
-    activeRole = ROLE_META[urlRole] ? urlRole : '';
-    document.querySelectorAll('.net-pill').forEach(function(p){ p.classList.toggle('active',(p.getAttribute('data-role')||'')===activeRole); });
-    var meta=ROLE_META[activeRole]||{}; var h1=document.getElementById('dir-h1'),sub=document.getElementById('dir-sub');
-    if(h1&&meta.h1)h1.textContent=meta.h1; if(sub&&meta.sub)sub.textContent=meta.sub;
-    netFilter();
-    renderDefault();
-  } catch(e){
-    var l=document.getElementById('net-list'); if(l) l.innerHTML='<div class="net-empty">Could not load members. Please try again.</div>';
-    console.error('[Network]',e);
+      .order('profile_completion',{ascending:false,nullsFirst:false})
+      .order('updated_at',{ascending:false,nullsFirst:false})
+      .limit(400);
+  }catch(e){ failState(e && e.message); return; }
+  if(profilesRes && profilesRes.error){ failState(profilesRes.error.message || profilesRes.error.code); return; }
+  var ALL = (profilesRes.data || []).filter(function(p){ return p.full_name && p.full_name.trim(); });
+  var ME = ALL.filter(function(m){ return m.id===MY_UID; })[0] || null;
+
+  /* States: { otherUserId → 'connected'|'request_sent'|'request_received'|'declined'|'dismissed' } */
+  var STATES = {};
+  try{
+    var co = await sb.rpc('get_my_connections');
+    if(co && !co.error && Array.isArray(co.data)) co.data.forEach(function(c){
+      var slug=c.profile_slug;
+      var other = ALL.filter(function(p){return p.profile_slug===slug;})[0];
+      if(other) STATES[other.id]='connected';
+    });
+  }catch(e){}
+  try{
+    var sent = await sb.rpc('get_my_connection_requests',{p_box:'sent'});
+    if(sent && !sent.error && Array.isArray(sent.data)) sent.data.forEach(function(r){
+      var slug=r.other && r.other.profile_slug; if(!slug) return;
+      var other=ALL.filter(function(p){return p.profile_slug===slug;})[0]; if(!other) return;
+      if(r.status==='pending' && !STATES[other.id]) STATES[other.id]='request_sent';
+      else if(r.status==='accepted') STATES[other.id]='connected';
+    });
+  }catch(e){}
+  try{
+    var inbox = await sb.rpc('get_my_connection_requests',{p_box:'inbox'});
+    if(inbox && !inbox.error && Array.isArray(inbox.data)) inbox.data.forEach(function(r){
+      var slug=r.other && r.other.profile_slug; if(!slug) return;
+      var other=ALL.filter(function(p){return p.profile_slug===slug;})[0]; if(!other) return;
+      if(r.status==='pending' && !STATES[other.id]) STATES[other.id]='request_received';
+      else if(r.status==='accepted') STATES[other.id]='connected';
+    });
+  }catch(e){}
+
+  /* Show the shell now that everything is ready */
+  document.getElementById('cbShell').style.display='';
+
+  /* ── RIGHT COLUMN: my profile card ─────────────────────────────────────── */
+  function profilePath(p){ return p.profile_slug ? '/u/'+p.profile_slug : '/public-profile.html?id='+p.id; }
+  async function renderMe(){
+    var host=document.getElementById('cbMe'); if(!host) return;
+    if(!ME){
+      host.innerHTML='<div class="cb-me"><div class="cb-me-name">Finish your Pegasus profile</div>'+
+        '<div class="cb-me-focus">Add your name, role, and a short focus so other members can discover you.</div>'+
+        '<div class="cb-me-actions"><a class="btn btn-pri btn-sm" href="/profile-edit.html">Complete My Profile</a></div></div>';
+      return;
+    }
+    var av = ME.avatar_url ? '<img src="'+esc(ME.avatar_url)+'" alt="">' : esc(initials(ME.full_name));
+    var role = esc(ME.professional_title || roleLabel(ME.role));
+    var loc = esc((ME.markets&&ME.markets[0]) || ME.location || '');
+    var focus = esc(ME.headline || (ME.bio?String(ME.bio).slice(0,140):''));
+    var complete = (ME.profile_completion||0) >= 80;
+    var primary = complete
+      ? '<a class="btn btn-pri btn-sm" href="'+profilePath(ME)+'">View My Full Profile</a>'
+      : '<a class="btn btn-pri btn-sm" href="/profile-edit.html">Complete My Profile</a>';
+    host.innerHTML=
+      '<div class="cb-me">'+
+        '<div class="cb-me-top"><div class="cb-me-av">'+av+'</div>'+
+          '<div><div class="cb-me-name">'+esc(ME.full_name)+'</div>'+
+            '<div class="cb-me-role">'+role+(loc?(' · '+loc):'')+'</div></div></div>'+
+        (focus?'<div class="cb-me-focus">'+focus+'</div>':'')+
+        '<div class="cb-me-tiles" id="cbMeTiles"></div>'+
+        '<div class="cb-me-actions">'+primary+
+          '<a class="btn btn-ghost btn-sm" href="/profile-edit.html">Manage Profile</a>'+
+          '<a class="btn btn-ghost btn-sm" href="/my-presences.html">Business Pages</a>'+
+        '</div>'+
+        (complete?'':'<div class="cb-me-focus" style="margin-top:10px;color:var(--text4)">No rush — you can complete your full profile (bio, specialties, business pages) anytime.</div>')+
+      '</div>';
+
+    /* Connected business tiles (public-safe RPC) */
+    if(ME.profile_slug){
+      try{
+        var br = await sb.rpc('get_profile_business_pages_by_slug',{p_profile_slug:ME.profile_slug});
+        var biz = (br&&!br.error&&Array.isArray(br.data)) ? br.data : [];
+        var t=document.getElementById('cbMeTiles');
+        if(t && biz.length){
+          t.innerHTML = biz.slice(0,4).map(function(b){
+            var lg = b.logo ? '<img src="'+esc(b.logo)+'" alt="">' : esc((b.name||'?').slice(0,1).toUpperCase());
+            return '<a class="cb-me-tile" href="'+Pegasus.presencePath(b.presence_type,b.slug)+'">'+
+              '<span class="cb-me-tile-lg">'+lg+'</span>'+
+              '<span class="cb-me-tile-nm">'+esc(b.name)+'</span></a>';
+          }).join('');
+        } else if(t){ t.remove(); }
+      }catch(e){}
+    }
   }
-}
 
-/* Guest view — confident "who's inside" presentation + live activity.
-   No locks, no "category forming", no empty member rows. The goal is to convey
-   an active, PRIVATE network — not an empty directory. */
-function renderGuestNetwork(){
-  ALL=[]; FILTERED=[];
-
-  /* Hide every element that signals emptiness to a logged-out visitor */
-  ['.net-intro','.dir-hero-note'].forEach(function(s){var e=document.querySelector(s); if(e) e.style.display='none';});
-  ['net-search','net-filters'].forEach(function(id){var e=document.getElementById(id); if(e) e.style.display='none';});
-  var leftSearch=document.querySelector('.net-left .net-search'); if(leftSearch) leftSearch.style.display='none';
-
-  /* Update hero copy to a confident, private framing */
-  var h1=document.getElementById('dir-h1'); if(h1) h1.textContent='Inside the Pegasus Network';
-  var sub=document.getElementById('dir-sub'); if(sub) sub.textContent='A private ecosystem of capital, real estate, and growth professionals — connected through aligned relationships.';
-
-  /* Collapse the two-column layout into one confident presentation */
-  var layout=document.querySelector('.net-layout');
-  if(layout){
-    layout.style.display='block';
-    layout.style.maxWidth='1000px';
-    layout.style.margin='0 auto';
+  /* ── HINT (default empty state under "My Profile") ─────────────────────── */
+  function renderHint(){
+    var hint=document.getElementById('cbHint');
+    if(SELECTED.length){ hint.innerHTML=''; return; }
+    var roles=[['investor','Capital Partners'],['developer','Developers'],['lender','Lenders'],['broker','Brokers'],['agent','Real Estate Agents']];
+    hint.innerHTML='<div class="cb-hint">'+
+      '<div class="cb-hint-h">Start building your connection board.</div>'+
+      '<div class="cb-hint-p">Select members from the left to compare profiles, review their businesses, and decide who to connect with. Sending a connection request adds a short message; the member can accept, decline, or dismiss it.</div>'+
+      '<div class="cb-hint-list">'+
+        roles.map(function(r){return '<button class="cb-hint-pill" data-role="'+r[0]+'">'+esc(r[1])+'</button>';}).join('')+
+      '</div></div>';
+    hint.querySelectorAll('.cb-hint-pill').forEach(function(b){
+      b.onclick=function(){ activeRole=b.getAttribute('data-role'); renderPills(); applyFilter(); };
+    });
   }
-  var left=document.querySelector('.net-left'); if(left) left.style.display='none';
-  var right=document.getElementById('net-detail');
-  if(!right) return;
-  right.style.width='100%';
 
-  /* Who's inside — confident category tiles (no locks / no "forming") */
-  var WHO=[
-    ['◈','Capital Partners','Private lenders, hard money, family offices, debt funds, syndicators.'],
-    ['◆','Growth Partners','Investors, developers, builders, founders, and operators.'],
-    ['🏠','Real Estate & Brokers','Agents, commercial brokers, and mortgage brokers.'],
-    ['◷','Professional Services','Attorneys, CPAs, advisors, insurance, title & escrow.'],
-    ['⬢','RWA & Tokenization','Sponsors, platforms, securities counsel, compliance partners.'],
-    ['⬡','Ecosystem Members','PropTech, AI, and the partners who support the network.'],
+  /* ── LEFT COLUMN: filters, search, list ────────────────────────────────── */
+  var ROLES=[
+    ['','All Roles'],
+    ['investor','Capital Partners'],['lender','Lenders'],['broker','Brokers'],
+    ['developer','Developers'],['agent','Real Estate Agents'],['borrower','Growth Partners'],
+    ['rwa_partner','RWA Partners'],['business_funding_provider','Service Providers'],
+    ['ecosystem_member','Ecosystem Members']
   ];
-  var tiles=WHO.map(function(w){
-    return '<div class="g-tile"><div class="g-tile-ic">'+w[0]+'</div>'+
-      '<div class="g-tile-name">'+w[1]+'</div>'+
-      '<div class="g-tile-desc">'+w[2]+'</div></div>';
-  }).join('');
-
-  /* Live anonymized activity */
-  var SIG=[
-    ['var(--teal)','Capital provider active in California','live'],
-    ['var(--blue)','Business funding request received','new'],
-    ['var(--gold)','Private introduction forming — Dubai','forming'],
-    ['var(--green)','Founder session opening soon','this week'],
-    ['var(--teal)','Real estate professional joined the network','new'],
-    ['var(--gold)','RWA discussion forming','active'],
-  ];
-  var sigRows=SIG.map(function(s,i){
-    return '<div class="g-sig" style="animation-delay:'+(i*0.08)+'s"><span class="g-sig-dot" style="background:'+s[0]+'"></span><span class="g-sig-t">'+esc(s[1])+'</span><span class="g-sig-m">'+s[2]+'</span></div>';
-  }).join('');
-
-  right.innerHTML =
-    '<div class="g-wrap">'+
-      '<div class="g-block">'+
-        '<div class="g-eyebrow">Who participates</div>'+
-        '<h2 class="g-h">A private network of serious participants.</h2>'+
-        '<p class="g-p">Pegasus connects professionals across capital, real estate, and growth. Individual members — names, profiles, and contact details — stay protected until you join. Here\u2019s who\u2019s inside.</p>'+
-        '<div class="g-grid">'+tiles+'</div>'+
+  var activeRole='', activeQuery='';
+  function renderPills(){
+    var host=document.getElementById('cbPills');
+    host.innerHTML=ROLES.map(function(r){
+      return '<button class="cb-pill'+(activeRole===r[0]?' on':'')+'" data-role="'+r[0]+'">'+esc(r[1])+'</button>';
+    }).join('');
+    host.querySelectorAll('.cb-pill').forEach(function(b){
+      b.onclick=function(){ activeRole=b.getAttribute('data-role'); renderPills(); applyFilter(); };
+    });
+  }
+  function listRow(p){
+    var st = STATES[p.id];
+    var tag = st==='connected'  ? '<span class="cb-row-tag is-conn">Connected</span>' :
+              st==='request_sent'    ? '<span class="cb-row-tag is-sent">Request sent</span>' :
+              st==='request_received'? '<span class="cb-row-tag is-in">Wants to connect</span>' :
+              '';
+    var isSelected = SELECTED.some(function(s){return s.id===p.id;});
+    var isMe = p.id===MY_UID;
+    var av = p.avatar_url ? '<img src="'+esc(p.avatar_url)+'" alt="">' : esc(initials(p.full_name));
+    var meta = [roleLabel(p.role), p.company_name].filter(Boolean).join(' · ');
+    var loc = (p.markets&&p.markets[0]) || p.location || '';
+    var recently = p.updated_at && (new Date(p.updated_at).getTime() > Date.now() - 14*864e5);
+    var status = recently ? '<div class="cb-row-status"><span class="d"></span>Recently active</div>' : '';
+    return '<div class="cb-row'+(isSelected?' is-selected':'')+(isMe?' is-me':'')+'" data-id="'+esc(p.id)+'">'+
+      '<div class="cb-av">'+av+'</div>'+
+      '<div class="cb-row-body">'+
+        '<div class="cb-row-name">'+esc(p.full_name)+(isMe?' <span style="color:var(--text4);font-size:10px;font-family:var(--mono)">(you)</span>':'')+'</div>'+
+        '<div class="cb-row-role">'+esc(meta)+(loc?(' · '+esc(loc)):'')+'</div>'+
+        status+
       '</div>'+
-      '<div class="g-block">'+
-        '<div class="g-eyebrow"><span class="g-live"></span>Network live</div>'+
-        '<h2 class="g-h">A network in motion.</h2>'+
-        '<p class="g-p">Anonymized signals from across the ecosystem — real activity, no private details.</p>'+
-        '<div class="g-signals">'+sigRows+'</div>'+
+      tag+
+    '</div>';
+  }
+  function applyFilter(){
+    var q=(activeQuery||'').trim().toLowerCase();
+    var rows=ALL.filter(function(p){
+      if(activeRole && (p.role||'').toLowerCase()!==activeRole) return false;
+      if(!q) return true;
+      var hay=[p.full_name,p.role,p.headline,p.professional_title,p.company_name,(p.markets||[]).join(' '),(p.specialties||[]).join(' '),p.location].join(' ').toLowerCase();
+      return hay.indexOf(q)>=0;
+    });
+    var host=document.getElementById('cbList');
+    if(!rows.length){ host.innerHTML='<div class="cb-empty">No members match your search.</div>'; }
+    else { host.innerHTML = rows.map(listRow).join(''); }
+    host.querySelectorAll('.cb-row').forEach(function(el){
+      el.onclick=function(){
+        var id=el.getAttribute('data-id');
+        if(id===MY_UID) return; /* never add yourself */
+        var p=ALL.filter(function(x){return x.id===id;})[0]; if(!p) return;
+        toggleSelect(p);
+      };
+    });
+    document.getElementById('cbCount').textContent = rows.length + ' member' + (rows.length===1?'':'s');
+  }
+  document.getElementById('cbSearch').addEventListener('input', function(e){ activeQuery=e.target.value; applyFilter(); });
+  renderPills();
+
+  /* ── SELECTION / BOARD ────────────────────────────────────────────────── */
+  var SELECTED = []; /* array of profiles */
+  function selectedCard(p){
+    var st=STATES[p.id];
+    var av = p.avatar_url ? '<img src="'+esc(p.avatar_url)+'" alt="">' : esc(initials(p.full_name));
+    var sub = [roleLabel(p.role), p.company_name].filter(Boolean).join(' · ');
+    var loc = (p.markets&&p.markets[0]) || p.location || '';
+    var stateLbl = st==='connected'  ? '<span class="cb-sel-state is-conn">Connected</span>' :
+                   st==='request_sent' ? '<span class="cb-sel-state is-sent">Request sent</span>' :
+                   st==='request_received' ? '<span class="cb-sel-state is-in">Wants to connect</span>' :
+                   '<span class="cb-sel-state">Selected</span>';
+    var btn = st==='connected'  ? '<button class="btn btn-ghost btn-sm" disabled>Connected</button>' :
+              st==='request_sent' ? '<button class="btn btn-ghost btn-sm" disabled>Request sent</button>' :
+              st==='request_received' ? '<a class="btn btn-pri btn-sm" href="/network-requests.html#connection-inbox">Respond in Workspace</a>' :
+              '<button class="btn btn-pri btn-sm" data-act="connect" data-id="'+esc(p.id)+'">Connect</button>';
+    var focus=esc(p.headline || (p.bio?String(p.bio).slice(0,200):''));
+    var markets=(p.markets||[]).slice(0,4).map(esc).join(' · ');
+    var specs=(p.specialties||[]).slice(0,4).map(esc).join(' · ');
+    return '<div class="cb-sel" data-id="'+esc(p.id)+'">'+
+      '<div class="cb-sel-head">'+
+        '<div class="cb-sel-av">'+av+'</div>'+
+        '<div class="cb-sel-body">'+
+          '<div class="cb-sel-name">'+esc(p.full_name)+'</div>'+
+          '<div class="cb-sel-sub">'+esc(sub)+(loc?(' · '+esc(loc)):'')+'</div>'+
+        '</div>'+
+        stateLbl+
+        '<button class="cb-sel-x" data-act="remove" data-id="'+esc(p.id)+'" title="Remove from board" aria-label="Remove from board">✕</button>'+
       '</div>'+
-      '<div class="g-cta">'+
-        '<h3>Members can see — and meet — each other.</h3>'+
-        '<p>Visitors explore the ecosystem. Members appear in the network, access profiles, and connect through aligned introductions.</p>'+
-        '<div class="g-cta-row"><a class="btn btn-pri btn-lg" href="/signup.html">Build Your Presence</a><a class="btn btn-ghost btn-lg" href="/explore.html">Explore the Ecosystem</a></div>'+
+      '<div class="cb-sel-exp">'+
+        (focus?'<div class="field"><div class="lbl">Current focus</div><div class="val">'+focus+'</div></div>':'')+
+        (markets?'<div class="field"><div class="lbl">Markets</div><div class="val">'+markets+'</div></div>':'')+
+        (specs?'<div class="field"><div class="lbl">Specialties</div><div class="val">'+specs+'</div></div>':'')+
+        '<div class="actions">'+
+          '<a class="btn btn-ghost btn-sm" href="'+profilePath(p)+'">View Profile</a>'+
+          btn+
+          '<button class="btn btn-ghost btn-sm" data-act="collapse" data-id="'+esc(p.id)+'">Collapse</button>'+
+        '</div>'+
       '</div>'+
     '</div>';
-
-  /* Inject guest-only styles once */
-  if(!document.getElementById('g-style')){
-    var st=document.createElement('style'); st.id='g-style';
-    st.textContent=
-      '.g-wrap{max-width:880px;margin:0 auto}'+
-      '.g-block{padding:8px 0 30px}'+
-      '.g-eyebrow{font-size:9.5px;font-family:var(--mono);letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px}'+
-      '.g-live{width:7px;height:7px;border-radius:50%;background:var(--green);animation:gPulse 2s infinite}'+
-      '@keyframes gPulse{0%{box-shadow:0 0 0 0 rgba(14,154,102,0.4)}70%{box-shadow:0 0 0 7px rgba(14,154,102,0)}100%{box-shadow:0 0 0 0 rgba(14,154,102,0)}}'+
-      '.g-h{font-family:var(--serif);font-weight:300;font-size:clamp(20px,2.6vw,27px);letter-spacing:-0.01em;margin:0 0 8px;color:var(--text)}'+
-      '.g-p{font-size:13.5px;color:var(--text2);line-height:1.65;margin:0 0 20px;max-width:620px}'+
-      '.g-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}'+
-      '.g-tile{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:18px 18px;transition:transform .2s,box-shadow .2s,border-color .2s}'+
-      '.g-tile:hover{transform:translateY(-2px);box-shadow:var(--sh-raise);border-color:var(--border2)}'+
-      '.g-tile-ic{font-size:18px;color:var(--teal);margin-bottom:9px}'+
-      '.g-tile-name{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:5px;letter-spacing:-0.01em}'+
-      '.g-tile-desc{font-size:12px;color:var(--text2);line-height:1.55}'+
-      '.g-signals{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r4);overflow:hidden}'+
-      '.g-sig{display:flex;gap:13px;align-items:center;padding:14px 20px;opacity:0;animation:gFade .5s ease forwards}'+
-      '@keyframes gFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}'+
-      '.g-sig+.g-sig{border-top:1px solid var(--border)}'+
-      '.g-sig-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:gDot 2.6s infinite}'+
-      '@keyframes gDot{0%,100%{opacity:1}50%{opacity:.45}}'+
-      '.g-sig-t{font-size:12.5px;color:var(--text);font-weight:500}'+
-      '.g-sig-m{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;flex-shrink:0;white-space:nowrap}'+
-      '.g-cta{text-align:center;background:linear-gradient(180deg,var(--gold-dim),var(--bg1));border:1px solid var(--gold-dim);border-radius:var(--r4);padding:34px 28px;margin-top:10px}'+
-      '.g-cta h3{font-family:var(--serif);font-weight:300;font-size:clamp(19px,2.4vw,24px);margin:0 0 8px;color:var(--text)}'+
-      '.g-cta p{font-size:13px;color:var(--text2);max-width:480px;margin:0 auto 20px;line-height:1.6}'+
-      '.g-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}'+
-      '@media(max-width:760px){.g-grid{grid-template-columns:1fr}}';
-    document.head.appendChild(st);
   }
-}
-loadNetwork();
-/* Re-fetch + re-render when the page is restored from the browser's
-   back/forward cache (bfcache), so navigating away and back never shows
-   a stale snapshot of the member list. */
-window.addEventListener('pageshow',function(e){ if(e.persisted){ loadNetwork(); } });
+  function renderSelected(){
+    var host=document.getElementById('cbSelected');
+    host.innerHTML = SELECTED.map(selectedCard).join('');
+    host.querySelectorAll('.cb-sel').forEach(function(card){
+      var head = card.querySelector('.cb-sel-head');
+      head.addEventListener('click', function(e){
+        if(e.target.closest('.cb-sel-x')) return; /* don't expand on remove */
+        card.classList.toggle('expanded');
+      });
+      var collapse = card.querySelector('[data-act="collapse"]');
+      if(collapse) collapse.addEventListener('click', function(e){ e.stopPropagation(); card.classList.remove('expanded'); });
+      var rm = card.querySelector('[data-act="remove"]');
+      if(rm) rm.addEventListener('click', function(e){ e.stopPropagation(); removeFromBoard(rm.getAttribute('data-id')); });
+      var cn = card.querySelector('[data-act="connect"]');
+      if(cn) cn.addEventListener('click', function(e){ e.stopPropagation(); openConnect(cn.getAttribute('data-id')); });
+    });
+    renderHint();
+  }
+  function toggleSelect(p){
+    var idx = SELECTED.findIndex(function(s){return s.id===p.id;});
+    if(idx>=0){
+      /* already selected — just scroll to it (and expand) */
+      var card=document.querySelector('.cb-sel[data-id="'+p.id+'"]');
+      if(card){ card.classList.add('expanded'); card.scrollIntoView({behavior:'smooth',block:'center'}); }
+    } else {
+      SELECTED.unshift(p);
+      renderSelected();
+      applyFilter(); /* refresh selected highlight in left list */
+    }
+  }
+  function removeFromBoard(id){
+    SELECTED = SELECTED.filter(function(s){return s.id!==id;});
+    renderSelected();
+    applyFilter();
+  }
+
+  /* ── Connect modal ─────────────────────────────────────────────────────── */
+  function openConnect(otherId){
+    var p = ALL.filter(function(x){return x.id===otherId;})[0]; if(!p) return;
+    var existing = STATES[p.id];
+    if(existing==='connected'){ Pegasus.toast('✓','var(--green-dim)','Already connected', p.full_name); return; }
+    if(existing==='request_sent'){ Pegasus.toast('◷','var(--blue-dim)','Request already sent', 'You can review it in your Workspace.'); return; }
+
+    var optsHtml = INTENTS.map(function(i){return '<option value="'+i[0]+'">'+esc(i[1])+'</option>';}).join('');
+    var scrim=document.createElement('div'); scrim.className='cn-scrim';
+    scrim.innerHTML=
+      '<div class="cn-modal" role="dialog" aria-label="Send connection request">'+
+        '<div class="cn-head"><div class="cn-title">Connect with '+esc(p.full_name)+'</div>'+
+          '<div class="cn-sub">Send a short note explaining why you want to connect. Pegasus shares your name and profile — your private contact details are never exposed.</div></div>'+
+        '<div class="cn-body">'+
+          '<label for="cnIntent">Intent / reason</label>'+
+          '<select id="cnIntent">'+optsHtml+'</select>'+
+          '<label for="cnMsg">Message</label>'+
+          '<textarea id="cnMsg" maxlength="600" placeholder="Write a short note. Example: “I saw your profile and would like to connect about real estate finance opportunities in California.”"></textarea>'+
+        '</div>'+
+        '<div class="cn-err" id="cnErr" style="display:none"></div>'+
+        '<div class="cn-foot"><button class="btn btn-ghost" id="cnCancel">Cancel</button>'+
+          '<button class="btn btn-pri" id="cnSend">Send Connection Request</button></div>'+
+      '</div>';
+    document.body.appendChild(scrim);
+    scrim.addEventListener('click', function(e){ if(e.target===scrim) close(); });
+    function close(){ if(scrim.parentNode) scrim.parentNode.removeChild(scrim); }
+    document.getElementById('cnCancel').onclick=close;
+    document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown',esc);} });
+
+    document.getElementById('cnSend').onclick=async function(){
+      var btn=this; btn.disabled=true; btn.textContent='Sending…';
+      var intent=document.getElementById('cnIntent').value;
+      var msg=(document.getElementById('cnMsg').value||'').trim();
+      try{
+        var r = await sb.rpc('send_member_connection',{p_recipient_user_id:p.id, p_intent:intent, p_message:msg});
+        if(r.error) throw r.error;
+        var resp = r.data || {};
+        if(!resp.ok){
+          var err=document.getElementById('cnErr');
+          err.style.display=''; err.textContent = resp.message || 'Could not send the request.';
+          btn.disabled=false; btn.textContent='Send Connection Request';
+          /* If the existing state explains the failure, sync local state. */
+          if(resp.code==='already_sent') STATES[p.id]='request_sent';
+          else if(resp.code==='incoming_pending') STATES[p.id]='request_received';
+          else if(resp.code==='connected') STATES[p.id]='connected';
+          return;
+        }
+        STATES[p.id]='request_sent';
+        close();
+        Pegasus.toast('✓','var(--green-dim)','Request sent', p.full_name+' will see your request in their bell and Workspace.');
+        renderSelected();
+        applyFilter();
+      }catch(e){
+        /* Never surface raw SQL to members. Show a clean message; admins also
+           get the technical detail so they can open the Repair Center. */
+        var isAdm=false; try{ isAdm = Pegasus.store && Pegasus.store.isAdmin && Pegasus.store.isAdmin(); }catch(_){}
+        var friendly='We couldn’t send this request because the network system needs an update. Please contact the Pegasus administrator.';
+        var err=document.getElementById('cnErr');
+        err.style.display='';
+        err.innerHTML = Pegasus.esc(friendly) + (isAdm && e && e.message ? '<br><span style="color:var(--text4)">Technical detail: '+Pegasus.esc(e.message)+'</span>' : '');
+        btn.disabled=false; btn.textContent='Send Connection Request';
+      }
+    };
+  }
+
+  /* ── Initial render ─────────────────────────────────────────────────────── */
+  await renderMe();
+  renderSelected();
+  applyFilter();
+  /* Re-fetch when the page is restored from bfcache so state stays fresh. */
+  window.addEventListener('pageshow', function(e){ if(e.persisted){ location.reload(); } });
+});
 </script>
-<script src="/js/pegasus-living.js"></script>
 </body>
 </html>

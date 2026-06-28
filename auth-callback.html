@@ -43,6 +43,13 @@ Pegasus.mountPublic('');
     var meta = (sessionUser && sessionUser.user_metadata) || {};
     var fromAuthName   = meta.full_name || meta.name || null;
     var fromAuthAvatar = meta.avatar_url || meta.picture || null;
+    /* Small-profile onboarding: metadata (email/password flow) OR localStorage
+       (Google OAuth flow, where our form values don't survive the round-trip). */
+    var pendH=null, pendL=null;
+    try{ pendH=localStorage.getItem('pegasus.pendingHeadline')||null; }catch(_){}
+    try{ pendL=localStorage.getItem('pegasus.pendingLocation')||null; }catch(_){}
+    var fromHeadline   = meta.headline || pendH || null;
+    var fromLocation   = meta.location || pendL || null;
     var emailPrefix    = sessionUser && sessionUser.email ? sessionUser.email.split('@')[0] : null;
 
     /* Current name is "blank-equivalent" if it's empty or only the email prefix
@@ -55,6 +62,10 @@ Pegasus.mountPublic('');
     if (nameIsBlank && fromAuthName)                                    patch.full_name = fromAuthName;
     if ((!existingProfile || !existingProfile.avatar_url) && fromAuthAvatar) patch.avatar_url = fromAuthAvatar;
     if (!existingProfile || !existingProfile.email)                     patch.email = sessionUser.email;
+    /* Seed the small-profile fields only when still blank — never overwrite
+     * anything the member later edits. */
+    if ((!existingProfile || !existingProfile.headline) && fromHeadline) patch.headline = fromHeadline;
+    if ((!existingProfile || !existingProfile.location) && fromLocation) patch.location = fromLocation;
 
     if (Object.keys(patch).length === 0) return false; /* nothing to do */
 
@@ -62,6 +73,8 @@ Pegasus.mountPublic('');
     try {
       var res = await sb.from('profiles').upsert(patch, { onConflict: 'id' });
       if (res.error) { console.warn('[Callback] profile hydrate error:', res.error.message); return false; }
+      /* One-time small-profile seeds consumed — clear so they never re-apply. */
+      try{ localStorage.removeItem('pegasus.pendingHeadline'); localStorage.removeItem('pegasus.pendingLocation'); localStorage.removeItem('pegasus.pendingRole'); }catch(_){}
       return true;
     } catch (e) {
       console.warn('[Callback] profile hydrate exception:', e && e.message);
@@ -131,7 +144,7 @@ Pegasus.mountPublic('');
        Always do a direct Supabase query using the confirmed session user ID.
        This is more reliable than Store.get() which can race with auth init.
        If slug is missing, generate it now so the URL is always clean.       */
-    var hubDest = '/dashboard.html'; /* fallback */
+    var hubDest = '/members.html'; /* signed-in home → Members Network */
     try {
       var sbHub = await window.PegSB.ready;
       var hubRes = await sbHub.from('profiles')
@@ -154,18 +167,23 @@ Pegasus.mountPublic('');
           if (chk.data && chk.data.length) slug = slug + '-' + hp.id.slice(0,4);
           await sbHub.from('profiles').update({ profile_slug: slug }).eq('id', hp.id);
         }
+        /* Cache slug so member nav / My Profile links resolve instantly */
+        if (slug) { try { localStorage.setItem('peg_slug', slug); } catch(_) {} }
 
-        hubDest = slug ? '/u/' + slug : '/public-profile.html?id=' + hp.id;
+        /* Signed-in home is the Members Network — never workspace/admin/get-started.
+           The Members Network shows the member inside the network and carries a
+           Launch Checklist while their profile is still incomplete. */
+        hubDest = '/members.html';
         welcomeBody = 'Your network is ready.';
       } else {
-        /* No profile row — brand new user needs onboarding */
-        hubDest = '/get-started.html';
+        /* No profile row — brand new user sets up their profile first */
+        hubDest = '/profile-edit.html';
         welcomeTitle = 'Welcome to Pegasus';
-        welcomeBody  = 'Let’s set up your presence.';
+        welcomeBody  = 'Let’s set up your profile.';
       }
     } catch (e) {
       console.warn('[auth-callback] hub detection error:', e && e.message);
-      hubDest = '/dashboard.html';
+      hubDest = '/members.html';
     }
 
     /* ── Check for deep link (user was heading somewhere before login) ── */

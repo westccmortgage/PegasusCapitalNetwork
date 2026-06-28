@@ -66,7 +66,7 @@ const v=Pegasus.mountApp({active:'Admin',title:'Admin Console',sub:'Platform ope
   })();
 // section tabs
 v.insertAdjacentHTML('beforeend','<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap" id="atabs"></div><div id="apanel"></div>');
-const sections=['Users','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health'];
+const sections=['Users','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
 document.getElementById('atabs').innerHTML=sections.map((s,i)=>'<div class="toggle-opt '+(i===0?'on':'')+'" style="font-size:11px" onclick="aShow(\''+s+'\')">'+s+'</div>').join('');
 function tbl(cols,rows){return '<div class="card"><table class="tbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
 const chip=(t,c)=>'<span class="badge '+c+'">'+t+'</span>';
@@ -101,7 +101,7 @@ async function loadUsers(p){
     if(!rows.length){ p.innerHTML=adminEmpty('\ud83d\udc65','No members yet','Members will appear here as people create profiles.'); return; }
 
     var search='<input id="usr-search" placeholder="Search by name, role, company\u2026" oninput="usrFilter()" style="width:100%;max-width:380px;padding:9px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg1);color:var(--text);font-size:13px;margin-bottom:14px">';
-    var count='<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">'+rows.length+' members</div>';
+    var count='<div id="usr-count" style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">'+rows.length+' members</div>';
 
     window.__usrRows=rows;
     p.innerHTML=search+count+'<div id="usr-tbl"></div>';
@@ -119,17 +119,23 @@ function renderUserRows(rows){
   var head='<div class="card" style="overflow-x:auto"><table class="tbl"><thead><tr>'+
     ['Name','Role','Company','Location','Status','Actions'].map(function(h){return '<th>'+h+'</th>';}).join('')+
     '</tr></thead><tbody>';
+  // Delete is destructive: never offer it for the signed-in admin or for the
+  // protected primary admin account.
+  var SUPER_ADMIN_ID='751a15a1-01e9-4f21-a9c8-57f83f12bb82';
+  var meId=(window.PegStore&&PegStore.get&&PegStore.get().profile&&PegStore.get().profile.id)||'';
   var body=rows.map(function(m){
     var link=m.profile_slug?'/u/'+m.profile_slug:'/public-profile.html?id='+m.id;
     var role=(m.role||'member').replace(/_/g,' ');
     var amb=m.ambassador_status?' <span title="Ambassador" style="color:var(--amber)">\u2b21</span>':'';
+    var canDel=m.id&&m.id!==meId&&m.id!==SUPER_ADMIN_ID;
+    var delBtn=canDel?' <button class="btn btn-ghost btn-sm" style="margin-left:6px;color:#c0392b;border-color:#c0392b" onclick="usrDelete(\''+esc(m.id)+'\')">Delete</button>':'';
     return '<tr>'+
       '<td style="font-weight:600;color:var(--text)">'+esc(m.full_name)+amb+'</td>'+
       '<td style="text-transform:capitalize;color:var(--text2)">'+esc(role)+'</td>'+
       '<td style="color:var(--text2)">'+esc(m.company_name||'\u2014')+'</td>'+
       '<td style="color:var(--text2)">'+esc(m.location||'\u2014')+'</td>'+
       '<td>'+vstatus(m.verification_status)+'</td>'+
-      '<td style="white-space:nowrap"><a class="btn btn-ghost btn-sm" href="'+link+'">View \u2192</a> <a class="btn btn-ghost btn-sm" href="/profile-edit.html?id='+encodeURIComponent(m.id)+'" style="margin-left:6px">Edit \u2192</a></td>'+
+      '<td style="white-space:nowrap"><a class="btn btn-ghost btn-sm" href="'+link+'">View \u2192</a> <a class="btn btn-ghost btn-sm" href="/profile-edit.html?id='+encodeURIComponent(m.id)+'" style="margin-left:6px">Edit \u2192</a>'+delBtn+'</td>'+
     '</tr>';
   }).join('');
   host.innerHTML=head+body+'</tbody></table></div>';
@@ -142,6 +148,32 @@ window.usrFilter=function(){
     return ((m.full_name||'')+' '+(m.role||'')+' '+(m.company_name||'')+' '+(m.location||'')).toLowerCase().indexOf(q)!==-1;
   });
   renderUserRows(f);
+};
+// Full account deletion (auth.users + cascade) — runs server-side via the
+// delete-user Netlify Function, which re-verifies the caller is an admin using
+// the service_role key. The frontend never sees that key.
+window.usrDelete=async function(id){
+  var all=window.__usrRows||[];
+  var m=all.filter(function(x){return x.id===id;})[0]||{};
+  var name=m.full_name||'this member';
+  if(!confirm('Permanently delete '+name+'?\n\n'+
+    'This removes their account, profile, and submissions, and frees their email to sign up again. '+
+    'Messages they sent are kept but shown as from a removed member.\n\nThis cannot be undone.')) return;
+  try{
+    var c=await window.PegSB.ready;
+    var sess=(await c.auth.getSession()).data.session;
+    if(!sess){ alert('Your session expired — please sign in again.'); return; }
+    var r=await fetch('/.netlify/functions/delete-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+sess.access_token},
+      body:JSON.stringify({user_id:id})
+    });
+    var d={}; try{ d=await r.json(); }catch(_){}
+    if(!r.ok||!d.deleted){ alert('Delete failed: '+((d&&d.reason)||('HTTP '+r.status))); return; }
+    window.__usrRows=all.filter(function(x){return x.id!==id;});
+    usrFilter();
+    var cnt=document.getElementById('usr-count'); if(cnt) cnt.textContent=window.__usrRows.length+' members';
+  }catch(e){ alert('Delete failed: '+((e&&e.message)||e)); }
 };
 function adminErr(msg){
   return '<div class="banner bn-cancel"><div class="banner-msg">\u26a0\ufe0f <span>'+(msg||'Query failed')+'</span></div></div>';
@@ -380,7 +412,136 @@ window.aShow=function(s){[...document.querySelectorAll('#atabs .toggle-opt')].fo
     return;
   }
   if(s==='Manual Review'){ loadReview(p); return; }
+  if(s==='Schema & Repair'){ loadSchemaRepair(p); return; }
 };
+
+/* ── Schema & Repair Center ───────────────────────────────────────────────────
+   Calls the admin-only health_check_schema() RPC (migration 062) and renders a
+   plain-English status for every required table, column, and RPC, with copy-able
+   safe additive repair SQL for anything missing. Read-only: never auto-applies
+   destructive changes. */
+var REPAIR_SQL = {
+  'notifications.kind':
+    "-- Repair: add the missing notifications.kind column (safe, additive)\n"+
+    "alter table public.notifications add column if not exists kind text;\n"+
+    "update public.notifications set kind='info' where kind is null;\n"+
+    "-- Or apply the full migration: supabase/061_notifications_kind_compat.sql",
+  'notifications.title': "alter table public.notifications add column if not exists title text;",
+  'notifications.body':  "alter table public.notifications add column if not exists body text;",
+  'notifications.link':  "alter table public.notifications add column if not exists link text;",
+  'notifications.read':  "alter table public.notifications add column if not exists read boolean default false;"
+};
+var FN_MIGRATION = {
+  send_member_connection:'supabase/060_member_connections.sql (or 061 for the resilient version)',
+  respond_member_connection:'supabase/060_member_connections.sql',
+  get_my_connection_requests:'supabase/060_member_connections.sql',
+  get_my_connections:'supabase/060_member_connections.sql',
+  get_member_connections_for_profile:'supabase/060_member_connections.sql',
+  get_connection_state_with:'supabase/060_member_connections.sql',
+  count_connection_requests_new:'supabase/060_member_connections.sql',
+  create_notification:'supabase/021_referrals_notifications.sql (or 061 for the resilient version)',
+  create_opportunity:'supabase/054_opportunities.sql',
+  create_engagement_request:'supabase/055_engagement_requests.sql',
+  get_public_presentations:'supabase/058_public_presentations.sql',
+  health_check_schema:'supabase/062_health_check_schema.sql'
+};
+var TABLE_MIGRATION = {
+  member_connections:'supabase/060_member_connections.sql',
+  engagement_requests:'supabase/055_engagement_requests.sql',
+  opportunities:'supabase/054_opportunities.sql',
+  presences:'supabase/047_presence_graph_foundation.sql',
+  notifications:'supabase/021_referrals_notifications.sql'
+};
+function srEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function srPill(ok){ return ok
+  ? '<span class="badge b-active">OK</span>'
+  : '<span class="badge" style="background:#fdecea;color:#c0392b">Broken</span>'; }
+window.srCopy=function(key){
+  var sql = window.__SR_SQL && window.__SR_SQL[key];
+  if(!sql) return;
+  try{ if(navigator.clipboard) navigator.clipboard.writeText(sql); }catch(e){}
+  if(window.Pegasus&&Pegasus.toast) Pegasus.toast('⧉','var(--green-dim)','Repair SQL copied','Paste it into Supabase → SQL Editor.');
+};
+async function loadSchemaRepair(p){
+  p.innerHTML='<div class="card"><div class="card-body" style="padding:18px">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'+
+      '<div><div style="font-family:var(--serif);font-size:18px;color:var(--text)">Schema &amp; Repair Center</div>'+
+      '<div style="font-size:12.5px;color:var(--text3);margin-top:3px;max-width:640px">Detects missing tables, columns, and RPC functions this database depends on. Repairs are offered as safe, additive SQL you copy and run in Supabase — nothing is applied automatically.</div></div>'+
+      '<button class="btn btn-pri btn-sm" onclick="loadSchemaRepair(document.getElementById(\'apanel\'))">Re-run Health Check</button>'+
+    '</div></div></div>'+
+    '<div id="srBody" style="margin-top:14px"><div class="card"><div class="card-body" style="padding:24px;text-align:center;color:var(--text3);font-size:12px">Running schema health check…</div></div></div>';
+  var body=document.getElementById('srBody');
+  window.__SR_SQL = {};
+  try{
+    var sb=await window.PegSB.ready;
+    var r=await sb.rpc('health_check_schema');
+    if(r.error) throw r.error;
+    var rep=r.data||{};
+    if(!rep.ok){
+      body.innerHTML='<div class="banner bn-cancel"><div class="banner-msg">🔒 <span>'+srEsc(rep.message||'Not authorized.')+'</span></div></div>';
+      return;
+    }
+    var html='';
+
+    /* Summary */
+    var broken=[];
+    (rep.tables||[]).forEach(function(t){ if(!t.exists) broken.push('table '+t.name); });
+    (rep.columns||[]).forEach(function(c){ if(!c.exists) broken.push('column '+c.table+'.'+c.column); });
+    (rep.functions||[]).forEach(function(f){ if(!f.exists) broken.push('function '+f.name+'()'); });
+    html += broken.length
+      ? '<div class="banner bn-cancel" style="margin-bottom:14px"><div class="banner-msg">🔴 <span>'+broken.length+' issue'+(broken.length===1?'':'s')+' detected. Apply the suggested migrations below, then re-run.</span></div></div>'
+      : '<div class="banner bn-active" style="margin-bottom:14px"><div class="banner-msg">🟢 <span>All required tables, columns, and functions are present. Pegasus is production-ready.</span></div></div>';
+
+    /* Tables */
+    html+='<div class="card" style="margin-bottom:12px"><div class="card-head"><div class="card-title">Database Tables</div></div><div class="card-body"><table class="tbl"><tbody>';
+    (rep.tables||[]).forEach(function(t){
+      var fix='';
+      if(!t.exists){ var mig=TABLE_MIGRATION[t.name]||'the relevant migration'; fix='<div style="font-size:11px;color:var(--text3)">Apply '+srEsc(mig)+'</div>'; }
+      html+='<tr><td style="font-family:var(--mono);font-size:12px">'+srEsc(t.name)+'</td><td>'+srPill(t.exists)+'</td><td>'+fix+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+
+    /* Columns */
+    html+='<div class="card" style="margin-bottom:12px"><div class="card-head"><div class="card-title">Columns</div></div><div class="card-body"><table class="tbl"><tbody>';
+    (rep.columns||[]).forEach(function(c){
+      var key=c.table+'.'+c.column; var fix='';
+      if(!c.exists){
+        var sql=REPAIR_SQL[key] || ('alter table public.'+c.table+' add column if not exists '+c.column+' text;');
+        window.__SR_SQL[key]=sql;
+        fix='<button class="btn btn-ghost btn-sm" onclick="srCopy(\''+key+'\')">Copy repair SQL</button>';
+      }
+      html+='<tr><td style="font-family:var(--mono);font-size:12px">'+srEsc(key)+'</td><td>'+srPill(c.exists)+'</td><td>'+fix+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+
+    /* Functions */
+    html+='<div class="card" style="margin-bottom:12px"><div class="card-head"><div class="card-title">RPC Functions</div></div><div class="card-body"><table class="tbl"><tbody>';
+    (rep.functions||[]).forEach(function(f){
+      var fix='';
+      if(!f.exists){ var mig=FN_MIGRATION[f.name]||'the relevant migration'; fix='<div style="font-size:11px;color:var(--text3)">Apply '+srEsc(mig)+'</div>'; }
+      html+='<tr><td style="font-family:var(--mono);font-size:12px">'+srEsc(f.name)+'()</td><td>'+srPill(f.exists)+'</td><td>'+fix+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+
+    /* Feature readiness — derived from the checks above */
+    function feat(name, ok){ return '<tr><td>'+srEsc(name)+'</td><td>'+srPill(ok)+'</td></tr>'; }
+    function hasFn(n){ return (rep.functions||[]).some(function(f){return f.name===n&&f.exists;}); }
+    function hasTbl(n){ return (rep.tables||[]).some(function(t){return t.name===n&&t.exists;}); }
+    function hasCol(t,c){ return (rep.columns||[]).some(function(x){return x.table===t&&x.column===c&&x.exists;}); }
+    html+='<div class="card"><div class="card-head"><div class="card-title">Feature Readiness</div></div><div class="card-body"><table class="tbl"><tbody>'+
+      feat('Opportunity system', hasTbl('opportunities')&&hasFn('create_opportunity'))+
+      feat('Engagement requests', hasTbl('engagement_requests')&&hasFn('create_engagement_request'))+
+      feat('Connection requests', hasTbl('member_connections')&&hasFn('send_member_connection'))+
+      feat('Notification system', hasTbl('notifications')&&hasCol('notifications','kind')&&hasFn('create_notification'))+
+      feat('Public live strip', hasFn('get_recent_network_activity')&&hasFn('get_public_presentations'))+
+      '</tbody></table></div></div>';
+
+    body.innerHTML=html;
+  }catch(e){
+    body.innerHTML='<div class="banner bn-cancel"><div class="banner-msg">⚠️ <span>Could not run the schema health check'+
+      ((e&&e.message)?': '+srEsc(e.message):'')+'. Apply <span style="font-family:var(--mono)">supabase/062_health_check_schema.sql</span> and try again.</span></div></div>';
+  }
+}
 aShow('Users');
 
 });

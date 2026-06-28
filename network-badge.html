@@ -1,11 +1,82 @@
-<!DOCTYPE html><html lang="en"><head><title>Network Badge — Pegasus Network</title>
-<link rel="canonical" href="https://pegasuscapitalnetwork.com/network-badge.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Network Badge — Pegasus Network"><meta property="og:description" content="Display your Pegasus Network membership and receive one month of membership credit after approved verification of your badge or co-marketing placement."><meta property="og:url" content="https://pegasuscapitalnetwork.com/network-badge.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Network Badge — Pegasus Network"><meta name="twitter:description" content="Display your Pegasus Network membership and receive one month of membership credit after approved verification of your badge or co-marketing placement."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Display your Pegasus Network membership and receive one month of membership credit after approved verification of your badge or co-marketing placement."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<!DOCTYPE html><html lang="en"><head><title>Network Badge — Show your Pegasus connection</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/network-badge.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Pegasus Network Badge"><meta property="og:description" content="Show that you are part of the Pegasus Capital Network. Add your badge to your website, LinkedIn, Instagram, email signature, or business materials — and link people back to your Pegasus profile or business page."><meta property="og:url" content="https://pegasuscapitalnetwork.com/network-badge.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Pegasus Network Badge"><meta name="twitter:description" content="Show your Pegasus connection. Generate a badge and link people back to your Pegasus profile or business page."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="description" content="Show your Pegasus connection. Generate a badge and link people back to your Pegasus profile or business page."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#08111C">
+<style>
+.nb-wrap{max-width:1080px;margin:0 auto;padding:0 22px 80px}
+.nb-hero{text-align:center;padding:70px 22px 40px;max-width:760px;margin:0 auto}
+.nb-hero .eyebrow{justify-content:center}
+.nb-hero h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(34px,5vw,52px);letter-spacing:-.01em;margin:8px 0 16px;color:var(--text)}
+.nb-hero p{font-size:16px;line-height:1.6;color:var(--text2);max-width:620px;margin:0 auto 26px}
+.nb-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.nb-sec-head{text-align:center;max-width:640px;margin:0 auto 26px}
+.nb-sec-head h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;margin:4px 0 8px;color:var(--text)}
+.nb-sec-head p{font-size:14px;color:var(--text3);line-height:1.6}
+.nb-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-bottom:64px}
+/* Premium dark/gold Pegasus badge */
+.pbadge{position:relative;border-radius:16px;padding:20px 22px;background:linear-gradient(150deg,#0c1626 0%,#0a1322 55%,#070e1a 100%);border:1px solid rgba(170,137,38,.28);box-shadow:0 18px 50px rgba(0,0,0,.4);overflow:hidden}
+.pbadge::after{content:"";position:absolute;top:-40%;right:-30%;width:70%;height:140%;background:radial-gradient(circle,rgba(170,137,38,.16),transparent 60%);pointer-events:none}
+.pbadge.is-blue{border-color:rgba(34,113,195,.32)}
+.pbadge.is-blue::after{background:radial-gradient(circle,rgba(58,143,232,.16),transparent 60%)}
+.pbadge.is-violet{border-color:rgba(139,108,222,.32)}
+.pbadge.is-violet::after{background:radial-gradient(circle,rgba(139,108,222,.16),transparent 60%)}
+.pbadge-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;position:relative;z-index:1}
+.pbadge-mark{width:30px;height:30px;flex:none}
+.pbadge-kicker{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold,#c9a227)}
+.pbadge.is-blue .pbadge-kicker{color:#6aa6ec}
+.pbadge.is-violet .pbadge-kicker{color:#a98ee8}
+.pbadge-title{font-family:'Cormorant Garamond',serif;font-size:21px;color:#f4f7fb;line-height:1.15;position:relative;z-index:1}
+.pbadge-name{font-size:14px;font-weight:600;color:#eaf1f9;margin-top:12px;position:relative;z-index:1}
+.pbadge-role{font-size:12px;color:#9db2cc;margin-top:2px;position:relative;z-index:1}
+.pbadge-url{font-family:var(--mono);font-size:10.5px;color:#7f9bbd;margin-top:12px;word-break:break-all;position:relative;z-index:1}
+.pbadge-foot{display:flex;align-items:center;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);position:relative;z-index:1}
+.pbadge-foot span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#8aa0bd}
+.nb-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:64px}
+.nb-step{background:var(--bg1);border:1px solid var(--border);border-radius:13px;padding:18px}
+.nb-step-n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--blue-dim);color:var(--blue-lt);font-family:var(--mono);font-size:13px;margin-bottom:11px}
+.nb-step h3{font-size:14px;color:var(--text);margin:0 0 5px}
+.nb-step p{font-size:12.5px;color:var(--text3);line-height:1.55;margin:0}
+.nb-gen{background:var(--bg1);border:1px solid var(--border);border-radius:18px;padding:26px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+@media(max-width:760px){.nb-gen{grid-template-columns:1fr}}
+.nb-gen label{display:block;font-size:11px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin:14px 0 6px}
+.nb-gen select,.nb-gen input{width:100%;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13.5px}
+.nb-gen-preview{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:flex-start}
+.nb-gen-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%}
+.nb-locked{background:var(--bg1);border:1px solid var(--border);border-radius:18px;padding:40px 26px;text-align:center}
+</style>
 </head><body>
+<div id="nav"></div>
+<div class="nb-wrap">
+
+  <div class="nb-hero">
+    <div class="eyebrow">Pegasus Network Badge</div>
+    <h1>Show your Pegasus connection.</h1>
+    <p>Show that you are part of the Pegasus Capital Network. Add your badge to your website, LinkedIn, Instagram, email signature, or business materials — and link people back to your Pegasus profile or business page.</p>
+    <div class="nb-cta" id="nbHeroCta">
+      <a class="btn btn-pri btn-lg" href="#generate">Generate My Badge</a>
+      <a class="btn btn-ghost btn-lg" href="/signup.html">Create Free Profile</a>
+    </div>
+  </div>
+
+  <div class="nb-sec-head"><div class="eyebrow" style="justify-content:center">Badge styles</div><h2>Pick the badge that fits you</h2><p>Real previews — not placeholders. Each badge carries the Pegasus mark, your name, your role, and a clean link back to Pegasus.</p></div>
+  <div class="nb-badges" id="nbBadges"></div>
+
+  <div class="nb-sec-head"><div class="eyebrow" style="justify-content:center">How it works</div><h2>From badge to back-link in five steps</h2></div>
+  <div class="nb-steps">
+    <div class="nb-step"><div class="nb-step-n">1</div><h3>Choose your badge</h3><p>Select the badge that fits your profile, business page, reviewed status, or showcase.</p></div>
+    <div class="nb-step"><div class="nb-step-n">2</div><h3>Copy or download</h3><p>Copy the embed code, download the image, or prepare it for social media.</p></div>
+    <div class="nb-step"><div class="nb-step-n">3</div><h3>Place it outside Pegasus</h3><p>Use it on your website, LinkedIn, Instagram, email signature, newsletter, or marketing materials.</p></div>
+    <div class="nb-step"><div class="nb-step-n">4</div><h3>Link back to Pegasus</h3><p>Your badge points people to your Pegasus profile, business page, or showcase.</p></div>
+    <div class="nb-step"><div class="nb-step-n">5</div><h3>Submit proof if required</h3><p>If your badge is tied to a credit or reward, submit proof for verification.</p></div>
+  </div>
+
+  <div class="nb-sec-head" id="generate"><div class="eyebrow" style="justify-content:center">Your badge</div><h2>Generate your badge</h2><p>Build a badge, preview it, then copy the link, copy the embed code, download the image, or copy a social caption.</p></div>
+  <div id="nbGen"></div>
+
+</div>
+<div id="footer"></div>
+
 <script src="/js/pegasus-config.js"></script>
 <script src="/js/pegasus-supabase.js"></script>
 <script src="/js/pegasus-entitlements.js"></script>
@@ -17,8 +88,171 @@
 <script src="/js/pegasus-forms.js"></script>
 <script src="/js/pegasus-auth.js"></script>
 <script src="/js/pegasus-core.js"></script>
-<script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
 <script>
-PegPages.mountContent('network-badge',()=>PegPages.marketing('network-badge',{eyebrow:'Verification',layout:'feat',cta:{h2:'Earn your Network Badge'}}));
-</script></body></html>
+Pegasus.boot(function(){
+  Pegasus.mountPublic('Learn');
+  var foot=document.getElementById('footer'); if(foot) foot.innerHTML=Pegasus.footer();
+  var esc=Pegasus.esc;
+  var ORIGIN='https://pegasuscapitalnetwork.com';
+
+  var st=(window.PegStore&&PegStore.get)?PegStore.get():{};
+  var loggedIn = st.mode==='live';
+  var p = st.profile||{};
+  var slug = p.profile_slug || '';
+  var displayName = p.full_name || '';
+  var roleText = p.headline || p.role || '';
+
+  // Badge type catalogue ----------------------------------------------------
+  var TYPES={
+    member:   {kicker:'Pegasus Network Member', title:'Pegasus Network Member', tone:'gold',   foot:'Verified on Pegasus'},
+    business: {kicker:'Pegasus Business Page',  title:'Pegasus Business Page',  tone:'blue',   foot:'View on Pegasus'},
+    reviewed: {kicker:'Reviewed by Pegasus',    title:'Pegasus Reviewed Member',tone:'gold',   foot:'Reviewed on Pegasus'},
+    capital:  {kicker:'Pegasus Capital Partner',title:'Pegasus Capital Partner',tone:'gold',   foot:'Verified on Pegasus'},
+    showcase: {kicker:'Presented on Pegasus',   title:'Pegasus Showcase',       tone:'violet', foot:'Presented on Pegasus'}
+  };
+  function toneClass(t){ return t==='blue'?'is-blue':t==='violet'?'is-violet':''; }
+
+  // Live HTML badge preview -------------------------------------------------
+  function badgeHTML(type, opt){
+    opt=opt||{}; var d=TYPES[type]||TYPES.member;
+    var name=opt.name||''; var role=opt.role||''; var url=opt.url||'';
+    return '<div class="pbadge '+toneClass(d.tone)+'">'+
+      '<div class="pbadge-top"><img class="pbadge-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><div class="pbadge-kicker">'+esc(d.kicker)+'</div></div>'+
+      '<div class="pbadge-title">'+esc(d.title)+'</div>'+
+      (name?'<div class="pbadge-name">'+esc(name)+'</div>':'')+
+      (role?'<div class="pbadge-role">'+esc(role)+'</div>':'')+
+      (url?'<div class="pbadge-url">'+esc(url.replace(/^https?:\/\//,''))+'</div>':'')+
+      '<div class="pbadge-foot"><span>✦ '+esc(d.foot)+'</span></div>'+
+    '</div>';
+  }
+
+  // Sample previews ---------------------------------------------------------
+  var samples=[
+    ['member',  {name:displayName||'Anatoliy Kanevsky', role:roleText||'Business Owner · Los Angeles', url:slug?(ORIGIN+'/u/'+slug):'pegasuscapitalnetwork.com/u/anatoliy-kanevsky'}],
+    ['business',{name:'California Residential Development Partners', role:'Developer · Los Angeles', url:'pegasuscapitalnetwork.com/business/ca-residential'}],
+    ['reviewed',{name:displayName||'Reviewed Member', role:roleText||'Reviewed by Pegasus', url:slug?(ORIGIN+'/u/'+slug):'pegasuscapitalnetwork.com/u/your-profile'}],
+    ['capital', {name:'Meridian Capital Group', role:'Private Credit · Nationwide', url:'pegasuscapitalnetwork.com/business/meridian-capital'}],
+    ['showcase',{name:'Sunset Boulevard Mixed-Use', role:'Presented on Pegasus', url:'pegasuscapitalnetwork.com/showcase/sunset-blvd'}]
+  ];
+  document.getElementById('nbBadges').innerHTML = samples.map(function(s){ return badgeHTML(s[0], s[1]); }).join('');
+
+  // Canvas renderer for PNG download ---------------------------------------
+  function loadImg(src){ return new Promise(function(res){ var im=new Image(); im.onload=function(){res(im);}; im.onerror=function(){res(null);}; im.src=src; }); }
+  async function drawBadge(type, opt){
+    var d=TYPES[type]||TYPES.member; opt=opt||{};
+    var W=1200,H=628, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+    var ctx=cv.getContext('2d');
+    var g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#0c1626'); g.addColorStop(.55,'#0a1322'); g.addColorStop(1,'#070e1a');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    var accent = d.tone==='blue'?'rgba(58,143,232,.18)':d.tone==='violet'?'rgba(139,108,222,.18)':'rgba(170,137,38,.20)';
+    var rg=ctx.createRadialGradient(W*0.82,H*0.18,30,W*0.82,H*0.18,W*0.55); rg.addColorStop(0,accent); rg.addColorStop(1,'transparent');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    var line = d.tone==='blue'?'#3A8FE8':d.tone==='violet'?'#8b6cde':'#c9a227';
+    ctx.fillStyle=line; ctx.fillRect(0,0,W,8);
+    var pad=72;
+    var mark=await loadImg('/assets/brand/pegasus-symbol.png');
+    if(mark){ ctx.drawImage(mark,pad,pad,64,64); }
+    ctx.textBaseline='top';
+    ctx.fillStyle=line; ctx.font='500 24px "IBM Plex Mono", monospace';
+    ctx.fillText((d.kicker||'').toUpperCase(), pad+(mark?84:0), pad+18);
+    ctx.fillStyle='#f4f7fb'; ctx.font='500 64px "Cormorant Garamond", serif';
+    ctx.fillText(d.title, pad, pad+96);
+    var y=pad+186;
+    if(opt.name){ ctx.fillStyle='#eaf1f9'; ctx.font='600 34px "IBM Plex Sans", sans-serif'; ctx.fillText(String(opt.name).slice(0,42), pad, y); y+=48; }
+    if(opt.role){ ctx.fillStyle='#9db2cc'; ctx.font='400 26px "IBM Plex Sans", sans-serif'; ctx.fillText(String(opt.role).slice(0,52), pad, y); y+=46; }
+    ctx.fillStyle='#7f9bbd'; ctx.font='400 24px "IBM Plex Mono", monospace';
+    ctx.fillText(String(opt.url||'pegasuscapitalnetwork.com').replace(/^https?:\/\//,'').slice(0,52), pad, H-pad-30);
+    ctx.fillStyle='#8aa0bd'; ctx.font='500 20px "IBM Plex Mono", monospace';
+    ctx.textAlign='right'; ctx.fillText('✦ '+(d.foot||'').toUpperCase(), W-pad, H-pad-28); ctx.textAlign='left';
+    return cv;
+  }
+
+  // Embed code (plain, paste-anywhere link) --------------------------------
+  function embedCode(type, opt){
+    var d=TYPES[type]||TYPES.member; var url=opt.url||ORIGIN;
+    var border=d.tone==='blue'?'#2271c3':d.tone==='violet'?'#8b6cde':'#c9a227';
+    return '<a href="'+url+'" target="_blank" rel="noopener" '+
+      'style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;'+
+      'background:#0a1322;border:1px solid '+border+'33;color:#eaf1f9;font:600 13px/1 Arial,sans-serif;text-decoration:none">'+
+      '<img src="'+ORIGIN+'/assets/brand/pegasus-symbol.svg" alt="Pegasus" width="18" height="18">'+
+      (opt.name?(esc(opt.name)+' · '):'')+d.title+'</a>';
+  }
+  function caption(type, opt){
+    var d=TYPES[type]||TYPES.member;
+    return (opt.name?opt.name+' is ':'I’m ')+'on the Pegasus Capital Network ('+d.title+').\n\n'+
+      'Connect with '+(opt.name?'us':'me')+' here:\n'+(opt.url||ORIGIN);
+  }
+
+  // Generator (logged-in) ---------------------------------------------------
+  function renderGenerator(){
+    var host=document.getElementById('nbGen');
+    var targets=[['profile','My personal profile', slug?(ORIGIN+'/u/'+slug):(ORIGIN+'/u/your-profile')],
+                 ['business','A business page', ORIGIN+'/my-presences.html'],
+                 ['showcase','An opportunity / showcase', ORIGIN+'/showcase.html']];
+    host.innerHTML='<div class="nb-gen">'+
+      '<div>'+
+        '<label for="gType">Badge type</label>'+
+        '<select id="gType">'+
+          '<option value="member">Pegasus Network Member</option>'+
+          '<option value="business">Pegasus Business Page</option>'+
+          '<option value="reviewed">Pegasus Reviewed Member</option>'+
+          '<option value="capital">Pegasus Capital Partner</option>'+
+          '<option value="showcase">Presented on Pegasus (Showcase)</option>'+
+        '</select>'+
+        '<label for="gTarget">Link people back to</label>'+
+        '<select id="gTarget">'+targets.map(function(t){return '<option value="'+t[2]+'">'+t[1]+'</option>';}).join('')+'</select>'+
+        '<label for="gName">Display name</label>'+
+        '<input id="gName" type="text" maxlength="48" value="'+esc(displayName)+'" placeholder="Your name or business name">'+
+        '<label for="gRole">Role / category</label>'+
+        '<input id="gRole" type="text" maxlength="52" value="'+esc(roleText)+'" placeholder="e.g. Business Owner · Los Angeles">'+
+      '</div>'+
+      '<div class="nb-gen-preview">'+
+        '<div id="gPreview" style="width:100%;max-width:320px"></div>'+
+        '<div class="nb-gen-actions">'+
+          '<button class="btn btn-pri btn-sm" id="gDownload">Download badge</button>'+
+          '<button class="btn btn-ghost btn-sm" id="gEmbed">Copy embed code</button>'+
+          '<button class="btn btn-ghost btn-sm" id="gLink">Copy link</button>'+
+          '<button class="btn btn-ghost btn-sm" id="gCaption">Copy caption</button>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text4);line-height:1.5;text-align:center">On a phone the image can share straight to an app; on a computer it downloads so you can upload it. Paste the embed code into your website or email signature.</div>'+
+      '</div>'+
+    '</div>';
+
+    function opt(){ var tgt=document.getElementById('gTarget').value;
+      return { name:document.getElementById('gName').value, role:document.getElementById('gRole').value, url:tgt }; }
+    function refresh(){ document.getElementById('gPreview').innerHTML=badgeHTML(document.getElementById('gType').value, opt()); }
+    ['gType','gTarget','gName','gRole'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',refresh); e.addEventListener('change',refresh); });
+    refresh();
+
+    document.getElementById('gLink').onclick=function(){ var u=opt().url; (navigator.clipboard?navigator.clipboard.writeText(u):0); Pegasus.toast('⧉','var(--green-dim)','Link copied',u.replace(/^https?:\/\//,'')); };
+    document.getElementById('gEmbed').onclick=function(){ var code=embedCode(document.getElementById('gType').value,opt()); if(navigator.clipboard)navigator.clipboard.writeText(code); Pegasus.toast('⧉','var(--green-dim)','Embed code copied','Paste it into your website or email.'); };
+    document.getElementById('gCaption').onclick=function(){ var c=caption(document.getElementById('gType').value,opt()); if(navigator.clipboard)navigator.clipboard.writeText(c); Pegasus.toast('⧉','var(--green-dim)','Caption copied','Paste it into your post.'); };
+    document.getElementById('gDownload').onclick=async function(){
+      Pegasus.toast('◷','var(--blue-dim)','Preparing badge','Rendering image…');
+      try{
+        var cv=await drawBadge(document.getElementById('gType').value, opt());
+        var url=cv.toDataURL('image/png');
+        var a=document.createElement('a'); a.href=url; a.download='pegasus-badge.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        Pegasus.toast('✓','var(--green-dim)','Badge downloaded','pegasus-badge.png');
+      }catch(e){ Pegasus.toast('!','var(--gold-dim)','Could not render','Please try again.'); }
+    };
+  }
+
+  // Anonymous prompt --------------------------------------------------------
+  function renderLocked(){
+    document.getElementById('nbGen').innerHTML=
+      '<div class="nb-locked"><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;color:var(--text);margin-bottom:8px">Create a free profile to generate your badge</div>'+
+      '<p style="font-size:14px;color:var(--text3);max-width:460px;margin:0 auto 20px;line-height:1.6">Your badge links people back to your Pegasus profile or business page. Create your free profile first, then generate and download your badge.</p>'+
+      '<div class="nb-cta"><a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a><a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a></div></div>';
+  }
+
+  if(loggedIn){ renderGenerator(); }
+  else {
+    renderLocked();
+    var cta=document.getElementById('nbHeroCta');
+    if(cta) cta.innerHTML='<a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a><a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>';
+  }
+});
+</script>
+</body></html>

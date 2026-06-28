@@ -65,10 +65,96 @@
   to = "/public-profile.html?slug=:slug"
   status = 200
 
+# ── Clean business/project page URLs → internal presence resolver (200 rewrite;
+#    browser URL stays clean). The legacy /presence.html?slug=… still works. ──
+[[redirects]]
+  from = "/business/:slug"
+  to = "/presence.html?kind=business&slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/company/:slug"
+  to = "/presence.html?kind=company&slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/project/:slug"
+  to = "/presence.html?kind=project&slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/showcase/:slug"
+  to = "/presence.html?kind=showcase&slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/event/:slug"
+  to = "/presence.html?kind=event&slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/property/:slug"
+  to = "/presence.html?kind=property&slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/fund/:slug"
+  to = "/presence.html?kind=fund&slug=:slug"
+  status = 200
+
+# ── Clean opportunity (deal/listing) page URLs → internal resolver (200 rewrite;
+#    browser URL stays clean). /opportunity is canonical; /deal and /listing are
+#    aliases that resolve to the same opportunity page. ──
+[[redirects]]
+  from = "/opportunity/:slug"
+  to = "/opportunity.html?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/deal/:slug"
+  to = "/opportunity.html?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/listing/:slug"
+  to = "/opportunity.html?slug=:slug"
+  status = 200
+
 [[redirects]]
   from = "/dashboard"
   to = "/dashboard.html"
   status = 200
+
+[[redirects]]
+  from = "/workspace"
+  to = "/dashboard.html"
+  status = 200
+
+# ── Retired destinations — Deal Feeder + Get Started are no longer user-facing.
+#    force=true so these fire even though the .html files still exist on disk. ──
+[[redirects]]
+  from = "/deal-feed"
+  to = "/showcase.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/deal-feed.html"
+  to = "/showcase.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/get-started"
+  to = "/members.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/get-started.html"
+  to = "/members.html"
+  status = 301
+  force = true
 
 [[redirects]]
   from = "/profile"

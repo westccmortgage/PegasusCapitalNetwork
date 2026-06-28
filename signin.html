@@ -51,10 +51,10 @@ Pegasus.mountPublic();
     if (s && s.user) {
       await Pegasus.store.hydrate();
       var p = Pegasus.store.get().profile;
-      /* Go to own profile hub — not dashboard or get-started */
-      var _sl = p && p.profile_slug;
-      var _id = p && p.id;
-      location.replace(_sl ? '/u/'+_sl : _id ? '/public-profile.html?id='+_id : '/dashboard.html');
+      /* Cache slug for instant member-nav links, then go to the signed-in
+         home — the Members Network — not workspace/profile/get-started. */
+      if (p && p.profile_slug) { try { localStorage.setItem('peg_slug', p.profile_slug); } catch(e){} }
+      location.replace('/members.html');
     }
   } catch(_) {}
 })();
@@ -69,7 +69,14 @@ async function doSignin(){
   try{
     await PegAuth.signIn({email,password});
     await Pegasus.store.hydrate();
-    location.href = Pegasus.store.isAdmin() ? 'admin.html' : 'profile.html';
+    /* Routing law: never default to admin console or workspace. Return to the
+       protected route the member was heading to, otherwise the signed-in home
+       (Members Network). */
+    var _p=Pegasus.store.get().profile||{};
+    if(_p.profile_slug){ try{ localStorage.setItem('peg_slug',_p.profile_slug); }catch(e){} }
+    var _dl=''; try{ _dl=localStorage.getItem('pegasus.redirectAfterAuth')||''; if(_dl) localStorage.removeItem('pegasus.redirectAfterAuth'); }catch(_){}
+    var _valid=_dl && _dl.charAt(0)==='/' && !_dl.startsWith('/signin') && !_dl.startsWith('/signup') && !_dl.startsWith('/auth-callback');
+    location.href = _valid ? _dl : '/members.html';
   }catch(e){
     btn.disabled=false; btn.textContent='Access Workspace →';
     var raw=(e&&e.message)||'';
