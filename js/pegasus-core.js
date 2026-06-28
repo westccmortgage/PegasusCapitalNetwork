@@ -909,20 +909,20 @@
   function panelHTML(){
     var list=authed()?QA_MEMBER:QA_ANON;
     var rows=list.map(function(item,idx){
-      return ‘<button class="peg-ask-q" data-i="’+idx+’" style="display:block;width:100%;text-align:left;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.92);padding:10px 13px;border-radius:10px;margin-bottom:7px;cursor:pointer;font-size:12.5px;line-height:1.4;transition:all .15s">’+esc(item.q)+’</button>’;
-    }).join(‘’);
-    return ‘<div id="pegAskPanel" role="dialog" aria-label="Ask Pegasus assistant" style="position:fixed;bottom:84px;right:20px;width:360px;max-width:calc(100vw - 32px);background:linear-gradient(180deg,#0E1E36,#091420);border:1px solid rgba(255,255,255,.10);border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);z-index:1200;overflow:hidden;font-family:\’IBM Plex Sans\’,system-ui,sans-serif;animation:pegAskIn .25s cubic-bezier(.16,1,.3,1)">’+
-      ‘<style>@keyframes pegAskIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}.peg-ask-q:hover{background:rgba(255,255,255,.08)!important;border-color:rgba(29,90,158,.35)!important}</style>’+
-      ‘<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)">’+
-        ‘<div style="display:flex;align-items:center;gap:10px"><span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,rgba(29,90,158,.35),rgba(29,90,158,.18));color:#92B8F0;font-size:14px;border:1px solid rgba(29,90,158,.25)">✦</span><div><div style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,.95);letter-spacing:-.01em">Ask Pegasus</div><div style="font-size:10px;font-family:\’IBM Plex Mono\’,monospace;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:1px">Network Concierge</div></div></div>’+
-        ‘<button id="pegAskClose" aria-label="Close" style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);width:28px;height:28px;border-radius:8px;cursor:pointer;transition:all .15s;font-size:12px">✕</button>’+
-      ‘</div>’+
-      ‘<div id="pegAskBody" style="padding:16px 18px;max-height:60vh;overflow-y:auto">’+
-        ‘<div style="font-size:10px;font-family:\’IBM Plex Mono\’,monospace;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:12px">’+(authed()?’How can I help?’:’Getting started’)+’</div>’+
+      return '<button class="peg-ask-q" data-i="'+idx+'" style="display:block;width:100%;text-align:left;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.92);padding:10px 13px;border-radius:10px;margin-bottom:7px;cursor:pointer;font-size:12.5px;line-height:1.4;transition:all .15s">'+esc(item.q)+'</button>';
+    }).join('');
+    return '<div id="pegAskPanel" role="dialog" aria-label="Ask Pegasus assistant" style="position:fixed;bottom:84px;right:20px;width:360px;max-width:calc(100vw - 32px);background:linear-gradient(180deg,#0E1E36,#091420);border:1px solid rgba(255,255,255,.10);border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);z-index:1200;overflow:hidden;font-family:\'IBM Plex Sans\',system-ui,sans-serif;animation:pegAskIn .25s cubic-bezier(.16,1,.3,1)">'+
+      '<style>@keyframes pegAskIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}.peg-ask-q:hover{background:rgba(255,255,255,.08)!important;border-color:rgba(29,90,158,.35)!important}</style>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)">'+
+        '<div style="display:flex;align-items:center;gap:10px"><span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,rgba(29,90,158,.35),rgba(29,90,158,.18));color:#92B8F0;font-size:14px;border:1px solid rgba(29,90,158,.25)">✦</span><div><div style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,.95);letter-spacing:-.01em">Ask Pegasus</div><div style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:1px">Network Concierge</div></div></div>'+
+        '<button id="pegAskClose" aria-label="Close" style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);width:28px;height:28px;border-radius:8px;cursor:pointer;transition:all .15s;font-size:12px">✕</button>'+
+      '</div>'+
+      '<div id="pegAskBody" style="padding:16px 18px;max-height:60vh;overflow-y:auto">'+
+        '<div style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:12px">'+(authed()?'How can I help?':'Getting started')+'</div>'+
         rows+
-      ‘</div>’+
-      ‘<div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.15)"><a href="/ai-assistant.html" style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .15s"><span style="font-size:10px">✦</span> Full Capital Assistant</a></div>’+
-    ‘</div>’;
+      '</div>'+
+      '<div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.15)"><a href="/ai-assistant.html" style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .15s"><span style="font-size:10px">✦</span> Full Capital Assistant</a></div>'+
+    '</div>';
   }
   function answerHTML(item){
     var cta=item.cta?'<a href="'+item.cta[1]+'" style="display:inline-flex;align-items:center;gap:5px;margin-top:14px;background:linear-gradient(135deg,#1D5A9E,#1b4f8c);color:#fff;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:500;text-decoration:none;transition:all .15s;box-shadow:0 2px 8px rgba(29,90,158,.25)">'+esc(item.cta[0])+' <span style="font-size:10px">→</span></a>':'';
