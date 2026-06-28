@@ -18,29 +18,29 @@
 /* ── Personal identity header — IDENTITY-FIRST, no cover banner. Personal public
    profiles represent people, not brands; cover/visual branding lives on business
    pages, showcases, and opportunities. The name is never overlaid on an image. ── */
-.pp-idhead-wrap{max-width:900px;margin:0 auto;padding:26px 40px 0}
-.pp-idhead-back{display:inline-block;color:var(--text3);font-size:12px;text-decoration:none;font-family:'IBM Plex Mono',monospace;letter-spacing:.02em;margin-bottom:20px}
+.pp-idhead-wrap{max-width:900px;margin:0 auto;padding:28px 40px 0}
+.pp-idhead-back{display:inline-flex;align-items:center;gap:4px;color:var(--text3);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em;margin-bottom:22px;transition:color var(--dur-fast)}
 .pp-idhead-back:hover{color:var(--text2)}
-.pp-idhead{display:flex;align-items:flex-start;gap:22px}
-.pp-idhead-av{width:104px;height:104px;border-radius:50%;flex-shrink:0;overflow:hidden;border:3px solid var(--bg);background:linear-gradient(135deg,#1a3260,#235FA6);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:38px;color:rgba(255,255,255,0.94);box-shadow:0 4px 18px rgba(20,24,28,0.12)}
+.pp-idhead{display:flex;align-items:flex-start;gap:24px}
+.pp-idhead-av{width:108px;height:108px;border-radius:50%;flex-shrink:0;overflow:hidden;border:3px solid var(--bg);background:linear-gradient(135deg,#162E52,#1D5A9E);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:40px;color:rgba(255,255,255,0.94);box-shadow:0 4px 20px rgba(20,24,28,0.10)}
 .pp-idhead-av img{width:100%;height:100%;object-fit:cover}
 .pp-idhead-main{flex:1;min-width:0;padding-top:4px}
-.pp-idhead-name{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:var(--text);line-height:1.08;letter-spacing:-0.01em;margin:0}
-.pp-idhead-org{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:400;color:var(--text3)}
+.pp-idhead-name{font-family:var(--serif);font-size:34px;font-weight:400;color:var(--text);line-height:1.06;letter-spacing:-.015em;margin:0}
+.pp-idhead-org{font-size:15px;font-weight:400;color:var(--text3)}
 .pp-idhead-role{font-size:13.5px;color:var(--text2);margin-top:5px;font-weight:500}
-.pp-idhead-headline{font-size:13px;color:var(--text2);margin-top:6px;line-height:1.45;max-width:680px}
-.pp-idhead-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}
-.pp-idhead-stats{margin-top:12px}
-.pp-idhead-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0;padding-top:4px}
+.pp-idhead-headline{font-size:13px;color:var(--text2);margin-top:7px;line-height:1.5;max-width:680px}
+.pp-idhead-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pp-idhead-stats{margin-top:14px}
+.pp-idhead-actions{display:flex;gap:var(--sp-sm);flex-wrap:wrap;align-items:center;flex-shrink:0;padding-top:4px}
 .pp-idhead-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
-.pp-idhead .pp-tag-v{background:rgba(14,154,102,0.12);color:#0E7A52;border:1px solid rgba(14,154,102,0.3)}
-.pp-idhead .pp-tag-a{background:rgba(154,123,34,0.13);color:#8A6D1E;border:1px solid rgba(154,123,34,0.3)}
-.pp-idhead .pp-tag-r{background:rgba(35,95,166,0.12);color:#235FA6;border:1px solid rgba(35,95,166,0.3)}
+.pp-idhead .pp-tag-v{background:rgba(12,143,92,0.10);color:#0C8F5C;border:1px solid rgba(12,143,92,0.25)}
+.pp-idhead .pp-tag-a{background:rgba(142,112,32,0.10);color:#8E7020;border:1px solid rgba(142,112,32,0.25)}
+.pp-idhead .pp-tag-r{background:rgba(29,90,158,0.10);color:#1D5A9E;border:1px solid rgba(29,90,158,0.25)}
 .pp-idhead .pp-tag-m{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
 .pp-idhead .pp-stat-v{color:var(--text)}
 .pp-idhead .pp-stat-l{color:var(--text3)}
 .pp-idhead .pp-stat-sep{background:var(--border2)}
-.pp-idhead-rule{max-width:900px;margin:24px auto 0;padding:0 40px}
+.pp-idhead-rule{max-width:900px;margin:26px auto 0;padding:0 40px}
 .pp-idhead-rule hr{border:0;border-top:1px solid var(--border);margin:0}
 @media(max-width:760px){
   .pp-idhead-wrap{padding:18px 18px 0}
@@ -95,60 +95,61 @@
 /* Recently Active panel — sits to the left of content, pulls into left margin on wide screens */
 /* Connections — a clean in-flow section (no longer a floating left rail), so the
    page reads as one balanced, shareable column. */
-.pp-active-panel{width:100%;margin:0;background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+.pp-active-panel{width:100%;margin:0;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:20px 22px;box-shadow:var(--sh-card)}
 
 @keyframes pp-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── Identity rail — strong segmented infrastructure (was a thin footer strip) ── */
-.pp-strip{background:#0B1628;border-bottom:1px solid rgba(255,255,255,0.07)}
+/* ── Identity rail ── */
+.pp-strip{background:#0A1526;border-bottom:1px solid rgba(255,255,255,0.06)}
 .pp-strip-inner{max-width:1160px;margin:0 auto;padding:0 40px;display:flex;overflow-x:auto;scrollbar-width:none}
 .pp-strip-inner::-webkit-scrollbar{display:none}
-.pp-strip-item{display:flex;flex-direction:column;gap:4px;padding:15px 26px 15px 0;margin-right:26px;border-right:1px solid rgba(255,255,255,0.08);white-space:nowrap;flex-shrink:0}
+.pp-strip-item{display:flex;flex-direction:column;gap:5px;padding:16px 28px 16px 0;margin-right:28px;border-right:1px solid rgba(255,255,255,0.06);white-space:nowrap;flex-shrink:0}
 .pp-strip-item:last-child{border-right:none;margin-right:0}
-.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.38)}
-.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.9);font-weight:400;letter-spacing:-0.005em}
+.pp-rail-label{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,0.35)}
+.pp-rail-val{font-size:13.5px;color:rgba(255,255,255,0.88);font-weight:400;letter-spacing:-0.005em}
 .pp-rail-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.pp-rail-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,0.4)}
+.pp-rail-dot.green{background:#16C486;box-shadow:0 0 6px rgba(22,196,134,0.35)}
 .pp-rail-dot.gold{background:#CDA748}
 .pp-rail-dot.blue{background:#6B9FE8}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* Body layout — identity column widened for a real card */
-.pp-body{max-width:1160px;margin:0 auto;padding:28px 40px 56px;display:grid;grid-template-columns:284px 1fr 240px;gap:22px;align-items:start}
-@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:20px}}
+/* Body layout */
+.pp-body{max-width:1160px;margin:0 auto;padding:30px 40px 60px;display:grid;grid-template-columns:284px 1fr 240px;gap:var(--sp-lg);align-items:start}
+@media(max-width:1200px){.pp-body{grid-template-columns:1fr;padding:22px}}
 
 /* Card */
-.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:18px}
+.pp-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:20px;box-shadow:var(--sh-card);transition:box-shadow var(--dur-normal) var(--ease-out)}
 .pp-card:last-child{margin-bottom:0}
-.pp-card-head{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pp-card-head{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .pp-card-label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--text3)}
-.pp-card-label-serif{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--text);letter-spacing:.01em}
-.pp-card-body{padding:18px 20px}
-.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none}
+.pp-card-label-serif{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--text);letter-spacing:.01em}
+.pp-card-body{padding:20px 22px}
+.pp-card-action{font-size:11px;color:var(--blue);font-weight:500;text-decoration:none;transition:color var(--dur-fast)}
+.pp-card-action:hover{color:var(--blue-lt)}
 
 /* Identity fields */
 .pp-field{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
 .pp-field:last-child{border-bottom:none;padding-bottom:0}
-.pp-field-icon{width:22px;height:22px;border-radius:4px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.pp-field-icon{width:22px;height:22px;border-radius:var(--r1);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
 .pp-field-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600}
-.pp-field-val{font-size:12.5px;color:var(--text);margin-top:2px}
+.pp-field-val{font-size:12.5px;color:var(--text);margin-top:2px;word-break:break-word}
 .pp-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.pp-chip{padding:2px 7px;border-radius:3px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:'IBM Plex Mono',monospace}
+.pp-chip{padding:2px 8px;border-radius:4px;font-size:10.5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);font-family:var(--mono)}
 
 /* Badges */
-.pp-badge{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
+.pp-badge{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r1);background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
 .pp-badge:last-child{margin-bottom:0}
-.pp-badge-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.pp-badge-icon{width:24px;height:24px;border-radius:var(--r1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .pp-badge-name{font-size:11.5px;font-weight:500;color:var(--text)}
 .pp-badge-desc{font-size:10px;color:var(--text3);margin-top:1px}
-.pp-badge.gold{background:#FBF6EB;border-color:rgba(154,123,34,0.2)}
-.pp-badge.green{background:#E8F5EE;border-color:rgba(14,154,102,0.15)}
-.pp-badge.blue{background:#EEF3FB;border-color:rgba(35,95,166,0.12)}
+.pp-badge.gold{background:rgba(142,112,32,.06);border-color:rgba(142,112,32,0.18)}
+.pp-badge.green{background:rgba(12,143,92,.06);border-color:rgba(12,143,92,0.15)}
+.pp-badge.blue{background:rgba(29,90,158,.06);border-color:rgba(29,90,158,0.12)}
 
 /* Member Updates */
 .pp-updates{margin-bottom:16px}
-.pp-update{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;transition:box-shadow .15s}
-.pp-update:hover{box-shadow:var(--sh-card)}
+.pp-update{display:grid;grid-template-columns:3px 1fr;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;box-shadow:var(--sh-card);transition:box-shadow var(--dur-normal) var(--ease-out)}
+.pp-update:hover{box-shadow:var(--sh-raise)}
 .pp-update:nth-child(odd){margin-left:0;margin-right:40px}
 .pp-update:nth-child(even){margin-left:32px;margin-right:8px}
 .pp-update-bar{border-radius:0}
@@ -160,7 +161,7 @@
 .pp-update-body{font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:10px}
 .pp-update-foot{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)}
 .pp-update-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3)}
-.pp-update-cta{font-size:11.5px;font-weight:500;text-decoration:none;padding:4px 12px;border:1px solid var(--border2);border-radius:var(--r1);color:var(--text)}
+.pp-update-cta{font-size:11.5px;font-weight:500;text-decoration:none;padding:4px 12px;border:1px solid var(--border2);border-radius:var(--r1);color:var(--text);transition:all var(--dur-fast)}
 .pp-update-cta:hover{border-color:var(--blue);color:var(--blue)}
 
 /* About */
@@ -185,9 +186,9 @@
 @media(max-width:1020px){.pp-showcase-inner{padding:8px 20px}}
 
 /* CTA */
-.pp-cta{text-align:center;padding:40px 20px 0;border-top:1px solid var(--border);margin-top:8px;max-width:1160px;margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px}
-.pp-cta-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:8px}
-.pp-cta-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.pp-cta{text-align:center;padding:var(--sp-2xl) 20px 0;border-top:1px solid var(--border);margin-top:8px;max-width:1160px;margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px}
+.pp-cta-title{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--text);margin-bottom:10px;letter-spacing:-.015em}
+.pp-cta-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
 .pp-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 
 /* Status band */
@@ -230,8 +231,8 @@
 @media(max-width:720px){.pp-presence{grid-template-columns:1fr}}
 .pp-presence-metrics{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
 .pp-presence-map{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:16px 18px}
-.pp-feat{display:block;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r2);margin-bottom:8px;text-decoration:none;transition:border-color .15s}
-.pp-feat:hover{border-color:var(--blue)}
+.pp-feat{display:block;padding:13px 16px;border:1px solid var(--border);border-radius:var(--r2);margin-bottom:8px;text-decoration:none;box-shadow:var(--sh-card);transition:all var(--dur-normal) var(--ease-out)}
+.pp-feat:hover{border-color:var(--blue);box-shadow:var(--sh-raise);transform:translateY(-1px)}
 .pp-feat-kind{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:4px}
 .pp-feat-title{font-size:13px;font-weight:500;color:var(--text)}
 .pp-feat-note{font-size:11.5px;color:var(--text2);margin-top:3px}
@@ -240,11 +241,12 @@
 .pp-showcase-inner .sc-section{margin:32px 0}
 /* Owner-only floating management controls */
 .pp-manage{position:relative;z-index:30;display:flex;justify-content:flex-end;margin-bottom:14px}
-.pp-manage-btn{padding:8px 16px;border-radius:8px;background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer}
-.pp-manage-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:0 10px 30px rgba(0,0,0,.16);overflow:auto;max-height:78vh;min-width:220px;z-index:40;padding:5px 0}
+.pp-manage-btn{padding:8px 16px;border-radius:var(--r2);background:var(--text);color:var(--bg);border:none;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;transition:all var(--dur-fast)}
+.pp-manage-btn:hover{opacity:.88}
+.pp-manage-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:var(--sh-float);overflow:auto;max-height:78vh;min-width:220px;z-index:40;padding:5px 0}
 .pp-manage-menu.open{display:flex}
-.pp-manage-label{font-size:9px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:10px 16px 4px}
-.pp-manage-item{padding:9px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:var(--sans);display:block;width:100%}
+.pp-manage-label{font-size:9px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:10px 16px 4px}
+.pp-manage-item{padding:9px 16px;font-size:12.5px;color:var(--text);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:var(--sans);display:block;width:100%;transition:background var(--dur-fast)}
 .pp-manage-item:hover{background:var(--bg2)}
 
 </style>

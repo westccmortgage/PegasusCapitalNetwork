@@ -909,25 +909,26 @@
   function panelHTML(){
     var list=authed()?QA_MEMBER:QA_ANON;
     var rows=list.map(function(item,idx){
-      return '<button class="peg-ask-q" data-i="'+idx+'" style="display:block;width:100%;text-align:left;border:1px solid var(--border,#1e2c42);background:var(--bg2,#0f1a2c);color:var(--text,#e8eef6);padding:9px 11px;border-radius:9px;margin-bottom:7px;cursor:pointer;font-size:12.5px;line-height:1.35">'+esc(item.q)+'</button>';
-    }).join('');
-    return '<div id="pegAskPanel" role="dialog" aria-label="Ask Pegasus assistant" style="position:fixed;bottom:84px;right:20px;width:340px;max-width:calc(100vw - 32px);background:var(--bg,#0a1322);border:1px solid var(--border,#1e2c42);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.45);z-index:1200;overflow:hidden;font-family:\'IBM Plex Sans\',system-ui,sans-serif">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border,#1e2c42)">'+
-        '<div style="display:flex;align-items:center;gap:9px"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--blue-dim,#13284a);color:var(--blue-lt,#6aa6ec);font-size:14px">✦</span><div><div style="font-size:13px;font-weight:600;color:var(--text,#e8eef6)">Ask Pegasus</div><div style="font-size:10.5px;color:var(--text3,#7e91ad)">Your guide to the network</div></div></div>'+
-        '<button id="pegAskClose" aria-label="Close" style="border:none;background:var(--bg2,#0f1a2c);color:var(--text2,#aebfd4);width:28px;height:28px;border-radius:8px;cursor:pointer">✕</button>'+
-      '</div>'+
-      '<div id="pegAskBody" style="padding:14px 16px;max-height:60vh;overflow-y:auto">'+
-        '<div style="font-size:11px;color:var(--text3,#7e91ad);margin-bottom:10px">'+(authed()?'How can I help you in Pegasus?':'New here? Here’s how Pegasus works.')+'</div>'+
+      return ‘<button class="peg-ask-q" data-i="’+idx+’" style="display:block;width:100%;text-align:left;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.92);padding:10px 13px;border-radius:10px;margin-bottom:7px;cursor:pointer;font-size:12.5px;line-height:1.4;transition:all .15s">’+esc(item.q)+’</button>’;
+    }).join(‘’);
+    return ‘<div id="pegAskPanel" role="dialog" aria-label="Ask Pegasus assistant" style="position:fixed;bottom:84px;right:20px;width:360px;max-width:calc(100vw - 32px);background:linear-gradient(180deg,#0E1E36,#091420);border:1px solid rgba(255,255,255,.10);border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);z-index:1200;overflow:hidden;font-family:\’IBM Plex Sans\’,system-ui,sans-serif;animation:pegAskIn .25s cubic-bezier(.16,1,.3,1)">’+
+      ‘<style>@keyframes pegAskIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}.peg-ask-q:hover{background:rgba(255,255,255,.08)!important;border-color:rgba(29,90,158,.35)!important}</style>’+
+      ‘<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)">’+
+        ‘<div style="display:flex;align-items:center;gap:10px"><span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,rgba(29,90,158,.35),rgba(29,90,158,.18));color:#92B8F0;font-size:14px;border:1px solid rgba(29,90,158,.25)">✦</span><div><div style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,.95);letter-spacing:-.01em">Ask Pegasus</div><div style="font-size:10px;font-family:\’IBM Plex Mono\’,monospace;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:1px">Network Concierge</div></div></div>’+
+        ‘<button id="pegAskClose" aria-label="Close" style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);width:28px;height:28px;border-radius:8px;cursor:pointer;transition:all .15s;font-size:12px">✕</button>’+
+      ‘</div>’+
+      ‘<div id="pegAskBody" style="padding:16px 18px;max-height:60vh;overflow-y:auto">’+
+        ‘<div style="font-size:10px;font-family:\’IBM Plex Mono\’,monospace;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:12px">’+(authed()?’How can I help?’:’Getting started’)+’</div>’+
         rows+
-      '</div>'+
-      '<div style="padding:11px 16px;border-top:1px solid var(--border,#1e2c42)"><a href="/ai-assistant.html" style="font-size:11.5px;color:var(--blue-lt,#6aa6ec);text-decoration:none">Open the full Capital Assistant →</a></div>'+
-    '</div>';
+      ‘</div>’+
+      ‘<div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.15)"><a href="/ai-assistant.html" style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .15s"><span style="font-size:10px">✦</span> Full Capital Assistant</a></div>’+
+    ‘</div>’;
   }
   function answerHTML(item){
-    var cta=item.cta?'<a href="'+item.cta[1]+'" style="display:inline-block;margin-top:12px;background:var(--blue,#2271c3);color:#fff;padding:8px 14px;border-radius:9px;font-size:12px;text-decoration:none">'+esc(item.cta[0])+' →</a>':'';
-    return '<button id="pegAskBack" style="border:none;background:none;color:var(--blue-lt,#6aa6ec);cursor:pointer;font-size:11.5px;padding:0;margin-bottom:10px">‹ Back</button>'+
-      '<div style="font-size:13px;font-weight:600;color:var(--text,#e8eef6);margin-bottom:7px">'+esc(item.q)+'</div>'+
-      '<div style="font-size:12.5px;color:var(--text2,#aebfd4);line-height:1.55">'+esc(item.a)+'</div>'+cta;
+    var cta=item.cta?'<a href="'+item.cta[1]+'" style="display:inline-flex;align-items:center;gap:5px;margin-top:14px;background:linear-gradient(135deg,#1D5A9E,#1b4f8c);color:#fff;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:500;text-decoration:none;transition:all .15s;box-shadow:0 2px 8px rgba(29,90,158,.25)">'+esc(item.cta[0])+' <span style="font-size:10px">→</span></a>':'';
+    return '<button id="pegAskBack" style="border:none;background:none;color:#92B8F0;cursor:pointer;font-size:11px;font-family:\'IBM Plex Mono\',monospace;letter-spacing:.04em;padding:0;margin-bottom:12px">‹ Back</button>'+
+      '<div style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:8px;letter-spacing:-.01em">'+esc(item.q)+'</div>'+
+      '<div style="font-size:12.5px;color:rgba(255,255,255,.62);line-height:1.6">'+esc(item.a)+'</div>'+cta;
   }
   function render(){
     var existing=document.getElementById('pegAskPanel'); if(existing) existing.remove();
@@ -955,8 +956,8 @@
     fab.setAttribute('aria-label','Ask Pegasus — open assistant');
     fab.setAttribute('aria-expanded','false');
     fab.title='Ask Pegasus';
-    fab.innerHTML='<span aria-hidden="true" style="font-size:16px">✦</span><span class="peg-ask-fab-lbl">Ask Pegasus</span>';
-    fab.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1199;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border:none;border-radius:24px;background:linear-gradient(135deg,#2271c3,#1b5aa0);color:#fff;font-family:\'IBM Plex Sans\',system-ui,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 10px 30px rgba(20,70,140,.45)';
+    fab.innerHTML='<span aria-hidden="true" style="font-size:15px">✦</span><span class="peg-ask-fab-lbl">Ask Pegasus</span>';
+    fab.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1199;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border:1px solid rgba(255,255,255,.12);border-radius:24px;background:linear-gradient(135deg,#1D5A9E,#162E52);color:rgba(255,255,255,.95);font-family:\'IBM Plex Sans\',system-ui,sans-serif;font-size:13px;font-weight:600;letter-spacing:-.01em;cursor:pointer;box-shadow:0 8px 24px rgba(10,20,32,.45),0 0 0 1px rgba(255,255,255,.04);transition:all .25s cubic-bezier(.16,1,.3,1)';
     fab.onclick=toggle;
     document.body.appendChild(fab);
     /* avoid overlapping the mobile tab bar */

@@ -10,17 +10,17 @@
    .ws-textarea / .opt helpers live in showcase.css / dealroom.css, which this
    page does not load — so they are defined here (copied faithfully) to keep
    My Presences self-contained. .field/.label/.input/.row2 come from pegasus.css. */
-.sce-scrim{position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto}
-.sce-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden;animation:scePop .18s ease}
-@keyframes scePop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.sce-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
-.sce-title{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--text)}
-.sce-x{border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px}
+.sce-scrim{position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(12px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto}
+.sce-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r5);width:100%;max-width:560px;box-shadow:var(--sh-float);overflow:hidden;animation:scePop var(--dur-normal) var(--ease-out)}
+@keyframes scePop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.sce-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.sce-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--text)}
+.sce-x{border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:var(--r1);cursor:pointer;font-size:14px;transition:all var(--dur-fast)}
 .sce-x:hover{background:var(--bg3);color:var(--text)}
 .sce-foot{display:flex;align-items:center;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--bg1)}
 .sce-err{flex:1;font-size:11px;font-family:var(--mono);color:var(--red);min-height:14px;text-align:left}
 .opt{display:block;font-size:11px;color:var(--text4);font-weight:400;text-transform:none;letter-spacing:0}
-.ws-textarea{width:100%;background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:13.5px;line-height:1.6;outline:none;transition:all .15s;resize:vertical;min-height:84px}
+.ws-textarea{width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:13.5px;line-height:1.6;outline:none;transition:border-color var(--dur-fast),box-shadow var(--dur-fast);resize:vertical;min-height:84px}
 .ws-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .ws-textarea::placeholder{color:var(--text4)}
 /* Mobile: stack each business row so the action buttons drop BELOW the business
