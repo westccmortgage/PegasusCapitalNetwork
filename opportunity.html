@@ -153,14 +153,31 @@ Pegasus.boot(async function(){
     var md=document.querySelector('meta[name="description"]'); if(md) md.setAttribute('content',metaDesc);
   })();
 
+  // Per-type visual identity — each presentation format gets its own accent
+  // colour + glyph so types never read as identical white cards.
+  var TYPE_VIS = {
+    capital_program:      {c:'#2971BE', ic:'◈'},
+    project:              {c:'#7C5CFF', ic:'◭'},
+    property_listing:     {c:'#1FA37A', ic:'⌂'},
+    startup_business_need:{c:'#E8923A', ic:'✦'},
+    showcase:             {c:'#D14FB0', ic:'❖'},
+    event_session:        {c:'#C9A227', ic:'◷'},
+    partnership_request:  {c:'#3AB0E8', ic:'⬡'}
+  };
+  var TV = TYPE_VIS[o.template_type] || {c:'#3A8FE8', ic:'◆'};
+
   // HERO
   var hero =
   '<section class="pp-hero">'+
+    '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+TV.c+';z-index:3"></div>'+
     '<div class="pp-hero-grid"></div>'+
     '<div class="pp-hero-wm" aria-hidden="true">'+esc((o.title||'').slice(0,16))+'</div>'+
     '<div class="pp-hero-c">'+
       '<div>'+
-        '<div class="pp-sub" style="margin-bottom:8px"><strong>'+esc(typeLbl)+'</strong>'+(by.name?' · Presented by '+esc(by.name):'')+'</div>'+
+        '<div class="pp-sub" style="margin-bottom:8px;display:flex;align-items:center;gap:9px">'+
+          '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;background:'+TV.c+';color:#fff;font-size:15px;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.25)">'+TV.ic+'</span>'+
+          '<span><strong>'+esc(typeLbl)+'</strong>'+(by.name?' · Presented by '+esc(by.name):'')+'</span>'+
+        '</div>'+
         '<h1 class="pp-name">'+esc(o.title)+'</h1>'+
         (loc?'<div class="pp-sub">'+esc(loc)+'</div>':'')+
         '<div class="pp-tags">'+

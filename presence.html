@@ -407,7 +407,8 @@ Pegasus.boot(async function(){
     var tk = tmplForOpp(o); var t = tk ? TMAP[tk] : null;
     var badgeTxt = t ? t.badge : (OPP_TYPE[o.opportunity_type] || 'Opportunity');
     var badgeCol = t ? t.color : '#5C7BA0';
-    var badge = '<span class="opp-badge" style="color:'+badgeCol+';border:1px solid '+badgeCol+'55;background:'+badgeCol+'14">'+esc(badgeTxt)+'</span>';
+    var badgeIc = (t && t.icon) ? '<span style="font-size:11px;line-height:1">'+t.icon+'</span> ' : '';
+    var badge = '<span class="opp-badge" style="display:inline-flex;align-items:center;gap:4px;color:'+badgeCol+';border:1px solid '+badgeCol+'55;background:'+badgeCol+'14">'+badgeIc+esc(badgeTxt)+'</span>';
     var meta = [o.amount_label, o.location, o.market, o.category].filter(Boolean).map(function(m){return esc(m);}).join(' · ');
     var visTag = (canManage && o.visibility && o.visibility!=='public_preview')
       ? '<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px;margin-left:auto">'+esc(OPP_VIS[o.visibility]||o.visibility)+'</span>'
