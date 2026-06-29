@@ -402,6 +402,21 @@
     var m=el('modalRoot'); if(m && m.firstChild){ dismissModal(); }
   });
 
+  /* ── Unsaved-changes guard for full-page forms ───────────────────────────────
+     Full-page forms (profile editor, signup…) can't evaporate on an outside
+     click, but a stray Back / reload / tab-close still throws the work away.
+     guardUnsaved(isDirty) wires the browser's native "Leave site? Changes you
+     made may not be saved." prompt, firing only while isDirty() is true. It
+     returns a release() to call once the form is saved (or the user is leaving
+     on purpose) so the prompt never nags after the work is safe. */
+  function guardUnsaved(isDirty){
+    function handler(e){
+      try{ if(isDirty && isDirty()){ e.preventDefault(); e.returnValue=''; return ''; } }catch(_){}
+    }
+    window.addEventListener('beforeunload', handler);
+    return function release(){ try{ window.removeEventListener('beforeunload', handler); }catch(_){} };
+  }
+
   /* ── Engagement ("How to engage") ────────────────────────────────────────────
      Opens a self-styled modal letting a logged-in member express interest in a
      business page (presence) or a specific opportunity. Records the request via
@@ -864,7 +879,7 @@
     boot,
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
-    fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal, dismissModal, clearDraft, clearModalFields, modalDirty,
+    fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal, dismissModal, clearDraft, clearModalFields, modalDirty, guardUnsaved,
     toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, ownProfilePath, slugify, presencePath, opportunityPath, engageOpen, shareSheet, opportunityShare, buildShareCard,
     refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },

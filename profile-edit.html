@@ -351,6 +351,17 @@ Pegasus.boot(async function(st){
   renderUpdates();
   toggleEco();
 
+  /* Don't let a stray Back / reload / tab-close throw away unsaved edits.
+     The browser's native "Leave site?" prompt fires only while there are
+     unsaved changes, and is released the moment the profile is saved. */
+  var __epDirty=false;
+  if(view){
+    view.addEventListener('input', function(){ __epDirty=true; });
+    view.addEventListener('change', function(){ __epDirty=true; });
+  }
+  if(window.Pegasus && Pegasus.guardUnsaved){ Pegasus.guardUnsaved(function(){ return __epDirty; }); }
+  window.__epMarkSaved=function(){ __epDirty=false; };
+
   /* ── Global handlers ── */
   window.el=el;
   window.onChg=function(){
@@ -489,6 +500,7 @@ Pegasus.boot(async function(st){
       var slEl=el('ep-slug'); if(slEl)slEl.textContent=sl2;
       var pl=el('ep-pub-link'); if(pl)pl.href=(saved&&saved.profile_slug)?'/u/'+saved.profile_slug:((saved&&saved.id)?'/public-profile.html?id='+saved.id:'/public-profile.html');
       window.onChg();
+      if(window.__epMarkSaved) window.__epMarkSaved();
       Pegasus.toast('✓','var(--green-dim)','Saved','Profile updated successfully.');
       if(okEl){okEl.style.display='inline';setTimeout(function(){okEl.style.display='none';},3000);}
     }catch(err){
