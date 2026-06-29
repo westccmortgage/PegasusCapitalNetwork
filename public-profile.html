@@ -18,37 +18,40 @@
 /* ── Personal identity header — IDENTITY-FIRST, no cover banner. Personal public
    profiles represent people, not brands; cover/visual branding lives on business
    pages, showcases, and opportunities. The name is never overlaid on an image. ── */
-.pp-idhead-wrap{max-width:900px;margin:0 auto;padding:28px 40px 0}
-.pp-idhead-back{display:inline-flex;align-items:center;gap:4px;color:var(--text3);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em;margin-bottom:22px;transition:color var(--dur-fast)}
+.pp-idhead-wrap{max-width:1000px;margin:0 auto;padding:30px 40px 0}
+.pp-idhead-back{display:inline-flex;align-items:center;gap:5px;color:var(--text3);font-size:12px;text-decoration:none;font-family:var(--mono);letter-spacing:.02em;margin-bottom:26px;transition:color var(--dur-fast)}
 .pp-idhead-back:hover{color:var(--text2)}
-.pp-idhead{display:flex;align-items:flex-start;gap:24px}
-.pp-idhead-av{width:108px;height:108px;border-radius:50%;flex-shrink:0;overflow:hidden;border:3px solid var(--bg);background:linear-gradient(135deg,#162E52,#1D5A9E);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:40px;color:rgba(255,255,255,0.94);box-shadow:0 4px 20px rgba(20,24,28,0.10)}
+.pp-idhead{display:flex;align-items:flex-start;gap:30px}
+.pp-idhead-av{width:136px;height:136px;border-radius:50%;flex-shrink:0;overflow:hidden;border:4px solid var(--bg1);background:linear-gradient(140deg,#0E1E36,#1D5A9E);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:52px;font-weight:300;color:rgba(255,255,255,0.95);box-shadow:0 10px 36px rgba(14,30,54,0.22),0 2px 6px rgba(20,24,28,0.10)}
 .pp-idhead-av img{width:100%;height:100%;object-fit:cover}
-.pp-idhead-main{flex:1;min-width:0;padding-top:4px}
-.pp-idhead-name{font-family:var(--serif);font-size:34px;font-weight:400;color:var(--text);line-height:1.06;letter-spacing:-.015em;margin:0}
+.pp-idhead-main{flex:1;min-width:0;padding-top:8px}
+.pp-idhead-name{font-family:var(--serif);font-size:clamp(34px,4.4vw,50px);font-weight:500;color:var(--text);line-height:1.02;letter-spacing:-.02em;margin:0}
 .pp-idhead-org{font-size:15px;font-weight:400;color:var(--text3)}
-.pp-idhead-role{font-size:13.5px;color:var(--text2);margin-top:5px;font-weight:500}
+.pp-idhead-role{font-size:16px;color:var(--text);margin-top:8px;font-weight:600;letter-spacing:-.01em}
+.pp-idhead-roles2{font-size:13px;color:var(--text3);margin-top:3px;font-weight:400}
 .pp-idhead-headline{font-size:13px;color:var(--text2);margin-top:7px;line-height:1.5;max-width:680px}
-.pp-idhead-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
-.pp-idhead-stats{margin-top:14px}
-.pp-idhead-actions{display:flex;gap:var(--sp-sm);flex-wrap:wrap;align-items:center;flex-shrink:0;padding-top:4px}
-.pp-idhead-actions .btn{font-size:11.5px;padding:7px 15px;white-space:nowrap}
+.pp-idhead-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:16px}
+.pp-idhead-stats{margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pp-idhead-actions{display:flex;gap:var(--sp-sm);flex-wrap:wrap;align-items:center;flex-shrink:0;padding-top:10px}
+.pp-idhead-actions .btn{font-size:12px;padding:9px 18px;white-space:nowrap}
+.pp-idhead .pp-tag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600}
 .pp-idhead .pp-tag-v{background:rgba(12,143,92,0.10);color:#0C8F5C;border:1px solid rgba(12,143,92,0.25)}
 .pp-idhead .pp-tag-a{background:rgba(142,112,32,0.10);color:#8E7020;border:1px solid rgba(142,112,32,0.25)}
 .pp-idhead .pp-tag-r{background:rgba(29,90,158,0.10);color:#1D5A9E;border:1px solid rgba(29,90,158,0.25)}
 .pp-idhead .pp-tag-m{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
-.pp-idhead .pp-stat-v{color:var(--text)}
+.pp-idhead .pp-stat-v{color:var(--text2);font-size:12.5px}
 .pp-idhead .pp-stat-l{color:var(--text3)}
-.pp-idhead .pp-stat-sep{background:var(--border2)}
-.pp-idhead-rule{max-width:900px;margin:26px auto 0;padding:0 40px}
+.pp-idhead .pp-stat-sep{background:var(--border2);width:1px;height:11px}
+.pp-idhead-rule{max-width:1000px;margin:30px auto 0;padding:0 40px}
 .pp-idhead-rule hr{border:0;border-top:1px solid var(--border);margin:0}
 @media(max-width:760px){
-  .pp-idhead-wrap{padding:18px 18px 0}
-  .pp-idhead{flex-direction:column;gap:14px}
-  .pp-idhead-av{width:84px;height:84px;font-size:30px}
-  .pp-idhead-name{font-size:27px}
-  .pp-idhead-actions{width:100%}
-  .pp-idhead-rule{padding:0 18px}
+  .pp-idhead-wrap{padding:20px 20px 0}
+  .pp-idhead{flex-direction:column;gap:18px}
+  .pp-idhead-av{width:100px;height:100px;font-size:38px}
+  .pp-idhead-main{padding-top:0}
+  .pp-idhead-actions{width:100%;padding-top:4px}
+  .pp-idhead-actions .btn{flex:1 1 auto;text-align:center;justify-content:center}
+  .pp-idhead-rule{padding:0 20px}
 }
 
 /* Legacy hero (kept for any non-banner reference; cover now drives the header) */
@@ -220,12 +223,14 @@
 .pp-hero-c{grid-template-columns:auto 1fr}                 /* no action column */
 .pp-id-line{max-width:900px;margin:0 auto;padding:14px 40px;display:flex;flex-wrap:wrap;gap:10px 22px;border-bottom:1px solid var(--border)}
 .pp-id-item{font-size:12.5px;color:var(--text2);display:inline-flex;align-items:center;gap:6px}
-.pp-flow{max-width:900px;margin:0 auto;padding:8px 40px 48px}
+.pp-flow{max-width:1000px;margin:0 auto;padding:6px 40px 56px}
 @media(max-width:980px){.pp-id-line,.pp-flow{padding-left:20px;padding-right:20px}}
-.pp-focus{margin:30px 0 8px;padding:22px 26px;background:linear-gradient(135deg,rgba(35,95,166,0.05),rgba(14,154,102,0.04));border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r3)}
-.pp-focus-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:9px}
-.pp-focus-text{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.4;color:var(--text)}
-.pp-sec{margin:32px 0}
+.pp-focus{position:relative;margin:26px 0 10px;padding:26px 30px 28px;background:linear-gradient(135deg,#0E1E36,#16335C);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r4);overflow:hidden;box-shadow:var(--sh-raise)}
+.pp-focus::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#8E7020,rgba(142,112,32,0.25))}
+.pp-focus::after{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(41,113,190,0.20),transparent 70%);pointer-events:none}
+.pp-focus-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:11px}
+.pp-focus-text{font-family:var(--serif);font-size:clamp(20px,2.4vw,27px);font-weight:400;line-height:1.34;color:rgba(255,255,255,0.96);letter-spacing:-.01em;position:relative}
+.pp-sec{margin:30px 0}
 .pp-sec-label{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
 .pp-presence{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:720px){.pp-presence{grid-template-columns:1fr}}
@@ -368,10 +373,12 @@ Pegasus.boot(async function () {
 
   /* ── Hero action area — owner controls live in a clean bar below the hero, so
      the hero stays a presentation. Visitors get the connect CTAs. ── */
-  /* Owner controls live ONLY in the single floating "Manage" dropdown (below),
-     so the hero stays a clean presentation. Visitors get the connect CTAs. */
+  /* Owner edit controls live ONLY in the single global "Manage Profile" dropdown
+     in the top-right header — never duplicated here. The hero stays a clean
+     presentation: owners get a non-duplicate "Share Profile" action; visitors
+     get the connect CTAs. */
   var actions = route.isOwner
-    ? '<a class="btn btn-pri" href="/profile-edit.html">Manage Profile</a>'
+    ? '<a class="btn btn-ghost" href="/share-studio.html">Share Profile</a>'
     : '<a class="btn btn-pri" href="/signin.html">Request Introduction</a>'+
       '<a class="btn btn-ghost" href="/members.html">Browse Network</a>';
 
@@ -540,8 +547,9 @@ Pegasus.boot(async function () {
           '<div class="pp-idhead-av">'+avHtml+'</div>'+
           '<div class="pp-idhead-main">'+
             '<h1 class="pp-idhead-name">'+esc(name)+'</h1>'+
-            '<div class="pp-idhead-role">'+esc(roleLabel(p.role))+'</div>'+
-            (headlineText?'<div class="pp-idhead-headline">'+esc(headlineText)+'</div>':'')+
+            '<div class="pp-idhead-role">'+esc(p.professional_title || roleLabel(p.role))+'</div>'+
+            ((p.additional_roles&&p.additional_roles.length)?'<div class="pp-idhead-roles2">Also '+p.additional_roles.map(function(r){return esc(roleLabel(r));}).join(' · ')+'</div>':'')+
+            (headlineText&&headlineText!==(p.professional_title||'')?'<div class="pp-idhead-headline">'+esc(headlineText)+'</div>':'')+
             ((trustBadges(p)||tags)?'<div class="pp-idhead-badges">'+(trustBadges(p)||'')+(tags||'')+'</div>':'')+
             '<div class="pp-stats pp-idhead-stats">'+statsHtml+'</div>'+
           '</div>'+
@@ -790,7 +798,7 @@ Pegasus.boot(async function () {
             '<div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--text);line-height:1.55">'+esc(s.content)+'</div>'+
             '<div style="font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:3px">'+esc(LBL[s.signal_type]||'Update')+' · '+esc(ago(s.created_at))+'</div></div></div>';
         }).join('');
-        sec.innerHTML='<div class="pp-sec-label">Recent Signals</div><div class="pp-card"><div class="pp-card-body" style="padding-top:4px;padding-bottom:4px">'+rows+'</div></div>';
+        sec.innerHTML='<div class="pp-sec-label">Latest Updates</div><div class="pp-card"><div class="pp-card-body" style="padding-top:4px;padding-bottom:4px">'+rows+'</div></div>';
         sec.style.display='';
       }catch(e){ /* keep hidden */ }
     })();
