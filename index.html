@@ -34,21 +34,54 @@
 @media(max-width:900px){.areas-home-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.how-grid{grid-template-columns:1fr}.how-works{padding:18px 20px 30px}.sessions-soon{padding:20px 20px 44px}.sessions-card{padding:38px 24px}}
 /* ── Front hero — clean, product-led entry (no movie hero) ── */
-.lhero{position:relative;overflow:hidden;background:linear-gradient(180deg,#FBFAF7 0%,var(--bg,#F6F4F0) 62%);border-bottom:1px solid var(--border)}
-.lhero::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(1100px 480px at 72% -12%,rgba(29,90,158,0.08),transparent 60%),radial-gradient(800px 360px at 12% 8%,rgba(11,116,136,0.05),transparent 62%)}
-.lhero-in{position:relative;z-index:2;max-width:940px;margin:0 auto;padding:clamp(60px,9vw,118px) 40px clamp(44px,6vw,76px);text-align:center}
-.lhero-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:20px}
-.lhero-h1{font-family:var(--serif);font-weight:300;font-size:clamp(40px,6.4vw,74px);line-height:1.02;letter-spacing:-0.025em;color:var(--text);margin:0 0 22px}
-.lhero-acc{color:var(--blue)}
-.lhero-lead{font-size:clamp(15px,1.7vw,18.5px);color:var(--text2);line-height:1.6;max-width:600px;margin:0 auto 32px}
-.lhero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center}
-.lhero-link{font-size:13px;font-family:var(--mono);color:var(--text3);text-decoration:none;transition:color .15s}
-.lhero-link:hover{color:var(--blue)}
-.lhero-welcome{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:24px;padding:7px 9px 7px 15px;margin-bottom:22px;box-shadow:var(--sh-card)}
-.lhero-welcome .d{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px rgba(12,143,92,.4)}
-.lhero-trust{margin-top:30px}
-.lhero-motto{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
-@media(max-width:760px){.lhero-in{padding:54px 20px 40px}}
+/* Editorial hero — a private capital institution */
+.lhero{--ehnavy:#0E1E36;--ehgold:#9B7B22;--ehgold2:#B4892B;position:relative;background:#FAF7F1;border-bottom:1px solid var(--border)}
+.eh{max-width:1240px;margin:0 auto;padding:clamp(46px,6vw,82px) 40px clamp(40px,5vw,64px);display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center}
+.eh.solo{grid-template-columns:1fr;max-width:840px;text-align:center}
+.eh.solo .eh-kick,.eh.solo .eh-cta,.eh.solo .eh-index{justify-content:center}
+.eh.solo .eh-lead{margin-left:auto;margin-right:auto}
+.eh-kick{display:flex;align-items:center;gap:13px;margin-bottom:24px}
+.eh-kick .rule{width:38px;height:1px;background:var(--ehgold2)}
+.eh-kick span{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ehgold)}
+.eh-h1{font-family:var(--serif);font-weight:500;font-size:clamp(40px,5.2vw,70px);line-height:1.0;letter-spacing:-.015em;color:var(--ehnavy);margin:0;text-shadow:0 1px 0 rgba(255,255,255,.7),0 3px 16px rgba(14,30,54,.13)}
+.eh-h1 em{font-style:italic;color:var(--ehgold);text-shadow:0 1px 0 rgba(255,255,255,.6),0 3px 18px rgba(155,123,34,.20)}
+.eh-lead{font-size:17px;line-height:1.62;color:var(--text2);max-width:480px;margin:24px 0 0}
+.eh-cta{display:flex;gap:13px;align-items:center;flex-wrap:wrap;margin-top:32px}
+.eh-btn{font-size:14px;font-weight:600;padding:15px 28px;border-radius:9px;text-decoration:none;cursor:pointer;letter-spacing:.01em;transition:transform .18s,box-shadow .18s;display:inline-block}
+.eh-btn-pri{color:#FFFDF9;background:linear-gradient(180deg,#1C3A66,#0E1E36 70%);box-shadow:0 2px 4px rgba(14,30,54,.28),0 10px 24px rgba(14,30,54,.22),inset 0 1px 0 rgba(255,255,255,.16)}
+.eh-btn-pri:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(14,30,54,.30),0 16px 32px rgba(14,30,54,.26),inset 0 1px 0 rgba(255,255,255,.18)}
+.eh-btn-out{color:var(--ehnavy);background:linear-gradient(180deg,#FFFFFF,#F7F3EC);border:1px solid rgba(26,34,49,.14);box-shadow:0 1px 2px rgba(26,34,49,.06),0 6px 16px rgba(26,34,49,.07)}
+.eh-btn-out:hover{transform:translateY(-1px)}
+.eh-btn-link{color:var(--text2);font-size:13px;font-family:var(--mono);text-decoration:none}
+.eh-welcome{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text2);background:#fff;border:1px solid var(--border);border-radius:24px;padding:7px 14px;margin-bottom:18px;box-shadow:var(--sh-card)}
+.eh-welcome .d{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.eh-index{display:flex;margin-top:44px;border-top:1px solid var(--border);padding-top:24px}
+.eh-index .it{padding-right:38px;margin-right:38px;border-right:1px solid var(--border)}
+.eh-index .it:last-child{border-right:none}
+.eh-index .n{font-family:var(--serif);font-weight:500;font-size:30px;color:var(--ehnavy);line-height:1;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.eh-index .l{font-size:10px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:7px}
+.eh-dossier{position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(158deg,#17315A 0%,#0E1E36 54%,#091428 100%);box-shadow:0 34px 80px rgba(14,30,54,.30),0 6px 16px rgba(14,30,54,.16),inset 0 1px 0 rgba(255,255,255,.07),inset 0 -60px 90px rgba(0,0,0,.28)}
+.eh-dossier::after{content:"";position:absolute;top:-30%;right:-10%;width:60%;height:70%;background:radial-gradient(circle,rgba(29,90,158,.22),transparent 65%);pointer-events:none}
+.eh-dossier::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ehgold2),rgba(180,137,43,.15));z-index:2}
+.ehd-h{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:18px 26px;border-bottom:1px solid rgba(255,255,255,.08)}
+.ehd-lab{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.ehd-live{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#C9A24B}
+.ehd-live .d{width:6px;height:6px;border-radius:50%;background:#C9A24B;box-shadow:0 0 8px rgba(201,162,75,.6)}
+.ehd-b{position:relative;z-index:3;padding:28px 30px 24px}
+.ehd-person{display:flex;align-items:center;gap:17px}
+.ehd-av{width:72px;height:72px;border-radius:50%;flex:none;background:linear-gradient(140deg,#234277,#16335C);border:1px solid rgba(201,162,75,.4);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:28px;color:#EAD9A8;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.12)}
+.ehd-av img{width:100%;height:100%;object-fit:cover}
+.ehd-name{font-family:var(--serif);font-size:25px;font-weight:500;color:#fff;line-height:1.05}
+.ehd-title{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
+.ehd-quote{font-family:var(--serif);font-style:italic;font-size:21px;line-height:1.42;color:rgba(255,255,255,.92);margin:24px 0 0;padding-left:17px;border-left:2px solid var(--ehgold2)}
+.ehd-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
+.ehd-chip{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:6px 13px;background:rgba(255,255,255,.03)}
+.ehd-chip.gold{color:#E8C46A;border-color:rgba(201,162,75,.4)}
+.ehd-foot{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:15px 30px;background:rgba(0,0,0,.18);border-top:1px solid rgba(255,255,255,.08)}
+.ehd-foot a{font-size:12.5px;color:#9FC0EF;text-decoration:none;font-weight:500}
+.ehd-foot .seal{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+@media(max-width:980px){.eh{grid-template-columns:1fr;gap:34px}}
+@media(max-width:760px){.eh{padding:34px 20px 38px}}
 /* ── Product panels — large Apple-style sections ── */
 .lpanels{max-width:1120px;margin:0 auto;padding:8px 40px}
 .lpanels-head{text-align:center;max-width:640px;margin:0 auto;padding:44px 0 8px}
@@ -170,17 +203,20 @@
 <div class="ticker"><div class="ticker-label"><span class="dot" style="background:var(--green);animation:pulse 2s infinite"></span>NETWORK LIVE</div><div class="ticker-track"><div class="ticker-inner" id="tk"></div></div></div>
 <div id="nav"></div>
 <section class="lhero">
-  <div class="lhero-in">
-    <div class="lhero-welcome" id="heroWelcome" style="display:none"><span class="d"></span><span id="heroWelcomeTxt">Welcome back</span></div>
-    <div class="lhero-eyebrow">Pegasus Capital Network</div>
-    <h1 class="lhero-h1">Become visible to the<br><span class="lhero-acc">right people.</span></h1>
-    <p class="lhero-lead">Build a professional profile, connect your business pages, present opportunities and showcases, and bring interested people back to Pegasus.</p>
-    <div class="lhero-cta" id="heroCta">
-      <a class="btn btn-pri btn-lg" href="/signup.html">Create Free Profile</a>
-      <a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>
-      <a class="lhero-link" href="/explore.html">See how it works →</a>
+  <div class="eh solo" id="ehGrid">
+    <div>
+      <div class="eh-welcome" id="heroWelcome" style="display:none"><span class="d"></span><span id="heroWelcomeTxt">Welcome back</span></div>
+      <div class="eh-kick"><span class="rule"></span><span>A Private Capital Network</span></div>
+      <h1 class="eh-h1">Become visible to the people who <em>move capital.</em></h1>
+      <p class="eh-lead">A private network where principals, funds, and operators present who they are and what they are building — to an audience of equally serious capital.</p>
+      <div class="eh-cta" id="heroCta">
+        <a class="eh-btn eh-btn-pri" href="/signup.html?intent=profile">Create Your Profile</a>
+        <a class="eh-btn eh-btn-out" href="/explore.html">Explore the Network</a>
+        <a class="eh-btn-link" href="/how-it-works.html">How it works →</a>
+      </div>
+      <div class="eh-index" id="ehIndex" style="display:none"></div>
     </div>
-    <div class="lhero-trust"><span class="lhero-motto">We rise. We build. We fly.</span></div>
+    <div class="eh-dossier" id="ehFeatured" style="display:none"></div>
   </div>
 </section>
 
@@ -337,9 +373,9 @@ Pegasus.mountPublic('');
     var slug=mySlug();
     var profileHref=slug?('/u/'+encodeURIComponent(slug)):'/profile.html';
     var memberActions=''+
-      '<a class="btn btn-pri btn-lg" href="/members.html">Continue to Members Network</a>'+
-      '<a class="btn btn-ghost btn-lg" href="'+profileHref+'">My Profile</a>'+
-      '<a class="lhero-link" href="/dashboard.html">Workspace →</a>';
+      '<a class="eh-btn eh-btn-pri" href="/members.html">Continue to Members Network</a>'+
+      '<a class="eh-btn eh-btn-out" href="'+profileHref+'">My Profile</a>'+
+      '<a class="eh-btn-link" href="/dashboard.html">Workspace →</a>';
     if(cta) cta.innerHTML=memberActions;
     if(panelsCta) panelsCta.innerHTML=''+
       '<a class="btn btn-pri btn-lg" href="/members.html">Continue to Members Network</a>'+
@@ -370,6 +406,58 @@ Pegasus.mountPublic('');
     welcomeTxt.textContent='Welcome back to Pegasus';
     welcome.style.display='';
   }
+})();
+
+/* ── Featured Member + network index — REAL data only ────────────────────────
+   Both pull from public-safe RPCs (migration 066). If the RPCs aren't applied
+   yet, or there's no data, the dossier and index hide and the hero collapses to
+   a single clean column. Nothing is ever invented. */
+(async function(){
+  var host=document.getElementById('ehFeatured'), grid=document.getElementById('ehGrid');
+  var esc=Pegasus.esc;
+  function prettyRole(r){ return String(r||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+  function hideFeatured(){ if(host) host.style.display='none'; if(grid) grid.classList.add('solo'); }
+  try{
+    var sb=await window.PegSB.ready;
+    var r=await sb.rpc('get_featured_member');
+    var m=(r && !r.error && r.data) ? (Array.isArray(r.data)?r.data[0]:r.data) : null;
+    if(!m || !m.full_name){ hideFeatured(); }
+    else{
+      var ini=(m.full_name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+      var av = m.avatar_url ? '<img src="'+esc(m.avatar_url)+'" alt="">' : esc(ini);
+      var slug=m.profile_slug; var href=slug?('/u/'+encodeURIComponent(slug)):'#';
+      var title=[m.professional_title||prettyRole(m.role), m.company_name, m.location].filter(Boolean).map(esc).join(' · ');
+      var focus=m.headline||m.current_focus||'';
+      var chips='';
+      if(m.reviewed_by_pegasus) chips+='<span class="ehd-chip gold">✦ Verified</span>';
+      if(m.role) chips+='<span class="ehd-chip">'+esc(prettyRole(m.role))+'</span>';
+      if(m.markets&&m.markets[0]) chips+='<span class="ehd-chip">'+esc(m.markets[0])+'</span>';
+      host.innerHTML='<div class="ehd-h"><span class="ehd-lab">Featured Member</span></div>'+
+        '<div class="ehd-b"><div class="ehd-person"><div class="ehd-av">'+av+'</div><div><div class="ehd-name">'+esc(m.full_name)+'</div>'+(title?'<div class="ehd-title">'+title+'</div>':'')+'</div></div>'+
+        (focus?'<div class="ehd-quote">'+esc(focus)+'</div>':'')+
+        (chips?'<div class="ehd-chips">'+chips+'</div>':'')+'</div>'+
+        '<div class="ehd-foot"><a href="'+esc(href)+'">View full profile →</a><span class="seal">Pegasus Verified</span></div>';
+      host.style.display='';
+      if(grid) grid.classList.remove('solo');
+    }
+  }catch(e){ hideFeatured(); }
+
+  /* Real network index — hidden entirely if no safe source. No invented numbers. */
+  try{
+    var ih=document.getElementById('ehIndex'); if(!ih) return;
+    var sb2=await window.PegSB.ready;
+    var ir=await sb2.rpc('get_network_index');
+    var d=(ir && !ir.error && ir.data) ? (Array.isArray(ir.data)?ir.data[0]:ir.data) : null;
+    if(!d){ return; }
+    function nf(n){ try{ return Number(n).toLocaleString('en-US'); }catch(_){ return n; } }
+    var items=[];
+    if(d.members) items.push([nf(d.members),'Members']);
+    if(d.markets) items.push([nf(d.markets),'Markets']);
+    if(d.verified_pct!=null) items.push([d.verified_pct+'%','Verified']);
+    if(!items.length) return;
+    ih.innerHTML=items.map(function(it){return '<div class="it"><div class="n">'+esc(String(it[0]))+'</div><div class="l">'+esc(it[1])+'</div></div>';}).join('');
+    ih.style.display='';
+  }catch(e){}
 })();
 
 /* ── Inside Pegasus — live, public-safe preview ──────────────────────────────
