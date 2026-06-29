@@ -485,7 +485,7 @@ Pegasus.boot(async function(){
       '</button>';
     }).join('');
     Pegasus.modal(
-      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:680px">'+
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.dismissModal()"><div class="sce-modal" style="max-width:680px">'+
         '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 1 of 3 · Choose a format</div><div class="sce-title">What do you want Pegasus to help you present?</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
         '<div class="sce-body" style="max-height:74vh;overflow-y:auto">'+
           '<div style="font-family:var(--serif);font-size:17px;color:var(--text);margin-bottom:4px">Turn what you do into something the right people can discover.</div>'+
@@ -521,10 +521,10 @@ Pegasus.boot(async function(){
     var mediaSec = (MEDIA_LEVEL[t.key]!=='none') ? '<div id="opp-media" style="margin-bottom:14px"></div>' : '';
     var back = isEdit ? '' : '<button class="btn btn-ghost" onclick="oppSelector()" style="margin-right:auto">← Formats</button>';
     Pegasus.modal(
-      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.dismissModal()"><div class="sce-modal" style="max-width:560px">'+
         '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 2 of 3 · Build</div><div class="sce-title">'+esc((isEdit?'Edit ':'')+t.title)+'</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
         '<div class="sce-body" style="max-height:64vh;overflow-y:auto">'+guide+rows+mediaSec+visSel+'</div>'+
-        '<div class="sce-foot">'+back+'<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="opp_next">Preview & Publish →</button></div>'+
+        '<div class="sce-foot">'+back+'<button class="btn btn-ghost" onclick="Pegasus.clearModalFields()">Clear</button><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="opp_next">Preview & Publish →</button></div>'+
       '</div></div>'
     );
     if(mediaSec) renderOppMedia();
@@ -620,7 +620,7 @@ Pegasus.boot(async function(){
     '</div>';
     var sec=function(t2,h){ return '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px">'+t2+'</div>'+h; };
     Pegasus.modal(
-      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.closeModal()"><div class="sce-modal" style="max-width:560px">'+
+      '<div class="sce-scrim" onclick="if(event.target===this)Pegasus.dismissModal()"><div class="sce-modal" style="max-width:560px">'+
         '<div class="sce-head"><div><div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text4);margin-bottom:3px">Step 3 of 3 · Preview & publish</div><div class="sce-title">Here’s how it will look</div></div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>'+
         '<div class="sce-body" style="max-height:64vh;overflow-y:auto">'+
           sec('On your business page', cardPrev)+
@@ -649,6 +649,7 @@ Pegasus.boot(async function(){
         var cr=await c.rpc('create_opportunity', Object.assign({ p_presence_id:p.id, p_opportunity_type:null }, base)); if(cr && cr.error) throw cr.error;
         newId = cr && cr.data;
       }
+      if(Pegasus.clearDraft) Pegasus.clearDraft();
       Pegasus.closeModal();
       var rr=await c.rpc('get_opportunities_for_presence', { p_slug: slug });
       _opps = (rr && !rr.error && Array.isArray(rr.data)) ? rr.data : _opps;
