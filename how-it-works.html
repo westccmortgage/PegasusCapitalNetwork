@@ -29,7 +29,20 @@
 .hw-eg li::before{content:"→";position:absolute;left:0;color:var(--blue);font-weight:600}
 .hw-media{position:relative;aspect-ratio:4/3;border-radius:var(--r5,24px);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh-raise);display:flex;align-items:center;justify-content:center}
 .hw-media-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:34px 34px}
-.hw-media-mark{font-family:var(--serif);font-weight:300;font-size:clamp(52px,9vw,104px);line-height:1;color:rgba(255,255,255,.92);text-shadow:0 8px 40px rgba(0,0,0,.28)}
+/* Floating glass product mock — each panel shows the real concept, not a glyph. */
+.hw-mock{position:relative;z-index:2;width:80%;max-width:300px;background:rgba(255,255,255,.10);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.20);border-radius:16px;padding:16px;box-shadow:0 24px 60px rgba(0,0,0,.34)}
+.hw-mock-row{display:flex;align-items:center;gap:11px}
+.hw-mock-av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);flex:none;display:flex;align-items:center;justify-content:center;font:600 14px var(--sans),sans-serif;color:#16335C}
+.hw-mock-sq{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.92);flex:none;display:flex;align-items:center;justify-content:center;color:#16335C;font-size:18px;font-weight:600}
+.hw-bar{height:9px;border-radius:5px;background:rgba(255,255,255,.88)}
+.hw-bar.dim{background:rgba(255,255,255,.42)}
+.hw-pill{display:inline-block;height:20px;border-radius:10px;background:rgba(255,255,255,.20);border:1px solid rgba(255,255,255,.32);padding:0 11px;font:600 10px var(--mono),monospace;color:#fff;line-height:19px;letter-spacing:.03em}
+.hw-pill.solid{background:rgba(255,255,255,.94);color:#16335C;border:none}
+.hw-img{height:66px;border-radius:11px;background:linear-gradient(135deg,rgba(255,255,255,.40),rgba(255,255,255,.12));border:1px solid rgba(255,255,255,.20)}
+.hw-mock-ttl{font:600 13px var(--sans),sans-serif;color:#fff}
+.hw-mock-sub{font:400 11px var(--sans),sans-serif;color:rgba(255,255,255,.72);margin-top:2px}
+.hw-mock-list{display:flex;flex-direction:column;gap:11px}
+.hw-mock-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.85);flex:none}
 .hw-media-tag{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.82);background:rgba(8,17,28,.32);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);border-radius:20px;padding:4px 11px}
 .hw-num{position:absolute;right:18px;top:14px;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.5)}
 .hw-cta{text-align:center;max-width:760px;margin:0 auto;padding:var(--sp-2xl,48px) 40px var(--sp-3xl,64px)}
@@ -58,7 +71,7 @@
 <div class="hw-concepts">
 
   <div class="hw-c">
-    <div class="hw-media" style="background:linear-gradient(140deg,#0E1E36,#1D5A9E)"><div class="hw-media-grid"></div><div class="hw-media-mark">P</div><div class="hw-num">01</div><div class="hw-media-tag">Personal profile</div></div>
+    <div class="hw-media" style="background:linear-gradient(140deg,#0E1E36,#1D5A9E)"><div class="hw-media-grid"></div><div class="hw-mock"><div class="hw-mock-row"><div class="hw-mock-av">AM</div><div style="flex:1"><div class="hw-bar" style="width:72%"></div><div class="hw-bar dim" style="width:46%;margin-top:7px"></div></div></div><div style="margin-top:13px;display:flex;gap:6px"><span class="hw-pill solid">✓ Verified</span><span class="hw-pill">Ambassador</span></div></div><div class="hw-num">01</div><div class="hw-media-tag">Personal profile</div></div>
     <div class="hw-copy">
       <div class="hw-eq">Personal profile = trust</div>
       <h2>Your professional identity</h2>
@@ -68,7 +81,7 @@
   </div>
 
   <div class="hw-c rev">
-    <div class="hw-media" style="background:linear-gradient(140deg,#06363E,#0B7488)"><div class="hw-media-grid"></div><div class="hw-media-mark">◈</div><div class="hw-num">02</div><div class="hw-media-tag">Business pages</div></div>
+    <div class="hw-media" style="background:linear-gradient(140deg,#06363E,#0B7488)"><div class="hw-media-grid"></div><div class="hw-mock"><div class="hw-mock-row"><div class="hw-mock-sq">◈</div><div style="flex:1"><div class="hw-mock-ttl">Pegasus Capital</div><div class="hw-mock-sub">Private credit · Southeast</div></div></div><div style="margin-top:13px;display:flex;gap:6px"><span class="hw-pill">Lender</span><span class="hw-pill">Multifamily</span></div></div><div class="hw-num">02</div><div class="hw-media-tag">Business pages</div></div>
     <div class="hw-copy">
       <div class="hw-eq">Business page = promotion</div>
       <h2>Promote what you represent</h2>
@@ -78,7 +91,7 @@
   </div>
 
   <div class="hw-c">
-    <div class="hw-media" style="background:linear-gradient(140deg,#2A1A4A,#6B4FB0)"><div class="hw-media-grid"></div><div class="hw-media-mark">❖</div><div class="hw-num">03</div><div class="hw-media-tag">Opportunities &amp; showcases</div></div>
+    <div class="hw-media" style="background:linear-gradient(140deg,#2A1A4A,#6B4FB0)"><div class="hw-media-grid"></div><div class="hw-mock"><div class="hw-img"></div><div style="margin-top:11px;display:flex;align-items:center;gap:8px"><span class="hw-pill solid" style="background:#EBC4E2;color:#5A1D47">Showcase</span><div class="hw-bar" style="flex:1"></div></div><div class="hw-bar dim" style="width:62%;margin-top:8px"></div></div><div class="hw-num">03</div><div class="hw-media-tag">Opportunities &amp; showcases</div></div>
     <div class="hw-copy">
       <div class="hw-eq">Opportunity / showcase = presentation</div>
       <h2>Present something specific</h2>
@@ -88,7 +101,7 @@
   </div>
 
   <div class="hw-c rev">
-    <div class="hw-media" style="background:linear-gradient(140deg,#3A2A0A,#8E7020)"><div class="hw-media-grid"></div><div class="hw-media-mark">↗</div><div class="hw-num">04</div><div class="hw-media-tag">Share Studio</div></div>
+    <div class="hw-media" style="background:linear-gradient(140deg,#3A2A0A,#8E7020)"><div class="hw-media-grid"></div><div class="hw-mock"><div class="hw-img" style="height:54px"></div><div class="hw-bar" style="width:80%;margin-top:10px"></div><div class="hw-bar dim" style="width:55%;margin-top:7px"></div><div style="margin-top:12px;display:flex;gap:6px"><span class="hw-pill">LinkedIn</span><span class="hw-pill">Instagram</span><span class="hw-pill">X</span></div></div><div class="hw-num">04</div><div class="hw-media-tag">Share Studio</div></div>
     <div class="hw-copy">
       <div class="hw-eq">Share Studio = distribution</div>
       <h2>Bring people back to Pegasus</h2>
@@ -98,7 +111,7 @@
   </div>
 
   <div class="hw-c">
-    <div class="hw-media" style="background:linear-gradient(140deg,#06351F,#0C8F5C)"><div class="hw-media-grid"></div><div class="hw-media-mark">✦</div><div class="hw-num">05</div><div class="hw-media-tag">Requests</div></div>
+    <div class="hw-media" style="background:linear-gradient(140deg,#06351F,#0C8F5C)"><div class="hw-media-grid"></div><div class="hw-mock"><div class="hw-mock-row"><div class="hw-mock-av">JR</div><div style="flex:1"><div class="hw-mock-ttl">Jordan Reyes</div><div class="hw-mock-sub">wants to connect</div></div></div><div style="margin-top:13px;display:flex;gap:6px"><span class="hw-pill solid">Accept</span><span class="hw-pill">Decline</span></div></div><div class="hw-num">05</div><div class="hw-media-tag">Requests</div></div>
     <div class="hw-copy">
       <div class="hw-eq">Requests = connection</div>
       <h2>The right people reach out</h2>
@@ -108,7 +121,7 @@
   </div>
 
   <div class="hw-c rev">
-    <div class="hw-media" style="background:linear-gradient(140deg,#1A1E24,#3A4452)"><div class="hw-media-grid"></div><div class="hw-media-mark">◷</div><div class="hw-num">06</div><div class="hw-media-tag">Workspace</div></div>
+    <div class="hw-media" style="background:linear-gradient(140deg,#1A1E24,#3A4452)"><div class="hw-media-grid"></div><div class="hw-mock"><div class="hw-mock-list"><div class="hw-mock-row"><span class="hw-mock-dot"></span><div class="hw-bar" style="flex:1"></div></div><div class="hw-mock-row"><span class="hw-mock-dot"></span><div class="hw-bar dim" style="flex:1"></div></div><div class="hw-mock-row"><span class="hw-mock-dot"></span><div class="hw-bar" style="width:70%"></div></div></div></div><div class="hw-num">06</div><div class="hw-media-tag">Workspace</div></div>
     <div class="hw-copy">
       <div class="hw-eq">Workspace = private work</div>
       <h2>Where the work happens</h2>

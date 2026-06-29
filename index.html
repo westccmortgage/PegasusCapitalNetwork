@@ -62,7 +62,17 @@
 .lpanel-link{font-size:13.5px;font-weight:500;color:var(--blue);text-decoration:none}
 .lpanel-link:hover{color:var(--blue-lt)}
 .lpanel-media{position:relative;aspect-ratio:4/3;border-radius:var(--r5);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh-raise);display:flex;align-items:center;justify-content:center}
-.lpanel-media-mark{font-family:var(--serif);font-weight:300;font-size:clamp(56px,10vw,120px);line-height:1;color:rgba(255,255,255,.92);text-shadow:0 8px 40px rgba(0,0,0,.28)}
+.lpanel-mock{position:relative;z-index:2;width:78%;max-width:320px;background:rgba(255,255,255,.10);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.20);border-radius:16px;padding:17px;box-shadow:0 26px 64px rgba(0,0,0,.34)}
+.lpanel-mock-row{display:flex;align-items:center;gap:11px}
+.lpanel-mock-av{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.92);flex:none;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#16335C}
+.lpanel-mock-sq{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.92);flex:none;display:flex;align-items:center;justify-content:center;color:#16335C;font-size:18px;font-weight:600}
+.lp-bar{height:9px;border-radius:5px;background:rgba(255,255,255,.88)}
+.lp-bar.dim{background:rgba(255,255,255,.42)}
+.lp-pill{display:inline-block;height:21px;border-radius:11px;background:rgba(255,255,255,.20);border:1px solid rgba(255,255,255,.32);padding:0 12px;font-family:var(--mono);font-weight:600;font-size:10px;color:#fff;line-height:20px;letter-spacing:.03em}
+.lp-pill.solid{background:rgba(255,255,255,.94);color:#16335C;border:none}
+.lp-img{height:70px;border-radius:11px;background:linear-gradient(135deg,rgba(255,255,255,.40),rgba(255,255,255,.12));border:1px solid rgba(255,255,255,.20)}
+.lpanel-mock-ttl{font-weight:600;font-size:13px;color:#fff}
+.lpanel-mock-sub{font-size:11px;color:rgba(255,255,255,.72);margin-top:2px}
 .lpanel-media-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:34px 34px}
 .lpanel-media-tag{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.82);background:rgba(8,17,28,.32);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);border-radius:20px;padding:4px 11px}
 @media(max-width:820px){.lpanel{grid-template-columns:1fr;gap:22px;padding:34px 0}.lpanel.rev .lpanel-media{order:0}.lpanel-copy{max-width:none}}
@@ -183,7 +193,7 @@
   </div>
 
   <div class="lpanel">
-    <div class="lpanel-media" style="background:linear-gradient(140deg,#0E1E36,#1D5A9E)"><div class="lpanel-media-grid"></div><div class="lpanel-media-mark">P</div><div class="lpanel-media-tag">Your profile</div></div>
+    <div class="lpanel-media" style="background:linear-gradient(140deg,#0E1E36,#1D5A9E)"><div class="lpanel-media-grid"></div><div class="lpanel-mock"><div class="lpanel-mock-row"><div class="lpanel-mock-av">AM</div><div style="flex:1"><div class="lp-bar" style="width:72%"></div><div class="lp-bar dim" style="width:46%;margin-top:7px"></div></div></div><div style="margin-top:14px;display:flex;gap:6px"><span class="lp-pill solid">✓ Verified</span><span class="lp-pill">Ambassador</span></div></div><div class="lpanel-media-tag">Your profile</div></div>
     <div class="lpanel-copy">
       <div class="lpanel-step">Step 01</div>
       <h3>Create your profile</h3>
@@ -193,7 +203,7 @@
   </div>
 
   <div class="lpanel rev">
-    <div class="lpanel-media" style="background:linear-gradient(140deg,#06363E,#0B7488)"><div class="lpanel-media-grid"></div><div class="lpanel-media-mark">◈</div><div class="lpanel-media-tag">Business pages</div></div>
+    <div class="lpanel-media" style="background:linear-gradient(140deg,#06363E,#0B7488)"><div class="lpanel-media-grid"></div><div class="lpanel-mock"><div class="lpanel-mock-row"><div class="lpanel-mock-sq">◈</div><div style="flex:1"><div class="lpanel-mock-ttl">Pegasus Capital</div><div class="lpanel-mock-sub">Private credit · Southeast</div></div></div><div style="margin-top:14px;display:flex;gap:6px"><span class="lp-pill">Lender</span><span class="lp-pill">Multifamily</span></div></div><div class="lpanel-media-tag">Business pages</div></div>
     <div class="lpanel-copy">
       <div class="lpanel-step">Step 02</div>
       <h3>Connect your business pages</h3>
@@ -203,7 +213,7 @@
   </div>
 
   <div class="lpanel">
-    <div class="lpanel-media" style="background:linear-gradient(140deg,#2A1A4A,#6B4FB0)"><div class="lpanel-media-grid"></div><div class="lpanel-media-mark">❖</div><div class="lpanel-media-tag">Opportunities &amp; showcases</div></div>
+    <div class="lpanel-media" style="background:linear-gradient(140deg,#2A1A4A,#6B4FB0)"><div class="lpanel-media-grid"></div><div class="lpanel-mock"><div class="lp-img"></div><div style="margin-top:12px;display:flex;align-items:center;gap:8px"><span class="lp-pill solid" style="background:#EBC4E2;color:#5A1D47">Showcase</span><div class="lp-bar" style="flex:1"></div></div><div class="lp-bar dim" style="width:62%;margin-top:8px"></div></div><div class="lpanel-media-tag">Opportunities &amp; showcases</div></div>
     <div class="lpanel-copy">
       <div class="lpanel-step">Step 03</div>
       <h3>Present opportunities and showcases</h3>
@@ -213,7 +223,7 @@
   </div>
 
   <div class="lpanel rev">
-    <div class="lpanel-media" style="background:linear-gradient(140deg,#3A2A0A,#8E7020)"><div class="lpanel-media-grid"></div><div class="lpanel-media-mark">↗</div><div class="lpanel-media-tag">Share anywhere</div></div>
+    <div class="lpanel-media" style="background:linear-gradient(140deg,#3A2A0A,#8E7020)"><div class="lpanel-media-grid"></div><div class="lpanel-mock"><div class="lp-img" style="height:56px"></div><div class="lp-bar" style="width:80%;margin-top:11px"></div><div class="lp-bar dim" style="width:55%;margin-top:7px"></div><div style="margin-top:13px;display:flex;gap:6px"><span class="lp-pill">LinkedIn</span><span class="lp-pill">Instagram</span><span class="lp-pill">X</span></div></div><div class="lpanel-media-tag">Share anywhere</div></div>
     <div class="lpanel-copy">
       <div class="lpanel-step">Step 04</div>
       <h3>Share outside Pegasus</h3>
@@ -223,7 +233,7 @@
   </div>
 
   <div class="lpanel">
-    <div class="lpanel-media" style="background:linear-gradient(140deg,#06351F,#0C8F5C)"><div class="lpanel-media-grid"></div><div class="lpanel-media-mark">✦</div><div class="lpanel-media-tag">Inbound interest</div></div>
+    <div class="lpanel-media" style="background:linear-gradient(140deg,#06351F,#0C8F5C)"><div class="lpanel-media-grid"></div><div class="lpanel-mock"><div class="lpanel-mock-row"><div class="lpanel-mock-av">JR</div><div style="flex:1"><div class="lpanel-mock-ttl">Jordan Reyes</div><div class="lpanel-mock-sub">wants to connect</div></div></div><div style="margin-top:14px;display:flex;gap:6px"><span class="lp-pill solid">Accept</span><span class="lp-pill">Decline</span></div></div><div class="lpanel-media-tag">Inbound interest</div></div>
     <div class="lpanel-copy">
       <div class="lpanel-step">Step 05</div>
       <h3>Receive interest requests</h3>
