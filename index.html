@@ -188,7 +188,7 @@
       <div class="lpanel-step">Step 01</div>
       <h3>Create your profile</h3>
       <p>A professional place that shows who you are, what you represent, and why the right people should connect with you. It’s free, and it takes a minute to start.</p>
-      <a class="lpanel-link" href="/signup.html">Create your free profile →</a>
+      <a class="lpanel-link" data-cta="profile" href="/signup.html?intent=profile">Create your free profile →</a>
     </div>
   </div>
 
@@ -198,7 +198,7 @@
       <div class="lpanel-step">Step 02</div>
       <h3>Connect your business pages</h3>
       <p>Promote your company, project, fund, or capital program on its own premium page — connected to your profile and ready to share.</p>
-      <a class="lpanel-link" href="/signup.html">Add a business page →</a>
+      <a class="lpanel-link" data-cta="business" href="/signup.html?intent=business">Add a business page →</a>
     </div>
   </div>
 
@@ -208,7 +208,7 @@
       <div class="lpanel-step">Step 03</div>
       <h3>Present opportunities and showcases</h3>
       <p>Build a capital program, project, listing, startup need, showcase, event, or partnership request — then publish it inside Pegasus.</p>
-      <a class="lpanel-link" href="/signup.html">Present an opportunity →</a>
+      <a class="lpanel-link" data-cta="presentation" href="/signup.html?intent=presentation">Present an opportunity →</a>
     </div>
   </div>
 
@@ -218,7 +218,7 @@
       <div class="lpanel-step">Step 04</div>
       <h3>Share outside Pegasus</h3>
       <p>Turn any profile, business page, or presentation into a share-ready asset — with images and captions prepared for you in Share Studio.</p>
-      <a class="lpanel-link" href="/explore.html">See how sharing works →</a>
+      <a class="lpanel-link" data-cta="share" href="/signup.html?intent=share">Share outside Pegasus →</a>
     </div>
   </div>
 
@@ -228,7 +228,7 @@
       <div class="lpanel-step">Step 05</div>
       <h3>Receive interest requests</h3>
       <p>The right people reach out — curated, never cold. Requests arrive in your workspace where you decide who to engage.</p>
-      <a class="lpanel-link" href="/signup.html">Start receiving interest →</a>
+      <a class="lpanel-link" data-cta="requests" href="/signup.html?intent=requests">Start receiving interest →</a>
     </div>
   </div>
 
@@ -334,6 +334,18 @@ Pegasus.mountPublic('');
     if(panelsCta) panelsCta.innerHTML=''+
       '<a class="btn btn-pri btn-lg" href="/members.html">Continue to Members Network</a>'+
       '<a class="btn btn-ghost btn-lg" href="/dashboard.html">Open Workspace</a>';
+    /* Process-panel CTAs become real next-step actions for a signed-in member,
+       never the anonymous signup intent. Each routes to exactly one destination. */
+    var LOGGED={
+      profile:      [slug?('/u/'+encodeURIComponent(slug)):'/profile-edit.html', slug?'View My Profile →':'Complete My Profile →'],
+      business:     ['/my-presences.html','Manage business pages →'],
+      presentation: ['/showcase.html','Present something →'],
+      share:        ['/share-studio.html','Open Share Studio →'],
+      requests:     ['/dashboard.html#requests','Open Requests →']
+    };
+    try{ document.querySelectorAll('.lpanel-link[data-cta]').forEach(function(a){
+      var m=LOGGED[a.getAttribute('data-cta')]; if(m){ a.setAttribute('href',m[0]); a.textContent=m[1]; }
+    }); }catch(_){}
     if(welcome && welcomeTxt){
       var nm=''; try{ nm=(Pegasus.store&&Pegasus.store.get&&Pegasus.store.get().profile&&Pegasus.store.get().profile.full_name)||''; }catch(_){}
       welcomeTxt.textContent = nm ? ('Welcome back, '+nm.split(/\s+/)[0]) : 'Welcome back';
@@ -392,6 +404,18 @@ Pegasus.mountPublic('');
       });
     }catch(e){ console.warn('[lobby] activity:',e); }
   }catch(e){ console.warn('[lobby] supabase unavailable:',e); }
+
+  /* Never surface the current user's OWN profile as a generic preview card — a
+     visitor must never click an unlabeled front-page card and land on the
+     owner's / their own personal profile. */
+  try{
+    var mySlug=(localStorage.getItem('peg_slug')||'').toLowerCase();
+    if(mySlug){
+      var isMine=function(x){ var h=(x.href||'').toLowerCase(); return h.indexOf('/u/'+mySlug)>=0; };
+      biz=biz.filter(function(x){ return !isMine(x); });
+      presos=presos.filter(function(x){ return !isMine(x); });
+    }
+  }catch(_){}
 
   /* Curate: small, diverse, public-safe. Interleave presentations + businesses
      so types are mixed, cap to 2 items per owner so the homepage never becomes
