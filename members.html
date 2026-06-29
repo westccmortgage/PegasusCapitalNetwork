@@ -140,6 +140,15 @@
 .cb-sig-x{border:none;background:none;color:var(--text4);cursor:pointer;font-size:12px;padding:2px 6px;border-radius:var(--r1);flex:none}
 .cb-sig-x:hover{background:var(--bg2);color:var(--text2)}
 .cb-sig-err{font-size:11px;color:var(--gold);margin-top:8px;min-height:13px}
+.cb-sig-media{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.cb-sig-input{width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color var(--dur-fast)}
+.cb-sig-input:focus{border-color:var(--blue)}
+.cb-sig-attach{border:none;background:none;color:var(--blue);font-size:11.5px;font-weight:500;cursor:pointer;padding:0;margin-right:auto}
+.cb-sig-attach:hover{color:var(--blue-lt)}
+.cb-sig-listhead{font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text4);margin:14px 0 2px;padding-top:12px;border-top:1px solid var(--border)}
+.cb-sig-list{margin-top:8px;padding-top:0;border-top:none}
+.cb-sig-link{display:inline-block;font-size:11px;font-family:var(--mono);color:var(--blue);text-decoration:none;margin-top:7px}
+.cb-sig-link:hover{color:var(--blue-lt)}
 </style>
 </head>
 <body>
@@ -572,12 +581,20 @@ Pegasus.boot(async function(){
   /* ── DAILY SIGNAL — short professional updates (degrades gracefully) ─────────
      If migration 064 (member_signals) is not applied, the RPCs are absent; we
      detect that and hide the whole section so nothing breaks. */
-  var SIG_TYPES=[['working_on','Working on'],['seeking_intro','Who I want to meet'],['offering','What I’m offering'],['showcase','New showcase / opportunity'],['referral','Referral request']];
-  var SIG_LBL={working_on:'Working on',seeking_intro:'Seeking intro',offering:'Offering',showcase:'Showcase',referral:'Referral',update:'Update'};
-  var sigType='working_on';
+  /* Content types a member can post. Backend stores these as signal_type; the
+     new types (market_view/story/project) require migration 065 — before it is
+     applied they are coerced to a generic update server-side, so nothing breaks. */
+  var SIG_TYPES=[['working_on','Working on'],['market_view','Market view'],['story','Story'],['project','Project / Showcase'],['offering','Offer'],['referral','Referral request']];
+  var SIG_LBL={working_on:'Working on',market_view:'Market view',story:'Story',project:'Project',offering:'Offer',showcase:'Showcase',seeking_intro:'Seeking intro',referral:'Referral',update:'Update'};
+  var sigType='working_on', sigMediaOpen=false;
   function rpcMissing(err){ var c=err&&(err.code||''); var m=(((err&&err.message)||'')+' '+((err&&err.details)||'')).toLowerCase(); return c==='PGRST202'||c==='404'||/does not exist|could not find the function|schema cache|not found/.test(m); }
   function sigAgo(ts){ try{ var d=Math.max(0,(Date.now()-new Date(ts).getTime())/1000); if(d<60)return 'just now'; if(d<3600)return Math.floor(d/60)+'m ago'; if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago'; }catch(e){ return ''; } }
-  function sigItem(s){ return '<div class="cb-sig-item"><span class="cb-sig-dot"></span><div class="cb-sig-body"><div class="cb-sig-txt">'+esc(s.content)+'</div><div class="cb-sig-meta">'+esc(SIG_LBL[s.signal_type]||'Update')+' · '+esc(sigAgo(s.created_at))+'</div></div><button class="cb-sig-x" data-sid="'+esc(s.id)+'" title="Delete signal" aria-label="Delete signal">✕</button></div>'; }
+  function sigSafeUrl(u){ u=(u||'').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u='https://'+u.replace(/^\/+/,''); return Pegasus.safeUrl?Pegasus.safeUrl(u):u; }
+  function sigItem(s){
+    var img = s.image_url ? '<a href="'+esc(sigSafeUrl(s.image_url))+'" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px"><img src="'+esc(sigSafeUrl(s.image_url))+'" alt="" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"></a>' : '';
+    var link = s.link_url ? '<a class="cb-sig-link" href="'+esc(sigSafeUrl(s.link_url))+'" target="_blank" rel="noopener noreferrer">↗ '+esc((s.link_url||'').replace(/^https?:\/\//,'').slice(0,46))+'</a>' : '';
+    return '<div class="cb-sig-item"><span class="cb-sig-dot"></span><div class="cb-sig-body"><div class="cb-sig-txt">'+esc(s.content)+'</div>'+img+link+'<div class="cb-sig-meta">'+esc(SIG_LBL[s.signal_type]||'Update')+' · '+esc(sigAgo(s.created_at))+'</div></div><button class="cb-sig-x" data-sid="'+esc(s.id)+'" title="Delete update" aria-label="Delete update">✕</button></div>';
+  }
   async function renderSignal(){
     var host=document.getElementById('cbSignal'); if(!host) return;
     if(!ME){ host.innerHTML=''; return; }
@@ -588,30 +605,45 @@ Pegasus.boot(async function(){
       else if(r && Array.isArray(r.data)) recent=r.data;
     }catch(e){ host.innerHTML=''; return; }
     var chips=SIG_TYPES.map(function(s){return '<button class="cb-sig-chip'+(s[0]===sigType?' on':'')+'" data-t="'+s[0]+'">'+esc(s[1])+'</button>';}).join('');
-    var list=recent.length?'<div class="cb-sig-list">'+recent.map(sigItem).join('')+'</div>':'';
+    var media = sigMediaOpen
+      ? '<div class="cb-sig-media"><input class="cb-sig-input" id="cbSigImg" type="url" placeholder="Image URL (optional)"><input class="cb-sig-input" id="cbSigLink" type="url" placeholder="Link or video URL (optional)"></div>'
+      : '';
+    var list=recent.length?'<div class="cb-sig-listhead">Latest updates</div><div class="cb-sig-list">'+recent.map(sigItem).join('')+'</div>':'';
     host.innerHTML='<div class="cb-sig">'+
-      '<div class="cb-sig-h"><div class="cb-sig-t">Daily Signal</div><div class="cb-sig-sub">Shown on your profile</div></div>'+
-      '<div class="cb-sig-hint">Share a short professional update — what you’re working on, who you want to meet, or what you’re offering.</div>'+
+      '<div class="cb-sig-h"><div class="cb-sig-t">Share an update</div><div class="cb-sig-sub">Visible on your profile</div></div>'+
+      '<div class="cb-sig-hint">Post a short update, market view, story, project, photo, or referral request — show the network what you’re about.</div>'+
       '<div class="cb-sig-chips">'+chips+'</div>'+
-      '<textarea class="cb-sig-ta" id="cbSigTa" maxlength="280" placeholder="e.g. Actively placing $2–5M bridge on value-add multifamily in the Southeast."></textarea>'+
-      '<div class="cb-sig-foot"><span class="cb-sig-count" id="cbSigCount">0 / 280</span><button class="btn btn-pri btn-sm" id="cbSigPost">Post Signal</button></div>'+
+      '<textarea class="cb-sig-ta" id="cbSigTa" maxlength="280" placeholder="Share what you’re working on, a project update, a market insight, or something worth seeing."></textarea>'+
+      media+
+      '<div class="cb-sig-foot"><button class="cb-sig-attach" id="cbSigAttach" type="button">'+(sigMediaOpen?'– Hide photo / link':'+ Add photo / link')+'</button><span class="cb-sig-count" id="cbSigCount">0 / 280</span><button class="btn btn-pri btn-sm" id="cbSigPost">Post Update</button></div>'+
       '<div class="cb-sig-err" id="cbSigErr"></div>'+list+'</div>';
     host.querySelectorAll('.cb-sig-chip').forEach(function(b){ b.onclick=function(){ sigType=b.getAttribute('data-t'); host.querySelectorAll('.cb-sig-chip').forEach(function(x){x.classList.toggle('on',x===b);}); }; });
     var ta=document.getElementById('cbSigTa'), cnt=document.getElementById('cbSigCount');
     if(ta&&cnt) ta.addEventListener('input',function(){ cnt.textContent=ta.value.length+' / 280'; });
+    var attach=document.getElementById('cbSigAttach');
+    if(attach) attach.onclick=function(){ var keep=ta?ta.value:''; sigMediaOpen=!sigMediaOpen; renderSignal().then(function(){ var t2=document.getElementById('cbSigTa'); if(t2){ t2.value=keep; t2.focus(); var c2=document.getElementById('cbSigCount'); if(c2) c2.textContent=keep.length+' / 280'; } }); };
     var post=document.getElementById('cbSigPost');
     if(post) post.onclick=async function(){
       var txt=(ta.value||'').trim(); var err=document.getElementById('cbSigErr');
       if(!txt){ err.textContent='Write a short update first.'; return; }
+      var img=(document.getElementById('cbSigImg')&&document.getElementById('cbSigImg').value||'').trim();
+      var lnk=(document.getElementById('cbSigLink')&&document.getElementById('cbSigLink').value||'').trim();
       post.disabled=true; post.textContent='Posting…'; err.textContent='';
       try{
-        var rr=await sb.rpc('post_member_signal',{p_type:sigType,p_content:txt});
+        var rr;
+        /* Try the media-aware RPC (migration 065). Fall back to the text-only RPC
+           (migration 064) if 065 isn't applied yet — the update still posts. */
+        try{
+          rr=await sb.rpc('post_member_signal',{p_type:sigType,p_content:txt,p_image:img||null,p_link:lnk||null});
+          if(rr.error && rpcMissing(rr.error)) throw rr.error;
+        }catch(e){ rr=await sb.rpc('post_member_signal',{p_type:sigType,p_content:txt}); }
         if(rr.error) throw rr.error;
         var resp=rr.data||{};
-        if(!resp.ok){ err.textContent=resp.message||'Could not post your signal.'; post.disabled=false; post.textContent='Post Signal'; return; }
-        Pegasus.toast('✓','var(--green-dim)','Signal posted','It now appears on your profile.');
+        if(!resp.ok){ err.textContent=resp.message||'Could not post your update.'; post.disabled=false; post.textContent='Post Update'; return; }
+        Pegasus.toast('✓','var(--green-dim)','Update posted','It now appears on your profile.');
+        sigMediaOpen=false;
         await renderSignal();
-      }catch(e){ err.textContent='Could not post your signal right now.'; post.disabled=false; post.textContent='Post Signal'; }
+      }catch(e){ err.textContent='Could not post your update right now.'; post.disabled=false; post.textContent='Post Update'; }
     };
     host.querySelectorAll('.cb-sig-x').forEach(function(b){ b.onclick=async function(){
       var id=b.getAttribute('data-sid'); b.disabled=true;
