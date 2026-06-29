@@ -752,7 +752,7 @@ Pegasus.boot(async function () {
     var sc='position:fixed;inset:0;background:rgba(8,12,18,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:36px 18px;z-index:1000;overflow-y:auto';
     var bx='background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.42)';
     var preview=(img&&img.dataUrl)?'<img src="'+img.dataUrl+'" alt="" style="width:100%;display:block;border-bottom:1px solid var(--border)">':'';
-    Pegasus.modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+    Pegasus.modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.dismissModal()"><div style="'+bx+'">'+
       preview+
       '<div style="padding:18px 20px">'+
         '<div style="font-family:var(--serif);font-size:19px;color:var(--text);margin-bottom:6px">Share to Instagram</div>'+

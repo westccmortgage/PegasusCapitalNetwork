@@ -533,14 +533,27 @@ Pegasus.boot(async function(){
           '<textarea id="cnMsg" maxlength="600" placeholder="Write a short note. Example: “I saw your profile and would like to connect about real estate finance opportunities in California.”"></textarea>'+
         '</div>'+
         '<div class="cn-err" id="cnErr" style="display:none"></div>'+
-        '<div class="cn-foot"><button class="btn btn-ghost" id="cnCancel">Cancel</button>'+
+        '<div class="cn-foot"><button class="btn btn-ghost btn-sm" id="cnClear">Clear</button><div style="flex:1"></div><button class="btn btn-ghost" id="cnCancel">Cancel</button>'+
           '<button class="btn btn-pri" id="cnSend">Send Connection Request</button></div>'+
       '</div>';
     document.body.appendChild(scrim);
-    scrim.addEventListener('click', function(e){ if(e.target===scrim) close(); });
-    function close(){ if(scrim.parentNode) scrim.parentNode.removeChild(scrim); }
+    function close(){ document.removeEventListener('keydown',escHandler); if(scrim.parentNode) scrim.parentNode.removeChild(scrim); }
+    // Don't let an accidental outside-click or Escape discard a typed message.
+    function tryClose(){
+      var m=document.getElementById('cnMsg');
+      if(m && (m.value||'').trim()){
+        Pegasus.toast('✎','var(--gold-dim)','Draft kept','Your message is safe. Use Clear to empty it, or Cancel to close.');
+        return;
+      }
+      close();
+    }
+    scrim.addEventListener('click', function(e){ if(e.target===scrim) tryClose(); });
     document.getElementById('cnCancel').onclick=close;
-    document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown',esc);} });
+    document.getElementById('cnClear').onclick=function(){
+      var m=document.getElementById('cnMsg'); if(m){ m.value=''; m.focus(); }
+    };
+    function escHandler(e){ if(e.key==='Escape'){ tryClose(); } }
+    document.addEventListener('keydown', escHandler);
 
     document.getElementById('cnSend').onclick=async function(){
       var btn=this; btn.disabled=true; btn.textContent='Sending…';

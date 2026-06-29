@@ -301,8 +301,106 @@
      not — so auto-create it on demand. Without this, modal() threw on null and
      buttons like "Add Opportunity" failed silently. */
   function modalHost(){ var m=el('modalRoot'); if(!m){ m=document.createElement('div'); m.id='modalRoot'; document.body.appendChild(m); } return m; }
-  function modal(html){ modalHost().innerHTML=html; }
-  function closeModal(){ const m=el('modalRoot'); if(m) m.innerHTML=''; }
+
+  /* ── Form-safe modals ────────────────────────────────────────────────────────
+     A modal that contains form fields must NEVER evaporate by accident. Clicking
+     outside it or pressing Escape no longer discards what you typed: while the
+     form has content, those gestures are ignored (a gentle hint is shown instead)
+     and the only ways out are an explicit ✕ / Cancel or the "Clear" button.
+     Anything typed is also auto-saved as a local draft, so even an explicit close
+     (or a reload) restores it on reopen — your text stays until you clear it or
+     successfully submit. Empty modals and modals without fields still close on
+     outside-click as before. */
+  var __activeDraftKey = null;
+  function __modalFields(){
+    var m=el('modalRoot'); if(!m) return [];
+    return Array.prototype.slice.call(m.querySelectorAll('input,textarea,select')).filter(function(f){
+      var t=(f.type||'').toLowerCase(); return t!=='button' && t!=='submit' && t!=='hidden' && t!=='search';
+    });
+  }
+  // "Has content the user could lose" — content typed, or an existing value changed.
+  function modalDirty(){
+    return __modalFields().some(function(f){
+      var t=(f.type||'').toLowerCase();
+      if(t==='checkbox'||t==='radio') return !!f.checked !== !!f.defaultChecked;
+      var v=(f.value==null?'':String(f.value)).trim();
+      var d=(f.defaultValue==null?'':String(f.defaultValue)).trim();
+      return v!=='' && v!==d;
+    });
+  }
+  function __draftKey(){
+    try{
+      var ids=__modalFields().map(function(f){return f.id||f.name||'';}).filter(Boolean).sort().join('|');
+      if(!ids) return null;
+      return 'peg.draft:'+location.pathname+'#'+ids;
+    }catch(e){ return null; }
+  }
+  function clearDraft(){
+    try{ if(__activeDraftKey) localStorage.removeItem(__activeDraftKey); }catch(e){}
+  }
+  // Empty every field in the open modal and forget its saved draft (the "Clear" action).
+  function clearModalFields(){
+    __modalFields().forEach(function(f){
+      var t=(f.type||'').toLowerCase();
+      if(t==='checkbox'||t==='radio'){ f.checked=f.defaultChecked; }
+      else if(f.tagName==='SELECT'){ f.selectedIndex=0; }
+      else { f.value=''; }
+      try{ f.dispatchEvent(new Event('input',{bubbles:true})); f.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){}
+    });
+    clearDraft();
+    var first=__modalFields()[0]; if(first){ try{ first.focus(); }catch(e){} }
+  }
+  // A "blank" form is a creation form — no text field arrives pre-filled. Only
+  // these get local draft persistence; pre-filled edit forms share field ids
+  // across records, so persisting them could leak one record's draft into
+  // another. Edit forms still get the no-evaporate dismissal guard (modalDirty).
+  function __isBlankForm(){
+    return __modalFields().every(function(f){
+      if(f.tagName==='SELECT') return true; // selects always carry a value
+      var t=(f.type||'').toLowerCase();
+      if(t==='checkbox'||t==='radio') return true;
+      return (f.defaultValue==null?'':String(f.defaultValue)).trim()==='';
+    });
+  }
+  function __wireModalDrafts(){
+    var m=el('modalRoot'); if(!m) return;
+    var key=(__modalFields().length && __isBlankForm()) ? __draftKey() : null;
+    __activeDraftKey=key;
+    if(key){
+      // Restore a previous draft into still-untouched fields.
+      try{
+        var saved=JSON.parse(localStorage.getItem(key)||'null');
+        if(saved){ __modalFields().forEach(function(f){
+          var id=f.id||f.name; if(!id || saved[id]==null) return;
+          var cur=(f.value==null?'':String(f.value)).trim();
+          var def=(f.defaultValue==null?'':String(f.defaultValue)).trim();
+          if(cur==='' || cur===def){ f.value=saved[id]; }
+        }); }
+      }catch(e){}
+      // Auto-save on every edit.
+      m.addEventListener('input', function(){
+        try{
+          var data={}; __modalFields().forEach(function(f){ var id=f.id||f.name; if(id) data[id]=f.value; });
+          localStorage.setItem(key, JSON.stringify(data));
+        }catch(e){}
+      });
+    }
+  }
+  function modal(html){ modalHost().innerHTML=html; __wireModalDrafts(); }
+  function closeModal(){ const m=el('modalRoot'); if(m) m.innerHTML=''; __activeDraftKey=null; }
+  // Guarded close for outside-click / Escape: keeps form content from evaporating.
+  function dismissModal(){
+    if(modalDirty()){
+      toast('✎','var(--gold-dim)','Draft kept','Your text is safe. Use Clear to empty it, or ✕ / Cancel to close.');
+      return;
+    }
+    closeModal();
+  }
+  // Single global Escape guard for any Pegasus modal.
+  document.addEventListener('keydown', function(e){
+    if(e.key!=='Escape') return;
+    var m=el('modalRoot'); if(m && m.firstChild){ dismissModal(); }
+  });
 
   /* ── Engagement ("How to engage") ────────────────────────────────────────────
      Opens a self-styled modal letting a logged-in member express interest in a
@@ -329,7 +427,7 @@
     var sc='position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto';
     var bx='background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:480px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden';
     var opts_html=ENGAGE_INTENTS.map(function(o){return '<option value="'+o[0]+'">'+esc(o[1])+'</option>';}).join('');
-    modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+    modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.dismissModal()"><div style="'+bx+'">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)"><div style="font-family:var(--serif);font-size:18px;color:var(--text)">Engage with '+esc(name)+'</div><button onclick="Pegasus.closeModal()" style="border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer">✕</button></div>'+
       '<div style="padding:20px 22px">'+
         '<label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">What would you like to share?</label>'+
@@ -338,7 +436,7 @@
         '<textarea id="engMsg" rows="4" placeholder="A short note about why you’re reaching out…" style="width:100%;padding:10px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical"></textarea>'+
         '<div style="font-size:11px;color:var(--text4);margin-top:10px;line-height:1.5">Pegasus shares your profile with this page’s team so they can respond. Your private contact details are never shown.</div>'+
       '</div>'+
-      '<div style="display:flex;justify-content:flex-end;gap:10px;padding:15px 22px;border-top:1px solid var(--border);background:var(--bg1)"><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="engSend">Send</button></div>'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:15px 22px;border-top:1px solid var(--border);background:var(--bg1)"><button class="btn btn-ghost btn-sm" onclick="Pegasus.clearModalFields()">Clear</button><div style="flex:1"></div><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button><button class="btn btn-pri" id="engSend">Send</button></div>'+
     '</div></div>');
     var sendBtn=el('engSend');
     sendBtn.onclick=async function(){
@@ -348,6 +446,7 @@
       try{
         var r=await c.rpc('create_engagement_request',{p_presence_id:opts.presenceId||null,p_opportunity_id:opts.opportunityId||null,p_intent:intent,p_message:msg});
         if(r&&r.error) throw r.error;
+        clearDraft();
         closeModal();
         toast('✓','var(--green-dim)','Sent','Your request was delivered to the team behind '+name+'.');
       }catch(err){
@@ -461,7 +560,7 @@
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn btn-ghost btn-sm" id="shCap">Copy caption</button><button class="btn btn-ghost btn-sm" id="shShort">Copy short text</button></div>'+
         '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><button class="btn btn-ghost" id="shCopy">Copy link</button><button class="btn btn-ghost" id="shView">View presentation</button></div>';
     }
-    modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+    modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.dismissModal()"><div style="'+bx+'">'+
       '<div style="padding:20px 22px;border-bottom:1px solid var(--border)">'+head+'</div>'+
       '<div style="padding:8px 22px 20px;max-height:74vh;overflow-y:auto">'+chip+body+
         '<div style="font-size:10.5px;color:var(--text4);margin-top:14px;line-height:1.5">Pegasus prepares everything — you confirm the post on each platform. No automatic posting.</div>'+
@@ -765,7 +864,7 @@
     boot,
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
-    fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal,
+    fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal, dismissModal, clearDraft, clearModalFields, modalDirty,
     toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, ownProfilePath, slugify, presencePath, opportunityPath, engageOpen, shareSheet, opportunityShare, buildShareCard,
     refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },
