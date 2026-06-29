@@ -240,11 +240,11 @@
 
 <!-- INSIDE PEGASUS — live public-safe preview -->
 <section class="home-section" style="max-width:1100px;margin:0 auto;padding:50px 40px 10px">
-  <div class="eyebrow" style="text-align:center;justify-content:center"><span class="dot" style="background:var(--green);animation:pulse 2s infinite;margin-right:7px"></span>Network in Motion</div>
-  <h2 class="why-h2" style="text-align:center">Most Active in Pegasus</h2>
-  <p class="why-intro">A curated, public-safe glimpse of people, businesses, opportunities, and showcases moving inside the network. Member-only and private content stays protected.</p>
+  <div class="eyebrow" style="text-align:center;justify-content:center"><span class="dot" style="background:var(--green);animation:pulse 2s infinite;margin-right:7px"></span>Inside Pegasus</div>
+  <h2 class="why-h2" style="text-align:center">A glimpse of what’s moving inside.</h2>
+  <p class="why-intro">A small, public-safe preview of the people, businesses, and opportunities inside the network. Member-only and private content stays protected — the full picture is inside.</p>
   <div id="lobby-grid" class="lobby-grid"><div class="lobby-loading">Loading the network…</div></div>
-  <div class="why-cta" style="margin-top:28px"><a class="btn btn-ghost btn-lg" href="/explore.html">How Pegasus works →</a></div>
+  <div class="why-cta" style="margin-top:28px"><a class="btn btn-ghost btn-lg" href="/explore.html">See everything inside Pegasus →</a></div>
 </section>
 
 <!-- WHAT YOU CAN PRESENT — 7 formats -->
@@ -420,7 +420,7 @@ Pegasus.mountPublic('');
   /* Curate: small, diverse, public-safe. Interleave presentations + businesses
      so types are mixed, cap to 2 items per owner so the homepage never becomes
      one person's portfolio, and cap the whole strip at 10 (8–12 target). */
-  var MAX=10, PER_OWNER=2, seen={}, cards=[];
+  var MAX=6, PER_OWNER=1, seen={}, cards=[];   /* front page = small proof-of-life strip; full directory lives on /explore */
   var qa=presos.slice(), qb=biz.slice();
   while((qa.length||qb.length) && cards.length<MAX){
     [qa,qb].forEach(function(q){
