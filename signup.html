@@ -72,6 +72,18 @@ Pegasus.mountPublic();
     }
   }catch(_){}
 })();
+/* Don't lose a half-filled signup to a stray Back / reload / tab-close. The
+   browser's native "Leave site?" prompt fires only once you've started filling
+   the form, and is released on submit or when you continue with Google. */
+var __suReleaseGuard = (window.Pegasus && Pegasus.guardUnsaved)
+  ? Pegasus.guardUnsaved(function(){
+      var sf=document.getElementById('signup-form');
+      if(sf && sf.style.display==='none') return false; // already submitted
+      function v(id){ var e=document.getElementById(id); return e ? (e.value||'').trim() : ''; }
+      var pw=document.getElementById('pw');
+      return !!(v('nm')||v('em')||v('focus')||v('loc')||v('ac')||(pw&&pw.value));
+    })
+  : function(){};
 function onRoleChange(){
   var r=(document.getElementById('role').value||'').toLowerCase();
   var h=document.getElementById('role-hint'); if(h) h.style.display=(r==='ecosystem_member')?'block':'none';
@@ -90,6 +102,7 @@ async function doGoogleSignup(){
     if(hl) localStorage.setItem('pegasus.pendingHeadline', hl.slice(0,160));
     if(lc) localStorage.setItem('pegasus.pendingLocation', lc.slice(0,120));
   }catch(_){ }
+  try{ __suReleaseGuard(); }catch(_){}
   try{ await PegAuth.signInWithGoogle(); }
   catch(e){ btn.disabled=false; btn.innerHTML=prev; var err=document.getElementById('err'); if(err) err.textContent=(e&&e.message)||'Google sign-in unavailable.'; }
 }
@@ -108,6 +121,7 @@ async function doSignup(){
   var btn=document.getElementById('go'); btn.disabled=true; btn.textContent='Creating…';
   try{
     await PegAuth.signUp({email,password,full_name,role,access_code:access_code||null,headline:headline||null,location:location||null});
+    try{ __suReleaseGuard(); }catch(_){}
     _signupEmail=email;
     // Do NOT redirect — show "check your email" state.
     // Supabase sends a confirmation email; user must click it before accessing the platform.
