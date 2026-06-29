@@ -93,7 +93,19 @@
 <div class="xp-wrap">
 
   <!-- The system: layers + flow -->
+  <!-- LIVE DIRECTORY — the full public-safe activity experience -->
   <section class="xp-section" style="border-top:none">
+    <div class="xp-section-head">
+      <div class="eyebrow" style="justify-content:center"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px"></span>Live inside Pegasus</div>
+      <h2>Discover who and what is moving</h2>
+      <p>Public-safe people, businesses, opportunities, and showcases inside the network. Filter by what you’re looking for — every card opens a real page, and members can connect.</p>
+    </div>
+    <div id="xpDirFilters" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:22px"></div>
+    <div id="xpDirGrid" class="xp-grid-3"><div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:36px">Loading the network…</div></div>
+    <div style="text-align:center;margin-top:22px" id="xpDirCta"></div>
+  </section>
+
+  <section class="xp-section">
     <div class="xp-section-head">
       <div class="eyebrow" style="justify-content:center">The system</div>
       <h2>How it works, in five layers</h2>
@@ -150,7 +162,6 @@
       <div class="xp-signals-bar"><span class="xp-live-dot"></span>NETWORK LIVE</div>
       <div class="xp-signals" id="signals"></div>
     </div>
-    <div id="xp-network-signals" style="margin-top:26px"></div>
   </section>
 
   <!-- How it works -->
@@ -223,6 +234,75 @@
 <script>
 Pegasus.mountPublic('Inside Pegasus');
 document.getElementById('footer').outerHTML=Pegasus.footer();
+
+/* ── Live directory — full public-safe activity grid with category filters.
+   Real data only (get_recent_network_activity + get_public_presentations).
+   Every card carries a clear type label, an explicit action, and a correct
+   route. No private data, no dead cards, no random owner routing. ── */
+(async function(){
+  var grid=document.getElementById('xpDirGrid'), fbar=document.getElementById('xpDirFilters'), ctaEl=document.getElementById('xpDirCta');
+  if(!grid) return;
+  function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  var authed=false; try{ var raw=localStorage.getItem('pegasus.auth'); if(raw){ var pj=JSON.parse(raw); authed=!!(pj&&(pj.access_token||(pj.currentSession&&pj.currentSession.access_token))); } }catch(_){}
+  var KINDLBL={person:'Member',company:'Business Page',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+  var TMPL={capital_program:'Capital Program',project:'Project',property_listing:'Listing',startup_business_need:'Startup',showcase:'Showcase',event_session:'Event',partnership_request:'Partnership'};
+  var COLOR={member:'#1D5A9E',business:'#0B7488',opportunity:'#7C5CFF',showcase:'#D14FB0'};
+  var items=[];
+  try{
+    var sb=await window.PegSB.ready;
+    try{
+      var na=await sb.rpc('get_recent_network_activity');
+      if(na&&!na.error&&Array.isArray(na.data)) na.data.forEach(function(a){
+        var isPerson=a.kind==='person';
+        items.push({ cat:isPerson?'member':'business', label:KINDLBL[a.kind]||a.kind,
+          href:isPerson?(a.url||'#'):Pegasus.presencePath(a.kind,a.slug),
+          name:a.name||'—', sub:[a.meta,a.location].filter(Boolean).join(' · '),
+          action:isPerson?'View profile →':'View business →', owner:(a.owner_group||a.name||'').toLowerCase() });
+      });
+    }catch(_){}
+    try{
+      var pr=await sb.rpc('get_public_presentations',{p_limit:24});
+      if(pr&&!pr.error&&Array.isArray(pr.data)) pr.data.forEach(function(o){
+        var isShow=o.template_type==='showcase'; var bn=(o.presented_by&&o.presented_by.name)||'';
+        items.push({ cat:isShow?'showcase':'opportunity', label:TMPL[o.template_type]||'Opportunity',
+          href:'/opportunity/'+encodeURIComponent(o.slug), name:o.title||'Untitled',
+          sub:bn?('Presented by '+bn):'', action:isShow?'View showcase →':'View opportunity →',
+          owner:(bn||o.slug).toLowerCase() });
+      });
+    }catch(_){}
+  }catch(_){}
+
+  function card(x){
+    return '<a href="'+e(x.href)+'" style="display:block;background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:16px 18px;text-decoration:none;box-shadow:var(--sh-card);transition:border-color .18s,transform .18s,box-shadow .18s" '+
+      'onmouseover="this.style.borderColor=\'var(--border2)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">'+
+      '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:'+(COLOR[x.cat]||'#1D5A9E')+';margin-bottom:7px">'+e(x.label)+'</div>'+
+      '<div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.25">'+e(x.name)+'</div>'+
+      (x.sub?'<div style="font-size:12px;color:var(--text2);margin-top:5px">'+e(x.sub)+'</div>':'')+
+      '<div style="font-size:11px;font-family:var(--mono);color:var(--blue);margin-top:11px">'+e(x.action)+'</div>'+
+    '</a>';
+  }
+
+  var FILTERS=[['all','All'],['member','Members'],['business','Businesses'],['opportunity','Opportunities'],['showcase','Showcases']];
+  var active='all';
+  function render(){
+    var list=items.filter(function(x){ return active==='all' || x.cat===active; });
+    /* keep it diverse: max 2 per owner so it never becomes one portfolio */
+    var seen={}, out=[];
+    list.forEach(function(x){ var k=x.owner||x.name; if((seen[k]||0)>=2) return; seen[k]=(seen[k]||0)+1; out.push(x); });
+    if(!out.length){ grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:30px">Nothing public to show here yet — new activity appears as members publish.</div>'; }
+    else grid.innerHTML=out.slice(0,24).map(card).join('');
+  }
+  if(fbar){
+    fbar.innerHTML=FILTERS.map(function(f){ return '<button data-f="'+f[0]+'" class="xp-dir-pill" style="font-size:12px;font-family:var(--mono);padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg1);color:var(--text2);cursor:pointer;transition:all .15s">'+f[1]+'</button>'; }).join('');
+    function paint(){ fbar.querySelectorAll('.xp-dir-pill').forEach(function(b){ var on=b.getAttribute('data-f')===active; b.style.background=on?'var(--blue)':'var(--bg1)'; b.style.color=on?'#fff':'var(--text2)'; b.style.borderColor=on?'transparent':'var(--border)'; }); }
+    fbar.querySelectorAll('.xp-dir-pill').forEach(function(b){ b.onclick=function(){ active=b.getAttribute('data-f'); paint(); render(); }; });
+    paint();
+  }
+  render();
+  if(ctaEl){ ctaEl.innerHTML = authed
+    ? '<a class="btn btn-pri" href="/members.html">Open Members Network</a>'
+    : '<a class="btn btn-pri" href="/signup.html?intent=profile">Create Free Profile to connect</a> <a class="btn btn-ghost" href="/signin.html">Sign In</a>'; }
+})();
 
 /* ── What's moving inside Pegasus — real, visibility-safe Network Signals
    (people + business/project pages) via get_recent_network_activity. ── */

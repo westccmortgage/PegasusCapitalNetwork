@@ -1,12 +1,135 @@
 <!DOCTYPE html><html lang="en"><head><title>How It Works — Pegasus Network</title>
-<link rel="canonical" href="https://pegasuscapitalnetwork.com/how-it-works.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="How It Works — Pegasus Network"><meta property="og:description" content="Whether you lend, borrow, or broker — the path to your next deal is simple. Pick your role and see exactly how it works."><meta property="og:url" content="https://pegasuscapitalnetwork.com/how-it-works.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="How It Works — Pegasus Network"><meta name="twitter:description" content="Whether you lend, borrow, or broker — the path to your next deal is simple. Pick your role and see exactly how it works."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
-<meta name="description" content="How Pegasus Network works — build your profile, get verified, and connect with aligned capital relationships across the ecosystem."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/how-it-works.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="How Pegasus Works"><meta property="og:description" content="Pegasus in six parts: profile, business pages, opportunities and showcases, Share Studio, connection requests, and your private Workspace."><meta property="og:url" content="https://pegasuscapitalnetwork.com/how-it-works.html"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="How Pegasus Works"><meta name="twitter:description" content="Pegasus in six parts: profile, business pages, opportunities and showcases, Share Studio, connection requests, and your private Workspace."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<meta name="description" content="How Pegasus Network works — six clear concepts: personal profile (trust), business pages (promotion), opportunities & showcases (presentation), Share Studio (distribution), requests (connection), and Workspace (private work)."><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#08111C">
+<style>
+/* How It Works — educational, concept-first. No live directory, no member cards. */
+.hw-hero{max-width:780px;margin:0 auto;text-align:center;padding:var(--sp-3xl,64px) 40px var(--sp-xl,32px)}
+.hw-hero h1{font-family:var(--serif);font-weight:300;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.025em;color:var(--text);margin:8px 0 18px}
+.hw-hero p{font-size:16px;color:var(--text2);line-height:1.65;max-width:600px;margin:0 auto}
+.hw-flow{max-width:1000px;margin:0 auto;padding:0 40px}
+.hw-flow-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:8px auto 0;max-width:820px}
+.hw-flow-chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-family:var(--mono);color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:24px;padding:8px 14px}
+.hw-flow-chip .n{color:var(--blue);font-weight:600}
+.hw-flow-arrow{color:var(--text4);align-self:center;font-size:12px}
+.hw-concepts{max-width:1080px;margin:0 auto;padding:8px 40px}
+.hw-c{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,56px);align-items:center;padding:clamp(36px,5vw,56px) 0}
+.hw-c+.hw-c{border-top:1px solid var(--border)}
+.hw-c.rev .hw-media{order:2}
+.hw-copy{max-width:460px}
+.hw-eq{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:13px}
+.hw-c h2{font-family:var(--serif);font-weight:400;font-size:clamp(25px,3vw,34px);letter-spacing:-.018em;color:var(--text);margin:0 0 13px;line-height:1.08}
+.hw-c p{font-size:15px;color:var(--text2);line-height:1.62;margin:0 0 16px}
+.hw-eg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.hw-eg li{font-size:13px;color:var(--text2);padding-left:20px;position:relative;line-height:1.5}
+.hw-eg li::before{content:"→";position:absolute;left:0;color:var(--blue);font-weight:600}
+.hw-media{position:relative;aspect-ratio:4/3;border-radius:var(--r5,24px);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh-raise);display:flex;align-items:center;justify-content:center}
+.hw-media-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:34px 34px}
+.hw-media-mark{font-family:var(--serif);font-weight:300;font-size:clamp(52px,9vw,104px);line-height:1;color:rgba(255,255,255,.92);text-shadow:0 8px 40px rgba(0,0,0,.28)}
+.hw-media-tag{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.82);background:rgba(8,17,28,.32);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);border-radius:20px;padding:4px 11px}
+.hw-num{position:absolute;right:18px;top:14px;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.5)}
+.hw-cta{text-align:center;max-width:760px;margin:0 auto;padding:var(--sp-2xl,48px) 40px var(--sp-3xl,64px)}
+.hw-cta h2{font-family:var(--serif);font-weight:300;font-size:clamp(26px,3vw,34px);color:var(--text);margin:0 0 12px;letter-spacing:-.015em}
+.hw-cta p{font-size:14px;color:var(--text2);max-width:520px;margin:0 auto 24px;line-height:1.6}
+.hw-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+@media(max-width:820px){.hw-c{grid-template-columns:1fr;gap:22px;padding:34px 0}.hw-c.rev .hw-media{order:0}.hw-copy{max-width:none}.hw-hero{padding:46px 20px 24px}.hw-flow,.hw-concepts,.hw-cta{padding-left:20px;padding-right:20px}}
+</style>
 </head><body>
+<div id="nav"></div>
+
+<section class="hw-hero">
+  <div class="eyebrow" style="justify-content:center">How Pegasus works</div>
+  <h1>Six parts. One professional ecosystem.</h1>
+  <p>Pegasus turns what you do into something the right people can find — and brings them back to you. Here is the whole system, in plain terms.</p>
+  <div class="hw-flow-row">
+    <span class="hw-flow-chip"><span class="n">01</span> Profile</span><span class="hw-flow-arrow">→</span>
+    <span class="hw-flow-chip"><span class="n">02</span> Business pages</span><span class="hw-flow-arrow">→</span>
+    <span class="hw-flow-chip"><span class="n">03</span> Opportunities</span><span class="hw-flow-arrow">→</span>
+    <span class="hw-flow-chip"><span class="n">04</span> Share</span><span class="hw-flow-arrow">→</span>
+    <span class="hw-flow-chip"><span class="n">05</span> Requests</span><span class="hw-flow-arrow">→</span>
+    <span class="hw-flow-chip"><span class="n">06</span> Workspace</span>
+  </div>
+</section>
+
+<div class="hw-concepts">
+
+  <div class="hw-c">
+    <div class="hw-media" style="background:linear-gradient(140deg,#0E1E36,#1D5A9E)"><div class="hw-media-grid"></div><div class="hw-media-mark">P</div><div class="hw-num">01</div><div class="hw-media-tag">Personal profile</div></div>
+    <div class="hw-copy">
+      <div class="hw-eq">Personal profile = trust</div>
+      <h2>Your professional identity</h2>
+      <p>Your profile is who you are inside Pegasus — your role, your focus, your track record. It is identity-first: no banners or branding, just a clear, credible picture the right people can trust.</p>
+      <ul class="hw-eg"><li>Show your role, market, and what you’re focused on now</li><li>Carry verified badges and your accepted connections</li><li>Link your business pages and online presence</li></ul>
+    </div>
+  </div>
+
+  <div class="hw-c rev">
+    <div class="hw-media" style="background:linear-gradient(140deg,#06363E,#0B7488)"><div class="hw-media-grid"></div><div class="hw-media-mark">◈</div><div class="hw-num">02</div><div class="hw-media-tag">Business pages</div></div>
+    <div class="hw-copy">
+      <div class="hw-eq">Business page = promotion</div>
+      <h2>Promote what you represent</h2>
+      <p>A business page is a premium, mini-website for a company, project, fund, or capital program. It says what you do, what you offer, and who should connect — and it’s tied to your trusted profile.</p>
+      <ul class="hw-eg"><li>One page per company, project, fund, or program</li><li>What you do · what you offer · who should connect</li><li>Hosts your opportunities and showcases</li></ul>
+    </div>
+  </div>
+
+  <div class="hw-c">
+    <div class="hw-media" style="background:linear-gradient(140deg,#2A1A4A,#6B4FB0)"><div class="hw-media-grid"></div><div class="hw-media-mark">❖</div><div class="hw-num">03</div><div class="hw-media-tag">Opportunities &amp; showcases</div></div>
+    <div class="hw-copy">
+      <div class="hw-eq">Opportunity / showcase = presentation</div>
+      <h2>Present something specific</h2>
+      <p>Opportunities and showcases are individual presentations — a capital program, project, listing, startup need, showcase of completed work, event, or partnership request. Each format looks distinct, and showcases lead with visuals.</p>
+      <ul class="hw-eg"><li>Seven formats, each with its own visual treatment</li><li>Showcases are visual-first: cover, gallery, video, story</li><li>Capital programs are information-first: who it helps, size, market</li></ul>
+    </div>
+  </div>
+
+  <div class="hw-c rev">
+    <div class="hw-media" style="background:linear-gradient(140deg,#3A2A0A,#8E7020)"><div class="hw-media-grid"></div><div class="hw-media-mark">↗</div><div class="hw-num">04</div><div class="hw-media-tag">Share Studio</div></div>
+    <div class="hw-copy">
+      <div class="hw-eq">Share Studio = distribution</div>
+      <h2>Bring people back to Pegasus</h2>
+      <p>Share Studio turns any profile, business page, or presentation into share-ready assets — platform previews, a ready caption, a clean link, and download-ready images for LinkedIn, Facebook, X, and Instagram. You confirm every post.</p>
+      <ul class="hw-eg"><li>Previews for LinkedIn / Facebook / X, Instagram post &amp; story</li><li>Editable caption, copy link, download image</li><li>Instagram-ready images — never auto-posted on your behalf</li></ul>
+    </div>
+  </div>
+
+  <div class="hw-c">
+    <div class="hw-media" style="background:linear-gradient(140deg,#06351F,#0C8F5C)"><div class="hw-media-grid"></div><div class="hw-media-mark">✦</div><div class="hw-num">05</div><div class="hw-media-tag">Requests</div></div>
+    <div class="hw-copy">
+      <div class="hw-eq">Requests = connection</div>
+      <h2>The right people reach out</h2>
+      <p>When someone wants to connect or expresses interest, it arrives as a request — with a reason and a short message. Curated, never cold. You decide who to engage; private contact details are never exposed.</p>
+      <ul class="hw-eg"><li>Connection requests carry an intent and a note</li><li>Recipients are notified in their bell and Workspace</li><li>No emails or phone numbers exposed</li></ul>
+    </div>
+  </div>
+
+  <div class="hw-c rev">
+    <div class="hw-media" style="background:linear-gradient(140deg,#1A1E24,#3A4452)"><div class="hw-media-grid"></div><div class="hw-media-mark">◷</div><div class="hw-num">06</div><div class="hw-media-tag">Workspace</div></div>
+    <div class="hw-copy">
+      <div class="hw-eq">Workspace = private work</div>
+      <h2>Where the work happens</h2>
+      <p>Your Workspace is the private side of Pegasus — requests, conversations, deal rooms, CRM, and follow-up. It’s not the front door; the Members Network is your home. Workspace is where momentum is managed.</p>
+      <ul class="hw-eg"><li>Triage requests and accepted interest</li><li>Deal rooms, CRM, and private follow-up</li><li>Private by default — your operations, not a public feed</li></ul>
+    </div>
+  </div>
+
+</div>
+
+<section class="hw-cta">
+  <h2>Start free. Build value first.</h2>
+  <p>Create a profile, connect a business page, and present your first opportunity or showcase before you ever need to upgrade.</p>
+  <div class="hw-cta-row" id="hwCta">
+    <a class="btn btn-pri btn-lg" href="/signup.html?intent=profile">Create Free Profile</a>
+    <a class="btn btn-ghost btn-lg" href="/explore.html">See Inside Pegasus</a>
+  </div>
+</section>
+
+<div id="footer"></div>
+
 <script src="/js/pegasus-config.js"></script>
 <script src="/js/pegasus-supabase.js"></script>
 <script src="/js/pegasus-entitlements.js"></script>
@@ -21,5 +144,17 @@
 <script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
 <script>
-PegPages.mountContent('how-it-works',()=>PegPages.marketing('how-it-works',{eyebrow:'The Platform',layout:'steps',cta:{h2:'Ready to get started?'}}));
-</script></body></html>
+Pegasus.mountPublic('How It Works');
+document.getElementById('footer').outerHTML = Pegasus.footer();
+/* Member-aware CTA: signed-in members continue inward rather than re-signing up. */
+(function(){
+  try{
+    var raw=localStorage.getItem('pegasus.auth'); if(!raw) return;
+    var pj=JSON.parse(raw); var tok=pj && (pj.access_token||(pj.currentSession&&pj.currentSession.access_token));
+    if(!tok) return;
+    var row=document.getElementById('hwCta');
+    if(row) row.innerHTML='<a class="btn btn-pri btn-lg" href="/members.html">Continue to Members Network</a><a class="btn btn-ghost btn-lg" href="/dashboard.html">Open Workspace</a>';
+  }catch(e){}
+})();
+</script>
+</body></html>

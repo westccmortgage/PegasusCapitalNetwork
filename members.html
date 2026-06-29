@@ -117,6 +117,29 @@
 .cb-guest{max-width:760px;margin:var(--sp-3xl) auto;text-align:center;padding:var(--sp-xl)}
 .cb-guest h2{font-family:var(--serif);font-weight:400;font-size:32px;color:var(--text);margin:0 0 12px;letter-spacing:-.015em}
 .cb-guest p{color:var(--text2);font-size:14px;line-height:1.65;margin:0 auto 24px;max-width:540px}
+/* ─── Daily Signal composer ──────────────────────────────────────────────── */
+.cb-sig{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:16px 18px;box-shadow:var(--sh-card)}
+.cb-sig-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.cb-sig-t{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--text)}
+.cb-sig-sub{font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text4)}
+.cb-sig-hint{font-size:11.5px;color:var(--text3);line-height:1.5;margin-bottom:10px}
+.cb-sig-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.cb-sig-chip{font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all var(--dur-fast)}
+.cb-sig-chip:hover{border-color:var(--border2);color:var(--text2)}
+.cb-sig-chip.on{background:var(--blue-dim);border-color:rgba(29,90,158,.3);color:var(--blue)}
+.cb-sig-ta{width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;color:var(--text);font-family:inherit;font-size:13px;line-height:1.5;resize:vertical;min-height:58px;outline:none;transition:border-color var(--dur-fast)}
+.cb-sig-ta:focus{border-color:var(--blue)}
+.cb-sig-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px}
+.cb-sig-count{font-size:10px;font-family:var(--mono);color:var(--text4)}
+.cb-sig-list{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:11px}
+.cb-sig-item{display:flex;gap:9px;align-items:flex-start}
+.cb-sig-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);margin-top:6px;flex:none}
+.cb-sig-body{flex:1;min-width:0}
+.cb-sig-txt{font-size:12.5px;color:var(--text);line-height:1.5;word-break:break-word}
+.cb-sig-meta{font-size:9.5px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--text4);margin-top:3px}
+.cb-sig-x{border:none;background:none;color:var(--text4);cursor:pointer;font-size:12px;padding:2px 6px;border-radius:var(--r1);flex:none}
+.cb-sig-x:hover{background:var(--bg2);color:var(--text2)}
+.cb-sig-err{font-size:11px;color:var(--gold);margin-top:8px;min-height:13px}
 </style>
 </head>
 <body>
@@ -147,6 +170,7 @@
     <!-- RIGHT: connection board -->
     <div class="cb-board" id="cbBoard">
       <div id="cbMe"></div>
+      <div id="cbSignal"></div>
       <div id="cbHint"></div>
       <div id="cbSelected"></div>
     </div>
@@ -545,8 +569,59 @@ Pegasus.boot(async function(){
     };
   }
 
+  /* ── DAILY SIGNAL — short professional updates (degrades gracefully) ─────────
+     If migration 064 (member_signals) is not applied, the RPCs are absent; we
+     detect that and hide the whole section so nothing breaks. */
+  var SIG_TYPES=[['working_on','Working on'],['seeking_intro','Who I want to meet'],['offering','What I’m offering'],['showcase','New showcase / opportunity'],['referral','Referral request']];
+  var SIG_LBL={working_on:'Working on',seeking_intro:'Seeking intro',offering:'Offering',showcase:'Showcase',referral:'Referral',update:'Update'};
+  var sigType='working_on';
+  function rpcMissing(err){ var c=err&&(err.code||''); var m=(((err&&err.message)||'')+' '+((err&&err.details)||'')).toLowerCase(); return c==='PGRST202'||c==='404'||/does not exist|could not find the function|schema cache|not found/.test(m); }
+  function sigAgo(ts){ try{ var d=Math.max(0,(Date.now()-new Date(ts).getTime())/1000); if(d<60)return 'just now'; if(d<3600)return Math.floor(d/60)+'m ago'; if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago'; }catch(e){ return ''; } }
+  function sigItem(s){ return '<div class="cb-sig-item"><span class="cb-sig-dot"></span><div class="cb-sig-body"><div class="cb-sig-txt">'+esc(s.content)+'</div><div class="cb-sig-meta">'+esc(SIG_LBL[s.signal_type]||'Update')+' · '+esc(sigAgo(s.created_at))+'</div></div><button class="cb-sig-x" data-sid="'+esc(s.id)+'" title="Delete signal" aria-label="Delete signal">✕</button></div>'; }
+  async function renderSignal(){
+    var host=document.getElementById('cbSignal'); if(!host) return;
+    if(!ME){ host.innerHTML=''; return; }
+    var recent=[];
+    try{
+      var r=await sb.rpc('get_my_recent_signals',{p_limit:5});
+      if(r && r.error){ if(rpcMissing(r.error)){ host.innerHTML=''; return; } }
+      else if(r && Array.isArray(r.data)) recent=r.data;
+    }catch(e){ host.innerHTML=''; return; }
+    var chips=SIG_TYPES.map(function(s){return '<button class="cb-sig-chip'+(s[0]===sigType?' on':'')+'" data-t="'+s[0]+'">'+esc(s[1])+'</button>';}).join('');
+    var list=recent.length?'<div class="cb-sig-list">'+recent.map(sigItem).join('')+'</div>':'';
+    host.innerHTML='<div class="cb-sig">'+
+      '<div class="cb-sig-h"><div class="cb-sig-t">Daily Signal</div><div class="cb-sig-sub">Shown on your profile</div></div>'+
+      '<div class="cb-sig-hint">Share a short professional update — what you’re working on, who you want to meet, or what you’re offering.</div>'+
+      '<div class="cb-sig-chips">'+chips+'</div>'+
+      '<textarea class="cb-sig-ta" id="cbSigTa" maxlength="280" placeholder="e.g. Actively placing $2–5M bridge on value-add multifamily in the Southeast."></textarea>'+
+      '<div class="cb-sig-foot"><span class="cb-sig-count" id="cbSigCount">0 / 280</span><button class="btn btn-pri btn-sm" id="cbSigPost">Post Signal</button></div>'+
+      '<div class="cb-sig-err" id="cbSigErr"></div>'+list+'</div>';
+    host.querySelectorAll('.cb-sig-chip').forEach(function(b){ b.onclick=function(){ sigType=b.getAttribute('data-t'); host.querySelectorAll('.cb-sig-chip').forEach(function(x){x.classList.toggle('on',x===b);}); }; });
+    var ta=document.getElementById('cbSigTa'), cnt=document.getElementById('cbSigCount');
+    if(ta&&cnt) ta.addEventListener('input',function(){ cnt.textContent=ta.value.length+' / 280'; });
+    var post=document.getElementById('cbSigPost');
+    if(post) post.onclick=async function(){
+      var txt=(ta.value||'').trim(); var err=document.getElementById('cbSigErr');
+      if(!txt){ err.textContent='Write a short update first.'; return; }
+      post.disabled=true; post.textContent='Posting…'; err.textContent='';
+      try{
+        var rr=await sb.rpc('post_member_signal',{p_type:sigType,p_content:txt});
+        if(rr.error) throw rr.error;
+        var resp=rr.data||{};
+        if(!resp.ok){ err.textContent=resp.message||'Could not post your signal.'; post.disabled=false; post.textContent='Post Signal'; return; }
+        Pegasus.toast('✓','var(--green-dim)','Signal posted','It now appears on your profile.');
+        await renderSignal();
+      }catch(e){ err.textContent='Could not post your signal right now.'; post.disabled=false; post.textContent='Post Signal'; }
+    };
+    host.querySelectorAll('.cb-sig-x').forEach(function(b){ b.onclick=async function(){
+      var id=b.getAttribute('data-sid'); b.disabled=true;
+      try{ await sb.rpc('delete_my_signal',{p_id:id}); await renderSignal(); }catch(e){ b.disabled=false; }
+    }; });
+  }
+
   /* ── Initial render ─────────────────────────────────────────────────────── */
   await renderMe();
+  renderSignal();
   renderSelected();
   applyFilter();
   /* Re-fetch when the page is restored from bfcache so state stays fresh. */
