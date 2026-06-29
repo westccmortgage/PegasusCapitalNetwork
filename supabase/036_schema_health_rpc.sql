@@ -46,7 +46,8 @@ begin
       'upgrade_log',
       'health_reports',
       'member_log',
-      'notifications'
+      'notifications',
+      'member_signals'
     ]) t
     where not exists (
       select 1 from pg_tables
@@ -85,7 +86,10 @@ begin
       'is_admin_user',
       'check_platform_schema',
       'get_my_review',
-      'is_review_eligible'
+      'is_review_eligible',
+      'post_member_signal',
+      'get_member_signals',
+      'get_my_recent_signals'
     ]) fn
     where not exists (
       select 1

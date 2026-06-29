@@ -568,6 +568,10 @@ Pegasus.boot(async function () {
         '</div>'
       :'')+
 
+      /* 1b. RECENT SIGNALS — this member's short professional updates. Populated
+         async; hidden if migration 064 (member_signals) isn't applied or empty. */
+      '<section class="pp-sec" id="pp-signals" style="display:none"></section>'+
+
       /* 2. ABOUT */
       (p.bio?
         '<section class="pp-sec">'+
@@ -767,6 +771,31 @@ Pegasus.boot(async function () {
      get_recent_network_activity RPC (visibility-safe; guests see business
      pages only, members also see people).                            */
   var ACT_TL={person:'Person',company:'Company',project:'Project',showcase:'Showcase',event:'Event',capital_program:'Capital Program',property:'Property',fund:'Fund'};
+  /* ── Recent Signals (this member's short professional updates) ─────────────
+     Visibility-safe via get_member_signals. Hidden if migration 064 isn't
+     applied (RPC absent) or there are no signals — never shows an error. */
+  {
+    (async function(){
+      var sec=document.getElementById('pp-signals'); if(!sec) return;
+      var uid = p && p.id; if(!uid) return;
+      try{
+        var sb=await window.PegSB.ready;
+        var r=await sb.rpc('get_member_signals',{p_user_id:uid, p_limit:6});
+        if(!r || r.error || !Array.isArray(r.data) || !r.data.length) return;
+        var LBL={working_on:'Working on',seeking_intro:'Seeking intro',offering:'Offering',showcase:'Showcase',referral:'Referral',update:'Update'};
+        function ago(ts){ try{ var d=Math.max(0,(Date.now()-new Date(ts).getTime())/1000); if(d<3600)return Math.floor(d/60)+'m ago'; if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago'; }catch(e){ return ''; } }
+        var rows=r.data.map(function(s){
+          return '<div style="display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)">'+
+            '<span style="width:7px;height:7px;border-radius:50%;background:var(--blue);margin-top:6px;flex:none"></span>'+
+            '<div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--text);line-height:1.55">'+esc(s.content)+'</div>'+
+            '<div style="font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:3px">'+esc(LBL[s.signal_type]||'Update')+' · '+esc(ago(s.created_at))+'</div></div></div>';
+        }).join('');
+        sec.innerHTML='<div class="pp-sec-label">Recent Signals</div><div class="pp-card"><div class="pp-card-body" style="padding-top:4px;padding-bottom:4px">'+rows+'</div></div>';
+        sec.style.display='';
+      }catch(e){ /* keep hidden */ }
+    })();
+  }
+
   /* ── My Connections (accepted only) ───────────────────────────────────────
      Replaces the old "Network Signals" panel. Personal profiles only show
      people who are ACTUALLY connected to this member — never random ecosystem
