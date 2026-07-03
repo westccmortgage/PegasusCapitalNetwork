@@ -39,4 +39,4 @@ Disallow: /reset-password.html
 Disallow: /request.html
 
 # Sitemap location
-Sitemap: https://pegasuscapitalnetwork.com/sitemap.xml
+Sitemap: https://www.pegasuscapitalnetwork.com/sitemap.xml

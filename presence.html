@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="en"><head><title>Business Page — Pegasus Network</title>
-<link rel="canonical" href="https://pegasuscapitalnetwork.com/presence.html">
-<!-- Presence/business pages are viewable by direct link only — not a public
-     directory, and member_only/private pages must not be indexable. -->
+<link rel="canonical" href="https://www.pegasuscapitalnetwork.com/presence.html">
+<!-- Default noindex: member_only/private pages must never be indexable. For
+     public_preview records the loader flips this to index,follow at render
+     time (Google indexes the rendered DOM). -->
 <meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,7 +70,7 @@ Pegasus.boot(async function(){
   Pegasus.mountPublic('');
 
   var esc = Pegasus.esc;
-  var CANON = 'https://pegasuscapitalnetwork.com';
+  var CANON = 'https://www.pegasuscapitalnetwork.com';
 
   var TYPE_LABEL = {
     personal:'Personal', company:'Company', project:'Project',
@@ -187,6 +188,11 @@ Pegasus.boot(async function(){
   var cleanPath = Pegasus.presencePath(p.presence_type, p.slug);
   var cleanUrl = CANON + cleanPath;
   (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
+  // Public-preview pages are indexable; member_only/private keep the default noindex.
+  if (p.visibility === 'public_preview') {
+    var rmeta = document.querySelector('meta[name="robots"]');
+    if (rmeta) rmeta.setAttribute('content', 'index,follow');
+  }
 
   var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';
   var avHtml = p.logo_url ? '<img src="'+(Pegasus.safeUrl?Pegasus.safeUrl(p.logo_url):esc(p.logo_url))+'" alt="">' : esc(initials);

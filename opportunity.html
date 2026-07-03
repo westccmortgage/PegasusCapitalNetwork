@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="en"><head><title>Opportunity — Pegasus Network</title>
-<link rel="canonical" href="https://pegasuscapitalnetwork.com/opportunity.html">
-<!-- Opportunities are viewable by direct link only — not a public directory, and
-     member_only/private opportunities must not be indexable. -->
+<link rel="canonical" href="https://www.pegasuscapitalnetwork.com/opportunity.html">
+<!-- Default noindex: member_only/private opportunities must never be indexable.
+     For public_preview records the loader flips this to index,follow at render
+     time (Google indexes the rendered DOM). -->
 <meta name="robots" content="noindex,nofollow">
 <!-- Default social-preview metadata (professional fallback for link unfurls).
      NOTE: link-preview crawlers (LinkedIn/Facebook/X) don't run JS, so they see
@@ -64,7 +65,7 @@ Pegasus.boot(async function(){
   Pegasus.mountPublic('');
 
   var esc = Pegasus.esc;
-  var CANON = 'https://pegasuscapitalnetwork.com';
+  var CANON = 'https://www.pegasuscapitalnetwork.com';
 
   var OPP_TYPE = { opportunity:'Opportunity', project:'Project', listing:'Listing', property:'Property', capital_request:'Capital Request', fund:'Fund', deal:'Deal', event:'Event', other:'Opportunity', showcase:'Showcase', startup:'Startup', partnership:'Partnership' };
   // Presentation-format labels (migration 056). Prefer these over the raw type.
@@ -140,6 +141,11 @@ Pegasus.boot(async function(){
   var cleanPath = Pegasus.opportunityPath ? Pegasus.opportunityPath(o.slug) : ('/opportunity/'+encodeURIComponent(o.slug));
   var cleanUrl = CANON + cleanPath;
   (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
+  // Public-preview opportunities are indexable; member_only/private keep the default noindex.
+  if (o.visibility === 'public_preview') {
+    var rmeta = document.querySelector('meta[name="robots"]');
+    if (rmeta) rmeta.setAttribute('content', 'index,follow');
+  }
 
   // Upgrade social metadata to this specific opportunity (for JS-capable clients;
   // static defaults in <head> cover non-JS link-preview crawlers).
