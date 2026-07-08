@@ -112,6 +112,8 @@ export default function App() {
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
   const micTokenRef = useRef(0);
+  const micActiveRef = useRef(false);   // true while the user wants the mic on
+  const micBaseRef = useRef('');        // text already committed before current recognition run
 
   const t = T[lang] || T.en;
   const speechSupported = typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -125,17 +127,40 @@ export default function App() {
   }, [screen]);
 
   // Resume-later: persist the session so a returning visitor picks up where they left off.
+  const sessionRef = useRef(null);
   useEffect(() => {
+    const snapshot = { messages, scenario, confirmed, screen, partialLeadCount };
+    sessionRef.current = snapshot;
     try {
-      localStorage.setItem('wcci-session', JSON.stringify({ messages, scenario, confirmed, screen, partialLeadCount }));
+      localStorage.setItem('wcci-session', JSON.stringify(snapshot));
     } catch {}
   }, [messages, scenario, confirmed, screen, partialLeadCount]);
+
+  // Safety net for mobile Safari, which can skip the final save when the tab is
+  // backgrounded or closed. Flush the latest snapshot on hide/pagehide.
+  useEffect(() => {
+    const flush = () => {
+      try {
+        if (sessionRef.current) localStorage.setItem('wcci-session', JSON.stringify(sessionRef.current));
+      } catch {}
+    };
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      window.removeEventListener('beforeunload', flush);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   // Stop any active mic session on unmount.
   useEffect(() => () => stopMicInternal(), []);
 
   function stopMicInternal() {
-    micTokenRef.current++; // invalidate any late onresult callbacks
+    micActiveRef.current = false;
+    micTokenRef.current++; // invalidate any late onresult / onend callbacks
     try { recognitionRef.current && recognitionRef.current.stop(); } catch {}
     try { recognitionRef.current && recognitionRef.current.abort(); } catch {}
   }
@@ -148,22 +173,52 @@ export default function App() {
   function startMic() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
+    micActiveRef.current = true;
+    // Whatever is already typed becomes the base we append dictation onto.
+    micBaseRef.current = input ? input.trim() + ' ' : '';
+    setListening(true);
+    launchRecognition();
+  }
+
+  // Start a single recognition run. Because mobile browsers end recognition
+  // after each pause, we auto-restart it as long as the user still wants the
+  // mic on (micActiveRef). Finalized phrases are appended to micBaseRef so the
+  // text accumulates instead of being overwritten on each restart.
+  function launchRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR || !micActiveRef.current) return;
     const rec = new SR();
     const token = ++micTokenRef.current;
     rec.lang = localeFor(lang);
     rec.interimResults = true;
-    rec.continuous = false;
+    rec.continuous = true;
     rec.onresult = (e) => {
       if (token !== micTokenRef.current) return; // guard against stale callbacks
-      let txt = '';
-      for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
-      setInput(txt.trim());
+      let finalTxt = '';
+      let interimTxt = '';
+      for (let i = 0; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalTxt += r[0].transcript;
+        else interimTxt += r[0].transcript;
+      }
+      if (finalTxt) micBaseRef.current = (micBaseRef.current + finalTxt).replace(/\s+/g, ' ');
+      setInput((micBaseRef.current + interimTxt).replace(/\s+/g, ' ').trim());
     };
-    rec.onerror = () => { if (token === micTokenRef.current) setListening(false); };
-    rec.onend = () => { if (token === micTokenRef.current) setListening(false); };
+    rec.onerror = (e) => {
+      // 'no-speech' / 'aborted' are transient — let onend handle restart.
+      if (e && (e.error === 'not-allowed' || e.error === 'service-not-allowed')) {
+        micActiveRef.current = false;
+        setListening(false);
+      }
+    };
+    rec.onend = () => {
+      if (token !== micTokenRef.current) return;
+      // If the user still wants the mic on, immediately start a new run.
+      if (micActiveRef.current) { try { launchRecognition(); } catch { setListening(false); } }
+      else setListening(false);
+    };
     recognitionRef.current = rec;
-    setListening(true);
-    try { rec.start(); } catch { setListening(false); }
+    try { rec.start(); } catch { /* already starting — ignore */ }
   }
 
   function toggleMic() { listening ? stopMic() : startMic(); }
@@ -191,6 +246,7 @@ export default function App() {
   async function sendMessage(text) {
     if (!text.trim() || loading) return;
     if (listening) stopMic();
+    micBaseRef.current = '';
     setInput('');
     setLoading(true);
     const updated = [...messages, { role: 'user', content: text }];
