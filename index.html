@@ -80,8 +80,8 @@
 .ehd-foot{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:15px 30px;background:rgba(0,0,0,.18);border-top:1px solid rgba(255,255,255,.08)}
 .ehd-foot a{font-size:12.5px;color:#9FC0EF;text-decoration:none;font-weight:500}
 .ehd-foot .seal{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
-@media(max-width:980px){.eh{grid-template-columns:1fr;gap:34px}}
-@media(max-width:760px){.eh{padding:34px 20px 38px}}
+@media(max-width:980px){.eh{grid-template-columns:1fr;gap:34px}.eh>div,.eh-dossier{min-width:0}}
+@media(max-width:760px){.eh{padding:34px 20px 38px}.eh-index{flex-wrap:wrap;gap:16px 0}.eh-index .it{padding-right:18px;margin-right:18px}.eh-h1{font-size:clamp(32px,8.6vw,44px)}.eh-lead,.eh-cta,.eh-index{max-width:100%}.eh-btn{font-size:13px;padding:13px 20px}}
 /* ── Product panels — large Apple-style sections ── */
 .lpanels{max-width:1120px;margin:0 auto;padding:8px 40px}
 .lpanels-head{text-align:center;max-width:640px;margin:0 auto;padding:44px 0 8px}
