@@ -21,6 +21,12 @@ const STATE_ABBR = {
 };
 const STATE_CODES = new Set(Object.values(STATE_ABBR));
 
+// Title-case a location string ("santa clarita" → "Santa Clarita").
+function titleCase(s) {
+  return String(s).trim().replace(/\s+/g, ' ')
+    .split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ');
+}
+
 // Parse a money-ish token → number. Handles $2M, 2 million, $2,000,000, 400k, $1.5m.
 function parseMoney(raw) {
   if (raw == null) return undefined;
@@ -60,21 +66,39 @@ export function parseScenario(rawText) {
   if (!rawText || typeof rawText !== 'string') return out;
   const text = rawText.toLowerCase();
 
-  // ── State ──
+  // ── State (full name, "City, ST", or a standalone code) ──
   for (const [name, abbr] of Object.entries(STATE_ABBR)) {
     if (new RegExp(`\\b${name}\\b`).test(text)) { out.state = abbr; break; }
   }
+  // "santa clarita, ca" or "..., CA" — a 2-letter token right after a comma.
+  const commaST = rawText.match(/,\s*([A-Za-z]{2})\b/);
+  if (!out.state && commaST && STATE_CODES.has(commaST[1].toUpperCase())) {
+    out.state = commaST[1].toUpperCase();
+  }
+  // A standalone UPPERCASE code (avoid matching lowercase English words).
   if (!out.state) {
     const m = rawText.match(/\b([A-Z]{2})\b/);
     if (m && STATE_CODES.has(m[1])) out.state = m[1];
   }
 
-  // ── ZIP ──
+  // ── ZIP / county / city ──
   const zip = text.match(/\b(\d{5})(?:-\d{4})?\b/);
   if (zip) out.zipOrCounty = zip[1];
   else {
-    const county = rawText.match(/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s+county\b/);
-    if (county) out.zipOrCounty = county[1] + ' County';
+    const county = rawText.match(/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s+county\b/i);
+    if (county) out.zipOrCounty = titleCase(county[1]) + ' County';
+  }
+  // "City, ST" — capture the city as the location (the MLO maps it to a county).
+  if (!out.zipOrCounty) {
+    const cityST = rawText.match(/([A-Za-z][A-Za-z.'\-]+(?:\s+[A-Za-z.'\-]+){0,3})\s*,\s*([A-Za-z]{2})\b/);
+    if (cityST && STATE_CODES.has(cityST[2].toUpperCase())) {
+      const city = cityST[1].trim();
+      // Guard against grabbing a trailing clause like "...720, ca".
+      if (!/^\d+$/.test(city) && city.length >= 3) {
+        out.zipOrCounty = titleCase(city);
+        if (!out.state) out.state = cityST[2].toUpperCase();
+      }
+    }
   }
 
   // ── Loan purpose ──
@@ -130,8 +154,9 @@ export function parseScenario(rawText) {
   out.purchasePrice = moneyNear(text, [/\$?\s?[\d.,]+\s?(?:m|million|k)?\s*(?:home|house|property|condo)/, /buy(?:ing)?/, /purchase/, /price/, /value/, /worth/]);
   // Fallback: the largest money value in the text is usually the price.
   if (!out.purchasePrice) {
+    const zipNum = out.zipOrCounty && /^\d{5}$/.test(out.zipOrCounty) ? Number(out.zipOrCounty) : null;
     const all = (text.match(/\$?\s?\d[\d,]*\.?\d*\s?(?:m|mm|million|k|thousand)?/gi) || [])
-      .map(parseMoney).filter(v => v && v >= 10000);
+      .map(parseMoney).filter(v => v && v >= 10000 && v !== zipNum);
     if (all.length) out.purchasePrice = Math.max(...all);
   }
 

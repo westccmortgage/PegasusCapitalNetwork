@@ -33,6 +33,25 @@ test('parser: handles percent-down and abbreviations', () => {
   assert.equal(r.estimatedFICO, 740);
 });
 
+test('parser: lowercase "City, ST" fills state and location', () => {
+  const r = parseScenario('santa clarita, ca');
+  assert.equal(r.state, 'CA');
+  assert.equal(r.zipOrCounty, 'Santa Clarita');
+});
+
+test('parser: does not misread "score 720, partial" as a state', () => {
+  const r = parseScenario('purchase 1400000 with 20% down score 720, partial income w2 and partial 1099');
+  assert.equal(r.state, undefined);
+  assert.equal(r.purchasePrice, 1400000);
+  assert.equal(r.downPayment, 280000);
+  assert.equal(r.employmentType, '1099');
+});
+
+test('parser: county and ZIP forms', () => {
+  assert.equal(parseScenario('los angeles county').zipOrCounty, 'Los Angeles County');
+  assert.equal(parseScenario('property in 90210').zipOrCounty, '90210');
+});
+
 test('parser: bank statement + investment DSCR signals', () => {
   const r = parseScenario('Buying a $800k investment property, bank statement borrower, DSCR');
   assert.equal(r.purchasePrice, 800000);
@@ -52,6 +71,17 @@ test('profile: auto-fills known fields and marks missing ones', () => {
   assert.ok(st.needed.missing.includes('incomeDocPath'));
   assert.ok(st.percent > 0 && st.percent < 100);
   assert.equal(st.hasCoreScenario, true);
+});
+
+test('profile: AI-style update normalizes strings and fill-only preserves parsed values', () => {
+  // Parser authoritatively set the state to CA.
+  let profile = mergeProfile({}, { state: 'CA', purchasePrice: 1400000 });
+  // AI update arrives with a messy string value and a conflicting state — fill-only
+  // must NOT overwrite the known state, but SHOULD fill the empty occupancy.
+  profile = mergeProfile(profile, { purchasePrice: '$1,400,000', state: 'TX', occupancy: 'primary residence' }, { fillOnly: true });
+  assert.equal(profile.state, 'CA');                 // preserved
+  assert.equal(profile.occupancy, 'primary residence'); // filled
+  assert.equal(profile.purchasePrice, 1400000);      // normalized number, unchanged
 });
 
 test('profile: merge recomputes LTV when down payment changes', () => {

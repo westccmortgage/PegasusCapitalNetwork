@@ -148,7 +148,9 @@ async function runPersona(persona) {
     const userText = await borrowerReply(persona, transcript);
     transcript.push({ role: 'user', content: userText });
 
-    const aiText = await callClaude({ system, messages: transcript });
+    const rawAi = await callClaude({ system, messages: transcript });
+    // Strip the machine-only PROFILE_UPDATE line the client removes before display.
+    const aiText = rawAi.replace(/\n?PROFILE_UPDATE:\s*\{[^\n]*\}\s*/g, '').trim();
     transcript.push({ role: 'assistant', content: aiText });
 
     // Compliance check on what the borrower would actually see (strip the JSON line).

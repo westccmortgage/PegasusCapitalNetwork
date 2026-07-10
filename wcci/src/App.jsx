@@ -339,8 +339,22 @@ export default function App() {
       let displayText = fullText;
       let parsedScenario = null;
 
-      if (fullText.includes('SCENARIO_COMPLETE:')) {
-        const parts = fullText.split('SCENARIO_COMPLETE:');
+      // Live profile sync: pull the AI's PROFILE_UPDATE line, merge (fill-only so
+      // the deterministic parser / manual entries stay authoritative), and strip
+      // it from what the borrower sees.
+      if (displayText.includes('PROFILE_UPDATE:')) {
+        const m = displayText.match(/PROFILE_UPDATE:\s*(\{[^\n]*\})/);
+        if (m) {
+          try {
+            const upd = JSON.parse(m[1]);
+            if (upd && typeof upd === 'object') setProfile(prev => mergeProfile(prev, upd, { fillOnly: true }));
+          } catch {}
+        }
+        displayText = displayText.replace(/\n?PROFILE_UPDATE:\s*\{[^\n]*\}\s*/g, '').trim();
+      }
+
+      if (displayText.includes('SCENARIO_COMPLETE:')) {
+        const parts = displayText.split('SCENARIO_COMPLETE:');
         try {
           parsedScenario = JSON.parse(parts[1].split('\n')[0].trim());
         } catch {}

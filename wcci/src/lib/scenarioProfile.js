@@ -42,11 +42,32 @@ function has(profile, key) {
   return v !== undefined && v !== null && v !== '' && v !== 'unsure';
 }
 
-// Merge new values over an existing profile, keeping derived fields in sync.
-export function mergeProfile(base, updates) {
-  const next = { ...(base || {}) };
-  for (const [k, v] of Object.entries(updates || {})) {
+const NUMERIC_KEYS = new Set(['purchasePrice', 'downPayment', 'loanAmount', 'reservesAfterClosing', 'estimatedFICO', 'ltv']);
+
+// Coerce loosely-typed values (e.g. AI-supplied strings like "$1,400,000") into
+// the shapes the engines expect. Unknown/blank values are dropped.
+export function normalizeProfileValues(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj || {})) {
     if (v === undefined || v === null || v === '') continue;
+    if (NUMERIC_KEYS.has(k)) {
+      const n = typeof v === 'number' ? v : Number(String(v).replace(/[$,%\s]/g, ''));
+      if (isFinite(n)) out[k] = n;
+    } else {
+      out[k] = typeof v === 'string' ? v.trim() : v;
+    }
+  }
+  return out;
+}
+
+// Merge new values over an existing profile, keeping derived fields in sync.
+// opts.fillOnly → only set keys that are currently empty (used for AI updates so
+// deterministic parser / manual entries stay authoritative).
+export function mergeProfile(base, updates, opts = {}) {
+  const next = { ...(base || {}) };
+  const clean = normalizeProfileValues(updates);
+  for (const [k, v] of Object.entries(clean)) {
+    if (opts.fillOnly && has(next, k)) continue;
     next[k] = v;
   }
   // Recompute derived fields whenever price/down present.
