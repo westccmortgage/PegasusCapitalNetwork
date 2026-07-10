@@ -187,6 +187,14 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  // Keep the input box sized to its content (covers typing, voice, and clearing).
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  }, [input, screen]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
@@ -251,13 +259,19 @@ export default function App() {
 
   // Start a single recognition run. Because mobile browsers end recognition
   // after each pause, we auto-restart it as long as the user still wants the
-  // mic on (micActiveRef). Finalized phrases are appended to micBaseRef so the
-  // text accumulates instead of being overwritten on each restart.
+  // mic on (micActiveRef).
+  //
+  // micBaseRef holds text COMMITTED from earlier (ended) recognition runs. In
+  // continuous mode e.results is CUMULATIVE for the current run, so we rebuild
+  // this run's transcript from e.results every event (never accumulating across
+  // events — that caused runaway duplication). On end we commit this run's finals
+  // to micBaseRef exactly once, then restart fresh.
   function launchRecognition() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR || !micActiveRef.current) return;
     const rec = new SR();
     const token = ++micTokenRef.current;
+    let runFinal = '';
     rec.lang = localeFor(lang);
     rec.interimResults = true;
     rec.continuous = true;
@@ -270,8 +284,8 @@ export default function App() {
         if (r.isFinal) finalTxt += r[0].transcript;
         else interimTxt += r[0].transcript;
       }
-      if (finalTxt) micBaseRef.current = (micBaseRef.current + finalTxt).replace(/\s+/g, ' ');
-      setInput((micBaseRef.current + interimTxt).replace(/\s+/g, ' ').trim());
+      runFinal = finalTxt; // this run's finalized text so far (not accumulated)
+      setInput((micBaseRef.current + finalTxt + interimTxt).replace(/\s+/g, ' ').trim());
     };
     rec.onerror = (e) => {
       // 'no-speech' / 'aborted' are transient — let onend handle restart.
@@ -282,7 +296,8 @@ export default function App() {
     };
     rec.onend = () => {
       if (token !== micTokenRef.current) return;
-      // If the user still wants the mic on, immediately start a new run.
+      // Commit this run's finals ONCE, then continue if the user still wants it.
+      if (runFinal.trim()) micBaseRef.current = (micBaseRef.current + runFinal + ' ').replace(/\s+/g, ' ');
       if (micActiveRef.current) { try { launchRecognition(); } catch { setListening(false); } }
       else setListening(false);
     };
@@ -469,6 +484,13 @@ export default function App() {
       e.preventDefault();
       sendMessage(input);
     }
+  }
+
+  // Grow the input box with the text so people can see everything they type.
+  function autoGrow(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   }
 
   function LangSwitch({ dark }) {
@@ -713,11 +735,11 @@ export default function App() {
             <textarea
               ref={inputRef}
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={e => { setInput(e.target.value); autoGrow(e.target); }}
               onKeyDown={handleKeyDown}
               placeholder={t.placeholder}
-              rows={1}
-              style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 22, padding: '10px 16px', fontSize: 15, resize: 'none', fontFamily: "'Inter', sans-serif", lineHeight: 1.5, color: '#0f172a', background: '#f8fafc', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 44 }}
+              rows={2}
+              style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 16, padding: '12px 16px', fontSize: 15, resize: 'none', fontFamily: "'Inter', sans-serif", lineHeight: 1.55, color: '#0f172a', background: '#f8fafc', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 64, maxHeight: 160, overflowY: 'auto' }}
             />
             {speechSupported && (
               <button
