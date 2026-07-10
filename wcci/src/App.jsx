@@ -100,6 +100,40 @@ function buildDocumentChecklist(scenario) {
   return { primaryLabel: buckets.map(b => b.label).join(' + '), items };
 }
 
+const money0 = (n) => (n == null || isNaN(n)) ? null : '$' + Math.round(Number(n)).toLocaleString('en-US');
+
+// Build the CURRENT ESTIMATES context block appended to the system prompt so the
+// AI can SPEAK the same numbers shown on the Strategy Profile card. Numbers come
+// from the deterministic engine (labeled estimates), never invented by the AI.
+function buildEstimatesContext(profile) {
+  const st = profileStatus(profile);
+  if (!st.hasCoreScenario) {
+    return `\n\n=== CURRENT APP-COMPUTED ESTIMATES ===\nNot available yet — still missing: ${st.needed.missing.join(', ') || 'price/down/state'}. Ask for what's missing; do not invent numbers.`;
+  }
+  const strat = evaluatePaths(profile);
+  const ranked = (strat.topPaths.length ? strat.topPaths : strat.paths).slice(0, 3);
+  const primary = ranked[0] || strat.paths[0];
+  const e = primary && primary.estimate;
+  const lines = [];
+  lines.push('=== CURRENT APP-COMPUTED ESTIMATES (share these conversationally when the borrower asks about payment, cash to close, or costs — ALWAYS call them "estimated" / "for planning", NEVER a quote, lock, or approval) ===');
+  if (e) {
+    lines.push(`Loan amount: ${money0(e.loanAmount)} (LTV ${e.ltv}%).`);
+    lines.push(`Estimated monthly payment (principal, interest, taxes, insurance): about ${money0(e.monthlyPayment)}/month.`);
+    lines.push(`Estimated cash to close: about ${money0(e.estimatedCashToClose)} — that's your down payment ${money0(e.downPayment)} plus about ${money0(e.closingCosts)} in estimated closing costs.`);
+    lines.push(`Cash-to-close breakdown (estimated): down payment ${money0(e.downPayment)}; lender fees ${money0(e.totalLenderFees)}; title/escrow ${money0(e.titleEscrowFees)}; third-party ${money0(e.thirdPartyFees)}; government fees ${money0(e.governmentFees)}; prepaid interest ${money0(e.prepaidInterest)}; escrow reserves ${money0(e.escrowReserves)}.`);
+    lines.push(`(These use a planning-assumption interest rate — mention that any rate/payment is a planning assumption, not a rate quote.)`);
+  }
+  if (ranked.length) {
+    lines.push('Top possible paths (estimates):');
+    for (const p of ranked) {
+      const pe = p.estimate;
+      lines.push(`- ${p.label} — ${p.status}${pe ? `, about ${money0(pe.monthlyPayment)}/mo, cash to close about ${money0(pe.estimatedCashToClose)}` : ''}.`);
+    }
+  }
+  lines.push('When the borrower asks "how much do I need" or "what\'s my payment/closing cost", ANSWER with these estimated numbers in plain language, then add the one-line caution that final numbers depend on the lender and full review. Do NOT just tell them to wait for the team.');
+  return '\n\n' + lines.join('\n');
+}
+
 export default function App() {
   const [saved] = useState(loadSession);
   const [lang, setLang] = useState(() => {
@@ -362,6 +396,12 @@ export default function App() {
     const updated = [...messages, { role: 'user', content: text }];
     setMessages(updated);
 
+    // Feed the AI the SAME numbers shown on the Strategy Profile card so it can
+    // voice them in conversation instead of deflecting. Compute from the freshest
+    // profile (accumulated + this message's parse).
+    const liveProfile = mergeProfile(profile, parseScenario(text), { fillOnly: true });
+    const estimatesBlock = buildEstimatesContext(liveProfile);
+
     try {
       const res = await fetch('/.netlify/functions/chat', {
         method: 'POST',
@@ -369,7 +409,7 @@ export default function App() {
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 1024,
-          system: SYSTEM_PROMPT + langDirective(lang),
+          system: SYSTEM_PROMPT + langDirective(lang) + estimatesBlock,
           messages: updated.map(m => ({ role: m.role, content: m.content })),
         }),
       });

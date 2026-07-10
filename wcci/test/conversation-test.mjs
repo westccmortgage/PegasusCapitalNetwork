@@ -75,8 +75,12 @@ function checkAssistant(text, findings) {
   for (const re of HARD_BANNED) if (re.test(text)) findings.hard.push(`banned phrase ${re} in: "${snippet(text, re)}"`);
   for (const re of SOFT_BANNED) if (re.test(text)) findings.soft.push(`soft word ${re} in: "${snippet(text, re)}"`);
   if (URL_RE.test(text)) findings.hard.push(`URL/website in: "${snippet(text, URL_RE)}"`);
-  if (RATE_QUOTE_RE.test(text)) findings.hard.push(`rate quote in: "${snippet(text, RATE_QUOTE_RE)}"`);
-  if (PAYMENT_QUOTE_RE.test(text)) findings.hard.push(`payment quote in: "${snippet(text, PAYMENT_QUOTE_RE)}"`);
+  // Estimated payments are now INTENDED (the app computes them and the AI voices
+  // them as planning estimates). Only flag them softly, and only if the estimate
+  // isn't framed cautiously. A specific interest-RATE quote is still discouraged.
+  const framedAsEstimate = /(estimat|planning|assumption|roughly|about|approximate|around)/i.test(text);
+  if (RATE_QUOTE_RE.test(text) && !framedAsEstimate) findings.soft.push(`rate figure without estimate framing: "${snippet(text, RATE_QUOTE_RE)}"`);
+  if (PAYMENT_QUOTE_RE.test(text) && !framedAsEstimate) findings.soft.push(`payment figure without estimate framing: "${snippet(text, PAYMENT_QUOTE_RE)}"`);
 }
 
 function snippet(text, re) {
