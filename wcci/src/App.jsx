@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SYSTEM_PROMPT, langDirective, localeFor } from './systemPrompt.js';
-import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, getInitialMessage } from './i18n.js';
+import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, UPLOAD_UI, getInitialMessage } from './i18n.js';
 import { parseScenario } from './lib/parser.js';
 import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
@@ -169,6 +169,8 @@ export default function App() {
   const [profileOpenMobile, setProfileOpenMobile] = useState(false);
   const [winWidth, setWinWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const manualKeysRef = useRef(new Set()); // fields the user typed by hand — protected from AI overwrite
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -178,6 +180,7 @@ export default function App() {
 
   const t = T[lang] || T.en;
   const su = STRATEGY_UI;
+  const uu = UPLOAD_UI[lang] || UPLOAD_UI.en;
   const speechSupported = typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const isWide = winWidth >= 900;
 
@@ -399,6 +402,49 @@ export default function App() {
     } catch {}
     setLeadSent(true);
     return true;
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(',')[1] || ''); // strip data: prefix
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Secure document hand-off: the file goes ONLY to the licensed team (via the
+  // upload function → email). It is never sent to the AI. We just post a warm
+  // confirmation into the chat.
+  async function attachFile(file) {
+    if (!file || uploading) return;
+    const okType = /\.(pdf|jpe?g|png|heic|heif|webp|gif|docx?|txt|csv|xlsx?)$/i.test(file.name) ||
+      /^(image\/|application\/pdf|text\/|application\/msword|application\/vnd)/.test(file.type || '');
+    if (!okType) { setMessages(prev => [...prev, { role: 'assistant', content: uu.badType }]); return; }
+    if (file.size > 8 * 1024 * 1024) { setMessages(prev => [...prev, { role: 'assistant', content: uu.tooLarge }]); return; }
+
+    setUploading(true);
+    setMessages(prev => [...prev, { role: 'assistant', content: uu.sending }]);
+    try {
+      const dataBase64 = await fileToBase64(file);
+      const p = profile || {};
+      const note = [p.purchasePrice ? `Price ~$${Number(p.purchasePrice).toLocaleString('en-US')}` : null,
+        p.state, p.zipOrCounty, p.occupancy, p.employmentType, p.incomeDocPath].filter(Boolean).join(' · ');
+      const res = await fetch('/.netlify/functions/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name, contentType: file.type, dataBase64,
+          contact: { name: p.name, phone: p.phone, email: p.email }, note,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setMessages(prev => [...prev, { role: 'assistant', content: data.ok ? uu.sent(file.name) : uu.failed }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: uu.failed }]);
+    }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = '';
   }
 
   async function sendMessage(text) {
@@ -732,6 +778,20 @@ export default function App() {
         {/* Input */}
         <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: '10px 12px', paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))', flexShrink: 0 }}>
           <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.gif,.doc,.docx,.txt,.csv,.xls,.xlsx,image/*,application/pdf"
+              style={{ display: 'none' }}
+              onChange={e => attachFile(e.target.files && e.target.files[0])}
+            />
+            <button
+              onClick={() => fileRef.current && fileRef.current.click()}
+              disabled={uploading}
+              title={uu.hint}
+              aria-label={uu.hint}
+              style={{ width: 44, height: 44, background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 22, color: uploading ? '#cbd5e1' : '#64748b', fontSize: 18, cursor: uploading ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >📎</button>
             <textarea
               ref={inputRef}
               value={input}

@@ -38,6 +38,35 @@ export const STRATEGY_UI = {
   leadSentBody: 'A licensed strategist will follow up shortly.',
 };
 
+// Secure document upload strings. The file is forwarded to the licensed team —
+// it is NEVER read by the AI, so there is no licensing/compliance exposure.
+export const UPLOAD_UI = {
+  en: {
+    hint: 'Send a document securely to your loan team (the AI does not open it)',
+    sending: 'Sending your document securely…',
+    sent: (n) => `Thanks — I’ve sent “${n}” securely to your licensed loan team. I don’t open documents myself, but a specialist will review it and follow up.`,
+    failed: 'Sorry, that upload didn’t go through. Please try again, or call (310) 686-5053.',
+    tooLarge: 'That file is a little large — please keep it under 8 MB.',
+    badType: 'Please attach a PDF, image, or document file.',
+  },
+  es: {
+    hint: 'Envíe un documento de forma segura a su equipo (la IA no lo abre)',
+    sending: 'Enviando su documento de forma segura…',
+    sent: (n) => `Gracias — envié “${n}” de forma segura a su equipo hipotecario con licencia. Yo no abro documentos, pero un especialista lo revisará y le contactará.`,
+    failed: 'Lo siento, la carga no se completó. Inténtelo de nuevo o llame al (310) 686-5053.',
+    tooLarge: 'Ese archivo es un poco grande — manténgalo por debajo de 8 MB.',
+    badType: 'Adjunte un PDF, una imagen o un documento.',
+  },
+  ru: {
+    hint: 'Отправьте документ безопасно вашей команде (ИИ его не открывает)',
+    sending: 'Безопасно отправляю ваш документ…',
+    sent: (n) => `Спасибо — я безопасно передал «${n}» вашей лицензированной ипотечной команде. Я сам документы не открываю, но специалист их проверит и свяжется с вами.`,
+    failed: 'Извините, загрузка не прошла. Попробуйте ещё раз или позвоните (310) 686-5053.',
+    tooLarge: 'Файл великоват — пожалуйста, до 8 МБ.',
+    badType: 'Пожалуйста, приложите PDF, изображение или документ.',
+  },
+};
+
 export const T = {
   en: {
     brand: 'West Coast Capital',
