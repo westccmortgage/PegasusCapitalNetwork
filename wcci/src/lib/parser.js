@@ -32,7 +32,7 @@ function parseMoney(raw) {
   if (raw == null) return undefined;
   let s = String(raw).toLowerCase().replace(/[$,\s]/g, '');
   let mult = 1;
-  const millMatch = s.match(/^(\d*\.?\d+)(m|mm|million)$/);
+  const millMatch = s.match(/^(\d*\.?\d+)(m|mm|mil|mill|million)$/);
   const kMatch = s.match(/^(\d*\.?\d+)(k|thousand)$/);
   if (millMatch) { mult = 1e6; s = millMatch[1]; }
   else if (kMatch) { mult = 1e3; s = kMatch[1]; }
@@ -43,7 +43,7 @@ function parseMoney(raw) {
 
 // Find the first money amount that appears near one of the given keywords.
 function moneyNear(text, keywords, { after = true } = {}) {
-  const moneyRe = /\$?\s?\d[\d,]*\.?\d*\s?(?:m|mm|million|k|thousand)?/gi;
+  const moneyRe = /\$?\s?\d[\d,]*\.?\d*\s?(?:m|mm|mil|mill|million|k|thousand)?/gi;
   for (const kw of keywords) {
     const idx = text.search(kw);
     if (idx === -1) continue;
@@ -67,8 +67,17 @@ export function parseScenario(rawText) {
   const text = rawText.toLowerCase();
 
   // ── State (full name, "City, ST", or a standalone code) ──
+  // A full state name is only trusted when it appears as a LOCATION — never
+  // from a person's name like "Tony Montana". Require a location cue right
+  // before it, a comma right after it, or the whole message being the state.
+  const LOC_CUE = /\b(in|at|to|near|from|into|within|property|home|house|located|state of|move to|buy(?:ing)? in|it'?s in)\s+$/;
   for (const [name, abbr] of Object.entries(STATE_ABBR)) {
-    if (new RegExp(`\\b${name}\\b`).test(text)) { out.state = abbr; break; }
+    const m = new RegExp(`\\b${name}\\b`).exec(text);
+    if (!m) continue;
+    const before = text.slice(Math.max(0, m.index - 16), m.index);
+    const after = text.slice(m.index + name.length, m.index + name.length + 1);
+    const wholeMsg = text.trim() === name;
+    if (wholeMsg || LOC_CUE.test(before) || after === ',') { out.state = abbr; break; }
   }
   // "santa clarita, ca" or "..., CA" — a 2-letter token right after a comma.
   const commaST = rawText.match(/,\s*([A-Za-z]{2})\b/);
@@ -155,7 +164,7 @@ export function parseScenario(rawText) {
   // Fallback: the largest money value in the text is usually the price.
   if (!out.purchasePrice) {
     const zipNum = out.zipOrCounty && /^\d{5}$/.test(out.zipOrCounty) ? Number(out.zipOrCounty) : null;
-    const all = (text.match(/\$?\s?\d[\d,]*\.?\d*\s?(?:m|mm|million|k|thousand)?/gi) || [])
+    const all = (text.match(/\$?\s?\d[\d,]*\.?\d*\s?(?:m|mm|mil|mill|million|k|thousand)?/gi) || [])
       .map(parseMoney).filter(v => v && v >= 10000 && v !== zipNum);
     if (all.length) out.purchasePrice = Math.max(...all);
   }

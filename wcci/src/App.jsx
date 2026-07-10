@@ -134,6 +134,7 @@ export default function App() {
   const [leadSent, setLeadSent] = useState(saved?.leadSent || false);
   const [profileOpenMobile, setProfileOpenMobile] = useState(false);
   const [winWidth, setWinWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const manualKeysRef = useRef(new Set()); // fields the user typed by hand — protected from AI overwrite
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -281,14 +282,40 @@ export default function App() {
   }
 
   // Merge freeform text into the live Scenario Profile (client-side parser).
+  // Fill-only: the parser gives instant feedback but never overwrites a value
+  // the AI (with full context) or the user already set — it only fills blanks.
   function absorbIntoProfile(text) {
     const parsed = parseScenario(text);
-    if (Object.keys(parsed).length) setProfile(prev => mergeProfile(prev, parsed));
+    if (Object.keys(parsed).length) setProfile(prev => mergeProfile(prev, parsed, { fillOnly: true }));
   }
 
-  // Manual-form / direct edits into the profile.
+  // Manual-form / direct edits into the profile — authoritative, protected from
+  // the AI overwriting them.
   function updateProfile(patch) {
+    Object.keys(patch).forEach(k => manualKeysRef.current.add(k));
     setProfile(prev => mergeProfile(prev, patch));
+  }
+
+  // Apply an AUTHORITATIVE profile update from the AI (it has full conversation
+  // context and disambiguates, e.g. "Montana" the surname vs. the state). It may
+  // overwrite wrong earlier guesses, and clear a field by sending null/"unknown".
+  // Fields the user typed by hand are never overwritten.
+  function applyAiProfile(upd) {
+    if (!upd || typeof upd !== 'object') return;
+    const CLEAR = new Set([null, '', 'unknown', 'n/a', 'none', 'na', '—']);
+    setProfile(prev => {
+      const next = { ...prev };
+      const toApply = {};
+      for (const [k, v] of Object.entries(upd)) {
+        if (manualKeysRef.current.has(k)) continue;         // user-entered wins
+        if (v === null || CLEAR.has(typeof v === 'string' ? v.trim().toLowerCase() : v)) {
+          delete next[k];                                    // explicit clear/correction
+        } else {
+          toApply[k] = v;                                    // overwrite
+        }
+      }
+      return mergeProfile(next, toApply);
+    });
   }
 
   // Landing hero: "Analyze My Scenario" — seed the conversation and prefill.
@@ -358,10 +385,7 @@ export default function App() {
       if (displayText.includes('PROFILE_UPDATE:')) {
         const m = displayText.match(/PROFILE_UPDATE:\s*(\{[^\n]*\})/);
         if (m) {
-          try {
-            const upd = JSON.parse(m[1]);
-            if (upd && typeof upd === 'object') setProfile(prev => mergeProfile(prev, upd, { fillOnly: true }));
-          } catch {}
+          try { applyAiProfile(JSON.parse(m[1])); } catch {}
         }
         displayText = displayText.replace(/\n?PROFILE_UPDATE:\s*\{[^\n]*\}\s*/g, '').trim();
       }

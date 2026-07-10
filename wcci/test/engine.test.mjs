@@ -52,6 +52,20 @@ test('parser: county and ZIP forms', () => {
   assert.equal(parseScenario('property in 90210').zipOrCounty, '90210');
 });
 
+test('parser: a surname is not a state ("Tony Montana")', () => {
+  assert.equal(parseScenario('Tony Montana').state, undefined);
+  assert.equal(parseScenario('my last name is montana not the state').state, undefined);
+  // but a real location cue still works
+  assert.equal(parseScenario('a home in Montana').state, 'MT');
+});
+
+test('parser: money shorthand "mil" and a bare ZIP is not a price', () => {
+  assert.equal(parseScenario('i want to buy a 1.4 mil home').purchasePrice, 1400000);
+  const z = parseScenario('90210');
+  assert.equal(z.zipOrCounty, '90210');
+  assert.equal(z.purchasePrice, undefined);
+});
+
 test('parser: bank statement + investment DSCR signals', () => {
   const r = parseScenario('Buying a $800k investment property, bank statement borrower, DSCR');
   assert.equal(r.purchasePrice, 800000);
