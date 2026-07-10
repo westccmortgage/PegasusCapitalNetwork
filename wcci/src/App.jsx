@@ -105,8 +105,21 @@ export default function App() {
   const [lang, setLang] = useState(() => {
     try { return localStorage.getItem('wcci-lang') || 'en'; } catch { return 'en'; }
   });
-  const [screen, setScreen] = useState(saved?.screen || 'landing');
-  const [messages, setMessages] = useState(() => saved?.messages?.length ? saved.messages : [getInitialMessage(lang)]);
+  const [screen, setScreen] = useState(() => {
+    if (!saved) return 'landing';
+    if (saved.screen === 'capture') return 'capture';
+    // Resume an in-progress conversation so it never looks "cleared" on reload.
+    if (Array.isArray(saved.messages) && saved.messages.length > 1) return 'chat';
+    return saved.screen || 'landing';
+  });
+  // Sanitize restored messages: guarantee every message has string content so a
+  // corrupted entry can never crash the render (which would wipe the chat).
+  const [messages, setMessages] = useState(() => {
+    const restored = saved?.messages?.length
+      ? saved.messages.filter(m => m && typeof m === 'object').map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: typeof m.content === 'string' ? m.content : String(m.content ?? '') }))
+      : null;
+    return (restored && restored.length) ? restored : [getInitialMessage(lang)];
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [scenario, setScenario] = useState(saved?.scenario || null);
@@ -595,7 +608,7 @@ export default function App() {
                 padding: '10px 14px', fontSize: 14, lineHeight: 1.65, maxWidth: '82%',
                 boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
               }}>
-                {msg.content.split('\n').map((line, j, arr) => (
+                {String(msg.content ?? '').split('\n').map((line, j, arr) => (
                   <span key={j}>{renderBold(line)}{j < arr.length - 1 && <br />}</span>
                 ))}
               </div>

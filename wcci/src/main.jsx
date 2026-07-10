@@ -2,6 +2,34 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 
+// Error boundary: a render error must NEVER white-screen and wipe the chat.
+// The conversation lives in localStorage, so we offer a one-tap reload that
+// restores it instead of silently clearing everything.
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { try { console.error('WCCI render error:', error, info); } catch {} }
+  render() {
+    if (this.state.error) {
+      return React.createElement('div', {
+        style: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", background: '#f8fafc', textAlign: 'center' },
+      },
+        React.createElement('div', { style: { maxWidth: 340 } },
+          React.createElement('div', { style: { fontSize: 32, marginBottom: 12 } }, '↻'),
+          React.createElement('h2', { style: { fontSize: 18, color: '#0a2463', marginBottom: 8 } }, 'One moment…'),
+          React.createElement('p', { style: { fontSize: 14, color: '#475569', lineHeight: 1.6, marginBottom: 18 } },
+            'We hit a hiccup, but your conversation is saved. Tap below to pick up right where you left off.'),
+          React.createElement('button', {
+            onClick: () => window.location.reload(),
+            style: { background: 'linear-gradient(135deg, #0a2463, #2563eb)', color: 'white', border: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 15, fontWeight: 700, cursor: 'pointer' },
+          }, 'Resume my conversation'),
+        ),
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const style = document.createElement('style');
 style.setAttribute('data-wcci', '1');
 style.textContent = `
@@ -27,6 +55,8 @@ document.head.appendChild(style);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );
