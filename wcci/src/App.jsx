@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SYSTEM_PROMPT, langDirective, localeFor } from './systemPrompt.js';
-import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, UPLOAD_UI, getInitialMessage } from './i18n.js';
+import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, UPLOAD_UI, LICENSE_FOOTER, COMPANY_NAME, COMPANY_LICENSE, BROKER_NAME, BROKER_TITLE, BROKER_LICENSE, getInitialMessage } from './i18n.js';
 import { parseScenario } from './lib/parser.js';
 import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
@@ -660,8 +660,10 @@ export default function App() {
           <p style={{ maxWidth: 800, margin: '0 auto', fontSize: 11, color: '#94a3b8', lineHeight: 1.7, textAlign: 'center' }}>{DISCLAIMER}</p>
         </div>
 
-        <footer style={{ textAlign: 'center', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e2e8f0', fontSize: 12, color: '#94a3b8' }}>
-          © 2026 West Coast Capital Mortgage · <a href="https://wcci.online" style={{ color: '#94a3b8' }}>wcci.online</a> · NMLS #2817729 · Equal Housing Lender
+        <footer style={{ textAlign: 'center', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e2e8f0', fontSize: 12, color: '#94a3b8', lineHeight: 1.7 }}>
+          <div>© 2026 {COMPANY_NAME} · <a href="https://wcci.online" style={{ color: '#94a3b8' }}>wcci.online</a> · Equal Housing Lender</div>
+          <div style={{ marginTop: 6 }}>{COMPANY_NAME} · {COMPANY_LICENSE}</div>
+          <div>{BROKER_NAME} · {BROKER_TITLE} · {BROKER_LICENSE}</div>
         </footer>
       </div>
     );
@@ -856,7 +858,7 @@ export default function App() {
         <div style={{ background: '#0a2463', padding: 'clamp(24px, 4vw, 36px) clamp(20px, 4vw, 40px) clamp(20px, 3vw, 32px)', textAlign: 'center' }}>
           <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', color: 'white', fontSize: 20 }}>✓</div>
           <h2 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, fontWeight: 400, color: 'white', marginBottom: 6, letterSpacing: '0.01em' }}>Loan Strategy Summary</h2>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>West Coast Capital Mortgage</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>{COMPANY_NAME}</p>
         </div>
 
         {/* Delivery failure banner */}
@@ -918,7 +920,7 @@ export default function App() {
             <div style={{ textAlign: 'center', paddingTop: 8 }}>
               <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 21, color: '#0a2463', marginBottom: 10 }}>You're all set.</p>
               <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.75, marginBottom: 24 }}>
-                A licensed strategist from West Coast Capital will reach out within 1 business hour.
+                A licensed strategist from {COMPANY_NAME} will reach out within 1 business hour.
               </p>
               <button
                 onClick={() => { setScreen('chat'); resetSession(); }}
@@ -942,9 +944,15 @@ export default function App() {
           )}
         </div>
 
-        {/* Disclaimer */}
+        {/* Disclaimer + licensing */}
         <div style={{ padding: '16px clamp(20px, 4vw, 40px) 20px', borderTop: '1px solid #f0f2f6' }}>
           <p style={{ fontSize: 10, color: '#b0b8c9', lineHeight: 1.6, textAlign: 'center' }}>{DISCLAIMER}</p>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f0f2f6', textAlign: 'center', fontSize: 10, color: '#8a94a6', lineHeight: 1.7 }}>
+            <div style={{ fontWeight: 600, color: '#6b7688' }}>{COMPANY_NAME}</div>
+            <div>{COMPANY_LICENSE} · Equal Housing Lender</div>
+            <div style={{ marginTop: 6, fontWeight: 600, color: '#6b7688' }}>{BROKER_NAME} · {BROKER_TITLE}</div>
+            <div>{BROKER_LICENSE}</div>
+          </div>
         </div>
       </div>
     </div>

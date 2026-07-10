@@ -6,7 +6,29 @@ export const LANGS = ['en', 'es', 'ru'];
 
 export const DISCLAIMER = `WCCI Mortgage Strategy AI provides a preliminary mortgage scenario review and general educational information only. It is not a loan approval, preapproval, commitment to lend, rate quote, or underwriting decision. Educational information provided is general in nature and does not constitute mortgage advice for your specific situation. Actual loan terms, eligibility, pricing, and approval depend on full application review, credit review, income and asset documentation, property review, program guidelines, lender approval, and review by a licensed Mortgage Loan Originator. Specific numbers, thresholds, and program requirements change regularly — always consult with a licensed professional for current guidance.`;
 
-const NMLS_FOOTER = 'West Coast Capital Mortgage · NMLS #2817729';
+// ─────────────────────────────────────────────────────────────────────────
+// CANONICAL LICENSING — single source of truth. Use these everywhere.
+// The COMPANY NMLS (#2817729) and the BROKER's individual NMLS (#2775380) are
+// DIFFERENT and must never be interchanged.
+// ─────────────────────────────────────────────────────────────────────────
+export const COMPANY_NAME = 'West Coast Capital Mortgage Inc.';
+export const COMPANY_LICENSE = 'CA DRE Corporation License #02440065 · NMLS #2817729';
+export const COMPANY_NMLS = '2817729';
+export const COMPANY_DRE = '02440065';
+
+export const BROKER_NAME = 'Anatoliy Kanevsky';
+export const BROKER_TITLE = 'California Real Estate Broker';
+export const BROKER_LICENSE = 'CA DRE Broker License #01385024 · NMLS #2775380';
+export const BROKER_NMLS = '2775380';
+export const BROKER_DRE = '01385024';
+
+// Full two-line licensing block (for reports, disclosures, printable views).
+export const LICENSE_BLOCK = `${COMPANY_NAME}\n${COMPANY_LICENSE}\n\n${BROKER_NAME}\n${BROKER_TITLE}\n${BROKER_LICENSE}`;
+
+// Compact single-line footer used site-wide (header/footer, chat, emails).
+export const LICENSE_FOOTER = `${COMPANY_NAME} · ${COMPANY_LICENSE} · Equal Housing Lender  |  ${BROKER_NAME}, ${BROKER_TITLE} · ${BROKER_LICENSE}`;
+
+const NMLS_FOOTER = LICENSE_FOOTER;
 
 // Strategy-review disclaimer (English by design — legal).
 export const STRATEGY_DISCLAIMER = 'This is for educational and planning purposes only. It is not a mortgage application, Loan Estimate, loan approval, or commitment to lend. Actual loan terms, rates, APR, fees, mortgage insurance, reserve requirements, documentation requirements, and program availability vary by lender, borrower profile, property, market conditions, and closing date.';

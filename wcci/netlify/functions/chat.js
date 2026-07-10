@@ -1,5 +1,9 @@
 const https = require("https");
 
+// Canonical licensing footer (company NMLS #2817729 and broker NMLS #2775380 are
+// distinct — never interchange them).
+const LICENSE_HTML = 'West Coast Capital Mortgage Inc. · CA DRE Corporation License #02440065 · NMLS #2817729<br>Anatoliy Kanevsky · California Real Estate Broker · CA DRE Broker License #01385024 · NMLS #2775380';
+
 function postJSON(url, data, headers = {}) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
@@ -126,7 +130,8 @@ async function sendEmail(scenario) {
 <h3>Likely Documents to Request <span style="font-weight:normal;color:#666;font-size:13px">(${checklist.primaryLabel})</span></h3>
 <ul>${checklistHtml}</ul>
 <hr>
-<p style="font-size:11px;color:#666"><i>Preliminary scenario only. MLO review required. No approval, pricing, or commitment issued by AI.</i></p>`;
+<p style="font-size:11px;color:#666"><i>Preliminary scenario only. MLO review required. No approval, pricing, or commitment issued by AI.</i></p>
+<p style="font-size:11px;color:#888;line-height:1.6">${LICENSE_HTML}</p>`;
 
   try {
     const r = await postJSON("https://api.resend.com/emails", {

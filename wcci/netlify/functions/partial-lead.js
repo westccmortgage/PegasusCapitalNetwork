@@ -1,5 +1,9 @@
 const https = require("https");
 
+// Canonical licensing footer (company NMLS #2817729 and broker NMLS #2775380 are
+// distinct — never interchange them).
+const LICENSE_HTML = 'West Coast Capital Mortgage Inc. · CA DRE Corporation License #02440065 · NMLS #2817729<br>Anatoliy Kanevsky · California Real Estate Broker · CA DRE Broker License #01385024 · NMLS #2775380';
+
 function postJSON(url, data, headers = {}) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
@@ -47,7 +51,8 @@ async function sendEmail(extracted, updateNumber) {
 <h3>Conversation transcript</h3>
 <pre style="background:#f5f5f5;padding:12px;border-radius:4px;white-space:pre-wrap;font-family:monospace;font-size:12px">${extracted.transcript.replace(/</g, "&lt;")}</pre>
 <hr>
-<p style="font-size:11px;color:#666"><i>Partial information only. Reach out promptly — they may still complete.</i></p>`;
+<p style="font-size:11px;color:#666"><i>Partial information only. Reach out promptly — they may still complete.</i></p>
+<p style="font-size:11px;color:#888;line-height:1.6">${LICENSE_HTML}</p>`;
 
   try {
     const r = await postJSON("https://api.resend.com/emails", {
@@ -77,7 +82,8 @@ ${ctc ? `<h3>Estimated cash to close</h3><p><b>${money(ctc.estimatedCashToClose)
 <h3>Missing fields</h3><p>${(lead.missingFields || []).join(", ") || "none"}</p>
 <h3>Original message</h3><p style="color:#555">${(lead.originalMessage || "").replace(/</g, "&lt;")}</p>
 ${lead.utm ? `<h3>UTM</h3><pre>${JSON.stringify(lead.utm)}</pre>` : ""}
-<hr><p style="font-size:11px;color:#666"><i>Estimated / planning only. Not an application, approval, or commitment. MLO review required.</i></p>`;
+<hr><p style="font-size:11px;color:#666"><i>Estimated / planning only. Not an application, approval, or commitment. MLO review required.</i></p>
+<p style="font-size:11px;color:#888;line-height:1.6">${LICENSE_HTML}</p>`;
 }
 
 async function sendStructuredEmail(lead) {
