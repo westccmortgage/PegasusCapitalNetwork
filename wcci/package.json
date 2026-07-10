@@ -1,13 +1,15 @@
 {
   "name": "wcci-mortgage-ai",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:ai": "node test/conversation-test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "test:ai": "node test/conversation-test.mjs",
+    "lint": "node scripts/lint.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

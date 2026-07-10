@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SYSTEM_PROMPT, langDirective, localeFor } from './systemPrompt.js';
-import { T, LANGS, DISCLAIMER, getInitialMessage } from './i18n.js';
+import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, getInitialMessage } from './i18n.js';
+import { parseScenario } from './lib/parser.js';
+import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
+import { evaluatePaths } from './lib/strategyEngine.js';
+import { buildLead, submitLead } from './lib/leadAdapter.js';
+import StrategyProfile from './StrategyProfile.jsx';
+import ManualForm from './ManualForm.jsx';
 
 function hasContactInfo(messages) {
   const userText = messages.filter(m => m.role === 'user').map(m => m.content).join(' ');
@@ -108,6 +114,13 @@ export default function App() {
   const [partialLeadCount, setPartialLeadCount] = useState(saved?.partialLeadCount || 0);
   const [deliveryFailed, setDeliveryFailed] = useState(false);
   const [listening, setListening] = useState(false);
+  // AI Mortgage Strategy Review state
+  const [profile, setProfile] = useState(saved?.profile || {});
+  const [heroInput, setHeroInput] = useState('');
+  const [manualOpen, setManualOpen] = useState(false);
+  const [leadSent, setLeadSent] = useState(saved?.leadSent || false);
+  const [profileOpenMobile, setProfileOpenMobile] = useState(false);
+  const [winWidth, setWinWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -116,7 +129,15 @@ export default function App() {
   const micBaseRef = useRef('');        // text already committed before current recognition run
 
   const t = T[lang] || T.en;
+  const su = STRATEGY_UI;
   const speechSupported = typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const isWide = winWidth >= 900;
+
+  useEffect(() => {
+    const onResize = () => setWinWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -129,12 +150,12 @@ export default function App() {
   // Resume-later: persist the session so a returning visitor picks up where they left off.
   const sessionRef = useRef(null);
   useEffect(() => {
-    const snapshot = { messages, scenario, confirmed, screen, partialLeadCount };
+    const snapshot = { messages, scenario, confirmed, screen, partialLeadCount, profile, leadSent };
     sessionRef.current = snapshot;
     try {
       localStorage.setItem('wcci-session', JSON.stringify(snapshot));
     } catch {}
-  }, [messages, scenario, confirmed, screen, partialLeadCount]);
+  }, [messages, scenario, confirmed, screen, partialLeadCount, profile, leadSent]);
 
   // Safety net for mobile Safari, which can skip the final save when the tab is
   // backgrounded or closed. Flush the latest snapshot on hide/pagehide.
@@ -239,8 +260,56 @@ export default function App() {
     setPartialLeadCount(0);
     setDeliveryFailed(false);
     setInput('');
+    setProfile({});
+    setLeadSent(false);
+    setManualOpen(false);
     setScreen('chat');
     try { localStorage.removeItem('wcci-session'); } catch {}
+  }
+
+  // Merge freeform text into the live Scenario Profile (client-side parser).
+  function absorbIntoProfile(text) {
+    const parsed = parseScenario(text);
+    if (Object.keys(parsed).length) setProfile(prev => mergeProfile(prev, parsed));
+  }
+
+  // Manual-form / direct edits into the profile.
+  function updateProfile(patch) {
+    setProfile(prev => mergeProfile(prev, patch));
+  }
+
+  // Landing hero: "Analyze My Scenario" — seed the conversation and prefill.
+  function analyzeScenario(text) {
+    const msg = (text || '').trim();
+    if (!msg) return;
+    absorbIntoProfile(msg);
+    setScreen('chat');
+    setHeroInput('');
+    setTimeout(() => sendMessage(msg), 60);
+  }
+
+  // Value-first lead capture from the Strategy Profile panel.
+  async function handleSubmitLead(contact) {
+    const merged = mergeProfile(profile, contact);
+    setProfile(merged);
+    const st = profileStatus(merged);
+    const strat = st.hasCoreScenario ? evaluatePaths(merged) : { paths: [], topPaths: [] };
+    const top = strat.topPaths[0] || strat.paths[0] || null;
+    const lead = buildLead({
+      originalMessage: messages.find(m => m.role === 'user')?.content || '',
+      parsedScenario: profile,
+      profile: merged,
+      missingFields: st.needed.missing,
+      loanPaths: strat.paths,
+      cashToClose: top ? top.estimate : null,
+      strategySummary: top ? `${top.label}: ${top.status}` : '',
+      timestamp: new Date().toISOString(),
+    });
+    try {
+      await submitLead(lead, { messages: messages.map(m => ({ role: m.role, content: m.content })) });
+    } catch {}
+    setLeadSent(true);
+    return true;
   }
 
   async function sendMessage(text) {
@@ -249,6 +318,7 @@ export default function App() {
     micBaseRef.current = '';
     setInput('');
     setLoading(true);
+    absorbIntoProfile(text);
     const updated = [...messages, { role: 'user', content: text }];
     setMessages(updated);
 
@@ -364,15 +434,35 @@ export default function App() {
             {t.subhead}
           </p>
 
-          <button
-            onClick={() => setScreen('chat')}
-            style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white', border: 'none', borderRadius: 12, padding: '16px 36px', fontSize: 16, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 24px rgba(37,99,235,0.35)', transition: 'all 0.15s', width: '100%', maxWidth: 320 }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.45)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(37,99,235,0.35)'; }}
-          >
-            {t.cta}
-          </button>
-          <p style={{ marginTop: 14, fontSize: 13, color: '#94a3b8' }}>{t.ctaSub}</p>
+          {/* AI-first natural-language input */}
+          <div style={{ maxWidth: 620, margin: '0 auto', background: 'white', border: '1px solid #dfe6f2', borderRadius: 16, boxShadow: '0 12px 40px rgba(10,36,99,0.10)', padding: 'clamp(14px, 3vw, 20px)', textAlign: 'left' }}>
+            <textarea
+              value={heroInput}
+              onChange={e => setHeroInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); analyzeScenario(heroInput); } }}
+              placeholder={su.heroPlaceholder}
+              rows={3}
+              style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 12, padding: '14px 16px', fontSize: 15, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.55, color: '#0f172a', background: '#fafbfd', minHeight: 84 }}
+            />
+            <button
+              onClick={() => analyzeScenario(heroInput)}
+              disabled={!heroInput.trim()}
+              style={{ width: '100%', marginTop: 12, background: heroInput.trim() ? 'linear-gradient(135deg, #0a2463, #2563eb)' : '#cbd5e1', color: 'white', border: 'none', borderRadius: 12, padding: '15px', fontSize: 16, fontWeight: 700, cursor: heroInput.trim() ? 'pointer' : 'default', boxShadow: heroInput.trim() ? '0 4px 20px rgba(37,99,235,0.30)' : 'none', transition: 'all 0.15s' }}
+            >{su.heroCta}</button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 }}>
+              {su.heroChips.map((chip, i) => (
+                <button key={i} onClick={() => analyzeScenario(chip)}
+                  style={{ background: '#f1f5fb', border: '1px solid #e2e8f0', color: '#334155', borderRadius: 18, padding: '7px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#e8eef9'; e.currentTarget.style.borderColor = '#c7d2fe'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#f1f5fb'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                >{chip}</button>
+              ))}
+            </div>
+          </div>
+          <p style={{ marginTop: 16, fontSize: 13, color: '#94a3b8' }}>{t.ctaSub}</p>
+          <p style={{ marginTop: 6, fontSize: 12.5, color: '#94a3b8' }}>
+            <button onClick={() => { setScreen('chat'); setManualOpen(true); }} style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{su.manualOpen}</button>
+          </p>
 
           {/* Demo chat preview */}
           <div style={{ marginTop: 48, background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', padding: 'clamp(14px, 3vw, 24px)', maxWidth: 540, margin: '48px auto 0', textAlign: 'left' }}>
@@ -424,6 +514,23 @@ export default function App() {
     const lastIsAI = messages[messages.length - 1]?.role === 'assistant';
     const showChips = !loading && lastIsAI;
     const chips = userMsgCount === 0 ? t.starterChips : t.helperChips;
+    const pstatus = profileStatus(profile);
+
+    // The live Loan Strategy Profile panel (shared by desktop aside + mobile sheet).
+    const profilePanel = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {manualOpen && <ManualForm profile={profile} onChange={updateProfile} t={su} />}
+        <StrategyProfile
+          profile={profile}
+          onSubmitLead={handleSubmitLead}
+          leadSent={leadSent}
+          manualOpen={manualOpen}
+          onManualToggle={() => setManualOpen(o => !o)}
+          t={su}
+        />
+        <p style={{ fontSize: 10, color: '#9aa6b8', lineHeight: 1.6, padding: '0 2px' }}>{STRATEGY_DISCLAIMER}</p>
+      </div>
+    );
 
     return (
       <div style={{ height: 'calc(100vh - env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
@@ -444,8 +551,20 @@ export default function App() {
               </div>
             </div>
           </div>
-          <LangSwitch />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {!isWide && (
+              <button onClick={() => setProfileOpenMobile(true)}
+                style={{ background: 'linear-gradient(135deg, #0a2463, #2563eb)', color: 'white', border: 'none', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {su.profileTitle.split(' ')[0]} · {pstatus.percent}%
+              </button>
+            )}
+            <LangSwitch />
+          </div>
         </div>
+
+        {/* Body: conversation (left) + live profile (right, desktop) */}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
 
         {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 720, width: '100%', margin: '0 auto', alignSelf: 'stretch' }}>
@@ -525,6 +644,30 @@ export default function App() {
           </div>
           <p style={{ textAlign: 'center', fontSize: 10, color: '#cbd5e1', marginTop: 6, marginBottom: 0 }}>{t.nmls}</p>
         </div>
+        </div>{/* /conversation column */}
+
+        {/* Desktop: live Loan Strategy Profile aside */}
+        {isWide && (
+          <aside style={{ width: 390, flexShrink: 0, borderLeft: '1px solid #e2e8f0', background: '#f4f6fb', overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16 }}>
+            {profilePanel}
+          </aside>
+        )}
+        </div>{/* /body row */}
+
+        {/* Mobile: collapsible Loan Strategy Profile sheet */}
+        {!isWide && profileOpenMobile && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.35)' }}>
+            <div style={{ marginTop: 'auto', maxHeight: '88%', background: '#f4f6fb', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'white', borderBottom: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#0a2463' }}>{su.profileTitle}</span>
+                <button onClick={() => setProfileOpenMobile(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 16, cursor: 'pointer', color: '#64748b' }}>✕</button>
+              </div>
+              <div style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+                {profilePanel}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

@@ -8,6 +8,36 @@ export const DISCLAIMER = `WCCI Mortgage Strategy AI provides a preliminary mort
 
 const NMLS_FOOTER = 'West Coast Capital Mortgage · NMLS #2817729';
 
+// Strategy-review disclaimer (English by design — legal).
+export const STRATEGY_DISCLAIMER = 'This is for educational and planning purposes only. It is not a mortgage application, Loan Estimate, loan approval, or commitment to lend. Actual loan terms, rates, APR, fees, mortgage insurance, reserve requirements, documentation requirements, and program availability vary by lender, borrower profile, property, market conditions, and closing date.';
+
+// UI strings for the AI Mortgage Strategy Review. Kept in English within the
+// profile panel for consistency with the (English) lead the MLO receives.
+export const STRATEGY_UI = {
+  heroTitle: 'AI Mortgage Strategy Review',
+  heroLead: 'Tell us what you want to buy. The AI advisor will help identify possible loan paths and estimate your real cash needed to close.',
+  heroPlaceholder: "I want to buy a $2M home in California. I'm self-employed and have $400k down. What is my best scenario?",
+  heroCta: 'Analyze My Scenario',
+  heroChips: ['$2M self-employed buyer', '10% down Non-QM', 'Jumbo full-doc buyer', 'Bank statement borrower', 'Investment DSCR scenario', 'Compare down payment options'],
+  profileTitle: 'Loan Strategy Profile',
+  nextQuestion: 'Next best question',
+  pathsTitle: 'Possible loan paths',
+  pathsSub: 'Estimated and cautious — not an approval or a quote.',
+  pathsLocked: 'Share your price, down payment, and state and your possible loan paths and estimated cash to close will appear here.',
+  manualOpen: 'Prefer to enter details manually?',
+  manualHide: 'Hide manual entry',
+  manualTitle: 'Manual entry',
+  manualSub: 'Enter or adjust any details directly. The AI keeps using whatever you provide.',
+  leadTitle: 'Send my strategy summary',
+  leadSub: 'I can prepare a personalized strategy summary for you. Where should we send it?',
+  leadName: 'Name',
+  leadPhone: 'Phone',
+  leadEmail: 'Email',
+  leadCta: 'Send My Strategy Summary',
+  leadSentTitle: 'Summary on its way',
+  leadSentBody: 'A licensed strategist will follow up shortly.',
+};
+
 export const T = {
   en: {
     brand: 'West Coast Capital',

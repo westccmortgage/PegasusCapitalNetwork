@@ -60,10 +60,56 @@ async function sendEmail(extracted, updateNumber) {
   } catch (e) { console.error("Partial lead email failed:", e.message); return false; }
 }
 
+// Render the structured Strategy Review lead (from the profile panel) as HTML.
+function structuredLeadHtml(lead) {
+  const p = lead.scenarioProfile || {};
+  const money = (n) => (n == null || n === "" ? "—" : "$" + Math.round(Number(n)).toLocaleString("en-US"));
+  const paths = (lead.loanPathMatches || []).map(m =>
+    `<li><b>${m.label}</b> — ${m.status}${m.estimatedMonthlyPayment ? ` · est. ${money(m.estimatedMonthlyPayment)}/mo · cash ${money(m.estimatedCashToClose)}` : ""}</li>`).join("");
+  const ctc = lead.cashToClose;
+  return `<h2>🧭 AI MORTGAGE STRATEGY REVIEW — Lead</h2>
+<h3>Contact</h3>
+<p><b>Name:</b> ${(lead.contact && lead.contact.name) || "—"}<br><b>Phone:</b> ${(lead.contact && lead.contact.phone) || "—"}<br><b>Email:</b> ${(lead.contact && lead.contact.email) || "—"}</p>
+<h3>Scenario Profile</h3>
+<p><b>Purchase price:</b> ${money(p.purchasePrice)}<br><b>Down payment:</b> ${money(p.downPayment)}<br><b>Loan amount:</b> ${money(p.loanAmount)}<br><b>LTV:</b> ${p.ltv != null ? p.ltv + "%" : "—"}<br><b>State:</b> ${p.state || "—"}<br><b>ZIP/County:</b> ${p.zipOrCounty || "—"}<br><b>Occupancy:</b> ${p.occupancy || "—"}<br><b>Loan purpose:</b> ${p.loanPurpose || "—"}<br><b>Employment:</b> ${p.employmentType || "—"}<br><b>Income doc:</b> ${p.incomeDocPath || "—"}<br><b>Est. FICO:</b> ${p.estimatedFICO || "—"}<br><b>Reserves:</b> ${money(p.reservesAfterClosing)}<br><b>Goal:</b> ${p.borrowerGoal || "—"}</p>
+<h3>Possible loan paths</h3><ul>${paths || "<li>—</li>"}</ul>
+${ctc ? `<h3>Estimated cash to close</h3><p><b>${money(ctc.estimatedCashToClose)}</b> (down ${money(ctc.downPayment)} + closing ${money(ctc.closingCosts)})<br>Est. payment ${money(ctc.monthlyPayment)}/mo</p>` : ""}
+<h3>Missing fields</h3><p>${(lead.missingFields || []).join(", ") || "none"}</p>
+<h3>Original message</h3><p style="color:#555">${(lead.originalMessage || "").replace(/</g, "&lt;")}</p>
+${lead.utm ? `<h3>UTM</h3><pre>${JSON.stringify(lead.utm)}</pre>` : ""}
+<hr><p style="font-size:11px;color:#666"><i>Estimated / planning only. Not an application, approval, or commitment. MLO review required.</i></p>`;
+}
+
+async function sendStructuredEmail(lead) {
+  const API_KEY = process.env.RESEND_API_KEY;
+  const TO = process.env.LEAD_EMAIL_TO || "akanevsky1967@gmail.com";
+  const FROM = process.env.LEAD_EMAIL_FROM || "onboarding@resend.dev";
+  if (!API_KEY) { console.error("RESEND_API_KEY not configured"); return false; }
+  const name = (lead.contact && lead.contact.name) || "Unknown";
+  try {
+    const r = await postJSON("https://api.resend.com/emails", {
+      from: FROM, to: [TO],
+      subject: `🧭 WCCI Strategy Review — ${name}`,
+      html: structuredLeadHtml(lead),
+    }, { Authorization: `Bearer ${API_KEY}` });
+    if (r.status >= 400) console.error("Structured lead email error:", r.status, r.body);
+    return r.status < 400;
+  } catch (e) { console.error("Structured lead email failed:", e.message); return false; }
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
   try {
-    const { messages, updateNumber } = JSON.parse(event.body);
+    const payload = JSON.parse(event.body);
+    const { messages, updateNumber, structuredLead } = payload;
+
+    // New: structured Strategy Review lead from the profile panel.
+    if (structuredLead) {
+      const em = await sendStructuredEmail(structuredLead);
+      console.log("Structured lead delivery:", { email: em });
+      return { statusCode: 200, body: JSON.stringify({ email: em }) };
+    }
+
     if (!Array.isArray(messages)) return { statusCode: 400, body: "Invalid payload" };
 
     const extracted = extractFromConversation(messages);
