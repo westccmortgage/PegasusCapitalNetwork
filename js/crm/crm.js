@@ -28,6 +28,8 @@
   function el(id){ return document.getElementById(id); }
   function gv(id){ return (el(id)||{value:''}).value; }
   function fmtDate(d){ if(!d) return ''; var dt=new Date(d); if(isNaN(dt)) return ''; return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  function webUrl(u){ u=(u||'').trim(); if(!u) return null; if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) u='https://'+u; return /^https?:\/\//i.test(u)?u.slice(0,400):null; }
+  function isMissingCol(e){ var m=(e&&e.message||'').toLowerCase(); return m.indexOf('column')>=0 && (m.indexOf('does not exist')>=0||m.indexOf('schema cache')>=0); }
   function relDay(d){
     var dt=new Date(d); var today=new Date(); today.setHours(0,0,0,0);
     var t=new Date(dt); t.setHours(0,0,0,0); var diff=Math.round((t-today)/86400000);
@@ -253,7 +255,22 @@
       '<div class="row2"><div class="field"><label class="label">Type</label><input class="input" id="ct_type" list="ct_types" value="'+val('contact_type')+'" placeholder="lender, broker, borrower…">'+
         '<datalist id="ct_types"><option>lender</option><option>borrower</option><option>broker</option><option>agent</option><option>investor</option><option>partner</option></datalist></div>'+
       '<div class="field"><label class="label">Tags <span class="opt">(comma-separated)</span></label><input class="input" id="ct_tags" value="'+(c&&c.tags?esc(c.tags.join(", ")):'')+'" placeholder="Bridge, Multifamily"></div></div>'+
-      '<div class="field"><label class="label">Notes</label><textarea class="ws-textarea" id="ct_notes" maxlength="600" data-count placeholder="Context, history, how you met…">'+val('notes')+'</textarea></div>';
+      '<div class="field"><label class="label">Notes</label><textarea class="ws-textarea" id="ct_notes" maxlength="600" data-count placeholder="Context, history, how you met…">'+val('notes')+'</textarea></div>'+
+      /* Optional intelligence-workflow fields (migration 067). Collapsed by
+         default so everyday CRM use stays light. Degrades gracefully: if 067
+         is not applied, saveContact() silently drops unknown columns. */
+      '<details style="margin-top:2px"'+((c&&(c.job_title||c.website||c.linkedin_url||c.address_line1||c.city||c.source_url||c.data_confidence))?' open':'')+'>'+
+      '<summary style="cursor:pointer;font-size:11.5px;color:var(--text3);margin-bottom:10px">More details (title, address, links, data quality)</summary>'+
+      '<div class="row2"><div class="field"><label class="label">Job title</label><input class="input" id="ct_job" maxlength="80" value="'+val('job_title')+'" placeholder="e.g. Senior VP, Investments"></div>'+
+      '<div class="field"><label class="label">Website</label><input class="input" id="ct_web" maxlength="200" value="'+val('website')+'" placeholder="https://…"></div></div>'+
+      '<div class="field"><label class="label">LinkedIn</label><input class="input" id="ct_li" maxlength="200" value="'+val('linkedin_url')+'" placeholder="linkedin.com/in/…"></div>'+
+      '<div class="field"><label class="label">Address</label><input class="input" id="ct_addr" maxlength="160" value="'+val('address_line1')+'" placeholder="Street address"></div>'+
+      '<div class="row2"><div class="field"><label class="label">City</label><input class="input" id="ct_city" maxlength="80" value="'+val('city')+'"></div>'+
+      '<div class="field"><label class="label">State / ZIP</label><div style="display:flex;gap:8px"><input class="input" id="ct_state" maxlength="20" style="width:70px" value="'+val('state')+'" placeholder="FL"><input class="input" id="ct_zip" maxlength="12" value="'+val('postal_code')+'" placeholder="33480"></div></div></div>'+
+      '<div class="row2"><div class="field"><label class="label">Data confidence</label><select class="input" id="ct_conf">'+
+        ['','Verified','Reported','Estimated','Unknown'].map(function(o){return '<option value="'+o+'"'+((c&&c.data_confidence)===o||(!c&&o==='')?' selected':'')+'>'+(o||'—')+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label class="label">Source URL</label><input class="input" id="ct_src" maxlength="400" value="'+val('source_url')+'" placeholder="https://… (where this info came from)"></div></div>'+
+      '</details>';
     var footer='<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
       (id?'<button class="btn btn-ghost crm-del" onclick="PegCRM.deleteContact(\''+id+'\')">Delete</button>':'')+
       '<button class="btn btn-pri" onclick="PegCRM.saveContact('+(id?'\''+id+'\'':'null')+')">'+(id?'Save':'Add contact')+'</button>';
@@ -265,9 +282,16 @@
     var row={ name:name, company:gv('ct_company').trim()||null, email:gv('ct_email').trim()||null, phone:gv('ct_phone').trim()||null,
       contact_type:gv('ct_type').trim()||null, notes:gv('ct_notes').trim()||null,
       tags:gv('ct_tags').split(',').map(function(t){return t.trim();}).filter(Boolean) };
+    /* Optional intelligence fields (067). Only http(s) URLs are kept. */
+    var extra={ job_title:gv('ct_job').trim()||null, website:webUrl(gv('ct_web')), linkedin_url:webUrl(gv('ct_li')),
+      address_line1:gv('ct_addr').trim()||null, city:gv('ct_city').trim()||null, state:gv('ct_state').trim()||null,
+      postal_code:gv('ct_zip').trim()||null, data_confidence:gv('ct_conf')||null, source_url:webUrl(gv('ct_src')) };
     try{
-      if(id){ await updateRow('crm_contacts',id,row); Object.assign(CRM.contacts.find(function(x){return x.id===id;}),row); }
-      else { row.source='manual'; var saved=await insertRow('crm_contacts',row); if(live())CRM.contacts.unshift(saved); }
+      if(id){ try{ await updateRow('crm_contacts',id,Object.assign({},row,extra)); Object.assign(CRM.contacts.find(function(x){return x.id===id;}),row,extra); }
+        catch(e1){ if(!isMissingCol(e1)) throw e1; await updateRow('crm_contacts',id,row); Object.assign(CRM.contacts.find(function(x){return x.id===id;}),row); } }
+      else { row.source='manual';
+        try{ var saved=await insertRow('crm_contacts',Object.assign({},row,extra)); if(live())CRM.contacts.unshift(saved); }
+        catch(e2){ if(!isMissingCol(e2)) throw e2; var saved2=await insertRow('crm_contacts',row); if(live())CRM.contacts.unshift(saved2); } }
       window.Pegasus.closeModal(); window.Pegasus.toast('◈','var(--blue-dim)',id?'Contact updated':'Contact added',name); render();
     }catch(e){ if(err)err.textContent=e.message||'Could not save.'; }
   }
@@ -352,11 +376,20 @@
     var acts=CRM.activities.filter(function(a){return a.contact_id===id;});
     var dealsHtml=deals.length?deals.map(function(d){ return '<div class="crm-detail-row" onclick="Pegasus.closeModal();PegCRM.dealModal(\''+d.id+'\')"><span>'+esc(d.title)+'</span><span class="crm-pill">'+esc(STAGE_LABEL[d.stage]||d.stage)+'</span><span class="crm-detail-amt">'+money(d.amount)+'</span></div>'; }).join(''):'<div class="crm-detail-empty">No deals yet.</div>';
     var actsHtml=acts.length?acts.map(activityRow).join(''):'<div class="crm-detail-empty">No activity yet.</div>';
+    var place=[c.address_line1,c.city,c.state,c.postal_code].filter(Boolean).join(', ');
+    var links=(c.website?'<a href="'+esc(webUrl(c.website)||'#')+'" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">Website</a>':'')+
+      (c.linkedin_url?(c.website?' · ':'')+'<a href="'+esc(webUrl(c.linkedin_url)||'#')+'" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">LinkedIn</a>':'');
+    var quality=(c.data_confidence?'<span class="crm-pill" title="Data confidence">'+esc(c.data_confidence)+'</span>':'')+
+      (c.last_verified_at?'<span style="font-size:10.5px;color:var(--text3)">checked '+fmtDate(c.last_verified_at)+'</span>':'')+
+      (c.source_url?'<a href="'+esc(webUrl(c.source_url)||'#')+'" target="_blank" rel="noopener noreferrer" style="font-size:10.5px;color:var(--blue)">source ↗</a>':'');
     var inner='<div class="crm-detail-id">'+
         '<div class="crm-detail-name">'+esc(c.name)+'</div>'+
-        (c.company?'<div class="crm-detail-co">'+esc(c.company)+'</div>':'')+
+        ((c.job_title||c.company)?'<div class="crm-detail-co">'+esc([c.job_title,c.company].filter(Boolean).join(' · '))+'</div>':'')+
         '<div class="crm-detail-chips">'+(c.contact_type?'<span class="crm-pill">'+esc(c.contact_type)+'</span>':'')+'<span class="crm-src crm-src-'+esc(c.source)+'">'+esc(srcLabel(c.source))+'</span>'+(c.tags||[]).map(function(t){return '<span class="crm-tagchip">'+esc(t)+'</span>';}).join('')+'</div>'+
         ((c.email||c.phone)?'<div class="crm-detail-contact">'+(c.email?'<span>✉ '+esc(c.email)+'</span>':'')+(c.phone?'<span>☎ '+esc(c.phone)+'</span>':'')+'</div>':'')+
+        (place?'<div class="crm-detail-contact"><span>⌂ '+esc(place)+'</span></div>':'')+
+        (links?'<div class="crm-detail-contact" style="gap:6px">'+links+'</div>':'')+
+        (quality?'<div class="crm-detail-chips" style="align-items:center;gap:8px">'+quality+'</div>':'')+
         (c.notes?'<div class="crm-detail-notes">'+esc(c.notes)+'</div>':'')+
       '</div>'+
       '<div class="crm-detail-sec"><div class="crm-detail-h">Deals</div>'+dealsHtml+'</div>'+
@@ -429,21 +462,24 @@
       '<button class="btn btn-ghost" onclick="Pegasus.closeModal()">Cancel</button>'+
       '<button class="btn btn-pri" id="crm-picker-add" disabled>Add Selected</button>'));
     try{
-      var pr=await c.from('profiles').select('id,full_name,email,role,company_name,profile_completion')
+      /* Public/member-discovery fields ONLY — never pull another member's
+         private email into the browser or the caller's CRM (they can fill
+         contact details in themselves). */
+      var pr=await c.from('profiles').select('id,full_name,role,company_name,profile_completion')
         .not('full_name','is',null).order('profile_completion',{ascending:false}).limit(100);
       var profiles=pr.data||[];
       var existing=new Set();
-      CRM.contacts.forEach(function(ct){ if(ct.pegasus_user_id) existing.add(ct.pegasus_user_id); if(ct.email) existing.add(ct.email); });
+      CRM.contacts.forEach(function(ct){ if(ct.linked_profile_id) existing.add(ct.linked_profile_id); });
       var ps={selected:new Set(),q:''};
 
       function rp(){
         var q=ps.q.toLowerCase();
-        var rows=q?profiles.filter(function(p){return (p.full_name||'').toLowerCase().indexOf(q)>=0||(p.email||'').toLowerCase().indexOf(q)>=0;}):profiles;
+        var rows=q?profiles.filter(function(p){return (p.full_name||'').toLowerCase().indexOf(q)>=0||(p.company_name||'').toLowerCase().indexOf(q)>=0;}):profiles;
         var body='<div style="padding:12px 16px 4px;border-bottom:1px solid var(--border)">'+
           '<input id="crm-picker-q" class="input" placeholder="Search…" value="'+esc(ps.q)+'" oninput="PegCRM._ps(this.value)" autocomplete="off" style="width:100%;box-sizing:border-box">'+
           '</div><div style="overflow-y:auto;max-height:320px;padding:8px 0">'+
           (rows.length?rows.map(function(p){
-            var alr=existing.has(p.id)||existing.has(p.email||'');
+            var alr=existing.has(p.id);
             var chk=ps.selected.has(p.id);
             var ini=(p.full_name||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
             var tl=(p.role||'member').replace(/_/g,' ').replace(/w/g,function(x){return x.toUpperCase();});
@@ -488,9 +524,9 @@
     try{
       for(var i=0;i<toAdd.length;i++){
         var p=toAdd[i];
-        await insertRow('crm_contacts',{owner_id:u,name:p.full_name||p.email||'Member',
+        await insertRow('crm_contacts',{owner_id:u,name:p.full_name||'Pegasus Member',
           company:p.company_name||null,contact_type:(p.role||'member').replace(/_/g,' '),
-          email:p.email||null,source:'pegasus_member',pegasus_user_id:p.id,status:'active',tags:[],notes:''}); n++;
+          source:'pegasus_member',linked_profile_id:p.id,status:'active',tags:[],notes:''}); n++;
       }
       window.Pegasus.closeModal(); await loadAll(); render();
       window.Pegasus.toast('◈','var(--blue-dim)','Added '+n+' contact'+(n===1?'':'s'),

@@ -120,6 +120,12 @@
   to = "/opportunity.html?slug=:slug"
   status = 200
 
+# ── Private admin module: Capital Intelligence (no sitemap, noindex, no-store).
+[[redirects]]
+  from = "/admin/intelligence"
+  to = "/admin-intelligence.html"
+  status = 200
+
 [[redirects]]
   from = "/dashboard"
   to = "/dashboard.html"
@@ -234,6 +240,19 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Private admin module — never cache, never index.
+[[headers]]
+  for = "/admin-intelligence.html"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admin/intelligence"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
 
 # ════════════════════════════════════════════════════════════════════════════
 # SCHEDULED FUNCTIONS (unchanged)

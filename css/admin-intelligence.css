@@ -1,0 +1,78 @@
+/* ============================================================================
+   PEGASUS CAPITAL INTELLIGENCE — scoped admin styles (pit-*)
+   Layered on the existing Pegasus tokens/components; no second visual language.
+   ============================================================================ */
+.pit-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin:4px 0 18px;padding-bottom:0}
+.pit-tab{border:none;background:transparent;color:var(--text2);font-size:12.5px;font-weight:500;padding:9px 13px;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.pit-tab:hover{color:var(--text)}
+.pit-tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.pit-head-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+
+.pit-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.pit-tile{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:14px 16px}
+.pit-tile .n{font-size:24px;font-weight:600;color:var(--text);font-family:var(--serif);line-height:1}
+.pit-tile .l{font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-top:6px}
+.pit-tile.warn .n{color:var(--amber)}
+.pit-tile.good .n{color:var(--green)}
+.pit-tile.hot .n{color:var(--red)}
+
+.pit-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.pit-grid2{grid-template-columns:1fr}}
+.pit-panel{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);padding:16px 18px;margin-bottom:14px}
+.pit-panel h3{font-size:11px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:0 0 12px;font-weight:500}
+.pit-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--text2)}
+.pit-row:last-child{border-bottom:none}
+.pit-row .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pit-empty{padding:22px 8px;text-align:center;color:var(--text3);font-size:12.5px;line-height:1.5}
+
+.pit-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end}
+.pit-filters .field{margin:0}
+.pit-filters .input,.pit-filters select{font-size:12px;padding:7px 9px;min-width:110px}
+.pit-filters .label{font-size:9.5px}
+
+.pit-table-wrap{overflow-x:auto;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3)}
+.pit-table{width:100%;border-collapse:collapse;font-size:12px;min-width:840px}
+.pit-table th{font-size:9.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+.pit-table th.noclick{cursor:default}
+.pit-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.pit-table tbody tr{cursor:pointer;transition:background .12s}
+.pit-table tbody tr:hover{background:var(--bg2)}
+.pit-table tbody tr:last-child td{border-bottom:none}
+.pit-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pit-table .strong{color:var(--text);font-weight:500}
+
+.pit-conf{display:inline-block;font-size:9px;font-family:var(--mono);letter-spacing:.05em;border-radius:9px;padding:2px 8px;border:1px solid var(--border2);color:var(--text3);white-space:nowrap}
+.pit-conf.Verified{color:var(--green);border-color:var(--green-dim);background:var(--green-dim)}
+.pit-conf.Reported{color:var(--blue);border-color:var(--blue-dim);background:var(--blue-dim)}
+.pit-conf.Estimated{color:var(--amber);border-color:rgba(201,162,39,.2);background:rgba(201,162,39,.1)}
+.pit-conf.Unknown{color:var(--text3)}
+.pit-reco{display:inline-block;font-size:9.5px;font-weight:600;border-radius:9px;padding:2px 9px;white-space:nowrap}
+.pit-reco.act{color:#fff;background:var(--green)}
+.pit-reco.watch{color:#3d3006;background:var(--amber,#C9A227)}
+.pit-reco.pass{color:var(--text3);background:var(--bg3)}
+.pit-stale{color:var(--amber);font-size:10px;font-family:var(--mono)}
+.pit-src{font-size:10px;color:var(--blue);text-decoration:none;white-space:nowrap}
+.pit-meta{font-size:10px;color:var(--text4);font-family:var(--mono)}
+
+.pit-detail-tabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:14px}
+.pit-detail-tab{border:none;background:transparent;color:var(--text3);font-size:11.5px;padding:7px 10px;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.pit-detail-tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.pit-kv{display:grid;grid-template-columns:170px 1fr;gap:6px 14px;font-size:12.5px}
+.pit-kv dt{color:var(--text3)}
+.pit-kv dd{color:var(--text);margin:0;word-break:break-word}
+
+.pit-drop{border:1.5px dashed var(--border2);border-radius:var(--r3);padding:34px 20px;text-align:center;color:var(--text3);font-size:13px;cursor:pointer;transition:all .15s;background:var(--bg1)}
+.pit-drop:hover,.pit-drop.over{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.pit-import-sum{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.pit-import-sum .chip{font-size:11.5px;padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--bg1);color:var(--text2)}
+.pit-import-sum .chip b{color:var(--text)}
+.pit-conflict{border:1px solid rgba(201,162,39,.35);background:rgba(201,162,39,.06);border-radius:var(--r2);padding:10px 12px;margin-bottom:8px;font-size:12px}
+.pit-conflict .k{font-family:var(--mono);font-size:10.5px;color:var(--text3)}
+.pit-conflict .choices{display:flex;gap:14px;margin-top:7px;font-size:11.5px;color:var(--text2)}
+.pit-invalid{border:1px solid rgba(200,74,58,.3);background:rgba(200,74,58,.05);border-radius:var(--r2);padding:8px 12px;margin-bottom:6px;font-size:11.5px;color:var(--text2)}
+
+.pit-match-col h4{font-size:12px;margin:0 0 8px;color:var(--text)}
+.pit-match-card{border:1px solid var(--border);border-radius:var(--r2);background:var(--bg1);padding:11px 13px;margin-bottom:8px;font-size:12px}
+.pit-match-card .why{color:var(--text3);font-size:11px;margin-top:5px;line-height:1.5}
+.pit-note{font-size:11px;color:var(--text4);line-height:1.55;margin-top:10px}
+@media(max-width:760px){.pit-kv{grid-template-columns:1fr}.pit-table{min-width:640px}}

@@ -229,3 +229,33 @@ SUPABASE_SERVICE_ROLE_KEY        = (for webhook + admin writes; server-side only
 - Growth Capital: schema 004 (founder_submissions/investor_appetite/growth rooms/score_growth). **status: backend-ready; UI pending**
 - Featured/Ambassador: profiles.featured columns + homepage placement. **status: connected**
 - Email: `email_outbox` + `queue_email()` single integration point. **status: hook-ready; sender pending**
+
+---
+## v71 — Pegasus Capital Intelligence (private admin module)
+Apply in order; all additive + idempotent:
+- **067_crm_intelligence_fields.sql** — CRM: FK `linked_profile_id`→profiles
+  (SET NULL), per-owner unique link index, optional fields (job_title, website,
+  linkedin_url, address, city/state/zip, last_verified_at, data_confidence,
+  source_url, metadata). Requires 020.
+- **068_pci_core.sql** — 10 `pci_` intelligence tables + admin-only RLS +
+  dedupe indexes + touch triggers. Requires 011 (is_admin_user), 067.
+- **069_pci_import.sql** — import batches/rows + change log + transactional
+  `pci_commit_import_batch` / `pci_rollback_import_batch` (service_role-only
+  EXECUTE). Requires 068.
+- **070_pci_storage_health.sql** — private bucket
+  `capital-intelligence-private` + admin storage policies + admin-only
+  `pci_check_schema()`. Requires 068/069.
+
+Post-apply checklist:
+- [ ] `select public.pci_check_schema();` as an admin returns `"ok": true`
+- [ ] /admin/intelligence renders for an admin; non-admin is redirected
+- [ ] Anon/member direct Supabase selects on `pci_properties` return nothing
+- [ ] Template downloads; fixture-style workbook previews and commits
+
+### v71.1 — Capital Intelligence code-review hardening (same migration files 067–070)
+No new migration numbers — the fixes are edits to 067–070 (undeployed):
+- **067**: destructive dup-delete replaced with a **non-destructive deterministic merge** (reassigns crm_deals/reminders/activities, coalesces fields, unions tags, no swallowed exceptions); unique index created only after merge.
+- **068**: `pci_loans.recording_jurisdiction` added; loan unique index is now `(lower(btrim(recording_jurisdiction)), instrument_number)`; property parcel unique index remains `(county, parcel_id)` and is now matched by the importer.
+- **069**: `pci_commit_import_batch` made **atomic** (any row failure aborts the whole batch); `pci_rollback_import_batch` now detects manual edits by comparing live records to committed `after_data` (not the change log); new **`pci_entity_sources`** provenance table (admin-RLS) + `pci_import_rows.source_ref`; `pci_change_log.source_id` populated on commit.
+- **070**: `pci_check_schema()` expects `pci_entity_sources`.
+- DB-level proofs: `qa/sql/pci-db-tests.sql` (`PCI_DB_TESTS=1 npm run qa:intelligence`).

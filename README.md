@@ -75,3 +75,11 @@ rooms, deal-room detail, match engine, membership, admin, and profile editor
 all `boot()` from the store and read/write through the API — live when
 authenticated, seeded-demo otherwise. SQL: 001 (membership) + 002 (platform:
 9-state workflow, matching, notifications, messaging) + 003 (seed).
+
+## Private: Capital Intelligence (admins)
+Internal CRE acquisition/debt/lender research OS at `/admin/intelligence`
+(Palm Beach County retail, $4–7M focus). Daily XLSX import with preview/
+commit/rollback, confidence-guarded history, private document storage,
+deterministic capital matching. Docs: `docs/CAPITAL-INTELLIGENCE.md` ·
+`docs/CAPITAL-INTELLIGENCE-IMPORT.md`. Migrations 067–070. QA:
+`npm run qa:intelligence`.

@@ -11,11 +11,13 @@
     "qa:forms": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/form-audit.js",
     "qa:auth": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/auth-audit.js",
     "qa:mobile": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/mobile-audit.js",
+    "qa:intelligence": "node qa/intelligence-audit.js",
     "qa:all": "npm run qa:links && npm run qa:runtime && npm run qa:auth && npm run qa:mobile"
   },
   "dependencies": {
     "stripe": "^14.0.0",
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.0"

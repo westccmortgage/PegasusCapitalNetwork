@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="en"><head><title>Capital Intelligence — Pegasus Admin</title>
+<meta name="robots" content="noindex,nofollow"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529"><link rel="stylesheet" href="/css/admin-intelligence.css"><link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/icon-16.png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+</head><body>
+<!-- PRIVATE ADMIN MODULE — Pegasus Capital Intelligence. No sitemap entry,
+     noindex + no-store (netlify.toml). Admin-gated twice: store check below
+     plus a LIVE database re-check; data itself is protected by admin-only RLS
+     regardless of anything in this page. -->
+<script src="/js/pegasus-config.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-supabase.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-entitlements.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-data.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-content.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-match.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-store.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-api.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-forms.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-auth.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-core.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-billing.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
+<script src="/js/intelligence/intelligence-api.js"></script>
+<script src="/js/intelligence/admin-intelligence.js"></script>
+<script>
+Pegasus.boot(async ()=>{
+
+// ── ADMIN GATE (layer 1: local store — instant redirect for non-admins) ─────
+var _st = window.PegStore && window.PegStore.get ? window.PegStore.get() : {};
+var _isLive  = _st.mode === 'live';
+var _isAdmin = window.PegStore && typeof window.PegStore.isAdmin === 'function'
+               ? window.PegStore.isAdmin()
+               : (_st.profile && _st.profile.role === 'admin');
+if(!_isLive)  { location.replace('/signin.html'); return; }
+if(!_isAdmin) { location.replace('/dashboard.html'); return; }
+
+const v = Pegasus.mountApp({active:'Capital Intelligence Admin', title:'Capital Intelligence',
+  sub:'Private acquisition, debt & capital research — Palm Beach County retail'});
+
+// ── ADMIN GATE (layer 2: LIVE database re-check — never trust a stale cache).
+// Even if both gates were bypassed, every pci_ table is admin-only via RLS.
+var liveAdmin = await window.PegIntelAPI.verifyAdmin();
+if(!liveAdmin){ location.replace('/dashboard.html'); return; }
+
+PegIntel.mount(v);
+});
+</script>
+</body></html>

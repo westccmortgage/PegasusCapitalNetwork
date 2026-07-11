@@ -44,3 +44,36 @@ No page holds its own session/tier/usage — they all read `PegStore`.
 4. Optionally set `ALLOW_DEMO_FALLBACK:false` in config to hard-gate (no demo).
 
 The preview still renders everywhere because demo fallback is on by default.
+
+## Private admin module — Pegasus Capital Intelligence (v71)
+
+Admin-only CRE intelligence OS at `/admin/intelligence` (rewrite →
+`admin-intelligence.html`; noindex + no-store; sidebar link admins-only).
+Full documentation: `docs/CAPITAL-INTELLIGENCE.md` and
+`docs/CAPITAL-INTELLIGENCE-IMPORT.md`.
+
+- **Data**: `pci_*` tables (properties, property_contacts, loans, tenants,
+  listings, distress_signals, lender_programs, sources, scores, daily_actions,
+  import_batches, import_rows, change_log) — every table RLS-locked to
+  `public.is_admin_user()`. Migrations 067–070.
+- **CRM stays the relationship layer**: 067 fixes the `linked_profile_id`
+  picker bug (was inserting a nonexistent `pegasus_user_id` and pulling member
+  emails into the browser) and adds optional intelligence fields.
+- **Import pipeline**: daily XLSX → `intelligence-import-preview` →
+  Import Center review (conflict resolution) → `intelligence-import-commit`
+  (transactional RPC `pci_commit_import_batch`, full `pci_change_log`,
+  Verified-data downgrade backstop) → optional `intelligence-import-rollback`
+  (LIFO, refuses if touched records changed since). All parsing/validation/
+  dedupe semantics live in `netlify/functions/lib/intelligence-import-core.js`
+  (pure, unit-tested offline). Template + QA fixture generate from the same
+  contract (`exceljs`).
+- **Storage**: private bucket `capital-intelligence-private`
+  (imports/YYYY/MM/…, properties/{id}/…), admin-only storage RLS, signed URLs.
+- **Client**: `js/intelligence/intelligence-api.js` (RLS reads + JWT function
+  calls; no service keys in the browser) and
+  `js/intelligence/admin-intelligence.js` (Dashboard · Properties · Property
+  Detail · Contacts · Lenders & Capital · Capital Match · Import Center ·
+  Data Quality).
+- **Health/QA**: admin-only `pci_check_schema()` RPC (deliberately separate
+  from the member-callable `check_platform_schema()`), `npm run
+  qa:intelligence` (81 offline checks + optional live anon-RLS probe).
