@@ -37,6 +37,7 @@ section("Static wiring");
   "netlify/functions/lib/intelligence-workbook.js", "netlify/functions/lib/intelligence-auth.js",
   "supabase/067_crm_intelligence_fields.sql", "supabase/068_pci_core.sql",
   "supabase/069_pci_import.sql", "supabase/070_pci_storage_health.sql",
+  "supabase/071_pci_analyst_role.sql",
   "docs/CAPITAL-INTELLIGENCE.md", "docs/CAPITAL-INTELLIGENCE-IMPORT.md",
 ].forEach((f) => ok("exists: " + f, fs.existsSync(path.join(ROOT, f))));
 
@@ -46,7 +47,29 @@ ok("netlify.toml no-store on admin page", /for = "\/admin-intelligence\.html"[\s
 ok("netlify.toml X-Robots-Tag on admin page", /for = "\/admin-intelligence\.html"[\s\S]{0,220}X-Robots-Tag/.test(toml));
 const page = read("admin-intelligence.html");
 ok("admin page has meta noindex", /name="robots" content="noindex,nofollow"/.test(page));
-ok("admin page double-gates (store + live re-check)", /verifyAdmin/.test(page) && /PegStore/.test(page));
+ok("admin page double-gates (store + live re-check)", /verifyStaff/.test(page) && /PegStore/.test(page));
+ok("admin page redirects non-staff (no role → dashboard)", /if\(!access\.role\)/.test(page) && /dashboard\.html/.test(page));
+
+// ── Analyst role (migration 071) — RLS split + UI gating ─────────────────────
+const m071 = read("supabase/071_pci_analyst_role.sql");
+ok("071 adds profiles.pci_role column", /add column if not exists pci_role/.test(m071) && /pci_role in \('analyst'\)/.test(m071));
+ok("071 defines pci_is_staff() + pci_can_edit() as security definer", /function public\.pci_is_staff\(\)/.test(m071) && /function public\.pci_can_edit\(\)/.test(m071) && /security definer/.test(m071));
+ok("071 grants staff SELECT on all 14 pci_ tables", /_staff_select/.test(m071) && /pci_entity_sources/.test(m071) && /pci_change_log/.test(m071));
+ok("071 grants analyst INSERT/UPDATE only on properties + lender_programs", /pci_properties','pci_lender_programs/.test(m071) && /for insert to authenticated/.test(m071) && /for update to authenticated/.test(m071));
+ok("071 never grants analyst DELETE (relies on admin_all for delete)", !/for delete/.test(m071));
+const apijs = read("js/intelligence/intelligence-api.js");
+ok("intelligence-api exposes verifyStaff → {role,canImport,canEdit}", /verifyStaff/.test(apijs) && /pci_role/.test(apijs) && /canImport/.test(apijs));
+ok("verifyStaff analyst has canImport:false", /analyst".{0,40}canImport: false/.test(apijs.replace(/\s+/g, " ")));
+const adminjs = read("js/intelligence/admin-intelligence.js");
+ok("admin UI gates Import Center tab behind canImport", /CAP\.canImport \? ALL_TABS/.test(adminjs));
+{
+  const flat = adminjs.replace(/\s+/g, " ");
+  ok("admin UI hides score/doc/upload writes for analysts",
+    /if \(CAP\.canImport\) body \+= .{0,140}scoreModal/.test(flat) &&
+    /if \(CAP\.canImport\) \{ var docs/.test(flat) &&
+    /nav\(tab\) \{ if \(tab === "import" && !CAP\.canImport\)/.test(flat));
+}
+ok("import Netlify functions require full admin (auth lib rejects analysts)", /is_admin === true \|\| .*role === "admin"/.test(read("netlify/functions/lib/intelligence-auth.js")));
 const corejs = read("js/pegasus-core.js");
 ok("sidebar has admin Capital Intelligence link", corejs.indexOf("'/admin/intelligence'") >= 0 || corejs.indexOf('"/admin/intelligence"') >= 0);
 const memberIntel = read("intelligence.html");

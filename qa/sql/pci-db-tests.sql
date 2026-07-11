@@ -36,7 +36,7 @@ do $$ begin
   if not exists (select 1 from pg_roles where rolname='service_role') then create role service_role; end if;
 end $$;
 create table public.profiles(id uuid primary key default gen_random_uuid(),
-  full_name text, role text, company_name text, is_admin boolean default false, profile_completion int default 0);
+  full_name text, email text, role text, company_name text, is_admin boolean default false, profile_completion int default 0);
 create function public.is_admin_user() returns boolean language sql stable security definer set search_path=public as
   $$ select coalesce((select is_admin or role='admin' from public.profiles where id = auth.uid() limit 1), false) $$;
 create table public.crm_contacts(id uuid primary key default gen_random_uuid(),
@@ -67,10 +67,12 @@ insert into public.crm_activities(id, owner_id, contact_id, body) values ('00000
 \i supabase/068_pci_core.sql
 \i supabase/069_pci_import.sql
 \i supabase/070_pci_storage_health.sql
+\i supabase/071_pci_analyst_role.sql
 -- Idempotency: re-run must not error.
 \i supabase/068_pci_core.sql
 \i supabase/069_pci_import.sql
 \i supabase/070_pci_storage_health.sql
+\i supabase/071_pci_analyst_role.sql
 
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 
@@ -194,7 +196,113 @@ begin
   raise notice 'B2 PASS — rollback succeeds only after exact restore';
 end $$;
 
+-- ══════════════════════════════════════════════════════════════════════════
+-- ANALYST ROLE (migration 071) — RLS enforced as the real `authenticated` role
+-- Proves: analyst reads every pci_ table, may INSERT/UPDATE properties &
+-- lender programs, may NOT DELETE, may NOT write other pci_ tables; a plain
+-- member sees nothing. These run as the non-owner `authenticated` role so RLS
+-- is actually enforced (the earlier blocks run as owner and bypass RLS).
+-- ══════════════════════════════════════════════════════════════════════════
+reset role;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';  -- admin
+
+-- Emulate Supabase's default table grants to authenticated (RLS filters on top).
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+
+-- Staff + member fixtures.
+insert into public.profiles(id, full_name, pci_role) values
+  ('00000000-0000-0000-0000-0000000000a2','Analyst','analyst');
+insert into public.profiles(id, full_name) values
+  ('00000000-0000-0000-0000-0000000000a3','Member');
+
+-- A baseline property + program created as admin (owner) for the analyst to read/update.
+insert into public.pci_properties(id, address_line1, normalized_address, city, county, parcel_id)
+  values ('00000000-0000-0000-0000-0000000d0aa1','9 Base St','9 BASE ST|WPB|FL|','WPB','Palm Beach','ANALYST-BASE');
+insert into public.pci_lender_programs(id, lender_name_snapshot, program_name)
+  values ('00000000-0000-0000-0000-0000000d0bb1','Base Capital','Base Program');
+
+-- Confirm functions classify correctly.
+do $$
+begin
+  set local request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a2';
+  if not public.pci_is_staff()  then raise exception 'AN FAIL: analyst not staff'; end if;
+  if not public.pci_can_edit()  then raise exception 'AN FAIL: analyst cannot edit'; end if;
+  if public.is_admin_user()     then raise exception 'AN FAIL: analyst wrongly admin'; end if;
+  set local request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a3';
+  if public.pci_is_staff()      then raise exception 'AN FAIL: member is staff'; end if;
+end $$;
+\echo 'AN PASS(1) — pci_is_staff / pci_can_edit / is_admin_user classify analyst & member correctly'
+
+-- Now switch to the real authenticated role and let RLS decide.
+set role authenticated;
+
+-- ── As the ANALYST ──
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a2';
+do $$
+declare n int;
+begin
+  -- READ: sees the property and can read a non-editable table (loans).
+  select count(*) into n from public.pci_properties where id='00000000-0000-0000-0000-0000000d0aa1';
+  if n <> 1 then raise exception 'AN FAIL: analyst cannot read properties (%)', n; end if;
+  perform 1 from public.pci_loans limit 1;  -- staff_select on a non-editable table must not error
+
+  -- INSERT property: allowed.
+  insert into public.pci_properties(id, address_line1, normalized_address, city, county, parcel_id)
+    values ('00000000-0000-0000-0000-0000000d0aa2','10 New St','10 NEW ST|WPB|FL|','WPB','Palm Beach','ANALYST-NEW');
+  -- UPDATE property: allowed.
+  update public.pci_properties set notes='analyst edit' where id='00000000-0000-0000-0000-0000000d0aa1';
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'AN FAIL: analyst update blocked (%)', n; end if;
+  -- INSERT lender program: allowed.
+  insert into public.pci_lender_programs(id, lender_name_snapshot, program_name)
+    values ('00000000-0000-0000-0000-0000000d0bb2','Analyst Capital','New Program');
+
+  -- DELETE property: silently blocked by RLS (no DELETE policy for analyst) → 0 rows, row survives.
+  delete from public.pci_properties where id='00000000-0000-0000-0000-0000000d0aa1';
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'AN FAIL: analyst DELETED a property (% rows)', n; end if;
+  select count(*) into n from public.pci_properties where id='00000000-0000-0000-0000-0000000d0aa1';
+  if n <> 1 then raise exception 'AN FAIL: property gone after analyst delete'; end if;
+
+  -- WRITE to a non-editable table (pci_loans): must be denied by RLS.
+  begin
+    insert into public.pci_loans(id, property_id, lender_name_snapshot)
+      values (gen_random_uuid(),'00000000-0000-0000-0000-0000000d0aa1','X');
+    raise exception 'AN FAIL: analyst inserted a loan';
+  exception when insufficient_privilege then null;  -- expected: RLS WITH CHECK violation
+  end;
+  -- WRITE to pci_scores (analysis, admin-only): denied. Row is otherwise valid,
+  -- so the only possible failure is the RLS WITH CHECK (insufficient_privilege).
+  begin
+    insert into public.pci_scores(id, property_id, total_score, recommendation)
+      values (gen_random_uuid(),'00000000-0000-0000-0000-0000000d0aa1',80,'Act Now');
+    raise exception 'AN FAIL: analyst inserted a score';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+\echo 'AN PASS(2) — analyst: read-all, insert/update properties+programs, NO delete, NO write to loans/scores'
+
+-- ── As a plain MEMBER (no pci_role) ──
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a3';
+do $$
+declare n int;
+begin
+  select count(*) into n from public.pci_properties;
+  if n <> 0 then raise exception 'AN FAIL: member saw % properties', n; end if;
+  begin
+    insert into public.pci_properties(id, address_line1, normalized_address, city)
+      values (gen_random_uuid(),'no','NO|X|FL|','X');
+    raise exception 'AN FAIL: member inserted a property';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+\echo 'AN PASS(3) — member: zero rows visible, cannot write'
+
+reset role;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+
 \echo ''
 \echo '════════════════════════════════════════════'
-\echo 'ALL DB-LEVEL PROOFS PASSED (B1 B2 B3 A4 A5 A6 + schema + idempotency)'
+\echo 'ALL DB-LEVEL PROOFS PASSED (B1 B2 B3 A4 A5 A6 AN + schema + idempotency)'
 \echo '════════════════════════════════════════════'

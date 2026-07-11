@@ -28,24 +28,22 @@
 <script>
 Pegasus.boot(async ()=>{
 
-// ── ADMIN GATE (layer 1: local store — instant redirect for non-admins) ─────
+// ── GATE (layer 1: local store — instant redirect for signed-out users) ─────
 var _st = window.PegStore && window.PegStore.get ? window.PegStore.get() : {};
 var _isLive  = _st.mode === 'live';
-var _isAdmin = window.PegStore && typeof window.PegStore.isAdmin === 'function'
-               ? window.PegStore.isAdmin()
-               : (_st.profile && _st.profile.role === 'admin');
 if(!_isLive)  { location.replace('/signin.html'); return; }
-if(!_isAdmin) { location.replace('/dashboard.html'); return; }
 
 const v = Pegasus.mountApp({active:'Capital Intelligence Admin', title:'Capital Intelligence',
   sub:'Private acquisition, debt & capital research — Palm Beach County retail'});
 
-// ── ADMIN GATE (layer 2: LIVE database re-check — never trust a stale cache).
-// Even if both gates were bypassed, every pci_ table is admin-only via RLS.
-var liveAdmin = await window.PegIntelAPI.verifyAdmin();
-if(!liveAdmin){ location.replace('/dashboard.html'); return; }
+// ── GATE (layer 2: LIVE database re-check — never trust a stale cache).
+// Resolves the caller's tier: 'admin' (full) or 'analyst' (read + manual edit).
+// Non-staff are redirected. Even if both gates were bypassed, every pci_ table
+// is protected by RLS and the import functions require full admin server-side.
+var access = await window.PegIntelAPI.verifyStaff();
+if(!access.role){ location.replace('/dashboard.html'); return; }
 
-PegIntel.mount(v);
+PegIntel.mount(v, access);
 });
 </script>
 </body></html>

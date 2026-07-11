@@ -45,6 +45,29 @@
     } catch (_) { return false; }
   }
 
+  /* ── Live STAFF re-check — resolves the caller's Capital Intelligence tier.
+     Returns { role:'admin'|'analyst'|null, canImport, canEdit }.
+     • admin   → full access (import, rollback, edit, delete, documents).
+     • analyst → read everything + manually add/edit properties & lender
+                 programs. No import/rollback, no documents, no deletes.
+     This is a UX gate only — the real boundary is RLS + the service-role
+     import functions, which reject analysts regardless of the UI. ── */
+  async function verifyStaff() {
+    var out = { role: null, canImport: false, canEdit: false };
+    try {
+      var c = await sb();
+      var u = await c.auth.getUser();
+      var uid = u && u.data && u.data.user && u.data.user.id;
+      if (!uid) return out;
+      var r = await c.from("profiles").select("is_admin, role, pci_role").eq("id", uid).maybeSingle();
+      if (r.error || !r.data) return out;
+      var isAdmin = r.data.is_admin === true || r.data.role === "admin";
+      if (isAdmin) return { role: "admin", canImport: true, canEdit: true };
+      if (r.data.pci_role === "analyst") return { role: "analyst", canImport: false, canEdit: true };
+      return out;
+    } catch (_) { return out; }
+  }
+
   /* ── Properties ── */
   async function listProperties() {
     var c = await sb();
@@ -239,7 +262,7 @@
   }
 
   window.PegIntelAPI = {
-    verifyAdmin: verifyAdmin, fn: fn,
+    verifyAdmin: verifyAdmin, verifyStaff: verifyStaff, fn: fn,
     listProperties: listProperties, saveProperty: saveProperty, propertyChildren: propertyChildren,
     insertChild: insertChild, updateChild: updateChild, deleteChild: deleteChild,
     dashboard: dashboard, listPrograms: listPrograms, saveProgram: saveProgram,

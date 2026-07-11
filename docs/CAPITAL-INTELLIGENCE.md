@@ -23,9 +23,37 @@ monitoring system for authorized administrators only. The member-facing
 
 The page carries `noindex,nofollow` + `Cache-Control: no-store` +
 `X-Robots-Tag` (netlify.toml), has no sitemap entry and no public navigation
-entry. The sidebar link appears only for admins. **None of that is the security
-boundary — RLS is.** A signed-in non-admin calling Supabase directly gets no
-rows and can write none.
+entry. The sidebar link appears only for staff (admins and analysts). **None of
+that is the security boundary — RLS is.** A signed-in non-staff user calling
+Supabase directly gets no rows and can write none.
+
+### Roles (migration 071)
+
+Two tiers, both re-checked live against the database on every page load:
+
+| Capability | Admin | Analyst |
+|---|---|---|
+| Read every `pci_` table (all tabs, Change History, Data Quality) | ✅ | ✅ |
+| Add / edit **properties** (manual) | ✅ | ✅ |
+| Add / edit **lender programs** (manual) | ✅ | ✅ |
+| Add loans / tenants / contacts / scores / distress / actions | ✅ | ❌ |
+| Delete any `pci_` row | ✅ | ❌ |
+| Upload / open private documents | ✅ | ❌ |
+| Import: preview / commit / rollback | ✅ | ❌ |
+
+Analyst status is a dedicated `profiles.pci_role = 'analyst'` marker — completely
+separate from the binary `is_admin` / `role='admin'` flag that guards the rest
+of the platform. Two `SECURITY DEFINER` helpers decide access from RLS:
+`pci_is_staff()` (admin **or** analyst → read) and `pci_can_edit()` (admin **or**
+analyst → write properties & lender programs). The import pipeline stays
+admin-only by construction: the commit/rollback RPCs are `service_role`-only and
+the Netlify functions independently require full admin (analysts get HTTP 403),
+so the UI gating is convenience, not the boundary.
+
+**Onboarding.** Promote an analyst with
+`update public.profiles set pci_role = 'analyst' where lower(email) = '…';`
+Promote a full admin with `update public.profiles set is_admin = true …`.
+Revoke an analyst with `… set pci_role = null …`.
 
 ## Data model (migrations 067–070)
 
@@ -63,6 +91,13 @@ Migration **070** creates the private bucket + storage policies and the
 admin-only `pci_check_schema()` health RPC (kept separate from the member-
 callable `check_platform_schema()` so private table names are not enumerated
 to members).
+
+Migration **071** adds the **analyst** staff role (see *Roles* above): the
+`profiles.pci_role` column, the `pci_is_staff()` / `pci_can_edit()` helpers, a
+staff-`SELECT` policy on all 14 `pci_` tables, and staff `INSERT`/`UPDATE`
+(never `DELETE`) on `pci_properties` and `pci_lender_programs`. It is additive —
+the `*_admin_all` policies from 068/069 are left intact, so admins keep full
+access and analysts only gain the widened access above.
 
 ## Import pipeline (daily XLSX)
 
@@ -134,8 +169,11 @@ formula-injection-safe.
 
 ## Security summary
 
-- RLS on every `pci_` table; policies use `public.is_admin_user()`.
-- Netlify functions authenticate the bearer JWT and independently verify admin.
+- RLS on every `pci_` table. Admin policies use `public.is_admin_user()`;
+  analyst read/edit is widened by `pci_is_staff()` / `pci_can_edit()` (071),
+  which never grant DELETE or write to any table beyond properties & programs.
+- Netlify functions authenticate the bearer JWT and independently verify **full
+  admin** — analysts cannot import, commit, or roll back (HTTP 403).
 - Commit/rollback RPCs are EXECUTE-able **only by service_role**.
 - Workbooks: .xlsx only; legacy/macro formats rejected by signature and
   content (`vbaProject`); formulas rejected as data; percent/currency/date/
@@ -162,6 +200,6 @@ formula-injection-safe.
 - `netlify/functions/intelligence-{import-preview, import-commit,
   import-rollback, import-batch, template}.js`
 - `netlify/functions/lib/intelligence-{import-core, workbook, auth}.js`
-- `supabase/{067,068,069,070}_*.sql`
+- `supabase/{067,068,069,070,071}_*.sql`
 - `qa/intelligence-audit.js` (`npm run qa:intelligence`)
 - `docs/CAPITAL-INTELLIGENCE-IMPORT.md` (workbook contract)

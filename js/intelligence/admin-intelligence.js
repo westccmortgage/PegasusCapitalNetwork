@@ -17,6 +17,9 @@
   var view = null;
   var TAB = "dash";
   var CACHE = { properties: null, programs: null };
+  // Capability gate resolved at mount: { role:'admin'|'analyst', canImport, canEdit }.
+  // Defaults to full admin so nothing breaks if mount is called the old way.
+  var CAP = { role: "admin", canImport: true, canEdit: true };
 
   /* ── formatters ── */
   function money(n) { if (n === null || n === undefined || n === "" || isNaN(Number(n))) return "—"; return "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 }); }
@@ -61,15 +64,27 @@
   }
 
   /* ── shell ── */
-  var TABS = [["dash", "Dashboard"], ["props", "Properties"], ["contacts", "Contacts"],
+  var ALL_TABS = [["dash", "Dashboard"], ["props", "Properties"], ["contacts", "Contacts"],
     ["lenders", "Lenders & Capital"], ["match", "Capital Match"], ["import", "Import Center"], ["quality", "Data Quality"]];
-  function mount(v) {
+  var TABS = ALL_TABS;
+  function mount(v, access) {
     view = v; A = window.PegIntelAPI;
+    if (access && access.role) CAP = access;
+    // Analysts do batch import — hide the Import Center tab entirely (the
+    // functions reject them server-side regardless).
+    TABS = CAP.canImport ? ALL_TABS : ALL_TABS.filter(function (t) { return t[0] !== "import"; });
+    var roleBadge = CAP.role === "analyst"
+      ? '<span class="pit-conf" title="Read all + manually add/edit properties &amp; lender programs. Batch import is full-admin only.">Analyst</span>'
+      : "";
+    var importBtn = CAP.canImport
+      ? '<button class="btn btn-pri btn-sm" onclick="PegIntel.nav(\'import\')">Upload Daily Workbook</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="PegIntel.downloadTemplate()">Download Import Template</button>'
+      : "";
     v.innerHTML =
       '<div class="pit-head-actions">' +
-        '<button class="btn btn-pri btn-sm" onclick="PegIntel.nav(\'import\')">Upload Daily Workbook</button>' +
-        '<button class="btn btn-ghost btn-sm" onclick="PegIntel.downloadTemplate()">Download Import Template</button>' +
+        importBtn +
         '<a class="btn btn-ghost btn-sm" href="/crm.html">Open CRM</a>' +
+        roleBadge +
       "</div>" +
       '<div class="pit-tabs">' + TABS.map(function (t) {
         return '<button class="pit-tab" id="pitTab-' + t[0] + '" onclick="PegIntel.nav(\'' + t[0] + '\')">' + t[1] + "</button>";
@@ -78,6 +93,7 @@
     nav("dash");
   }
   function nav(tab) {
+    if (tab === "import" && !CAP.canImport) tab = "dash"; // analysts have no import
     TAB = tab;
     TABS.forEach(function (t) { var e = document.getElementById("pitTab-" + t[0]); if (e) e.classList.toggle("on", t[0] === tab); });
     var host = document.getElementById("pitView");
@@ -372,7 +388,8 @@
           (s.rationale ? '<div class="pit-meta">' + esc(s.rationale) + "</div>" : "") +
           "</span><span class=\"pit-meta\">" + esc(dt(s.score_date)) + "</span></div>";
       }).join("") : empty("Not scored yet.");
-      body += '<div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="PegIntel.scoreModal(\'' + p.id + '\')">+ New score</button></div>';
+      if (CAP.canImport)
+        body += '<div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="PegIntel.scoreModal(\'' + p.id + '\')">+ New score</button></div>';
     } else if (T === "capmatch") {
       body = '<div id="pitDetMatch">' + empty("Loading lender programs…") + "</div>";
       setTimeout(function () { detailMatch(p); }, 0);
@@ -387,13 +404,18 @@
             (s.source_date ? '<span class="pit-meta">' + esc(dt(s.source_date)) + "</span>" : "") +
             (s.source_url ? '<a class="pit-src" href="' + esc(s.source_url) + '" target="_blank" rel="noopener noreferrer">open ↗</a>' : "") + "</div>";
         }).join("") : empty("No linked sources yet.", "Sources are attached automatically from each imported row's Source_URL.")) + "</div>";
-      var docs = DET.docs || [];
-      var docHtml = '<div class="pit-panel"><h3>Documents</h3>' +
-        (docs.length ? docs.map(function (d) {
-          return '<div class="pit-row"><span class="grow">' + esc(d.name) + '</span><button class="btn btn-ghost btn-sm" onclick="PegIntel.openDoc(\'properties/' + p.id + "/" + esc(d.name) + '\')">Open</button></div>';
-        }).join("") : empty("No documents.", "OMs, rent rolls, and loan docs upload to the private intelligence bucket.")) +
-        '<div style="margin-top:12px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">Upload document<input type="file" style="display:none" onchange="PegIntel.uploadDoc(this,\'' + p.id + '\')"></label></div>' +
-        '<div class="pit-note">Files are stored in the private capital-intelligence bucket — never public, opened via short-lived signed links.</div></div>';
+      // Private documents live in the admin-only storage bucket. Analysts see
+      // the provenance sources above but not the document vault.
+      var docHtml = "";
+      if (CAP.canImport) {
+        var docs = DET.docs || [];
+        docHtml = '<div class="pit-panel"><h3>Documents</h3>' +
+          (docs.length ? docs.map(function (d) {
+            return '<div class="pit-row"><span class="grow">' + esc(d.name) + '</span><button class="btn btn-ghost btn-sm" onclick="PegIntel.openDoc(\'properties/' + p.id + "/" + esc(d.name) + '\')">Open</button></div>';
+          }).join("") : empty("No documents.", "OMs, rent rolls, and loan docs upload to the private intelligence bucket.")) +
+          '<div style="margin-top:12px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">Upload document<input type="file" style="display:none" onchange="PegIntel.uploadDoc(this,\'' + p.id + '\')"></label></div>' +
+          '<div class="pit-note">Files are stored in the private capital-intelligence bucket — never public, opened via short-lived signed links.</div></div>';
+      }
       body = linkHtml + docHtml;
     } else if (T === "history") {
       var ch = k.changes || [];
@@ -827,7 +849,8 @@
         return '<div class="pit-row"><span class="grow">' + esc(l.lender_name_snapshot || "lender ?") + " · matures " + esc(dt(l.maturity_date)) + '</span><span class="pit-meta">' + [(l.maturity_basis ? null : "no basis"), (l.source_url ? null : "no source")].filter(Boolean).join(" · ") + "</span></div>";
       }) +
       list("Unresolved import conflicts", d.conflicts, function (x) {
-        return '<div class="pit-row"><span class="grow">' + esc(x.sheet_name) + " row " + x.row_number + " · " + esc(x.dedupe_key || "") + '</span><button class="btn btn-ghost btn-sm" onclick="PegIntel.reopenFromQuality(\'' + x.batch_id + '\')">Review</button></div>';
+        var btn = CAP.canImport ? '<button class="btn btn-ghost btn-sm" onclick="PegIntel.reopenFromQuality(\'' + x.batch_id + '\')">Review</button>' : '<span class="pit-meta">admin resolves</span>';
+        return '<div class="pit-row"><span class="grow">' + esc(x.sheet_name) + " row " + x.row_number + " · " + esc(x.dedupe_key || "") + '</span>' + btn + "</div>";
       }, "Conflicts appear when an import would overwrite higher-confidence data.") +
       "</div></div>";
   }
