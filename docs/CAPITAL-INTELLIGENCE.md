@@ -40,9 +40,9 @@ Migration **068** creates the intelligence layer (all RLS admin-only):
 
 | Table | Purpose | Dedupe priority |
 |---|---|---|
-| `pci_properties` | canonical current snapshot per property | parcel → external_id → normalized address |
+| `pci_properties` | canonical current snapshot per property | **(county, parcel)** → external_id → normalized address |
 | `pci_property_contacts` | property ↔ CRM contact roles | property+contact+role |
-| `pci_loans` | recorded/reported debt | instrument № → external_id → property+lender+date+amount |
+| `pci_loans` | recorded/reported debt | **(recording_jurisdiction, instrument №)** → external_id → property+lender+date+amount |
 | `pci_tenants` | rent-roll rows | property+tenant+suite |
 | `pci_listings` | listing **events** (price/status timeline) | append-only |
 | `pci_distress_signals` | foreclosure/lis pendens/tax lien/… | external_id → natural key |
@@ -52,8 +52,12 @@ Migration **068** creates the intelligence layer (all RLS admin-only):
 | `pci_daily_actions` | prioritized daily to-dos | soft-dedupe vs open actions |
 
 Migration **069** adds the import pipeline (`pci_import_batches`,
-`pci_import_rows`, `pci_change_log`) and two transactional, **service-role-only**
-RPCs: `pci_commit_import_batch`, `pci_rollback_import_batch`.
+`pci_import_rows`, `pci_change_log`, and `pci_entity_sources` for durable
+source lineage) and two transactional, **service-role-only** RPCs:
+`pci_commit_import_batch` (atomic — the whole batch applies or nothing does)
+and `pci_rollback_import_batch` (last-committed-only; refuses if any touched
+record was changed after import, detected by comparing the live record to the
+committed state rather than the change log, so manual admin edits are caught).
 
 Migration **070** creates the private bucket + storage policies and the
 admin-only `pci_check_schema()` health RPC (kept separate from the member-
@@ -84,8 +88,18 @@ generated from the same contract (`intelligence-template` function), so the
 template and the importer cannot drift apart.
 
 ### History & conflict rules
+0. **Commit is atomic.** The whole batch applies in one transaction or nothing
+   does; any DB-level failure on any applicable row aborts the entire commit,
+   leaving no live rows, no change-log rows, and the batch still *previewed*.
+   **Rollback is edit-aware:** before reverting anything it compares each live
+   record to the exact state the import committed, so a manual admin edit (which
+   writes no change-log row) is detected and the rollback refuses with the exact
+   blockers.
 1. Every changed material value → `pci_change_log` entry (old, new, confidence
-   before/after, batch, who, when).
+   before/after, **source_id**, batch, who, when), and each material entity is
+   linked to its source in `pci_entity_sources`.
+2. Property identity is **county-scoped** (`(county, parcel)`); loan identity is
+   **recording-jurisdiction-scoped** (`(recording_jurisdiction, instrument)`).
 2. Price and listing-status changes are also appended to `pci_listings`, so the
    timeline is visible chronologically.
 3. Confidence ladder: **Verified > Reported > Estimated > Unknown.**

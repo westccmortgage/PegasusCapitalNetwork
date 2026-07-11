@@ -19,8 +19,8 @@ boundary — the boundary is RLS + the function-level admin check.
 | Function | Migration | Volatility | `search_path` | Who may EXECUTE | Internal authz | Notes |
 |---|---|---|---|---|---|---|
 | `public.is_admin_user()` | 011 (dependency) | stable | `public` | (as granted in 011) | returns `is_admin OR role='admin'` for `auth.uid()`, else `false` | Trust root. Returns `false` for anon (`auth.uid()` null). |
-| `public.pci_commit_import_batch(uuid, uuid, jsonb)` | 069 | volatile | `public` | **service_role only** (revoked from public/anon/authenticated) | none inside — caller (`requireAdmin`) verified admin first | Applies a previewed batch in ONE transaction; writes `pci_change_log`; enforces the Verified-downgrade backstop. |
-| `public.pci_rollback_import_batch(uuid, uuid)` | 069 | volatile | `public` | **service_role only** | none inside — caller verified admin | LIFO: refuses unless it is the most recent committed batch and nothing it touched changed since. |
+| `public.pci_commit_import_batch(uuid, uuid, jsonb)` | 069 | volatile | `public` | **service_role only** (revoked from public/anon/authenticated) | none inside — caller (`requireAdmin`) verified admin first | **Atomic**: the whole batch applies in ONE transaction or nothing does. Any DB failure on an applicable row re-raises with sheet/row context and aborts everything (no live rows, no change-log rows, batch stays `previewed`). Writes `pci_change_log` (+`source_id`) and `pci_entity_sources`; enforces the Verified-downgrade backstop. |
+| `public.pci_rollback_import_batch(uuid, uuid)` | 069 | volatile | `public` | **service_role only** | none inside — caller verified admin | LIFO (most-recent committed only). **Edit-aware**: two passes — first compares every live record to the exact state the batch committed (`after_data`), so a manual admin edit or deletion (which writes NO change-log row) is detected; refuses with per-record blockers (table, id, changed fields) and mutates nothing. Only when clean does it revert (delete inserts; restore only the import-changed columns of updates). |
 | `public.pci_check_schema()` | 070 | stable | `public` | authenticated + service_role (revoked from public/anon) | **`if not public.is_admin_user() then raise exception 'Admins only'`** | Read-only health (pg_catalog + storage.buckets). The internal admin check is the real gate; the `authenticated` grant only lets the RPC be reached. |
 
 ### Non-DEFINER (SECURITY INVOKER) helpers — no elevated rights
@@ -98,8 +98,8 @@ create policy <table>_admin_all on public.<table>
 - Migration **068** (10 tables): `pci_properties`, `pci_property_contacts`,
   `pci_loans`, `pci_tenants`, `pci_listings`, `pci_distress_signals`,
   `pci_lender_programs`, `pci_sources`, `pci_scores`, `pci_daily_actions`.
-- Migration **069** (3 tables): `pci_import_batches`, `pci_import_rows`,
-  `pci_change_log`.
+- Migration **069** (4 tables): `pci_import_batches`, `pci_import_rows`,
+  `pci_change_log`, `pci_entity_sources`.
 
 Consequences:
 - `anon` role matches **no** policy → denied on read and write (RLS default-deny).
@@ -274,15 +274,37 @@ one admin account, one ordinary (non-admin) member account, and the anon key.
     field (e.g. `year_built`) at same confidence → **conflict**.
 20. Put two rows with the same key in one file → both flagged **invalid**
     (duplicate in file), the rest still import.
+20a. **Atomic commit.** Prepare a workbook with one valid property and one
+    database-invalid property (e.g. `Opportunity_Score = 999`). Commit → the
+    call **fails** naming the offending sheet/row, **zero** rows are inserted,
+    no `pci_change_log` rows exist, and the batch stays `previewed` (nothing
+    partially applied).
+20b. **County / jurisdiction identity.** A workbook with the same `Parcel_ID`
+    in Palm Beach and Broward → **two** distinct properties. The same
+    `Instrument_Number` with two `Recording_Jurisdiction` values → **two**
+    distinct loans. A child `Property_Key: parcel:{id}` that matches two
+    counties → **invalid (ambiguous)**; `parcel:{county}:{id}` resolves.
+20c. **Provenance.** After committing a row with a `Source_URL`, Property
+    Detail → *Sources & Documents* lists the linked source, *Change History*
+    links each change to its source, and `pci_entity_sources` + `pci_change_log.source_id` are populated.
 
 ### F. Rollback safety
 21. Immediately after a commit, **Roll back** the batch → property/loan created
-    by it are removed; prior values restored; batch status `rolled_back`.
+    by it are removed; import-changed columns of updated rows are restored;
+    batch status `rolled_back`.
 22. Commit batch X, then commit batch Y, then try to roll back **X** →
     **refused** with a "newer committed batch exists" message.
-23. Commit a batch, then manually edit one affected property (UI), then try to
-    roll back that batch → **refused** ("records were modified after this
-    import"), listing the blockers.
+23. Commit a batch, then manually edit one affected property in the UI (writes
+    no change-log row), then try to roll back that batch → **refused**
+    ("records were modified after this import"), listing the exact blockers
+    (table, id, changed fields). Restore the field to its committed value →
+    rollback now **succeeds**. Delete an imported record, then roll back →
+    **refused** ("record missing").
+
+> The DB-level guarantees behind 20a, 23, the CRM merge, and county/
+> jurisdiction/provenance are also proven automatically by
+> `qa/sql/pci-db-tests.sql` (run via `PCI_DB_TESTS=1 … npm run qa:intelligence`
+> against a throwaway Postgres) — every assertion raises on regression.
 
 ### G. Storage privacy
 24. As admin, upload a document on a Property Detail → Sources & Documents;
@@ -295,14 +317,22 @@ one admin account, one ordinary (non-admin) member account, and the anon key.
     selecting a member **adds** them (previously failed); confirm the created
     `crm_contacts` row has `linked_profile_id` set and **no email** copied from
     the other member. Re-open the picker → that member shows "✓ in CRM".
+26a. **Non-destructive CRM merge.** On a DB that has two `crm_contacts` linked
+    to the same profile for one owner (with deals/reminders/activities on the
+    newer one), applying 067 merges them into the **oldest** row: all fields
+    preserved (blanks filled, tags unioned, notes concatenated), every
+    dependent reassigned to the survivor, **nothing deleted or orphaned**, and
+    the migration emits a `NOTICE` summary. It never runs a blind delete.
 27. Open an existing contact created before 067 → still renders and saves
     (backward compatible); the new "More details" fields save when 067 is
     applied.
 28. Load `/intelligence.html` (member Capital Intelligence Stream) → unchanged,
     no `pci_`/`PegIntel` references, still works.
-29. `npm ci && npm run qa:intelligence` on the deploy → **PASS 81 / FAIL 0**.
-    With staging `SUPABASE_URL` + `SUPABASE_ANON_KEY` exported, the live
-    anon-RLS probe section also passes (anon blocked from every `pci_` table).
+29. `npm ci && npm run qa:intelligence` on the deploy → **PASS / FAIL 0**
+    (offline suite). With `PCI_DB_TESTS=1` + PG env, the DB-proof section runs
+    `qa/sql/pci-db-tests.sql` (atomic commit, edit-aware rollback, CRM merge,
+    county + jurisdiction uniqueness, provenance) — also green. With staging
+    `SUPABASE_URL` + `SUPABASE_ANON_KEY`, the live anon-RLS probe passes too.
 
 Only after A–H pass on staging should migrations 067–070 be applied to
 production and the branch merged.

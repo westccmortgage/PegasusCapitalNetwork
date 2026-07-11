@@ -377,18 +377,33 @@
       body = '<div id="pitDetMatch">' + empty("Loading lender programs…") + "</div>";
       setTimeout(function () { detailMatch(p); }, 0);
     } else if (T === "sources") {
+      // Linked research sources (durable provenance — ARCH 6).
+      var links = (k.sources || []);
+      var linkHtml = '<div class="pit-panel" style="margin-bottom:12px"><h3>Linked sources</h3>' +
+        (links.length ? links.map(function (l) {
+          var s = l.pci_sources || {};
+          return '<div class="pit-row"><span class="grow">' + esc(s.source_title || s.source_url || "source") +
+            (s.publisher ? ' <span class="pit-meta">' + esc(s.publisher) + "</span>" : "") + "</span>" + conf(l.confidence) +
+            (s.source_date ? '<span class="pit-meta">' + esc(dt(s.source_date)) + "</span>" : "") +
+            (s.source_url ? '<a class="pit-src" href="' + esc(s.source_url) + '" target="_blank" rel="noopener noreferrer">open ↗</a>' : "") + "</div>";
+        }).join("") : empty("No linked sources yet.", "Sources are attached automatically from each imported row's Source_URL.")) + "</div>";
       var docs = DET.docs || [];
-      body = (docs.length ? docs.map(function (d) {
-        return '<div class="pit-row"><span class="grow">' + esc(d.name) + '</span><button class="btn btn-ghost btn-sm" onclick="PegIntel.openDoc(\'properties/' + p.id + "/" + esc(d.name) + '\')">Open</button></div>';
-      }).join("") : empty("No documents.", "OMs, rent rolls, and loan docs upload to the private intelligence bucket.")) +
-      '<div style="margin-top:12px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">Upload document<input type="file" style="display:none" onchange="PegIntel.uploadDoc(this,\'' + p.id + '\')"></label></div>' +
-      '<div class="pit-note">Files are stored in the private capital-intelligence bucket — never public, opened via short-lived signed links.</div>';
+      var docHtml = '<div class="pit-panel"><h3>Documents</h3>' +
+        (docs.length ? docs.map(function (d) {
+          return '<div class="pit-row"><span class="grow">' + esc(d.name) + '</span><button class="btn btn-ghost btn-sm" onclick="PegIntel.openDoc(\'properties/' + p.id + "/" + esc(d.name) + '\')">Open</button></div>';
+        }).join("") : empty("No documents.", "OMs, rent rolls, and loan docs upload to the private intelligence bucket.")) +
+        '<div style="margin-top:12px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">Upload document<input type="file" style="display:none" onchange="PegIntel.uploadDoc(this,\'' + p.id + '\')"></label></div>' +
+        '<div class="pit-note">Files are stored in the private capital-intelligence bucket — never public, opened via short-lived signed links.</div></div>';
+      body = linkHtml + docHtml;
     } else if (T === "history") {
       var ch = k.changes || [];
+      var smap = k.sourceMap || {};
       body = ch.length ? ch.map(function (c) {
+        var src = c.source_id && smap[c.source_id];
+        var srcHtml = src ? ' <a class="pit-src" href="' + esc(src.source_url || "#") + '" target="_blank" rel="noopener noreferrer">source ↗</a>' : "";
         return '<div class="pit-row"><span class="grow"><b style="color:var(--text)">' + esc(c.field_name) + "</b> " +
           esc(JSON.stringify(c.old_value)) + " → " + esc(JSON.stringify(c.new_value)) +
-          (c.confidence_after ? " " + conf(c.confidence_after) : "") + "</span><span class=\"pit-meta\">" + esc(dt(c.changed_at)) + "</span></div>";
+          (c.confidence_after ? " " + conf(c.confidence_after) : "") + srcHtml + "</span><span class=\"pit-meta\">" + esc(dt(c.changed_at)) + "</span></div>";
       }).join("") : empty("No recorded changes for this property yet.");
     }
     host.innerHTML = '<div class="pit-detail-tabs">' + tabs.map(function (t) {

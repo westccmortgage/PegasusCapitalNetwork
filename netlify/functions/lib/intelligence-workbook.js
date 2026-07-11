@@ -82,7 +82,7 @@ async function buildFixture(ExcelJS) {
   addSheet(wb, "Loans", [
     { External_ID: "QA-LOAN-1", Property_Key: "QA-PROP-1", Lender_Contact_Key: "test.lender@example.com",
       Lien_Position: 1, Original_Amount: "$3,600,000", Recorded_Date: "2019-06-15",
-      Instrument_Number: "QA-INSTR-0001", Estimated_Balance: 3200000, Interest_Rate_Pct: 4.75,
+      Instrument_Number: "QA-INSTR-0001", Recording_Jurisdiction: "Palm Beach", Estimated_Balance: 3200000, Interest_Rate_Pct: 4.75,
       Rate_Type: "fixed", Maturity_Date: "2026-11-30", Maturity_Basis: "Reported",
       Loan_Type: "CMBS", Status: "current", Confidence: "Reported",
       Source_URL: "https://example.com/loan1" },

@@ -150,11 +150,14 @@ const existing1 = {
   contacts: new Map([["email:test.broker@example.com", { id: "C-1", record: { name: "Test Broker", company: "QA Brokerage LLC", email: "test.broker@example.com", data_confidence: "Verified" } }]]),
   properties: new Map([["ext:QA-PROP-1", { id: "P-1", record: { external_id: "QA-PROP-1", address_line1: "123 Example Street", normalized_address: core.normalizeAddress("123 Example Street", "West Palm Beach", "FL", "33401"), city: "West Palm Beach", state: "FL", postal_code: "33401", county: "Palm Beach", asking_price: 5250000, opportunity_score: 82, data_confidence: "Reported", source_url: "https://example.com/s1", first_seen_at: "2026-02-02", last_seen_at: "2026-02-02" } }],
     ["addr:" + core.normalizeAddress("123 Example Street", "West Palm Beach", "FL", "33401"), { id: "P-1", record: {} }]]),
-  loans: new Map([["instr:QA1", { id: "L-1", record: { property_id: "P-1", lender_contact_id: "C-1", original_amount: 3600000, instrument_number: "QA-1", confidence: "Reported" } }]]),
+  // Loan key is jurisdiction-aware; the fixture property defaults to Palm Beach.
+  loans: new Map([["instr:" + core.normJur("Palm Beach") + ":" + core.normId("QA-1"), { id: "L-1", record: { property_id: "P-1", lender_contact_id: "C-1", original_amount: 3600000, instrument_number: "QA-1", recording_jurisdiction: "Palm Beach", confidence: "Reported" } }]]),
   sources: new Map([["url:example.com/s1", { id: "S-1", record: {} }]]),
+  // Provenance link already recorded, so re-import creates no new entity_source.
+  entitySources: new Set(["pci_properties|P-1|S-1"]),
 };
 const p2 = planFixtureRows(existing1);
-ok("identical re-import → all unchanged", p2.summary.insert === 0 && p2.summary.update === 0 &&
+ok("identical re-import → all unchanged (incl. provenance)", p2.summary.insert === 0 && p2.summary.update === 0 &&
   p2.summary.conflict === 0 && p2.summary.unchanged >= 3, JSON.stringify(p2.summary));
 
 // Price change at same confidence (time-varying) → update + listing event.
@@ -198,6 +201,85 @@ ok("Property_Updates price → listing event", p7.rows.some((r) => r.target_type
 const updMissing = core.planActions({ Property_Updates: [core.normalizeRow("Property_Updates", { propertykey: "NOPE-1", fieldname: "asking_price", newvalue: "1" }, 2)] }, {}, ctx);
 ok("Property_Updates unknown key → invalid", updMissing.summary.invalid === 1);
 
+/* ── 5b. ARCH 4 — county-aware property identity ── */
+section("ARCH 4: county-aware property identity");
+ok("same parcel diff county → distinct keys",
+  core.propertyKeyOf({ parcel_id: "00-1234", county: "Palm Beach" }) !== core.propertyKeyOf({ parcel_id: "00-1234", county: "Broward" }));
+const twoCounty = core.planActions({ Properties: [
+  core.normalizeRow("Properties", { parcelid: "00-1234", address: "1 A St", city: "West Palm Beach", county: "Palm Beach" }, 2),
+  core.normalizeRow("Properties", { parcelid: "00-1234", address: "2 B St", city: "Fort Lauderdale", county: "Broward" }, 3)] }, {}, ctx);
+ok("same parcel# in two counties → TWO distinct properties",
+  twoCounty.rows.filter((r) => r.target_type === "property" && r.proposed_action === "insert").length === 2 &&
+  twoCounty.summary.invalid === 0, JSON.stringify(twoCounty.summary));
+// A child referencing a bare parcel that exists in two counties is ambiguous.
+const ambig = core.planActions({
+  Properties: [
+    core.normalizeRow("Properties", { parcelid: "00-9", address: "1 A St", city: "WPB", county: "Palm Beach" }, 2),
+    core.normalizeRow("Properties", { parcelid: "00-9", address: "2 B St", city: "FTL", county: "Broward" }, 3)],
+  Loans: [core.normalizeRow("Loans", { propertykey: "parcel:00-9", instrumentnumber: "AMB-1" }, 2)],
+}, {}, ctx);
+ok("bare parcel ambiguous across counties → loan invalid",
+  ambig.rows.some((r) => r.target_type === "loan" && r.proposed_action === "invalid" && /ambiguous/i.test((r.validation_errors || []).join(" "))));
+// County-qualified Property_Key resolves the same parcel unambiguously.
+const qual = core.planActions({
+  Properties: [
+    core.normalizeRow("Properties", { parcelid: "00-9", address: "1 A St", city: "WPB", county: "Palm Beach" }, 2),
+    core.normalizeRow("Properties", { parcelid: "00-9", address: "2 B St", city: "FTL", county: "Broward" }, 3)],
+  Loans: [core.normalizeRow("Loans", { propertykey: "parcel:Broward:00-9", instrumentnumber: "Q-1" }, 2)],
+}, {}, ctx);
+ok("county-qualified Property_Key resolves unambiguously",
+  qual.rows.some((r) => r.target_type === "loan" && r.proposed_action === "insert"));
+
+/* ── 5c. ARCH 5 — recording-jurisdiction-aware loan identity ── */
+section("ARCH 5: recording-jurisdiction-aware loan identity");
+const twoJur = core.planActions({
+  Properties: [
+    core.normalizeRow("Properties", { externalid: "PA", address: "1 A St", city: "WPB", county: "Palm Beach" }, 2),
+    core.normalizeRow("Properties", { externalid: "BR", address: "2 B St", city: "FTL", county: "Broward" }, 3)],
+  Loans: [
+    core.normalizeRow("Loans", { propertykey: "PA", instrumentnumber: "SAME-1", recordingjurisdiction: "Palm Beach", originalamount: 1000000 }, 2),
+    core.normalizeRow("Loans", { propertykey: "BR", instrumentnumber: "SAME-1", recordingjurisdiction: "Broward", originalamount: 2000000 }, 3)],
+}, {}, ctx);
+ok("same instrument# in two jurisdictions → TWO distinct loans",
+  twoJur.rows.filter((r) => r.target_type === "loan" && r.proposed_action === "insert").length === 2 &&
+  twoJur.summary.invalid === 0, JSON.stringify(twoJur.summary));
+ok("blank Recording_Jurisdiction inferred from property county (stored explicit)",
+  (() => {
+    const p = core.planActions({
+      Properties: [core.normalizeRow("Properties", { externalid: "PX", address: "1 A St", city: "WPB", county: "Palm Beach" }, 2)],
+      Loans: [core.normalizeRow("Loans", { propertykey: "PX", instrumentnumber: "INF-1" }, 2)],
+    }, {}, ctx);
+    const loan = p.rows.find((r) => r.target_type === "loan" && r.proposed_action === "insert");
+    return loan && loan.after_data.recording_jurisdiction === "Palm Beach";
+  })());
+
+/* ── 5d. ARCH 6 — source lineage (pci_entity_sources) ── */
+section("ARCH 6: source lineage");
+const prov = core.planActions({
+  Properties: [core.normalizeRow("Properties", { externalid: "SRC-1", address: "1 A St", city: "WPB", county: "Palm Beach", sourceurl: "https://example.com/prov" }, 2)],
+}, {}, ctx);
+const provSource = prov.rows.find((r) => r.target_type === "source");
+const provLink = prov.rows.find((r) => r.target_type === "entity_source");
+const provProp = prov.rows.find((r) => r.target_type === "property");
+ok("source record planned from Source_URL", !!provSource);
+ok("entity_source link created (property → source)",
+  !!provLink && provLink.after_data.entity_type === "pci_properties" &&
+  provLink.after_data.entity_id === provProp.after_data.id &&
+  provLink.after_data.source_id === provSource.after_data.id);
+ok("property import row carries source_ref (feeds change_log.source_id)",
+  provProp.source_ref === provSource.after_data.id);
+ok("provenance idempotent — existing link not re-created",
+  (() => {
+    const again = core.planActions({
+      Properties: [core.normalizeRow("Properties", { externalid: "SRC-1", address: "1 A St", city: "WPB", county: "Palm Beach", sourceurl: "https://example.com/prov" }, 2)],
+    }, {
+      properties: new Map([["ext:SRC-1", { id: "PP-1", record: { external_id: "SRC-1", county: "Palm Beach", normalized_address: core.normalizeAddress("1 A St", "WPB", "FL", ""), address_line1: "1 A St", city: "WPB" } }]]),
+      sources: new Map([["url:example.com/prov", { id: "SS-1", record: {} }]]),
+      entitySources: new Set(["pci_properties|PP-1|SS-1"]),
+    }, ctx);
+    return !again.rows.some((r) => r.target_type === "entity_source");
+  })());
+
 /* ── 6. exceljs round-trip through the real parser ── */
 section("Workbook round-trip (exceljs)");
 (async () => {
@@ -233,6 +315,21 @@ section("Workbook round-trip (exceljs)");
       }
     } else {
       console.log("\n(live RLS probe skipped — set SUPABASE_URL + SUPABASE_ANON_KEY to enable)");
+    }
+
+    /* ── 8. Optional DB-level proofs via psql (atomic commit, edit-aware
+       rollback, CRM merge, county + jurisdiction uniqueness, provenance) ── */
+    section("DB-level proofs (optional)");
+    const sqlPath = path.join(ROOT, "qa/sql/pci-db-tests.sql");
+    ok("db-proof SQL present (qa/sql/pci-db-tests.sql)", fs.existsSync(sqlPath));
+    if (process.env.PCI_DB_TESTS === "1") {
+      const { spawnSync } = require("child_process");
+      const r = spawnSync("psql", ["-v", "ON_ERROR_STOP=1", "-f", sqlPath], { cwd: ROOT, encoding: "utf8" });
+      const passed = r.status === 0 && /ALL DB-LEVEL PROOFS PASSED/.test((r.stdout || "") + (r.stderr || ""));
+      ok("psql proofs: B1 atomic · B2 rollback · B3 merge · A4/A5 uniqueness · A6 provenance", passed,
+        passed ? "" : ((r.stderr || r.stdout || "psql unavailable").split("\n").filter(Boolean).slice(-2).join(" | ")));
+    } else {
+      console.log("  (db proofs skipped — run `PCI_DB_TESTS=1 <PG env> npm run qa:intelligence` against a throwaway Postgres; see qa/sql/pci-db-tests.sql)");
     }
 
     console.log("\n──────────────────────────────");

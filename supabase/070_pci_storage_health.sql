@@ -60,7 +60,7 @@ begin
       'pci_properties','pci_property_contacts','pci_loans','pci_tenants',
       'pci_listings','pci_distress_signals','pci_lender_programs','pci_sources',
       'pci_scores','pci_daily_actions','pci_import_batches','pci_import_rows',
-      'pci_change_log'
+      'pci_change_log','pci_entity_sources'
     ]) t
     where not exists (select 1 from pg_tables where schemaname='public' and tablename=t));
 

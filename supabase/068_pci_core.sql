@@ -123,6 +123,11 @@ create table if not exists public.pci_loans(
   original_amount      numeric,
   recorded_date        date,
   instrument_number    text,
+  -- Recording jurisdiction (usually the county where the instrument was
+  -- recorded). Instrument numbers are unique only WITHIN a jurisdiction, so
+  -- loan identity is (recording_jurisdiction, instrument_number). Stored
+  -- explicitly; the importer infers it from the property's county when blank.
+  recording_jurisdiction text,
   estimated_balance    numeric,
   interest_rate_pct    numeric,
   rate_type            text,
@@ -139,9 +144,12 @@ create table if not exists public.pci_loans(
   created_at           timestamptz not null default now(),
   updated_at           timestamptz not null default now()
 );
--- Dedupe priority: instrument_number → external_id → property+lender+date+amount.
+-- Dedupe priority: (recording_jurisdiction, instrument_number) → external_id
+-- → property+lender+date+amount. The same instrument number recorded in two
+-- different counties is TWO distinct loans.
 create unique index if not exists uq_pci_loan_instrument
-  on public.pci_loans(instrument_number) where instrument_number is not null;
+  on public.pci_loans((lower(btrim(coalesce(recording_jurisdiction,'')))), instrument_number)
+  where instrument_number is not null;
 create unique index if not exists uq_pci_loan_external
   on public.pci_loans(external_id) where external_id is not null and instrument_number is null;
 create index if not exists idx_pci_loans_property on public.pci_loans(property_id);

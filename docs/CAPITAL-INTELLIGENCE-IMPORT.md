@@ -29,9 +29,15 @@ Template** — it is generated from the same contract the importer uses.
 
 - **Property_Key** — how other sheets point at a property. Priority:
   1. `Parcel_ID` (best), 2. `External_ID`, 3. the full street address.
-  You may also write explicitly: `parcel:00-42…`, `ext:PBC-0007`, or
+  You may also write explicitly: `parcel:{county}:{id}`, `ext:PBC-0007`, or
   `addr:123 Example St`. A property that is **new in the same file** can be
   referenced by the same key — the importer wires the rows together.
+  - **Parcel identity is county-scoped.** The same parcel number in two
+    counties is two different properties. A bare `parcel:00-42` (no county)
+    resolves only if that parcel exists in exactly one tracked county; if it
+    exists in several, the row is rejected as **ambiguous** — qualify it as
+    `parcel:Broward:00-42`. Parcel keys on the **Properties** sheet take the
+    county from that row's `County` column (default **Palm Beach**).
 - **Contact_Key** — priority: 1. email, 2. `External_ID` (`ext:…`),
   3. `Name | Company` (`name:Jane Smith | Acme`). A bare value containing `@`
   is treated as an email.
@@ -83,12 +89,19 @@ Source_URL`
 
 ### 5) Loans → `pci_loans`
 `External_ID, Property_Key, Lender_Contact_Key, Lien_Position,
-Original_Amount, Recorded_Date, Instrument_Number, Estimated_Balance,
-Interest_Rate_Pct, Rate_Type, Maturity_Date, Maturity_Basis, Loan_Type,
-Recourse, DSCR, LTV_Pct, Status, Confidence, Source_URL, Notes`
+Original_Amount, Recorded_Date, Instrument_Number, Recording_Jurisdiction,
+Estimated_Balance, Interest_Rate_Pct, Rate_Type, Maturity_Date,
+Maturity_Basis, Loan_Type, Recourse, DSCR, LTV_Pct, Status, Confidence,
+Source_URL, Notes`
 
 - Required: `Property_Key`. `Maturity_Basis` uses the confidence vocabulary.
-- Dedupe: `Instrument_Number` → `External_ID` → property+lender+date+amount.
+- **`Recording_Jurisdiction`** (usually the county where the instrument was
+  recorded). Instrument numbers are unique only **within a jurisdiction**, so
+  loan identity is `(Recording_Jurisdiction, Instrument_Number)` — the same
+  instrument number in Palm Beach and Broward is two different loans. If left
+  blank it is **inferred from the property's county** and stored explicitly.
+- Dedupe: `(Recording_Jurisdiction, Instrument_Number)` → `External_ID` →
+  property+lender+date+amount.
 - `Lender_Contact_Key` may be a Contact_Key or a plain lender name (stored as
   a snapshot when no CRM contact matches).
 
@@ -124,11 +137,16 @@ Notes`
 - Required: `Action`. Identical still-open actions are skipped (no daily
   duplicates). Priority 1 = highest.
 
-## Sources
+## Sources & lineage
 
 Every sheet’s `Source_URL` (+ `Source_Title`, `Source_Date` where present)
 is collected into `pci_sources`, deduplicated by normalized URL — provenance
-is preserved once per source, referenced everywhere.
+is preserved once per source. Each imported property, loan, tenant, distress
+signal, lender program, and property-update is then **linked to that source**
+via `pci_entity_sources`, and every field change records its source in
+`pci_change_log.source_id`. Property Detail → *Sources & Documents* lists the
+linked sources, and *Change History* links each change back to where it came
+from.
 
 ## The import lifecycle
 
@@ -137,10 +155,15 @@ is preserved once per source, referenced everywhere.
    stored privately under `imports/YYYY/MM/`.
 2. **Resolve** — for each conflict: *Skip (decide later)* · *Keep existing* ·
    *Apply incoming*.
-3. **Approve & Commit** — one transaction; full change log; Verified data
-   protected.
+3. **Approve & Commit** — **atomic**: the whole batch applies in one
+   transaction or nothing does. Any row that fails at the database aborts the
+   entire commit (no partial import, batch stays *previewed*, error names the
+   sheet + row). Full change log; Verified data protected.
 4. **Roll back** — last committed batch only, and only if nothing it touched
-   was modified afterwards; otherwise the system refuses and lists blockers.
+   was modified afterwards. Safety is checked by comparing each live record to
+   the exact state the import committed (not the change log), so **manual admin
+   edits are detected** even though they write no change-log row; otherwise the
+   system refuses and lists the exact blockers (table, id, changed fields).
 5. **Report** — per-row CSV report downloadable for any batch.
 
 ## QA fixture

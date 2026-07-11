@@ -66,10 +66,22 @@
       ["signals", c.from("pci_distress_signals").select("*").eq("property_id", id).order("event_date", { ascending: false })],
       ["scores", c.from("pci_scores").select("*").eq("property_id", id).order("score_date", { ascending: false }).limit(30)],
       ["changes", c.from("pci_change_log").select("*").eq("entity_id", id).order("changed_at", { ascending: false }).limit(100)],
+      // Durable provenance: which sources back this property (ARCH 6).
+      ["sources", c.from("pci_entity_sources").select("*, pci_sources(id,source_url,source_title,source_date,publisher)").eq("entity_type", "pci_properties").eq("entity_id", id)],
     ];
     for (var i = 0; i < reads.length; i++) {
       var r = await reads[i][1];
       out[reads[i][0]] = r.error ? [] : (r.data || []);
+    }
+    // Resolve any source_id referenced by change-log rows so Change History can
+    // link each change to where it came from.
+    out.sourceMap = {};
+    (out.sources || []).forEach(function (l) { if (l.pci_sources) out.sourceMap[l.pci_sources.id] = l.pci_sources; });
+    var missing = (out.changes || []).map(function (x) { return x.source_id; })
+      .filter(function (sid) { return sid && !out.sourceMap[sid]; });
+    if (missing.length) {
+      var sr = await c.from("pci_sources").select("id,source_url,source_title,source_date").in("id", Array.from(new Set(missing)));
+      if (!sr.error) (sr.data || []).forEach(function (s) { out.sourceMap[s.id] = s; });
     }
     return out;
   }

@@ -123,6 +123,7 @@ const SHEETS = {
       ["Original_Amount", "original_amount", "currency"],
       ["Recorded_Date", "recorded_date", "date"],
       ["Instrument_Number", "instrument_number", "text"],
+      ["Recording_Jurisdiction", "recording_jurisdiction", "text"],
       ["Estimated_Balance", "estimated_balance", "currency"],
       ["Interest_Rate_Pct", "interest_rate_pct", "percent"],
       ["Rate_Type", "rate_type", "text"],
@@ -351,24 +352,41 @@ function normalizeAddress(line1, city, state, zip) {
     String(zip || "").trim().slice(0, 5)].filter(Boolean).join("|");
 }
 function normId(v) { return String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+// County normalization for property identity. Parcel numbers are unique only
+// WITHIN a county, so identity is parcel:{county}:{parcel}. Blank county
+// defaults to Palm Beach (the first market + the pci_properties column default).
+function normCounty(c) {
+  const n = normId(c);
+  return n || "PALMBEACH";
+}
+// Recording-jurisdiction normalization for loan identity — matches the DB
+// unique index expression lower(btrim(coalesce(recording_jurisdiction,''))).
+function normJur(j) { return String(j || "").trim().toLowerCase(); }
 function propertyKeyOf(d) {
-  if (d.parcel_id) return "parcel:" + normId(d.parcel_id);
+  if (d.parcel_id) return "parcel:" + normCounty(d.county) + ":" + normId(d.parcel_id);
   if (d.external_id) return "ext:" + normText(d.external_id).toUpperCase();
   if (d.address_line1) return "addr:" + normalizeAddress(d.address_line1, d.city, d.state, d.postal_code);
   return null;
 }
-// A raw Property_Key cell may be a parcel id, an external id, or an address.
+// A raw Property_Key cell may be: an explicit parcel:{county}:{id} (county-
+// qualified), a bare parcel:{id} (county unknown — resolved against any
+// county, ambiguity is rejected downstream), an external id, or an address.
 function parsePropertyKeyCell(v) {
   const s = normText(v);
   if (!s) return null;
   const m = s.match(/^(parcel|ext|addr)\s*:\s*(.+)$/i);
   if (m) {
     const kind = m[1].toLowerCase();
-    if (kind === "parcel") return "parcel:" + normId(m[2]);
+    if (kind === "parcel") {
+      const rest = m[2];
+      const two = rest.match(/^([^:]+)\s*:\s*(.+)$/); // county:id
+      if (two) return "parcel:" + normCounty(two[1]) + ":" + normId(two[2]);
+      return "parcelbare:" + normId(rest); // county not given
+    }
     if (kind === "ext") return "ext:" + m[2].trim().toUpperCase();
     return "addr:" + m[2].trim().toUpperCase();
   }
-  return "auto:" + s.toUpperCase(); // resolved against all three key forms
+  return "auto:" + s.toUpperCase(); // resolved against ext / addr / bare-parcel
 }
 function contactKeyOf(d) {
   if (d.email) return "email:" + String(d.email).trim().toLowerCase();
@@ -504,9 +522,10 @@ function planActions(rows, existing, ctx) {
   const out = [];
   const seen = new Set(); // in-file duplicate keys
   const newProps = new Map();       // key → generated id (same-batch children)
+  const newPropsMeta = new Map();   // property id → { county } (for loan jurisdiction inference)
   const newContacts = new Map();
   const newContactNames = new Map(); // id → {name, company} for snapshots
-  const sourcesPlanned = new Set();
+  const sourcesPlanned = new Map();  // normalized url → generated source id
   const sum = { insert: 0, update: 0, unchanged: 0, conflict: 0, invalid: 0 };
   const E = existing || {};
   const maps = {
@@ -514,19 +533,21 @@ function planActions(rows, existing, ctx) {
     loans: E.loans || new Map(), tenants: E.tenants || new Map(),
     signals: E.signals || new Map(), programs: E.programs || new Map(),
     propertyContacts: E.propertyContacts || new Map(), sources: E.sources || new Map(),
-    openActions: E.openActions || new Set(),
+    openActions: E.openActions || new Set(), entitySources: E.entitySources || new Set(),
   };
 
   function push(sheet, r, target, action, key, before, after, targetId, extraErr) {
     const errs = (r.errors || []).concat(extraErr || []);
     if (action === "invalid") sum.invalid++; else sum[action]++;
-    out.push({
+    const rec = {
       sheet_name: sheet, row_number: r.rowNumber, target_type: target,
       dedupe_key: key || null, proposed_action: action,
       raw_data: r.data, normalized_data: r.data,
       before_data: before || null, after_data: after || null,
       validation_errors: errs, target_record_id: targetId || null,
-    });
+    };
+    out.push(rec);
+    return rec;
   }
 
   // Confidence/diff decision for an update. Returns {action, changed, err?}
@@ -556,16 +577,35 @@ function planActions(rows, existing, ctx) {
     return { action: "update", changed };
   }
 
+  // Find every property (existing or new-in-batch) whose parcel id matches,
+  // across ALL counties. Used only when a Property_Key gives a bare parcel with
+  // no county — more than one hit is ambiguous and must be rejected.
+  function findParcelBare(pid) {
+    const suffix = ":" + pid;
+    const hits = new Set();
+    for (const k of maps.properties.keys()) if (k.startsWith("parcel:") && k.endsWith(suffix)) hits.add(k);
+    for (const k of newProps.keys()) if (k.startsWith("parcel:") && k.endsWith(suffix)) hits.add(k);
+    return Array.from(hits);
+  }
+  function lookupExact(k) {
+    if (maps.properties.has(k)) return { id: maps.properties.get(k).id, key: k, isNew: false, record: maps.properties.get(k).record };
+    if (newProps.has(k)) return { id: newProps.get(k), key: k, isNew: true };
+    return null;
+  }
+  function resolveBareParcel(pid) {
+    const matches = findParcelBare(pid);
+    if (matches.length === 1) return lookupExact(matches[0]);
+    if (matches.length > 1) return { ambiguous: true, matches, parcel: pid };
+    return null;
+  }
   function resolvePropertyKey(cellKey) {
     if (!cellKey) return null;
-    const tryKeys = cellKey.startsWith("auto:")
-      ? ["parcel:" + normId(cellKey.slice(5)), "ext:" + cellKey.slice(5), "addr:" + cellKey.slice(5)]
-      : [cellKey];
-    for (const k of tryKeys) {
-      if (maps.properties.has(k)) return { id: maps.properties.get(k).id, key: k, isNew: false, record: maps.properties.get(k).record };
-      if (newProps.has(k)) return { id: newProps.get(k), key: k, isNew: true };
+    if (cellKey.startsWith("parcelbare:")) return resolveBareParcel(cellKey.slice(11));
+    if (cellKey.startsWith("auto:")) {
+      const raw = cellKey.slice(5);
+      return lookupExact("ext:" + raw) || lookupExact("addr:" + raw) || resolveBareParcel(normId(raw));
     }
-    return null;
+    return lookupExact(cellKey); // exact parcel:{county}:{id}, ext:, or addr:
   }
   function resolveContactKey(cellKey) {
     if (!cellKey) return null;
@@ -578,16 +618,48 @@ function planActions(rows, existing, ctx) {
     }
     return null;
   }
-  function planSource(sheet, r) {
+  // Resolve (and plan, if new) the pci_sources record for a row's Source_URL.
+  // Returns the source id, or null when the row carries no usable source.
+  function resolveSource(r) {
     const urlKey = normalizeUrlKey(r.data.source_url);
-    if (!urlKey || maps.sources.has("url:" + urlKey) || sourcesPlanned.has(urlKey)) return;
-    sourcesPlanned.add(urlKey);
+    if (!urlKey) return null;
+    if (maps.sources.has("url:" + urlKey)) return maps.sources.get("url:" + urlKey).id;
+    if (sourcesPlanned.has(urlKey)) return sourcesPlanned.get(urlKey);
     const id = ctx.genId();
-    push(sheet, { data: {}, errors: [], rowNumber: r.rowNumber }, "source", "insert", "url:" + urlKey, null, {
+    sourcesPlanned.set(urlKey, id);
+    push("Sources", { data: {}, errors: [], rowNumber: r.rowNumber }, "source", "insert", "url:" + urlKey, null, {
       id, source_url: r.data.source_url, normalized_url: urlKey,
       source_title: r.data.source_title || null, source_date: r.data.source_date || null,
       retrieved_at: ctx.today + "T00:00:00Z", source_type: "import",
     }, id);
+    return id;
+  }
+  // Durable provenance: record that `sourceId` backs entity (entityTable,
+  // entityId). Idempotent against links already in the DB and within this file
+  // (so an atomic commit never trips the unique index on re-import).
+  function linkSource(entityTable, entityId, sourceId, conf, rowNum) {
+    if (!entityId || !sourceId) return;
+    const dk = entityTable + "|" + entityId + "|" + sourceId;
+    if (seen.has("es|" + dk)) return;
+    if (maps.entitySources && maps.entitySources.has(dk)) return;
+    seen.add("es|" + dk);
+    const id = ctx.genId();
+    push("(provenance)", { data: {}, errors: [], rowNumber: rowNum || 0 }, "entity_source", "insert",
+      "es:" + dk, null,
+      { id, entity_type: entityTable, entity_id: entityId, source_id: sourceId, confidence: conf || null }, id);
+  }
+  // Attach a row's source to its primary entity: stamp source_ref on the
+  // entity's import row (feeds pci_change_log.source_id) and create the
+  // durable pci_entity_sources link.
+  function provenance(sheet, r, entityTable, entityId, conf) {
+    const sid = resolveSource(r);
+    if (!sid || !entityId) return;
+    for (let i = out.length - 1; i >= 0; i--) {
+      const o = out[i];
+      if (o.target_record_id === entityId && o.after_data &&
+          !["source", "entity_source", "listing", "score"].includes(o.target_type)) { o.source_ref = sid; break; }
+    }
+    linkSource(entityTable, entityId, sid, conf, r.rowNumber);
   }
 
   // ── Contacts (before properties so lender/broker keys resolve) ──
@@ -607,8 +679,9 @@ function planActions(rows, existing, ctx) {
       source_url: d.source_url,
       tags: d.tags ? d.tags.split(",").map((t) => t.trim()).filter(Boolean) : null,
     };
+    let contactId = hit ? hit.id : null;
     if (!hit) {
-      const id = ctx.genId();
+      const id = ctx.genId(); contactId = id;
       allKeys.forEach((k) => newContacts.set(k, id));
       newContactNames.set(id, { name: d.name, company: d.company });
       const ins = Object.assign({ id, owner_id: ctx.adminId, source: "import", status: "active" }, record,
@@ -620,7 +693,7 @@ function planActions(rows, existing, ctx) {
       if (dec.action === "unchanged") push("Contacts", r, "contact", "unchanged", key, hit.record, null, hit.id);
       else push("Contacts", r, "contact", dec.action, key, hit.record || null, dec.changed, hit.id, dec.err ? [dec.err] : []);
     }
-    planSource("Contacts", r);
+    provenance("Contacts", r, "crm_contacts", contactId, record.data_confidence);
   }
 
   // ── Properties ──
@@ -629,10 +702,6 @@ function planActions(rows, existing, ctx) {
     const d = r.data;
     d.normalized_address = normalizeAddress(d.address_line1, d.city, d.state, d.postal_code);
     const key = propertyKeyOf(d);
-    const allKeys = [d.parcel_id && ("parcel:" + normId(d.parcel_id)), d.external_id && ("ext:" + normText(d.external_id).toUpperCase()), "addr:" + d.normalized_address].filter(Boolean);
-    if (allKeys.some((k) => seen.has("p|" + k))) { push("Properties", r, "property", "invalid", key, null, null, null, ["duplicate property row in this file"]); continue; }
-    allKeys.forEach((k) => seen.add("p|" + k));
-    const hit = allKeys.map((k) => maps.properties.get(k)).find(Boolean);
     const record = {};
     for (const [, colKey] of SHEETS.Properties.columns) {
       if (["source_title","source_date"].includes(colKey)) continue;
@@ -641,9 +710,17 @@ function planActions(rows, existing, ctx) {
     record.normalized_address = d.normalized_address;
     record.state = record.state || "FL";
     record.county = record.county || "Palm Beach";
+    // County-aware parcel identity: parcel:{county}:{parcel}.
+    const allKeys = [d.parcel_id && ("parcel:" + normCounty(record.county) + ":" + normId(d.parcel_id)),
+      d.external_id && ("ext:" + normText(d.external_id).toUpperCase()), "addr:" + d.normalized_address].filter(Boolean);
+    if (allKeys.some((k) => seen.has("p|" + k))) { push("Properties", r, "property", "invalid", key, null, null, null, ["duplicate property row in this file"]); continue; }
+    allKeys.forEach((k) => seen.add("p|" + k));
+    const hit = allKeys.map((k) => maps.properties.get(k)).find(Boolean);
+    let propId = hit ? hit.id : null;
     if (!hit) {
-      const id = ctx.genId();
+      const id = ctx.genId(); propId = id;
       allKeys.forEach((k) => newProps.set(k, id));
+      newPropsMeta.set(id, { county: record.county });
       const ins = Object.assign({ id, created_by: ctx.adminId, first_seen_at: record.first_seen_at || ctx.today, last_seen_at: record.last_seen_at || ctx.today }, record);
       Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; });
       if (ins.recommendation && ins.opportunity_score == null) delete ins.recommendation;
@@ -687,7 +764,7 @@ function planActions(rows, existing, ctx) {
         }
       }
     }
-    planSource("Properties", r);
+    provenance("Properties", r, "pci_properties", propId, record.data_confidence);
   }
 
   // ── Property_Updates ──
@@ -696,6 +773,7 @@ function planActions(rows, existing, ctx) {
     const d = r.data;
     const ref = resolvePropertyKey(parsePropertyKeyCell(d.property_key));
     if (!ref) { push("Property_Updates", r, "property_update", "invalid", d.property_key, null, null, null, ["Property_Key not found: " + d.property_key]); continue; }
+    if (ref.ambiguous) { push("Property_Updates", r, "property_update", "invalid", d.property_key, null, null, null, ["Property_Key '" + d.property_key + "' is ambiguous — parcel " + ref.parcel + " exists in multiple counties; qualify it as parcel:{county}:{id}"]); continue; }
     if (ref.isNew) { push("Property_Updates", r, "property_update", "unchanged", d.property_key, null, null, ref.id, ["property is new in this batch — value already applied by the Properties sheet"]); continue; }
     const rec = ref.record || {};
     const incoming = { [d.field_name]: d.new_value_normalized, data_confidence: d.confidence || null, source_url: d.source_url || null };
@@ -712,13 +790,15 @@ function planActions(rows, existing, ctx) {
         changed_on: d.effective_date || ctx.today, confidence: d.confidence || null, source_url: d.source_url || null,
       }, lid);
     }
-    planSource("Property_Updates", r);
+    provenance("Property_Updates", r, "pci_properties", ref.id, d.confidence);
   }
 
   // ── Property_Contacts / Loans / Tenants / Distress / Programs / Actions ──
   function needProp(sheet, r, cell) {
     const ref = resolvePropertyKey(parsePropertyKeyCell(cell));
-    if (!ref) push(sheet, r, SHEETS[sheet].target, "invalid", cell, null, null, null, ["Property_Key not found: " + cell]);
+    if (!ref) { push(sheet, r, SHEETS[sheet].target, "invalid", cell, null, null, null, ["Property_Key not found: " + cell]); return null; }
+    if (ref.ambiguous) { push(sheet, r, SHEETS[sheet].target, "invalid", cell, null, null, null,
+      ["Property_Key '" + cell + "' is ambiguous — parcel " + ref.parcel + " exists in multiple counties; qualify it as parcel:{county}:{id}"]); return null; }
     return ref;
   }
   for (const r of rows.Property_Contacts || []) {
@@ -733,20 +813,27 @@ function planActions(rows, existing, ctx) {
     const hit = maps.propertyContacts.get(key);
     const rec = { property_id: p.id, crm_contact_id: cRef.id, relationship_role: d.relationship_role,
       is_primary: d.is_primary === true, confidence: d.confidence, source_url: d.source_url };
-    if (!hit) { const id = ctx.genId(); push("Property_Contacts", r, "property_contact", "insert", key, null, Object.assign({ id }, rec), id); }
+    let pcId = hit ? hit.id : null;
+    if (!hit) { const id = ctx.genId(); pcId = id; push("Property_Contacts", r, "property_contact", "insert", key, null, Object.assign({ id }, rec), id); }
     else {
       const dec = decide("property_contact", hit.record || {}, rec, "confidence");
       if (dec.action === "unchanged") push("Property_Contacts", r, "property_contact", "unchanged", key, hit.record, null, hit.id);
       else push("Property_Contacts", r, "property_contact", dec.action, key, hit.record || null, dec.changed, hit.id, dec.err ? [dec.err] : []);
     }
-    planSource("Property_Contacts", r);
+    provenance("Property_Contacts", r, "pci_property_contacts", pcId, d.confidence);
   }
   for (const r of rows.Loans || []) {
     if (r.errors.length) { push("Loans", r, "loan", "invalid"); continue; }
     const d = r.data;
     const p = needProp("Loans", r, d.property_key); if (!p) continue;
     const lRef = d.lender_contact_key ? resolveContactKey(parseContactKeyCell(d.lender_contact_key)) : null;
-    const keys = [d.instrument_number && ("instr:" + normId(d.instrument_number)), d.external_id && ("ext:" + normText(d.external_id).toUpperCase()),
+    // Recording jurisdiction: explicit value wins; otherwise inferred from the
+    // property's county (existing record or the new-in-batch property's county).
+    // Instrument numbers are unique only WITHIN a jurisdiction.
+    const propCounty = p.record ? p.record.county : (newPropsMeta.get(p.id) || {}).county;
+    const jurisdiction = d.recording_jurisdiction || propCounty || null;
+    const keys = [d.instrument_number && ("instr:" + normJur(jurisdiction) + ":" + normId(d.instrument_number)),
+      d.external_id && ("ext:" + normText(d.external_id).toUpperCase()),
       "nat:" + p.id + ":" + (lRef ? lRef.id : (normText(d.lender_contact_key) || "")) + ":" + (d.recorded_date || "") + ":" + (d.original_amount ?? "")].filter(Boolean);
     if (keys.some((k) => seen.has("l|" + k))) { push("Loans", r, "loan", "invalid", keys[0], null, null, null, ["duplicate loan row in this file"]); continue; }
     keys.forEach((k) => seen.add("l|" + k));
@@ -759,19 +846,20 @@ function planActions(rows, existing, ctx) {
       lenderSnap = normText(d.lender_contact_key);
     }
     const rec = { external_id: d.external_id, property_id: p.id, lender_contact_id: lRef ? lRef.id : null,
-      lender_name_snapshot: lenderSnap,
+      lender_name_snapshot: lenderSnap, recording_jurisdiction: jurisdiction,
       lien_position: d.lien_position, original_amount: d.original_amount, recorded_date: d.recorded_date,
       instrument_number: d.instrument_number, estimated_balance: d.estimated_balance,
       interest_rate_pct: d.interest_rate_pct, rate_type: d.rate_type, maturity_date: d.maturity_date,
       maturity_basis: d.maturity_basis, loan_type: d.loan_type, recourse: d.recourse, dscr: d.dscr,
       ltv_pct: d.ltv_pct, status: d.status, confidence: d.confidence, source_url: d.source_url, notes: d.notes };
-    if (!hit) { const id = ctx.genId(); const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Loans", r, "loan", "insert", keys[0], null, ins, id); }
+    let loanId = hit ? hit.id : null;
+    if (!hit) { const id = ctx.genId(); loanId = id; const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Loans", r, "loan", "insert", keys[0], null, ins, id); }
     else {
       const dec = decide("loan", hit.record || {}, rec, "confidence");
       if (dec.action === "unchanged") push("Loans", r, "loan", "unchanged", keys[0], hit.record, null, hit.id);
       else push("Loans", r, "loan", dec.action, keys[0], hit.record || null, dec.changed, hit.id, dec.err ? [dec.err] : []);
     }
-    planSource("Loans", r);
+    provenance("Loans", r, "pci_loans", loanId, d.confidence);
   }
   for (const r of rows.Tenants || []) {
     if (r.errors.length) { push("Tenants", r, "tenant", "invalid"); continue; }
@@ -785,13 +873,14 @@ function planActions(rows, existing, ctx) {
       lease_start: d.lease_start, lease_expiration: d.lease_expiration, annual_rent: d.annual_rent,
       market_rent: d.market_rent, category: d.category, credit_quality: d.credit_quality,
       rollover_risk: d.rollover_risk, confidence: d.confidence, source_url: d.source_url, notes: d.notes };
-    if (!hit) { const id = ctx.genId(); const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Tenants", r, "tenant", "insert", key, null, ins, id); }
+    let tenantId = hit ? hit.id : null;
+    if (!hit) { const id = ctx.genId(); tenantId = id; const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Tenants", r, "tenant", "insert", key, null, ins, id); }
     else {
       const dec = decide("tenant", hit.record || {}, rec, "confidence");
       if (dec.action === "unchanged") push("Tenants", r, "tenant", "unchanged", key, hit.record, null, hit.id);
       else push("Tenants", r, "tenant", dec.action, key, hit.record || null, dec.changed, hit.id, dec.err ? [dec.err] : []);
     }
-    planSource("Tenants", r);
+    provenance("Tenants", r, "pci_tenants", tenantId, d.confidence);
   }
   for (const r of rows.Distress_Signals || []) {
     if (r.errors.length) { push("Distress_Signals", r, "distress_signal", "invalid"); continue; }
@@ -805,13 +894,14 @@ function planActions(rows, existing, ctx) {
     const rec = { external_id: d.external_id, property_id: p.id, signal_type: d.signal_type,
       event_date: d.event_date, status: d.status, case_or_instrument_no: d.case_or_instrument_no,
       amount: d.amount, summary: d.summary, confidence: d.confidence, source_url: d.source_url, source_title: d.source_title };
-    if (!hit) { const id = ctx.genId(); const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Distress_Signals", r, "distress_signal", "insert", keys[0], null, ins, id); }
+    let signalId = hit ? hit.id : null;
+    if (!hit) { const id = ctx.genId(); signalId = id; const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Distress_Signals", r, "distress_signal", "insert", keys[0], null, ins, id); }
     else {
       const dec = decide("distress_signal", hit.record || {}, rec, "confidence");
       if (dec.action === "unchanged") push("Distress_Signals", r, "distress_signal", "unchanged", keys[0], hit.record, null, hit.id);
       else push("Distress_Signals", r, "distress_signal", dec.action, keys[0], hit.record || null, dec.changed, hit.id, dec.err ? [dec.err] : []);
     }
-    planSource("Distress_Signals", r);
+    provenance("Distress_Signals", r, "pci_distress_signals", signalId, d.confidence);
   }
   for (const r of rows.Lender_Programs || []) {
     if (r.errors.length) { push("Lender_Programs", r, "lender_program", "invalid"); continue; }
@@ -841,19 +931,20 @@ function planActions(rows, existing, ctx) {
       fees: d.fees, prepayment: d.prepayment, active_status: d.active_status || "active",
       last_verified_at: d.last_verified_at ? d.last_verified_at + "T00:00:00Z" : null,
       confidence: d.confidence, source_url: d.source_url, notes: d.notes };
-    if (!hit) { const id = ctx.genId(); const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Lender_Programs", r, "lender_program", "insert", keys[0], null, ins, id); }
+    let programId = hit ? hit.id : null;
+    if (!hit) { const id = ctx.genId(); programId = id; const ins = Object.assign({ id }, rec); Object.keys(ins).forEach((k) => { if (ins[k] === null) delete ins[k]; }); push("Lender_Programs", r, "lender_program", "insert", keys[0], null, ins, id); }
     else {
       const dec = decide("lender_program", hit.record || {}, rec, "confidence");
       if (dec.action === "unchanged") push("Lender_Programs", r, "lender_program", "unchanged", keys[0], hit.record, null, hit.id);
       else push("Lender_Programs", r, "lender_program", dec.action, keys[0], hit.record || null, dec.changed, hit.id, dec.err ? [dec.err] : []);
     }
-    planSource("Lender_Programs", r);
+    provenance("Lender_Programs", r, "pci_lender_programs", programId, d.confidence);
   }
   for (const r of rows.Daily_Actions || []) {
     if (r.errors.length) { push("Daily_Actions", r, "daily_action", "invalid"); continue; }
     const d = r.data;
     let pid = null, cid = null;
-    if (d.property_key) { const p = resolvePropertyKey(parsePropertyKeyCell(d.property_key)); if (p) pid = p.id; }
+    if (d.property_key) { const p = resolvePropertyKey(parsePropertyKeyCell(d.property_key)); if (p && p.id && !p.ambiguous) pid = p.id; }
     if (d.contact_key) { const cRef = resolveContactKey(parseContactKeyCell(d.contact_key)); if (cRef) cid = cRef.id; }
     const key = "a:" + (d.action_type || "") + ":" + (pid || "") + ":" + String(d.action).toUpperCase().slice(0, 120);
     if (seen.has(key) || maps.openActions.has(key)) { push("Daily_Actions", r, "daily_action", "unchanged", key, null, null, null, ["identical open action already exists"]); continue; }
@@ -874,7 +965,8 @@ module.exports = {
   MAX_FILE_BYTES, CONFIDENCE, SHEETS, SIGNAL_TYPES, RELATIONSHIP_ROLES,
   TIME_VARYING, PROPERTY_UPDATE_FIELDS,
   confidenceRank, normText, normNumber, normPercent, normInt, normDate, normBool,
-  normConfidence, normUrl, normalizeAddress, propertyKeyOf, contactKeyOf,
+  normConfidence, normUrl, normalizeAddress, normCounty, normJur, normId,
+  propertyKeyOf, contactKeyOf,
   parsePropertyKeyCell, parseContactKeyCell, normalizeUrlKey, normHeader,
   isZipMagic, isLegacyCfb, hasVbaProject, checkFile, normalizeRow,
   recommendationFor, planActions,

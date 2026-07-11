@@ -251,3 +251,11 @@ Post-apply checklist:
 - [ ] /admin/intelligence renders for an admin; non-admin is redirected
 - [ ] Anon/member direct Supabase selects on `pci_properties` return nothing
 - [ ] Template downloads; fixture-style workbook previews and commits
+
+### v71.1 — Capital Intelligence code-review hardening (same migration files 067–070)
+No new migration numbers — the fixes are edits to 067–070 (undeployed):
+- **067**: destructive dup-delete replaced with a **non-destructive deterministic merge** (reassigns crm_deals/reminders/activities, coalesces fields, unions tags, no swallowed exceptions); unique index created only after merge.
+- **068**: `pci_loans.recording_jurisdiction` added; loan unique index is now `(lower(btrim(recording_jurisdiction)), instrument_number)`; property parcel unique index remains `(county, parcel_id)` and is now matched by the importer.
+- **069**: `pci_commit_import_batch` made **atomic** (any row failure aborts the whole batch); `pci_rollback_import_batch` now detects manual edits by comparing live records to committed `after_data` (not the change log); new **`pci_entity_sources`** provenance table (admin-RLS) + `pci_import_rows.source_ref`; `pci_change_log.source_id` populated on commit.
+- **070**: `pci_check_schema()` expects `pci_entity_sources`.
+- DB-level proofs: `qa/sql/pci-db-tests.sql` (`PCI_DB_TESTS=1 npm run qa:intelligence`).

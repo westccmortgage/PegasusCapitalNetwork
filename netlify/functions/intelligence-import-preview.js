@@ -70,7 +70,7 @@ async function parseWorkbook(buf) {
 async function loadExisting(supabase, adminId) {
   const E = { properties: new Map(), contacts: new Map(), loans: new Map(), tenants: new Map(),
     signals: new Map(), programs: new Map(), propertyContacts: new Map(), sources: new Map(),
-    openActions: new Set() };
+    openActions: new Set(), entitySources: new Set() };
   const LIM = 10000;
   const q = async (t, sel) => {
     const { data, error } = await supabase.from(t).select(sel || "*").limit(LIM);
@@ -79,7 +79,8 @@ async function loadExisting(supabase, adminId) {
   };
   for (const p of await q("pci_properties")) {
     const rec = { id: p.id, record: p };
-    if (p.parcel_id) E.properties.set("parcel:" + String(p.parcel_id).toUpperCase().replace(/[^A-Z0-9]/g, ""), rec);
+    // County-aware parcel identity, matching core.propertyKeyOf exactly.
+    if (p.parcel_id) E.properties.set("parcel:" + core.normCounty(p.county) + ":" + core.normId(p.parcel_id), rec);
     if (p.external_id) E.properties.set("ext:" + String(p.external_id).trim().toUpperCase(), rec);
     if (p.normalized_address) E.properties.set("addr:" + p.normalized_address, rec);
   }
@@ -94,7 +95,8 @@ async function loadExisting(supabase, adminId) {
   }
   for (const l of await q("pci_loans")) {
     const rec = { id: l.id, record: l };
-    if (l.instrument_number) E.loans.set("instr:" + String(l.instrument_number).toUpperCase().replace(/[^A-Z0-9]/g, ""), rec);
+    // Jurisdiction-aware instrument identity, matching core exactly.
+    if (l.instrument_number) E.loans.set("instr:" + core.normJur(l.recording_jurisdiction) + ":" + core.normId(l.instrument_number), rec);
     if (l.external_id) E.loans.set("ext:" + String(l.external_id).trim().toUpperCase(), rec);
     E.loans.set("nat:" + l.property_id + ":" + (l.lender_contact_id || "") + ":" + (l.recorded_date || "") + ":" + (l.original_amount ?? ""), rec);
   }
@@ -116,6 +118,11 @@ async function loadExisting(supabase, adminId) {
   }
   for (const s of await q("pci_sources", "id, normalized_url")) {
     if (s.normalized_url) E.sources.set("url:" + s.normalized_url, { id: s.id, record: s });
+  }
+  // Existing provenance links, so re-import never trips the entity_source
+  // unique index (which, under atomic commit, would abort the whole batch).
+  for (const es of await q("pci_entity_sources", "entity_type, entity_id, source_id")) {
+    E.entitySources.add(es.entity_type + "|" + es.entity_id + "|" + es.source_id);
   }
   const { data: acts } = await supabase.from("pci_daily_actions")
     .select("action_type, property_id, action").eq("status", "open").limit(LIM);
@@ -196,7 +203,12 @@ exports.handler = async (event) => {
     }).select("id").single();
     if (bErr) return resp(500, { ok: false, error: "could not create batch (apply migration 069?): " + bErr.message });
 
-    const rows = plan.rows.map((r) => Object.assign({ batch_id: batch.id }, r));
+    const rows = plan.rows.map((r) => {
+      // Stamp the batch id into entity_source links so provenance is traceable
+      // back to the import that created it.
+      if (r.target_type === "entity_source" && r.after_data) r.after_data.batch_id = batch.id;
+      return Object.assign({ batch_id: batch.id }, r);
+    });
     for (let i = 0; i < rows.length; i += 200) {
       const { error: rErr } = await supabase.from("pci_import_rows").insert(rows.slice(i, i + 200));
       if (rErr) {
