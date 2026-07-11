@@ -1,3 +1,27 @@
+# WCCI Workspace — Entry Flow, Palette, Mobile-First + Simplified Chinese
+
+## Default entry = the strategy workspace (no landing click)
+
+WCCI opens **directly into the strategy workspace** — chat area, assistant intro,
+composer, manual-entry/profile panel, language controls, compact trust access,
+company identity, and Start Over. The old marketing landing is **preserved only
+as an opt-in route: `/?intro`** (`src/App.jsx` — `screen` init reads
+`?intro`; `resetSession` and resume keep the user in the workspace). Verified by
+`e2e/mobile.spec.mjs` (“default route opens directly into the workspace” +
+“the old landing is preserved only at /?intro”).
+
+## Visual system — CaliforniaMTG warm concierge palette
+
+Design tokens live in `src/theme.js` (`C`): warm ivory app canvas, soft-cream
+cards, light-sand panels, muted **bronze/gold** accents, deep espresso text,
+warm-gray borders, softened success/warn/danger, bronze focus ring. Applied
+across the workspace header, chat bubbles (assistant = soft cream card; user =
+bronze gradient), composer, chips, profile/manual panels, resource cards, trust
+panel, and the global CSS (`main.jsx`) + load background (`index.html`). No cold
+tech-blue, no harsh gray blocks — calm, premium, mortgage-concierge.
+
+---
+
 # Mobile-First + Simplified Chinese (zh-CN)
 
 WCCI is built and tested as a mobile-first mortgage strategy tool, with Simplified

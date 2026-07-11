@@ -1,10 +1,11 @@
 // Mobile + Simplified Chinese end-to-end checks.
 //
-// Covers: zh-CN selection, Chinese landing copy, mobile trust panel, office/direct
+// The DEFAULT route now opens directly into the strategy workspace (no landing
+// click). The old marketing landing is preserved only at /?intro. Covers: direct
+// workspace entry, zh-CN, header brand lockup, trust panel + office/direct
 // tap-to-call, no horizontal scroll at 360/390/430, conversation persistence,
-// and a WeChat user-agent rendering smoke test. IME composition itself is
-// unit-tested in test/ime-composer.test.mjs (composition events are not reliably
-// synthesizable in a headless driver).
+// WeChat UA smoke, and landing-route preservation. IME composition is unit-tested
+// in test/ime-composer.test.mjs.
 
 import { test, expect } from '@playwright/test';
 
@@ -16,26 +17,29 @@ const SIZES = [
   { w: 430, h: 932 },
 ];
 
-async function selectChinese(page) {
-  await page.getByRole('button', { name: /Language: 中文/ }).click();
-}
+const selectChinese = (page) => page.getByRole('button', { name: /Language: 中文/ }).click();
 
-test('zh-CN selection switches the landing headline to Chinese', async ({ page }) => {
+test('default route opens directly into the workspace (no landing click)', async ({ page }) => {
+  await page.goto('/');
+  // Composer + assistant intro are present immediately — no "Build My Strategy" gate.
+  await expect(page.locator('textarea').first()).toBeVisible();
+  await expect(page.getByText(/Loan Strategy assistant/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Build My Strategy' })).toHaveCount(0);
+});
+
+test('workspace header shows WCCI by the legal company', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('WCCI', { exact: true })).toBeVisible();
+  await expect(page.getByText('West Coast Capital Mortgage Inc.').first()).toBeVisible();
+});
+
+test('zh-CN switches the workspace into Chinese', async ({ page }) => {
   await page.goto('/');
   await selectChinese(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('房贷策略');
-  await expect(page.getByRole('button', { name: '生成我的策略' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '逐步输入信息' })).toBeVisible();
+  await expect(page.getByText('贷款策略助手')).toBeVisible();
 });
 
-test('brand lockup shows WCCI by the legal company (not an AI-company headline)', async ({ page }) => {
-  await page.goto('/');
-  const nav = page.locator('nav');
-  await expect(nav.getByText('WCCI', { exact: true })).toBeVisible();
-  await expect(nav.getByText('West Coast Capital Mortgage Inc.')).toBeVisible();
-});
-
-test('mobile trust panel exposes licensing + office/direct tap-to-call', async ({ page }) => {
+test('trust panel exposes licensing + office/direct tap-to-call from the workspace', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Company & Licensing/ }).click();
   const dialog = page.getByRole('dialog');
@@ -60,9 +64,6 @@ for (const s of SIZES) {
 
 test('conversation persists across a reload (returning from an external resource)', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Build My Strategy|生成我的策略/ }).first().isVisible().catch(() => {});
-  // Enter the chat and send a message.
-  await page.getByRole('button', { name: /Enter Details Step by Step|逐步输入信息/ }).first().click();
   const box = page.locator('textarea').first();
   await box.fill('Buying in Boca Raton around 800k');
   await page.keyboard.press('Enter');
@@ -71,11 +72,17 @@ test('conversation persists across a reload (returning from an external resource
   await expect(page.getByText('Buying in Boca Raton around 800k')).toBeVisible();
 });
 
-test('WeChat user-agent renders the page and language selection works', async ({ page }) => {
+test('the old landing is preserved only at /?intro', async ({ page }) => {
+  await page.goto('/?intro');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Build My Strategy/ })).toBeVisible();
+});
+
+test('WeChat user-agent renders the workspace and language selection works', async ({ page }) => {
   const ua = await page.evaluate(() => navigator.userAgent);
   test.skip(!/MicroMessenger/.test(ua), 'only meaningful in the wechat-embedded project');
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.locator('textarea').first()).toBeVisible();
   await selectChinese(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('房贷策略');
+  await expect(page.getByText('贷款策略助手')).toBeVisible();
 });

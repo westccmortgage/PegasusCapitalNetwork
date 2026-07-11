@@ -189,11 +189,16 @@ export default function App() {
     try { return localStorage.getItem('wcci-lang') || 'en'; } catch { return 'en'; }
   });
   const [screen, setScreen] = useState(() => {
-    if (!saved) return 'landing';
+    // DEFAULT ENTRY = the strategy workspace (the product). The old marketing
+    // landing is preserved only as an opt-in route: wcci.online/?intro
+    let wantsIntro = false;
+    try { wantsIntro = new URLSearchParams(window.location.search).has('intro'); } catch {}
+    if (!saved) return wantsIntro ? 'landing' : 'chat';
     if (saved.screen === 'capture') return 'capture';
     // Resume an in-progress conversation so it never looks "cleared" on reload.
     if (Array.isArray(saved.messages) && saved.messages.length > 1) return 'chat';
-    return saved.screen || 'landing';
+    if (saved.screen === 'landing') return wantsIntro ? 'landing' : 'chat';
+    return saved.screen || 'chat';
   });
   // Sanitize restored messages: guarantee every message has string content so a
   // corrupted entry can never crash the render (which would wipe the chat).
@@ -763,7 +768,7 @@ export default function App() {
 
   function LangSwitch({ dark }) {
     return (
-      <div style={{ display: 'flex', gap: 2, background: dark ? 'rgba(255,255,255,0.12)' : '#f1f5f9', borderRadius: 8, padding: 2 }}>
+      <div style={{ display: 'flex', gap: 2, background: dark ? 'rgba(255,255,255,0.12)' : '#f0e9db', borderRadius: 8, padding: 2 }}>
         {LANGS.map(l => {
           const active = l === lang;
           return (
@@ -774,8 +779,8 @@ export default function App() {
               lang={l}
               style={{
                 border: 'none', borderRadius: 6, padding: '6px 8px', minHeight: 34, minWidth: 34, fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
-                background: active ? (dark ? 'white' : '#2563eb') : 'transparent',
-                color: active ? (dark ? '#0f172a' : 'white') : (dark ? 'rgba(255,255,255,0.8)' : '#64748b'),
+                background: active ? (dark ? 'white' : '#a97b3f') : 'transparent',
+                color: active ? (dark ? '#2f2a23' : 'white') : (dark ? 'rgba(255,255,255,0.8)' : '#8c8375'),
                 transition: 'all 0.15s',
               }}
             >{LANG_LABELS[l] || l.toUpperCase()}</button>
@@ -792,9 +797,9 @@ export default function App() {
     const Action = ({ href, onClick, children }) => (
       href
         ? <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 46, textAlign: 'center', textDecoration: 'none', background: '#f1f5fb', border: '1px solid #dbe3f0', borderRadius: 10, color: '#0a2463', fontSize: 13.5, fontWeight: 600, padding: '10px 12px' }}>{children}</a>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 46, textAlign: 'center', textDecoration: 'none', background: '#f3ecdf', border: '1px solid #e2d6c0', borderRadius: 10, color: '#3a3026', fontSize: 13.5, fontWeight: 600, padding: '10px 12px' }}>{children}</a>
         : <button onClick={onClick}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 46, textAlign: 'center', background: '#f1f5fb', border: '1px solid #dbe3f0', borderRadius: 10, color: '#0a2463', fontSize: 13.5, fontWeight: 600, padding: '10px 12px', cursor: 'pointer', width: '100%' }}>{children}</button>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 46, textAlign: 'center', background: '#f3ecdf', border: '1px solid #e2d6c0', borderRadius: 10, color: '#3a3026', fontSize: 13.5, fontWeight: 600, padding: '10px 12px', cursor: 'pointer', width: '100%' }}>{children}</button>
     );
     return (
       <div onClick={() => { setTrustOpen(false); setPrivacyOpen(false); }}
@@ -802,27 +807,27 @@ export default function App() {
         <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={cu.trustHeading}
           style={{ background: 'white', width: '100%', maxWidth: 460, maxHeight: '90dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '18px 18px 0 0', padding: '18px clamp(16px,4vw,24px)', paddingBottom: 'max(18px, env(safe-area-inset-bottom, 18px))' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0a2463' }}>🛡️ {cu.trustHeading}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#3a3026' }}>🛡️ {cu.trustHeading}</span>
             <button onClick={() => { setTrustOpen(false); setPrivacyOpen(false); }} aria-label={cu.close}
-              style={{ background: '#f1f5f9', border: 'none', borderRadius: 8, width: 40, height: 40, fontSize: 16, cursor: 'pointer', color: '#64748b' }}>✕</button>
+              style={{ background: '#f0e9db', border: 'none', borderRadius: 8, width: 40, height: 40, fontSize: 16, cursor: 'pointer', color: '#8c8375' }}>✕</button>
           </div>
 
           {/* Licensing — never translated */}
-          <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#334155', borderTop: '1px solid #eef1f6', paddingTop: 12 }}>
-            <div style={{ fontWeight: 700, color: '#0a2463' }}>{COMPANY_NAME}</div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#4a4235', borderTop: '1px solid #efe8da', paddingTop: 12 }}>
+            <div style={{ fontWeight: 700, color: '#3a3026' }}>{COMPANY_NAME}</div>
             <div>CA DRE Corporation License #{COMPANY_DRE}</div>
             <div>NMLS #{COMPANY_NMLS}</div>
-            <div style={{ fontWeight: 700, color: '#0a2463', marginTop: 8 }}>{BROKER_NAME}</div>
+            <div style={{ fontWeight: 700, color: '#3a3026', marginTop: 8 }}>{BROKER_NAME}</div>
             <div>{BROKER_TITLE}</div>
             <div>CA DRE Broker License #{BROKER_DRE}</div>
             <div>NMLS #{BROKER_NMLS}</div>
           </div>
 
           {/* Contact — Office is the general line; Direct reaches Anatoliy */}
-          <div style={{ fontSize: 13.5, lineHeight: 1.9, color: '#334155', marginTop: 12, borderTop: '1px solid #eef1f6', paddingTop: 12 }}>
-            <div><b>{cu.officeLabel}:</b> <a href={OFFICE_PHONE_HREF} style={{ color: '#2563eb', fontWeight: 600 }}>{OFFICE_PHONE}</a></div>
-            <div><b>{cu.directLabel}:</b> <a href={DIRECT_PHONE_HREF} style={{ color: '#2563eb', fontWeight: 600 }}>{DIRECT_PHONE}</a></div>
-            <div><b>{cu.emailLabel}:</b> <a href={COMPANY_EMAIL_HREF} style={{ color: '#2563eb', fontWeight: 600 }}>{COMPANY_EMAIL}</a></div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.9, color: '#4a4235', marginTop: 12, borderTop: '1px solid #efe8da', paddingTop: 12 }}>
+            <div><b>{cu.officeLabel}:</b> <a href={OFFICE_PHONE_HREF} style={{ color: '#a97b3f', fontWeight: 600 }}>{OFFICE_PHONE}</a></div>
+            <div><b>{cu.directLabel}:</b> <a href={DIRECT_PHONE_HREF} style={{ color: '#a97b3f', fontWeight: 600 }}>{DIRECT_PHONE}</a></div>
+            <div><b>{cu.emailLabel}:</b> <a href={COMPANY_EMAIL_HREF} style={{ color: '#a97b3f', fontWeight: 600 }}>{COMPANY_EMAIL}</a></div>
           </div>
 
           {/* Actions */}
@@ -836,7 +841,7 @@ export default function App() {
             <Action onClick={() => setPrivacyOpen(o => !o)}>🔒 {cu.privacyAiUse}</Action>
           </div>
           {privacyOpen && (
-            <p style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.7, marginTop: 10, background: '#f8fafc', border: '1px solid #eef1f6', borderRadius: 10, padding: '12px' }}>{cu.privacyNote}</p>
+            <p style={{ fontSize: 12.5, color: '#6b6152', lineHeight: 1.7, marginTop: 10, background: '#f6f1e8', border: '1px solid #efe8da', borderRadius: 10, padding: '12px' }}>{cu.privacyNote}</p>
           )}
         </div>
       </div>
@@ -846,16 +851,16 @@ export default function App() {
   // ─── Landing ───
   if (screen === 'landing') {
     return (
-      <div style={{ minHeight: '100dvh', background: '#f8fafc', fontFamily: FONT, color: '#0f172a' }}>
-        <div style={{ height: 3, background: 'linear-gradient(90deg, #2563eb, #7c3aed, #0ea5e9)' }} />
+      <div style={{ minHeight: '100dvh', background: '#f6f1e8', fontFamily: FONT, color: '#2f2a23' }}>
+        <div style={{ height: 3, background: 'linear-gradient(90deg, #a97b3f, #855f2c, #cbb079)' }} />
 
-        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #e2e8f0', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #e7ddc9', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 100 }}>
           {/* Brand lockup — WCCI, by the legal company (never positioned as an AI tech company) */}
           <a href="https://wcci.online" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 1, minWidth: 0 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>W</div>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>W</div>
             <div style={{ minWidth: 0, lineHeight: 1.15 }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#0a2463' }}>WCCI</div>
-              <div style={{ fontSize: 10.5, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brandBy} {COMPANY_NAME}</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#3a3026' }}>WCCI</div>
+              <div style={{ fontSize: 10.5, color: '#8c8375', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brandBy} {COMPANY_NAME}</div>
             </div>
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
@@ -866,21 +871,21 @@ export default function App() {
 
         <div style={{ maxWidth: 860, margin: '0 auto', padding: 'clamp(24px, 6vw, 72px) clamp(16px, 4vw, 40px) clamp(32px, 8vw, 80px)', textAlign: 'center' }}>
           {/* Badge — AI is SECONDARY (company is primary) */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 20, padding: '5px 12px', marginBottom: 18 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
-            <span style={{ fontSize: 12.5, color: '#2563eb', fontWeight: 500 }}>{t.badge}</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#f5ecda', border: '1px solid #ddc9a3', borderRadius: 20, padding: '5px 12px', marginBottom: 18 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#a97b3f', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+            <span style={{ fontSize: 12.5, color: '#a97b3f', fontWeight: 500 }}>{t.badge}</span>
           </div>
 
           {/* Mortgage-strategy headline (mobile-first; not an AI-company headline) */}
           <h1 style={{ fontSize: 'clamp(26px, 6vw, 56px)', fontWeight: 700, lineHeight: 1.18, letterSpacing: '-0.02em', marginBottom: 12 }}>
             {t.mobileH1}
           </h1>
-          <p style={{ fontSize: 'clamp(15px, 2vw, 18px)', color: '#475569', lineHeight: 1.7, maxWidth: 520, margin: '0 auto 20px', padding: '0 4px' }}>
+          <p style={{ fontSize: 'clamp(15px, 2vw, 18px)', color: '#6b6152', lineHeight: 1.7, maxWidth: 520, margin: '0 auto 20px', padding: '0 4px' }}>
             {t.mobileLead}
           </p>
 
           {/* Scenario input — reachable without scrolling past a decorative hero */}
-          <div style={{ maxWidth: 620, margin: '0 auto', background: 'white', border: '1px solid #dfe6f2', borderRadius: 16, boxShadow: '0 12px 40px rgba(10,36,99,0.10)', padding: 'clamp(14px, 3vw, 20px)', textAlign: 'left' }}>
+          <div style={{ maxWidth: 620, margin: '0 auto', background: 'white', border: '1px solid #e7ddc9', borderRadius: 16, boxShadow: '0 12px 40px rgba(74,58,32,0.12)', padding: 'clamp(14px, 3vw, 20px)', textAlign: 'left' }}>
             <textarea
               value={heroInput}
               onChange={e => setHeroInput(e.target.value)}
@@ -889,50 +894,50 @@ export default function App() {
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !composingRef.current) { e.preventDefault(); analyzeScenario(heroInput); } }}
               placeholder={su.heroPlaceholder}
               rows={3}
-              style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 12, padding: '14px 16px', fontSize: 16, resize: 'vertical', fontFamily: FONT, lineHeight: 1.6, color: '#0f172a', background: '#fafbfd', minHeight: 84 }}
+              style={{ width: '100%', border: '1px solid #e7ddc9', borderRadius: 12, padding: '14px 16px', fontSize: 16, resize: 'vertical', fontFamily: FONT, lineHeight: 1.6, color: '#2f2a23', background: '#fbf6ec', minHeight: 84 }}
             />
             <button
               onClick={() => analyzeScenario(heroInput)}
               disabled={!heroInput.trim()}
-              style={{ width: '100%', minHeight: 48, marginTop: 12, background: heroInput.trim() ? 'linear-gradient(135deg, #0a2463, #2563eb)' : '#cbd5e1', color: 'white', border: 'none', borderRadius: 12, padding: '15px', fontSize: 16, fontWeight: 700, cursor: heroInput.trim() ? 'pointer' : 'default', boxShadow: heroInput.trim() ? '0 4px 20px rgba(37,99,235,0.30)' : 'none', transition: 'all 0.15s' }}
+              style={{ width: '100%', minHeight: 48, marginTop: 12, background: heroInput.trim() ? 'linear-gradient(135deg, #3a3026, #a97b3f)' : '#cec3ae', color: 'white', border: 'none', borderRadius: 12, padding: '15px', fontSize: 16, fontWeight: 700, cursor: heroInput.trim() ? 'pointer' : 'default', boxShadow: heroInput.trim() ? '0 4px 20px rgba(138,98,49,0.28)' : 'none', transition: 'all 0.15s' }}
             >{t.buildStrategy}</button>
             {/* Manual step-by-step option */}
             <button
               onClick={() => { setScreen('chat'); setManualOpen(true); }}
-              style={{ width: '100%', minHeight: 44, marginTop: 8, background: 'white', color: '#2563eb', border: '1.5px solid #c7d2fe', borderRadius: 12, padding: '12px', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+              style={{ width: '100%', minHeight: 44, marginTop: 8, background: 'white', color: '#a97b3f', border: '1.5px solid #d8c4a0', borderRadius: 12, padding: '12px', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
             >{t.stepByStep}</button>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 }}>
               {su.heroChips.map((chip, i) => (
                 <button key={i} onClick={() => analyzeScenario(chip)}
-                  style={{ background: '#f1f5fb', border: '1px solid #e2e8f0', color: '#334155', borderRadius: 18, padding: '8px 12px', minHeight: 36, fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#e8eef9'; e.currentTarget.style.borderColor = '#c7d2fe'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#f1f5fb'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                  style={{ background: '#f3ecdf', border: '1px solid #e7ddc9', color: '#4a4235', borderRadius: 18, padding: '8px 12px', minHeight: 36, fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#efe4d0'; e.currentTarget.style.borderColor = '#d8c4a0'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#f3ecdf'; e.currentTarget.style.borderColor = '#e7ddc9'; }}
                 >{chip}</button>
               ))}
             </div>
           </div>
-          <p style={{ marginTop: 14, fontSize: 13, color: '#94a3b8' }}>{t.ctaSub}</p>
+          <p style={{ marginTop: 14, fontSize: 13, color: '#a99e8b' }}>{t.ctaSub}</p>
 
           {/* Compact trust & contact access — available BEFORE chatting */}
           <div style={{ marginTop: 14 }}>
             <button onClick={() => setTrustOpen(true)}
-              style={{ background: 'white', border: '1px solid #dbe3f0', borderRadius: 10, padding: '10px 16px', minHeight: 44, fontSize: 13, fontWeight: 600, color: '#0a2463', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              style={{ background: 'white', border: '1px solid #e2d6c0', borderRadius: 10, padding: '10px 16px', minHeight: 44, fontSize: 13, fontWeight: 600, color: '#3a3026', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               🛡️ {t.companyLicensing}
             </button>
           </div>
 
           {/* Demo chat preview */}
-          <div style={{ marginTop: 48, background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', padding: 'clamp(14px, 3vw, 24px)', maxWidth: 540, margin: '48px auto 0', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700 }}>AI</div>
+          <div style={{ marginTop: 48, background: 'white', borderRadius: 16, border: '1px solid #e7ddc9', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', padding: 'clamp(14px, 3vw, 24px)', maxWidth: 540, margin: '48px auto 0', textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f0e9db' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700 }}>AI</div>
               <span style={{ fontSize: 13, fontWeight: 600 }}>Loan Strategy AI</span>
-              <span style={{ marginLeft: 'auto', fontSize: 11, color: '#22c55e', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />Online
+              <span style={{ marginLeft: 'auto', fontSize: 11, color: '#5f8a5c', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#5f8a5c', display: 'inline-block' }} />Online
               </span>
             </div>
             {t.demo.map((msg, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: msg.ai ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
-                <div style={{ background: msg.ai ? '#f8fafc' : 'linear-gradient(135deg, #2563eb, #7c3aed)', color: msg.ai ? '#334155' : 'white', border: msg.ai ? '1px solid #e2e8f0' : 'none', borderRadius: msg.ai ? '4px 12px 12px 12px' : '12px 4px 12px 12px', padding: '10px 14px', fontSize: 13, lineHeight: 1.6, maxWidth: '82%' }}>
+                <div style={{ background: msg.ai ? '#f6f1e8' : 'linear-gradient(135deg, #a97b3f, #855f2c)', color: msg.ai ? '#4a4235' : 'white', border: msg.ai ? '1px solid #e7ddc9' : 'none', borderRadius: msg.ai ? '4px 12px 12px 12px' : '12px 4px 12px 12px', padding: '10px 14px', fontSize: 13, lineHeight: 1.6, maxWidth: '82%' }}>
                   {msg.text}
                 </div>
               </div>
@@ -941,36 +946,36 @@ export default function App() {
         </div>
 
         {/* Features */}
-        <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: 'clamp(40px, 8vw, 72px) clamp(16px, 4vw, 40px)' }}>
+        <div style={{ background: 'white', borderTop: '1px solid #e7ddc9', padding: 'clamp(40px, 8vw, 72px) clamp(16px, 4vw, 40px)' }}>
           <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 20 }}>
             {t.features.map((f, i) => (
-              <div key={i} style={{ padding: 'clamp(18px, 3vw, 28px)', borderRadius: 12, border: '1px solid #f1f5f9', background: '#fafafa' }}>
+              <div key={i} style={{ padding: 'clamp(18px, 3vw, 28px)', borderRadius: 12, border: '1px solid #f0e9db', background: '#f6efe2' }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: f.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{f.icon}</div>
                 <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{f.title}</h3>
-                <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.7 }}>{f.desc}</p>
+                <p style={{ fontSize: 14, color: '#8c8375', lineHeight: 1.7 }}>{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Disclaimer (English, legal) */}
-        <div style={{ background: '#f8fafc', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e2e8f0' }}>
-          <p style={{ maxWidth: 800, margin: '0 auto', fontSize: 11, color: '#94a3b8', lineHeight: 1.7, textAlign: 'center' }}>{DISCLAIMER}</p>
+        <div style={{ background: '#f6f1e8', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e7ddc9' }}>
+          <p style={{ maxWidth: 800, margin: '0 auto', fontSize: 11, color: '#a99e8b', lineHeight: 1.7, textAlign: 'center' }}>{DISCLAIMER}</p>
         </div>
 
-        <footer style={{ textAlign: 'center', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e2e8f0', fontSize: 12, color: '#94a3b8', lineHeight: 1.9 }}>
+        <footer style={{ textAlign: 'center', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #e7ddc9', fontSize: 12, color: '#a99e8b', lineHeight: 1.9 }}>
           {/* Complete approved contact + licensing block */}
           <div style={{ marginBottom: 8 }}>
-            <a href={OFFICE_PHONE_HREF} style={{ color: '#64748b', fontWeight: 600, textDecoration: 'none' }}>{cu.officeLabel}: {OFFICE_PHONE}</a>
+            <a href={OFFICE_PHONE_HREF} style={{ color: '#8c8375', fontWeight: 600, textDecoration: 'none' }}>{cu.officeLabel}: {OFFICE_PHONE}</a>
             {' · '}
-            <a href={DIRECT_PHONE_HREF} style={{ color: '#64748b', fontWeight: 600, textDecoration: 'none' }}>{cu.directLabel}: {DIRECT_PHONE}</a>
+            <a href={DIRECT_PHONE_HREF} style={{ color: '#8c8375', fontWeight: 600, textDecoration: 'none' }}>{cu.directLabel}: {DIRECT_PHONE}</a>
             {' · '}
-            <a href={COMPANY_EMAIL_HREF} style={{ color: '#64748b', fontWeight: 600, textDecoration: 'none' }}>{COMPANY_EMAIL}</a>
+            <a href={COMPANY_EMAIL_HREF} style={{ color: '#8c8375', fontWeight: 600, textDecoration: 'none' }}>{COMPANY_EMAIL}</a>
           </div>
           <div>
-            <a href={COMPANY_FACTS_PRIMARY} target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8' }}>westcoastcapitalmortgage.com</a>
+            <a href={COMPANY_FACTS_PRIMARY} target="_blank" rel="noopener noreferrer" style={{ color: '#a99e8b' }}>westcoastcapitalmortgage.com</a>
             {' · '}
-            <a href="https://wcci.online" style={{ color: '#94a3b8' }}>wcci.online</a>
+            <a href="https://wcci.online" style={{ color: '#a99e8b' }}>wcci.online</a>
           </div>
           <div style={{ marginTop: 8 }}>{COMPANY_NAME} · {COMPANY_LICENSE}</div>
           <div>{BROKER_NAME} · {BROKER_TITLE} · {BROKER_LICENSE}</div>
@@ -1003,40 +1008,36 @@ export default function App() {
         />
         {/* Contextual "Recommended for your situation" block — max 3, verified only. */}
         {sidebarRecs.length > 0 && (
-          <div style={{ background: 'white', border: '1px solid #e7ebf3', borderRadius: 12, padding: 14 }}>
+          <div style={{ background: 'white', border: '1px solid #e7ddc9', borderRadius: 12, padding: 14 }}>
             <ResourceCardList recs={sidebarRecs} lang={lang} title={(RESOURCE_UI[lang] || RESOURCE_UI.en).recommendedTitle} />
           </div>
         )}
-        <p style={{ fontSize: 10, color: '#9aa6b8', lineHeight: 1.6, padding: '0 2px' }}>{STRATEGY_DISCLAIMER}</p>
+        <p style={{ fontSize: 10, color: '#a99e8b', lineHeight: 1.6, padding: '0 2px' }}>{STRATEGY_DISCLAIMER}</p>
       </div>
     );
 
     return (
-      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#f8fafc', fontFamily: FONT }}>
-        {/* Chat header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'white', borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', flexShrink: 0 }}>
-          <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
-            <button onClick={() => setScreen('landing')} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 13, fontWeight: 500, padding: '4px 8px' }}>{t.back}</button>
-            {messages.length > 1 && (
-              <button onClick={resetSession} style={{ background: 'none', border: '1px solid #e2e8f0', color: '#94a3b8', cursor: 'pointer', fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 6 }}>{t.startOver}</button>
-            )}
-            <button onClick={() => setTrustOpen(true)} aria-label={cu.companyAndLicensing} title={cu.companyAndLicensing}
-              style={{ background: 'none', border: '1px solid #e2e8f0', color: '#0a2463', cursor: 'pointer', fontSize: 13, padding: '4px 8px', borderRadius: 6, minHeight: 32 }}>🛡️</button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>AI</div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>Loan Strategy AI</div>
-              <div style={{ fontSize: 10, color: '#22c55e', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 3 }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />{t.statusOnline}
-              </div>
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#f6f1e8', fontFamily: FONT }}>
+        {/* Workspace header — WCCI, by West Coast Capital Mortgage Inc. */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: '#fffdf8', borderBottom: '1px solid #e7ddc9', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fffdf8', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>W</div>
+            <div style={{ minWidth: 0, lineHeight: 1.16 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#3a3026', letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>WCCI</div>
+              <div style={{ fontSize: 10.5, color: '#8c8375', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brandBy} {COMPANY_NAME}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            {messages.length > 1 && (
+              <button onClick={resetSession} title={t.startOver}
+                style={{ background: 'none', border: '1px solid #e7ddc9', color: '#8c8375', cursor: 'pointer', fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8, minHeight: 34 }}>{t.startOver}</button>
+            )}
+            <button onClick={() => setTrustOpen(true)} aria-label={cu.companyAndLicensing} title={cu.companyAndLicensing}
+              style={{ background: 'none', border: '1px solid #e7ddc9', color: '#3a3026', cursor: 'pointer', fontSize: 14, padding: '6px 9px', borderRadius: 8, minHeight: 34 }}>🛡️</button>
             {!isWide && (
-              <button onClick={() => setProfileOpenMobile(true)}
-                style={{ background: 'linear-gradient(135deg, #0a2463, #2563eb)', color: 'white', border: 'none', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                {su.profileTitle.split(' ')[0]} · {pstatus.percent}%
+              <button onClick={() => setProfileOpenMobile(true)} aria-label={`${su.profileTitle} · ${pstatus.percent}%`}
+                style={{ background: 'linear-gradient(135deg, #3a3026, #a97b3f)', color: '#fffdf8', border: 'none', borderRadius: 8, padding: '6px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', minHeight: 34 }}>
+                📋 {pstatus.percent}%
               </button>
             )}
             <LangSwitch />
@@ -1052,16 +1053,16 @@ export default function App() {
           {messages.map((msg, i) => (
             <div key={i} className="chat-msg" style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 6 }}>
               {msg.role === 'assistant' && (
-                <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
+                <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
               )}
               <div style={{ maxWidth: '82%', display: 'flex', flexDirection: 'column', gap: 8, alignItems: msg.role === 'user' ? 'flex-end' : 'stretch' }}>
                 <div style={{
-                  background: msg.role === 'user' ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : 'white',
-                  color: msg.role === 'user' ? 'white' : '#1e293b',
-                  border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none',
-                  borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-                  padding: '10px 14px', fontSize: 14, lineHeight: 1.65,
-                  boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                  background: msg.role === 'user' ? 'linear-gradient(135deg, #a97b3f, #855f2c)' : '#fffdf8',
+                  color: msg.role === 'user' ? '#fffdf8' : '#2f2a23',
+                  border: msg.role === 'assistant' ? '1px solid #ece2cf' : 'none',
+                  borderRadius: msg.role === 'user' ? '18px 6px 18px 18px' : '6px 18px 18px 18px',
+                  padding: '11px 15px', fontSize: 14.5, lineHeight: 1.7,
+                  boxShadow: msg.role === 'assistant' ? '0 1px 3px rgba(74,58,32,0.07)' : '0 2px 8px rgba(138,98,49,0.20)',
                 }}>
                   {String(msg.content ?? '').split('\n').map((line, j, arr) => (
                     <span key={j}>{renderBold(line)}{j < arr.length - 1 && <br />}</span>
@@ -1077,10 +1078,10 @@ export default function App() {
 
           {loading && (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '4px 16px 16px 16px', padding: '12px 16px', display: 'flex', gap: 5, alignItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
+              <div style={{ background: 'white', border: '1px solid #e7ddc9', borderRadius: '4px 16px 16px 16px', padding: '12px 16px', display: 'flex', gap: 5, alignItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                 {[0, 0.2, 0.4].map((d, i) => (
-                  <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb', display: 'inline-block', animation: `pulse 1.2s ease-in-out ${d}s infinite` }} />
+                  <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#a97b3f', display: 'inline-block', animation: `pulse 1.2s ease-in-out ${d}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -1095,8 +1096,8 @@ export default function App() {
               <button
                 key={i}
                 onClick={() => sendMessage(chip)}
-                style={{ background: 'white', border: '1px solid #c7d2fe', color: '#2563eb', borderRadius: 18, padding: '7px 12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#eff6ff'; }}
+                style={{ background: 'white', border: '1px solid #d8c4a0', color: '#a97b3f', borderRadius: 18, padding: '7px 12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#f5ecda'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
               >{chip}</button>
             ))}
@@ -1104,7 +1105,7 @@ export default function App() {
         )}
 
         {/* Input */}
-        <div style={{ background: 'white', borderTop: '1px solid #e2e8f0', padding: '10px 12px', paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))', flexShrink: 0 }}>
+        <div style={{ background: 'white', borderTop: '1px solid #e7ddc9', padding: '10px 12px', paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))', flexShrink: 0 }}>
           <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <input
               ref={fileRef}
@@ -1118,7 +1119,7 @@ export default function App() {
               disabled={uploading}
               title={uu.hint}
               aria-label={uu.hint}
-              style={{ width: 44, height: 44, background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 22, color: uploading ? '#cbd5e1' : '#64748b', fontSize: 18, cursor: uploading ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 44, height: 44, background: '#f0e9db', border: '1px solid #e7ddc9', borderRadius: 22, color: uploading ? '#cec3ae' : '#8c8375', fontSize: 18, cursor: uploading ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >📎</button>
             <textarea
               ref={inputRef}
@@ -1129,29 +1130,29 @@ export default function App() {
               onCompositionEnd={() => { composingRef.current = false; }}
               placeholder={t.placeholder}
               rows={2}
-              style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 16, padding: '12px 16px', fontSize: 16, resize: 'none', fontFamily: FONT, lineHeight: 1.55, color: '#0f172a', background: '#f8fafc', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 64, maxHeight: 160, overflowY: 'auto' }}
+              style={{ flex: 1, border: '1px solid #e7ddc9', borderRadius: 16, padding: '12px 16px', fontSize: 16, resize: 'none', fontFamily: FONT, lineHeight: 1.55, color: '#2f2a23', background: '#f6f1e8', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 64, maxHeight: 160, overflowY: 'auto' }}
             />
             {speechSupported && (
               <button
                 onClick={toggleMic}
                 title={listening ? t.micStop : t.micStart}
                 aria-label={listening ? t.micStop : t.micStart}
-                style={{ width: 44, height: 44, background: listening ? '#ef4444' : '#f1f5f9', border: listening ? 'none' : '1px solid #e2e8f0', borderRadius: 22, color: listening ? 'white' : '#64748b', fontSize: 18, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: listening ? 'pulse 1.4s ease-in-out infinite' : 'none' }}
+                style={{ width: 44, height: 44, background: listening ? '#b4553f' : '#f0e9db', border: listening ? 'none' : '1px solid #e7ddc9', borderRadius: 22, color: listening ? 'white' : '#8c8375', fontSize: 18, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: listening ? 'pulse 1.4s ease-in-out infinite' : 'none' }}
               >🎤</button>
             )}
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || loading}
-              style={{ width: 44, height: 44, background: input.trim() ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : '#e2e8f0', border: 'none', borderRadius: 22, color: 'white', fontSize: 18, cursor: input.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 44, height: 44, background: input.trim() ? 'linear-gradient(135deg, #a97b3f, #855f2c)' : '#e7ddc9', border: 'none', borderRadius: 22, color: 'white', fontSize: 18, cursor: input.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >→</button>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 10, color: '#cbd5e1', marginTop: 6, marginBottom: 0 }}>{t.nmls}</p>
+          <p style={{ textAlign: 'center', fontSize: 10, color: '#cec3ae', marginTop: 6, marginBottom: 0 }}>{t.nmls}</p>
         </div>
         </div>{/* /conversation column */}
 
         {/* Desktop: live Loan Strategy Profile aside */}
         {isWide && (
-          <aside style={{ width: 390, flexShrink: 0, borderLeft: '1px solid #e2e8f0', background: '#f4f6fb', overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16 }}>
+          <aside style={{ width: 390, flexShrink: 0, borderLeft: '1px solid #e7ddc9', background: '#f3ede1', overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16 }}>
             {profilePanel}
           </aside>
         )}
@@ -1160,10 +1161,10 @@ export default function App() {
         {/* Mobile: collapsible Loan Strategy Profile sheet */}
         {!isWide && profileOpenMobile && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.35)' }}>
-            <div style={{ marginTop: 'auto', maxHeight: '88%', background: '#f4f6fb', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'white', borderBottom: '1px solid #e2e8f0' }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#0a2463' }}>{su.profileTitle}</span>
-                <button onClick={() => setProfileOpenMobile(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 16, cursor: 'pointer', color: '#64748b' }}>✕</button>
+            <div style={{ marginTop: 'auto', maxHeight: '88%', background: '#f3ede1', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'white', borderBottom: '1px solid #e7ddc9' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#3a3026' }}>{su.profileTitle}</span>
+                <button onClick={() => setProfileOpenMobile(false)} style={{ background: '#f0e9db', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 16, cursor: 'pointer', color: '#8c8375' }}>✕</button>
               </div>
               <div style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
                 {profilePanel}
@@ -1181,10 +1182,10 @@ export default function App() {
   const checklist = buildDocumentChecklist(s);
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#eef0f4', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px)' }}>
-      <div className="fade-up" style={{ background: 'white', maxWidth: 520, width: '100%', boxShadow: '0 12px 56px rgba(10,36,99,0.14)', overflow: 'hidden', borderRadius: 12 }}>
+    <div style={{ minHeight: '100dvh', background: '#f0eadf', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px)' }}>
+      <div className="fade-up" style={{ background: 'white', maxWidth: 520, width: '100%', boxShadow: '0 12px 56px rgba(74,58,32,0.16)', overflow: 'hidden', borderRadius: 12 }}>
         {/* Header */}
-        <div style={{ background: '#0a2463', padding: 'clamp(24px, 4vw, 36px) clamp(20px, 4vw, 40px) clamp(20px, 3vw, 32px)', textAlign: 'center' }}>
+        <div style={{ background: '#3a3026', padding: 'clamp(24px, 4vw, 36px) clamp(20px, 4vw, 40px) clamp(20px, 3vw, 32px)', textAlign: 'center' }}>
           <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', color: 'white', fontSize: 20 }}>✓</div>
           <h2 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, fontWeight: 400, color: 'white', marginBottom: 6, letterSpacing: '0.01em' }}>Loan Strategy Summary</h2>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>{COMPANY_NAME}</p>
@@ -1192,10 +1193,10 @@ export default function App() {
 
         {/* Delivery failure banner */}
         {deliveryFailed && (
-          <div style={{ background: '#fef3c7', borderBottom: '1px solid #fcd34d', padding: '12px clamp(20px, 4vw, 40px)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: '#f7ecd6', borderBottom: '1px solid #e3c489', padding: '12px clamp(20px, 4vw, 40px)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 16 }}>⚠️</span>
-            <p style={{ fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
-              We couldn't deliver your scenario automatically. Please call our office at <a href={OFFICE_PHONE_HREF} style={{ color: '#92400e', fontWeight: 600 }}>{OFFICE_PHONE}</a> to connect with a strategist.
+            <p style={{ fontSize: 12, color: '#8a5a2f', lineHeight: 1.5 }}>
+              We couldn't deliver your scenario automatically. Please call our office at <a href={OFFICE_PHONE_HREF} style={{ color: '#8a5a2f', fontWeight: 600 }}>{OFFICE_PHONE}</a> to connect with a strategist.
             </p>
           </div>
         )}
@@ -1212,9 +1213,9 @@ export default function App() {
             ['First-Time Buyer', s.firstTimeBuyer], ['Timeline', s.timeline],
             ['Concern', s.concern],
           ].filter(([, v]) => v && v !== 'not provided').map(([label, val], i, arr) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '14px 0', borderBottom: i < arr.length - 1 ? '1px solid #f0f2f6' : 'none' }}>
-              <span style={{ fontSize: 10, color: '#9aa3b2', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', flexShrink: 0 }}>{label}</span>
-              <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: '#0a2463', textAlign: 'right', maxWidth: '58%', lineHeight: 1.4 }}>{val}</span>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '14px 0', borderBottom: i < arr.length - 1 ? '1px solid #efe8da' : 'none' }}>
+              <span style={{ fontSize: 10, color: '#a99e8b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', flexShrink: 0 }}>{label}</span>
+              <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: '#3a3026', textAlign: 'right', maxWidth: '58%', lineHeight: 1.4 }}>{val}</span>
             </div>
           ))}
         </div>
@@ -1222,8 +1223,8 @@ export default function App() {
         {/* Possible path */}
         {s.possiblePath && (
           <div style={{ margin: '20px clamp(20px, 4vw, 40px) 0' }}>
-            <div style={{ borderLeft: '3px solid #0a2463', background: '#f7f8fc', padding: '13px 16px' }}>
-              <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, color: '#0a2463', lineHeight: 1.75, fontStyle: 'italic' }}>
+            <div style={{ borderLeft: '3px solid #3a3026', background: '#f6efe2', padding: '13px 16px' }}>
+              <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, color: '#3a3026', lineHeight: 1.75, fontStyle: 'italic' }}>
                 Possible path: {s.possiblePath}
               </p>
             </div>
@@ -1232,12 +1233,12 @@ export default function App() {
 
         {/* Document checklist */}
         <div style={{ margin: '20px clamp(20px, 4vw, 40px) 0' }}>
-          <p style={{ fontSize: 10, color: '#9aa3b2', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
+          <p style={{ fontSize: 10, color: '#a99e8b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
             Documents Likely Needed ({checklist.primaryLabel})
           </p>
           {checklist.items.map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', fontSize: 13, color: '#475569' }}>
-              <span style={{ width: 16, height: 16, borderRadius: 4, border: '1.5px solid #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, flexShrink: 0 }}>☐</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', fontSize: 13, color: '#6b6152' }}>
+              <span style={{ width: 16, height: 16, borderRadius: 4, border: '1.5px solid #cec3ae', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, flexShrink: 0 }}>☐</span>
               {item}
             </div>
           ))}
@@ -1247,26 +1248,26 @@ export default function App() {
         <div style={{ padding: 'clamp(16px, 3vw, 24px) clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px)' }}>
           {confirmed ? (
             <div style={{ textAlign: 'center', paddingTop: 8 }}>
-              <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 21, color: '#0a2463', marginBottom: 10 }}>You're all set.</p>
-              <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.75, marginBottom: 24 }}>
+              <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 21, color: '#3a3026', marginBottom: 10 }}>You're all set.</p>
+              <p style={{ fontSize: 14, color: '#8c8375', lineHeight: 1.75, marginBottom: 24 }}>
                 A licensed strategist from {COMPANY_NAME} will reach out within 1 business hour.
               </p>
               <button
                 onClick={() => { setScreen('chat'); resetSession(); }}
-                style={{ background: 'none', color: '#0a2463', border: '1px solid #0a2463', padding: '10px 22px', fontSize: 13, cursor: 'pointer', fontWeight: 500, letterSpacing: '0.02em' }}
+                style={{ background: 'none', color: '#3a3026', border: '1px solid #3a3026', padding: '10px 22px', fontSize: 13, cursor: 'pointer', fontWeight: 500, letterSpacing: '0.02em' }}
               >Start New Scenario</button>
             </div>
           ) : (
             <>
-              <p style={{ fontSize: 12, color: '#8a94a6', marginBottom: 14, textAlign: 'center', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>How would you like to proceed?</p>
+              <p style={{ fontSize: 12, color: '#a2988a', marginBottom: 14, textAlign: 'center', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>How would you like to proceed?</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <button
                   onClick={() => { window.open('https://calendly.com/westccmortgage', '_blank'); setConfirmed(true); }}
-                  style={{ background: '#0a2463', color: 'white', border: 'none', padding: 14, fontSize: 14, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.03em' }}
+                  style={{ background: '#3a3026', color: 'white', border: 'none', padding: 14, fontSize: 14, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.03em' }}
                 >Schedule a Call</button>
                 <button
                   onClick={() => setConfirmed(true)}
-                  style={{ background: 'white', color: '#0a2463', border: '1.5px solid #0a2463', padding: 14, fontSize: 14, fontWeight: 500, cursor: 'pointer', letterSpacing: '0.03em' }}
+                  style={{ background: 'white', color: '#3a3026', border: '1.5px solid #3a3026', padding: 14, fontSize: 14, fontWeight: 500, cursor: 'pointer', letterSpacing: '0.03em' }}
                 >I'll Wait for a Call</button>
               </div>
             </>
@@ -1274,12 +1275,12 @@ export default function App() {
         </div>
 
         {/* Disclaimer + licensing */}
-        <div style={{ padding: '16px clamp(20px, 4vw, 40px) 20px', borderTop: '1px solid #f0f2f6' }}>
-          <p style={{ fontSize: 10, color: '#b0b8c9', lineHeight: 1.6, textAlign: 'center' }}>{DISCLAIMER}</p>
-          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f0f2f6', textAlign: 'center', fontSize: 10, color: '#8a94a6', lineHeight: 1.7 }}>
-            <div style={{ fontWeight: 600, color: '#6b7688' }}>{COMPANY_NAME}</div>
+        <div style={{ padding: '16px clamp(20px, 4vw, 40px) 20px', borderTop: '1px solid #efe8da' }}>
+          <p style={{ fontSize: 10, color: '#bcb2a1', lineHeight: 1.6, textAlign: 'center' }}>{DISCLAIMER}</p>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #efe8da', textAlign: 'center', fontSize: 10, color: '#a2988a', lineHeight: 1.7 }}>
+            <div style={{ fontWeight: 600, color: '#8c8375' }}>{COMPANY_NAME}</div>
             <div>{COMPANY_LICENSE} · Equal Housing Lender</div>
-            <div style={{ marginTop: 6, fontWeight: 600, color: '#6b7688' }}>{BROKER_NAME} · {BROKER_TITLE}</div>
+            <div style={{ marginTop: 6, fontWeight: 600, color: '#8c8375' }}>{BROKER_NAME} · {BROKER_TITLE}</div>
             <div>{BROKER_LICENSE}</div>
           </div>
         </div>
