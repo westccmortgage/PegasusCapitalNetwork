@@ -60,7 +60,17 @@
       var uid = u && u.data && u.data.user && u.data.user.id;
       if (!uid) return out;
       var r = await c.from("profiles").select("is_admin, role, pci_role").eq("id", uid).maybeSingle();
-      if (r.error || !r.data) return out;
+      if (r.error) {
+        // Deploy-safety: if migration 071 (pci_role column) is not applied yet,
+        // selecting pci_role errors. Fall back to the binary admin check so
+        // admins are never locked out; the analyst tier simply stays inactive
+        // until 071 is applied.
+        var r2 = await c.from("profiles").select("is_admin, role").eq("id", uid).maybeSingle();
+        if (r2.error || !r2.data) return out;
+        return (r2.data.is_admin === true || r2.data.role === "admin")
+          ? { role: "admin", canImport: true, canEdit: true } : out;
+      }
+      if (!r.data) return out;
       var isAdmin = r.data.is_admin === true || r.data.role === "admin";
       if (isAdmin) return { role: "admin", canImport: true, canEdit: true };
       if (r.data.pci_role === "analyst") return { role: "analyst", canImport: false, canEdit: true };
