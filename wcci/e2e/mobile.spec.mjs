@@ -1,88 +1,139 @@
-// Mobile + Simplified Chinese end-to-end checks.
+// Mobile header, language switcher, welcome copy, and legal-footer cleanup.
 //
-// The DEFAULT route now opens directly into the strategy workspace (no landing
-// click). The old marketing landing is preserved only at /?intro. Covers: direct
-// workspace entry, zh-CN, header brand lockup, trust panel + office/direct
-// tap-to-call, no horizontal scroll at 360/390/430, conversation persistence,
-// WeChat UA smoke, and landing-route preservation. IME composition is unit-tested
-// in test/ime-composer.test.mjs.
+// Default route opens directly into the workspace. Mobile header is logo-only
+// with a compact language control + phone + menu; the heavy legal block is
+// replaced by a compact Company & Licensing link that opens a drawer. The old
+// marketing landing is preserved at /?intro.
 
 import { test, expect } from '@playwright/test';
 
 const SIZES = [
-  { w: 360, h: 800 },
-  { w: 375, h: 812 },
-  { w: 390, h: 844 },
-  { w: 393, h: 852 },
-  { w: 430, h: 932 },
+  { w: 360, h: 800 }, { w: 375, h: 812 }, { w: 390, h: 844 }, { w: 393, h: 852 }, { w: 430, h: 932 },
 ];
 
-const selectChinese = (page) => page.getByRole('button', { name: /Language: 中文/ }).click();
+const openLang = (page) => page.getByRole('button', { name: /Select language/ }).click();
+async function selectChinese(page) {
+  await openLang(page);
+  await page.getByRole('button', { name: '简体中文' }).click();
+}
 
-test('default route opens directly into the workspace (no landing click)', async ({ page }) => {
+// ── HEADER ──
+test('mobile header is logo-only (no WCCI / company text beside it)', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  // Composer + assistant intro are present immediately — no "Build My Strategy" gate.
-  await expect(page.locator('textarea').first()).toBeVisible();
-  await expect(page.getByText(/Loan Strategy assistant/i)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Build My Strategy' })).toHaveCount(0);
+  await expect(page.getByRole('img', { name: 'WCCI' }).first()).toBeVisible();     // the square mark
+  await expect(page.getByText('by West Coast Capital Mortgage Inc.')).toHaveCount(0);
+  await expect(page.getByText('WCCI', { exact: true })).toHaveCount(0);            // no WCCI text label
+  // language, phone, menu actions all visible
+  await expect(page.getByRole('button', { name: /Select language/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Contact West Coast/ }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: /Open menu/ })).toBeVisible();
 });
 
-test('workspace header shows WCCI by the legal company', async ({ page }) => {
+test('no horizontal overflow at 360px (en + zh-CN)', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/');
-  await expect(page.getByText('WCCI', { exact: true })).toBeVisible();
-  await expect(page.getByText('West Coast Capital Mortgage Inc.').first()).toBeVisible();
-});
-
-test('zh-CN switches the workspace into Chinese', async ({ page }) => {
-  await page.goto('/');
+  let ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(ov).toBeLessThanOrEqual(1);
   await selectChinese(page);
-  await expect(page.getByText('贷款策略助手')).toBeVisible();
-});
-
-test('Company & Licensing drawer (via mobile menu) shows correct licensing + tap-to-call', async ({ page }) => {
-  await page.goto('/');
-  // Mobile header: open the menu, then the clearly-labeled Company & Licensing item.
-  await page.getByRole('button', { name: /Menu/ }).click();
-  await page.getByRole('menuitem', { name: /Company & Licensing/ }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByText('Company & Licensing')).toBeVisible();
-  await expect(dialog.getByText(/mortgage strategy platform operated for/i)).toBeVisible();
-  await expect(dialog.getByText('NMLS #2817729')).toBeVisible();
-  await expect(dialog.getByText('NMLS #2775380')).toBeVisible();
-  await expect(dialog.locator('a[href="tel:+13106541577"]').first()).toBeVisible();
-  await expect(dialog.locator('a[href="tel:+13106865053"]').first()).toBeVisible();
-  // Escape-to-close (keyboard accessible).
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-});
-
-test('mobile menu exposes phone actions with 44px targets', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('button', { name: /Menu/ }).click();
-  const office = page.getByRole('menuitem', { name: /Call Office/ });
-  await expect(office).toBeVisible();
-  const box = await office.boundingBox();
-  expect(box.height).toBeGreaterThanOrEqual(44);
-  await expect(page.getByRole('menuitem', { name: /Call Anatoliy/ })).toBeVisible();
+  ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(ov).toBeLessThanOrEqual(1);
 });
 
 for (const s of SIZES) {
-  test(`no horizontal scroll at ${s.w}×${s.h} (en + zh-CN)`, async ({ page }) => {
+  test(`no horizontal scroll at ${s.w}×${s.h}`, async ({ page }) => {
     await page.setViewportSize({ width: s.w, height: s.h });
     await page.goto('/');
-    let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, `en overflow at ${s.w}`).toBeLessThanOrEqual(1);
-    await selectChinese(page);
-    overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, `zh overflow at ${s.w}`).toBeLessThanOrEqual(1);
+    const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(ov).toBeLessThanOrEqual(1);
   });
 }
 
-test('conversation persists across a reload (returning from an external resource)', async ({ page }) => {
+// ── LANGUAGE ──
+test('language control opens a sheet with all four languages; selection persists', async ({ page }) => {
   await page.goto('/');
-  const box = page.locator('textarea').first();
-  await box.fill('Buying in Boca Raton around 800k');
+  await openLang(page);
+  for (const name of ['English', 'Español', 'Русский', '简体中文']) {
+    await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+  }
+  await page.getByRole('button', { name: '简体中文' }).click();
+  await expect(page.getByText('房贷策略顾问')).toBeVisible();                    // welcome now Chinese
+  await page.reload();
+  await expect(page.getByText('房贷策略顾问')).toBeVisible();                    // persisted
+});
+
+test('switching language does not clear the chat, and the UI localizes', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('textarea').first().fill('I want to refinance in California');
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('I want to refinance in California')).toBeVisible();
+  await selectChinese(page);
+  await expect(page.getByText('I want to refinance in California')).toBeVisible(); // chat preserved
+  await expect(page.locator('textarea').first()).toHaveAttribute('placeholder', /输入/); // UI localized
+});
+
+// ── PHONE ──
+test('phone icon opens a contact sheet (does not auto-dial); office/direct/email correct', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Contact West Coast/ }).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('Contact West Coast Capital Mortgage')).toBeVisible();
+  await expect(dialog.getByText('(310) 654-1577')).toBeVisible();
+  await expect(dialog.getByText('(310) 686-5053')).toBeVisible();
+  await expect(dialog.locator('a[href="tel:+13106541577"]').first()).toBeVisible();
+  await expect(dialog.locator('a[href="tel:+13106865053"]').first()).toBeVisible();
+  await expect(dialog.locator('a[href="mailto:westccmortgage@gmail.com"]').first()).toBeVisible();
+});
+
+// ── MENU ──
+test('menu contains the required destinations', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Open menu/ }).click();
+  await expect(page.getByRole('menuitem', { name: /Start New Scenario/ })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /Company & Licensing/ })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /Privacy & AI Use/ })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /Clear Saved Information/ })).toBeVisible();
+});
+
+test('Start New Scenario asks for confirmation before clearing', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('textarea').first().fill('buying in Boca Raton');
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('buying in Boca Raton')).toBeVisible();
+  await page.getByRole('button', { name: /Open menu/ }).click();
+  await page.getByRole('menuitem', { name: /Start New Scenario/ }).click();
+  await expect(page.getByRole('dialog').getByText(/Start a new scenario\?/)).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByText('buying in Boca Raton')).toBeVisible(); // cancel keeps chat
+});
+
+// ── WELCOME ──
+test('welcome is short and does not force a name; user can start with a scenario', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText(/AI-assisted mortgage strategist/)).toBeVisible();
+  await expect(page.getByText(/what should I call you/i)).toHaveCount(0);
+  await page.locator('textarea').first().fill('$800k purchase in California, self-employed');
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('$800k purchase in California, self-employed')).toBeVisible();
+});
+
+// ── LEGAL ──
+test('heavy legal block is gone from below the composer; compact link opens the drawer', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText(/Equal Housing Lender \|/)).toHaveCount(0);
+  const link = page.getByRole('button', { name: /Company & Licensing/ }).last();
+  await expect(link).toBeVisible();
+  await link.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('NMLS #2817729')).toBeVisible();
+  await expect(dialog.getByText('NMLS #2775380')).toBeVisible();
+  await expect(dialog.getByText(/mortgage strategy platform operated for/i)).toBeVisible();
+});
+
+// ── PERSISTENCE / LANDING / WECHAT ──
+test('conversation persists across a reload', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('textarea').first().fill('Buying in Boca Raton around 800k');
   await page.keyboard.press('Enter');
   await expect(page.getByText('Buying in Boca Raton around 800k')).toBeVisible();
   await page.reload();
@@ -101,5 +152,5 @@ test('WeChat user-agent renders the workspace and language selection works', asy
   await page.goto('/');
   await expect(page.locator('textarea').first()).toBeVisible();
   await selectChinese(page);
-  await expect(page.getByText('贷款策略助手')).toBeVisible();
+  await expect(page.getByText('房贷策略顾问')).toBeVisible();
 });

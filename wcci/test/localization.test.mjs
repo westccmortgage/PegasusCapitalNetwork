@@ -43,6 +43,27 @@ test('zh-CN ordinary UI sentences are Chinese, not English (no mixed language)',
   assert.ok(CJK.test(getInitialMessage('zh-CN').content));
 });
 
+test('CONTACT_UI has full key parity across all locales (no untranslated keys)', () => {
+  const base = Object.keys(CONTACT_UI.en).sort();
+  for (const lang of LANGS) {
+    const keys = Object.keys(CONTACT_UI[lang] || {}).sort();
+    assert.deepEqual(base.filter(k => !keys.includes(k)), [], `${lang} CONTACT_UI missing keys`);
+    for (const k of base) assert.ok(String(CONTACT_UI[lang][k] || '').length > 0, `${lang}.${k} non-empty`);
+  }
+  // New sheet copy is present and localized.
+  assert.equal(CONTACT_UI['zh-CN'].langTitle, '语言');
+  assert.equal(CONTACT_UI.es.startNewScenario, 'Iniciar nuevo escenario');
+  assert.ok(CJK.test(CONTACT_UI['zh-CN'].clearSaved));
+});
+
+test('welcome message is short and does not ask for the user’s name', () => {
+  for (const lang of LANGS) {
+    const g = T[lang].greeting;
+    assert.ok(g.length < 320, `${lang} greeting is concise`);
+    assert.ok(!/call you|llame|обращаться|称呼您/i.test(g), `${lang} greeting does not ask for a name`);
+  }
+});
+
 test('localized UI blocks (resource/upload/contact/strategy) include zh-CN', () => {
   assert.ok(CJK.test(RESOURCE_UI['zh-CN'].recommendedTitle));
   assert.ok(CJK.test(UPLOAD_UI['zh-CN'].hint));

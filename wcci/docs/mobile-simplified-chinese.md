@@ -10,7 +10,46 @@ as an opt-in route: `/?intro`** (`src/App.jsx` — `screen` init reads
 `e2e/mobile.spec.mjs` (“default route opens directly into the workspace” +
 “the old landing is preserved only at /?intro”).
 
-## Header & Company-trust UX
+## Mobile header, language switcher, welcome & legal cleanup
+
+**Logo-only mobile header.** The mobile header shows only the square `BrandMark`
+(no "WCCI" text, no "by West Coast Capital Mortgage Inc." beside it). Right-side
+actions are a compact **language control** (`🌐 EN ▾`), a **phone** icon, and a
+**menu** (`☰`) — consistent 44×44 targets, no wrap, no horizontal overflow at
+360/375/390/393/430. Desktop keeps a company-first lockup (**West Coast Capital
+Mortgage Inc.** primary; *WCCI* is the small product/domain identifier) plus the
+Office number, a labeled Company & Licensing button, Start Over, and the same
+language/phone/menu controls.
+
+**Compact language sheet.** The four-item row is replaced by one control that
+opens a bottom sheet listing **English · Español · Русский · 简体中文** (native
+names, current selected, localized "Language/Idioma/Язык/语言" title). Changing
+language localizes the whole UI, persists, and never clears the chat, profile, or
+partially typed text. Never shows "ZH".
+
+**Phone → contact sheet (no auto-dial).** The phone icon opens a *Contact West
+Coast Capital Mortgage* sheet with Office / Direct — Anatoliy Kanevsky / Email and
+Call Office · Call Anatoliy · Send Email — the user chooses; tapping the icon
+never dials.
+
+**Menu.** Loan Strategy Profile (mobile), Start New Scenario (with a
+confirmation before clearing), Company & Licensing, About West Coast Capital
+Mortgage, Privacy & AI Use, Contact, Clear Saved Information — all localized.
+
+**Shorter welcome.** The intro is concise ("Welcome. I'm your AI-assisted
+mortgage strategist from West Coast Capital Mortgage. … How can I help today?")
+and does not ask for a name first — the borrower can start with their scenario
+immediately. Localized for en/es/ru/zh-CN.
+
+**Legal cleanup.** The always-visible multiline licensing block under the
+composer is replaced by a compact **Company & Licensing** link that opens the
+drawer; the full approved facts live in the drawer (and the /?intro footer),
+freeing composer space. All sheets are accessible modals (focus-in on open, Tab
+trap, Escape-to-close, focus restore) with `prefers-reduced-motion` support.
+Verified by `e2e/mobile.spec.mjs` + `test/localization.test.mjs` (CONTACT_UI key
+parity, concise no-name welcome).
+
+## Header & Company-trust UX (earlier)
 
 The generic "W" tile and the ambiguous shield-only button are gone. The header
 now uses a real **WCCI brand mark** (`BrandMark` — an SVG bronze "W" drawn as

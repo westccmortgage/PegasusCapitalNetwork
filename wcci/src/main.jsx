@@ -44,6 +44,10 @@ style.textContent = `
   #root { height: 100%; height: 100dvh; }
   /* Natural Chinese wrapping; never letter-space or uppercase CJK. */
   :lang(zh-CN), [lang="zh-CN"] { letter-spacing: 0; line-break: normal; word-break: normal; overflow-wrap: anywhere; }
+  /* Respect reduced-motion preferences. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
   @keyframes pulse { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
   @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   .fade-up { animation: fadeUp 0.5s ease forwards; }
