@@ -10,6 +10,10 @@
     "test": "node --test test/*.test.mjs",
     "test:ai": "node test/conversation-test.mjs",
     "lint": "node scripts/lint.mjs",
+    "scan:bundle": "node scripts/bundle-scan.mjs",
+    "verify:prod": "npm run build && npm run scan:bundle",
+    "test:e2e": "playwright test",
+    "screenshots": "node e2e/screenshots.mjs",
     "sync:resources": "node scripts/sync-site-resources.mjs"
   },
   "dependencies": {
@@ -17,6 +21,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@vitejs/plugin-react": "^4.3.0",
     "vite": "^5.4.0"
   }

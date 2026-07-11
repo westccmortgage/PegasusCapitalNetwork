@@ -39,14 +39,26 @@ export const COMPANY_FACTS = {
   mortgageCareerStartYear: 2004,
   brokerLicenseYear: 2009,
 
-  officePhone: '(310) 686-5053',
-  officePhoneHref: 'tel:+13106865053',
-  // Florida-facing and direct lines: not yet owner-supplied. Leave null rather
-  // than inventing; UI must fall back to officePhone when null.
+  // ── Owner-approved contact (GLOBAL COMPANY CONTACT AND LICENSING STANDARD) ──
+  // OFFICE is the general company number; DIRECT reaches Anatoliy. These are
+  // DIFFERENT lines and must never be collapsed — never show the direct number
+  // as the only/general company number.
+  officePhone: '(310) 654-1577',
+  officePhoneHref: 'tel:+13106541577',
+  directPhone: '(310) 686-5053',
+  directPhoneHref: 'tel:+13106865053',
+  // Florida-facing line: not owner-supplied. Leave null rather than inventing.
   floridaPhone: null,
-  directPhone: null,
 
-  approvedEmails: ['leads@wcci.online'],
+  email: 'westccmortgage@gmail.com',
+  emailHref: 'mailto:westccmortgage@gmail.com',
+  approvedEmails: ['westccmortgage@gmail.com'],
+
+  // Owner-approved primary websites (order = priority).
+  primaryWebsites: [
+    'https://westcoastcapitalmortgage.com',
+    'https://wcci.online',
+  ],
 
   // State availability comes from THIS list only — never from marketing copy.
   // The owner updates this single value to add/remove a state.
@@ -68,7 +80,7 @@ export const COMPANY_FACTS = {
     },
   },
 
-  canonicalCorporateDomain: 'westccmortgage.com',
+  canonicalCorporateDomain: 'westcoastcapitalmortgage.com',
   secureApplicationDomain: 'ourmtg.com',
 
   equalHousingLanguage: 'Equal Housing Lender',
@@ -87,6 +99,11 @@ export const COMPANY_LICENSE_LINE =
 export const BROKER_LICENSE_LINE =
   `CA DRE Broker License #${COMPANY_FACTS.founderDreBrokerLicense} · NMLS #${COMPANY_FACTS.founderNmls}`;
 
+// Canonical contact line used anywhere both numbers are shown together. Office
+// is always labeled the general/company number; direct is Anatoliy's line.
+export const CONTACT_LINE =
+  `Office: ${COMPANY_FACTS.officePhone} · Direct: ${COMPANY_FACTS.directPhone} · Email: ${COMPANY_FACTS.email}`;
+
 // Short factual biography the assistant may state in-chat when a borrower asks
 // who is behind the platform. Facts only — no dates other than owner-approved.
 export function companyBio() {
@@ -95,7 +112,7 @@ export function companyBio() {
     `It was founded by ${f.founderName}, a ${f.founderTitle} (${BROKER_LICENSE_LINE}) whose mortgage career began in ${f.mortgageCareerStartYear}; ` +
     `he has held a California real estate broker license since ${f.brokerLicenseYear}. ` +
     `WCCI (wcci.online) is the AI-assisted scenario and education workspace operated for ${f.legalEntity} — WCCI itself is not the mortgage company. ` +
-    `Office: ${f.officePhone}.`;
+    `Office (general company line): ${f.officePhone}. Direct (${f.founderName}): ${f.directPhone}. Email: ${f.email}.`;
 }
 
 export function isSupportedState(code) {

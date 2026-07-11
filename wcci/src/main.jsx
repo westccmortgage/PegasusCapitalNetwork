@@ -12,7 +12,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return React.createElement('div', {
-        style: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", background: '#f8fafc', textAlign: 'center' },
+        style: { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT_STACK, background: '#f8fafc', textAlign: 'center' },
       },
         React.createElement('div', { style: { maxWidth: 340 } },
           React.createElement('div', { style: { fontSize: 32, marginBottom: 12 } }, '↻'),
@@ -30,14 +30,20 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// System font stack (no shipped font files, no render-blocking web-font fetch).
+// Includes Simplified Chinese faces so zh-CN renders crisply. Also used by the
+// error-boundary fallback above.
+const FONT_STACK = "'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', 'Noto Sans SC', sans-serif";
+
 const style = document.createElement('style');
 style.setAttribute('data-wcci', '1');
 style.textContent = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { height: 100%; -webkit-text-size-adjust: 100%; }
-  body { font-family: 'Inter', sans-serif; height: 100%; overflow: hidden; overscroll-behavior: none; }
-  #root { height: 100%; }
+  body { font-family: ${FONT_STACK}; height: 100%; height: 100dvh; overflow: hidden; overscroll-behavior: none; }
+  #root { height: 100%; height: 100dvh; }
+  /* Natural Chinese wrapping; never letter-space or uppercase CJK. */
+  :lang(zh-CN), [lang="zh-CN"] { letter-spacing: 0; line-break: normal; word-break: normal; overflow-wrap: anywhere; }
   @keyframes pulse { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
   @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   .fade-up { animation: fadeUp 0.5s ease forwards; }

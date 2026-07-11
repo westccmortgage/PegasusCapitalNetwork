@@ -176,6 +176,9 @@ export function parseScenario(rawText) {
     out.downPayment = downAmt;
   }
 
+  // ── Simplified Chinese extraction (fills blanks only) ──
+  if (/[一-鿿]/.test(rawText)) absorbChinese(rawText, out);
+
   // ── Derived: loan amount + LTV ──
   if (out.purchasePrice && out.downPayment != null) {
     out.loanAmount = Math.max(0, out.purchasePrice - out.downPayment);
@@ -183,6 +186,75 @@ export function parseScenario(rawText) {
   }
 
   return out;
+}
+
+// Convert a Chinese-style amount ("150" + "万") to a number.
+// 万 = 10,000 · 亿 = 100,000,000 · (no unit) = as-is.
+function cnAmount(numStr, unit) {
+  const n = parseFloat(String(numStr).replace(/,/g, ''));
+  if (!isFinite(n)) return undefined;
+  const mult = unit === '亿' ? 1e8 : unit === '万' ? 1e4 : 1;
+  return Math.round(n * mult);
+}
+
+// Extract scenario facts from natural Simplified Chinese. Fills only blanks so
+// it never overrides a value the English pass already resolved.
+function absorbChinese(raw, out) {
+  const t = String(raw);
+
+  if (out.state === undefined) {
+    if (/加州|加利福尼亚/.test(t)) out.state = 'CA';
+    else if (/佛罗里达|佛州/.test(t)) out.state = 'FL';
+  }
+
+  if (out.loanPurpose === undefined) {
+    if (/套现|现金再融资/.test(t)) out.loanPurpose = 'cash-out';
+    else if (/再融资|重新贷款|重贷/.test(t)) out.loanPurpose = 'refinance';
+    else if (/投资房|投资房产|投资物业/.test(t) && /买|购买|购/.test(t)) out.loanPurpose = 'investment';
+    else if (/购房|买房|购买|买一套|买房子|买房产|买个?房/.test(t)) out.loanPurpose = 'purchase';
+  }
+
+  if (out.occupancy === undefined) {
+    if (/第二套住房|第二套房|度假房/.test(t)) out.occupancy = 'second home';
+    else if (/投资房|投资房产|投资物业|出租/.test(t)) out.occupancy = 'investment';
+    else if (/自住/.test(t)) out.occupancy = 'primary residence';
+  }
+
+  if (out.employmentType === undefined) {
+    if (/自雇|自雇人士|个体经营|个体户/.test(t)) out.employmentType = 'self-employed';
+    else if (/企业主|生意人|老板/.test(t)) out.employmentType = 'business owner';
+    else if (/退休/.test(t)) out.employmentType = 'retired';
+  }
+
+  if (out.incomeDocPath === undefined) {
+    if (/银行流水/.test(t)) out.incomeDocPath = 'bank statements';
+    else if (/dscr/i.test(t)) out.incomeDocPath = 'DSCR';
+  }
+
+  if (out.borrowerGoal === undefined) {
+    if (/比较|对比/.test(t)) out.borrowerGoal = 'compare all';
+    else if (/最低.{0,4}还款|降低.{0,4}(每月)?还款|月供最低/.test(t)) out.borrowerGoal = 'lowest payment';
+    else if (/最少.{0,4}现金|最低.{0,4}首付/.test(t)) out.borrowerGoal = 'lowest cash to close';
+    else if (/尽快.{0,3}(过户|关闭|成交)/.test(t)) out.borrowerGoal = 'fastest close';
+  }
+
+  // Down payment — anchored on 首付 so it never grabs the purchase price.
+  if (out.downPayment === undefined) {
+    const dp = t.match(/首付[款]?[^0-9０-９]{0,6}([\d.,]+)\s*(万|亿)?/);
+    if (dp) { const v = cnAmount(dp[1], dp[2]); if (v) out.downPayment = v; }
+  }
+
+  // Purchase price — a money amount adjacent to a property word, else near a buy verb.
+  if (out.purchasePrice === undefined) {
+    const near = t.match(/([\d.,]+)\s*(万|亿)?\s*(?:美元|美金|元)?[^0-9。，,，０-９]{0,6}(?:的?房子|套房|房产|物业|房)/)
+      || t.match(/(?:买|购买|购|价值|价格|大约|房价)[^0-9]{0,8}([\d.,]+)\s*(万|亿)?/);
+    if (near) { const v = cnAmount(near[1], near[2]); if (v && v >= 10000) out.purchasePrice = v; }
+  }
+  // Fallback: the largest 万/亿 amount is usually the price.
+  if (out.purchasePrice === undefined) {
+    const toks = [...t.matchAll(/([\d.,]+)\s*(万|亿)/g)].map(m => cnAmount(m[1], m[2])).filter(v => v && v >= 100000);
+    if (toks.length) out.purchasePrice = Math.max(...toks);
+  }
 }
 
 export { parseMoney };

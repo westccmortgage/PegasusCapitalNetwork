@@ -53,12 +53,15 @@ const P = {
     /\bno me llamen\b/i, /\bsin (dar|dejar) (mis )?datos\b/i,
     /не (дам|буду давать|хочу давать|оставлю|хочу оставлять)/i,            // RU
     /не (звоните|пишите|надо звонить)/i, /без (контактов|телефона)/i,
+    /不(想|愿意)(留下?|给|提供)[^。！？]{0,6}(电话|号码|手机|联系方式|个人信息|信息)/, // ZH
+    /不留(电话|号码|联系方式)/, /不想(被)?(打电话|来电|联系|打扰)/, /别(给我)?(打电话|来电|联系)/, /只(想)?先(了解|看看)/,
   ],
   privacy: [
     /\bprivacy|private|data (protection|sharing)|sell my (info|data)\b/i,
     /\b(every|all|multiple) lenders? (calling|contact)/i, /\bspam|robocall/i,
     /\bprivacidad|datos personales\b/i, /todos los prestamistas.{0,20}(llam|contact)/i, /no quiero que.{0,30}llam/i,
     /конфиденциальн|персональны[ех] данн|спам/i, /(все|всякие) кредитор[ыов].{0,20}(звон|писа|донимал)/i, /не хочу[, ]+чтобы.{0,30}звонил/i,
+    /隐私|个人(数据|信息)保护|出售我的(信息|数据)/, /不想(被)?(很多|多个|多家|一堆)[^。]{0,4}(公司|贷款|机构)[^。]{0,4}(打电话|联系)/, /骚扰|垃圾(电话|短信)/, // ZH
   ],
   identity: [
     /\bwho (are|is) (you|this|behind)\b/i, /\bwho are you people\b/i,
@@ -66,57 +69,68 @@ const P = {
     /\bwhere can i read about\b/i, /\babout (the|your) company\b/i,
     /\bqui[eé]n(es)? (son|est[aá]) (ustedes|detr[aá]s)\b/i, /\bempresa real\b/i,
     /кто (вы|за этим стоит|вы такие)/i, /это (настоящая|реальная) компания/i, /почитать о (вас|компании)/i,
+    /你们是谁|(这是|你们是)(什么|哪家)(公司|平台|机构)|背后是谁|谁(在|的)?(运营|背后)|(是|是不是)(真的|正规|靠谱)(公司|平台|的吗|吗)|关于(你们|贵)?(的)?公司|靠谱吗|正规吗/, // ZH
   ],
   licensing: [
     /\blicens(e|ed|ing)|nmls|dre\b/i,
     /\blicencia\b/i,
     /лиценз/i,
+    /执照|牌照|持牌|资质/, // ZH
   ],
   aiSkepticism: [
     /\b(are you|is this) (a |an )?(bot|robot|ai|real person|human)\b/i,
     /\beres un (bot|robot)\b/i, /\bpersona real\b/i,
     /\bты (бот|робот)\b/i, /вы (бот|робот|человек)/i, /живой человек/i,
+    /你是(机器人|真人|人工智能|AI|ai)|是不是(机器人|真人|ai|AI)|是(真人|机器人)吗|真人吗/, // ZH
   ],
   fees: [
     /\b(fee|fees|charge[ds]?|junk fees|why so (much|expensive)|overcharg)/i,
     /\b(cargos?|tarifas?|honorarios|comisi[oó]n)\b/i,
     /комисси|сборы|почему так дорого/i,
+    /费用|收费|手续费|为什么(这么|那么)(贵|多)/, // ZH
   ],
   salesPressure: [
     /\b(stop selling|too pushy|pressur(e|ing)|salesy)\b/i,
     /\bpresi[oó]n\b/i, /давите|навязыва/i,
+    /别(推销|催我?)|太(推销|急)|不要(逼|催)/, // ZH
   ],
   accuracy: [
     /\b(that('s| is) wrong|incorrect|doesn'?t add up|made up|inaccurate)\b/i,
     /\bno es correcto\b/i, /неправильно|неточно|выдума/i,
+    /(不对|不正确|不准确|算错|有误|说错)/, // ZH
   ],
   readFirst: [
     /\b(read|research|look into|review) (it |this |things )?(first|before)\b/i,
     /\bexplain (it )?before i apply\b/i, /\bbefore (i|we) (apply|commit|decide)\b/i,
     /\bleer primero\b/i, /\bantes de (aplicar|decidir)\b/i,
     /сначала (почитаю|почитать|изучу|разобраться)/i, /прежде чем (подавать|решать)/i,
+    /先(了解|看看|研究|读)[^。]{0,4}(一下|再|才|清楚)?|在?申请(之)?前|先不(申请|决定)/, // ZH
   ],
   humanRequest: [
     /\b(talk|speak) (to|with) (a |an? )?(human|person|someone|agent|broker|loan officer)\b/i,
     /\bcall me\b/i, /\bhave someone (call|reach|contact)\b/i, /\bcontact me\b/i,
     /\bhablar con (una persona|alguien|un humano)\b/i, /\bll[aá]menme\b/i,
     /поговорить с (человеком|кем-то|специалистом)/i, /позвоните мне/i, /свяжитесь со мной/i,
+    /(联系|打电话给|致电)我|给我(回|来)电|想(和|跟)(真人|人|专业人士|经纪人|贷款专员)[^。]{0,3}(谈|聊|说|沟通|通话)/, // ZH
   ],
   readiness: [
     /\b(i'?m|we'?re) ready\b/i, /\bready to (apply|start|move forward|proceed)\b/i,
     /\bapply now\b/i, /\blet'?s (do it|start|apply)\b/i,
     /\blisto para (aplicar|empezar)\b/i, /\bquiero aplicar\b/i,
     /гото[вы]{1,2} (подать|начать|оформ)/i, /хочу подать заявку/i, /давайте начн[её]м/i,
+    /我(准备好|想现在)?(就)?(开始|申请)|现在(就)?申请|可以开始了|我准备好了/, // ZH
   ],
   applyIntent: [
     /\b(apply|application|upload (my )?document|loan status|track my loan|secure portal)\b/i,
     /\b(solicitud|aplicar|subir documentos)\b/i,
     /подать заявку|загрузить документ|статус (кредита|заявки)/i,
+    /申请贷款|提交申请|上传(文件|文档|材料)|贷款(状态|进度)/, // ZH
   ],
   plainEnglish: [
     /\b(plain english|simple terms|simply|like i'?m five|beginner|first[- ]time buyer|new to this)\b/i,
     /\ben t[eé]rminos sencillos|primeriz[oa]|primera vez\b/i,
     /прост(ыми|о) (словами|объясн)|впервые|первый раз/i,
+    /(通俗|简单|直白)[^。]{0,3}(解释|说|讲)|新手|第一次|不太懂|听不懂/, // ZH
   ],
 };
 
@@ -130,7 +144,8 @@ const TOPIC_PATTERNS = [
   [/\bpoints?\b|discount point|buy[- ]?down|buydown/i, 'points'],
   [/interest[- ]only/i, 'interest_only'],
   [/dscr|rental income quali/i, 'dscr'],
-  [/bank statement/i, 'bank_statement'],
+  [/bank statement|银行流水/i, 'bank_statement'],
+  [/超额贷款|超限贷款/i, 'jumbo'],
   [/\bbridge\b|puente/i, 'bridge'],
   [/fix (and|&) flip/i, 'fix_and_flip'],
   [/construction completion|finish (my )?construction/i, 'construction_completion'],
@@ -147,9 +162,11 @@ const TOPIC_PATTERNS = [
   [/first[- ]time buyer|primeriz|первый (дом|раз покупа)/i, 'first_time_buyer'],
   [/apply|application|solicitud|заявк/i, 'apply'],
   [/upload.{0,12}document|subir documentos|загрузить документ/i, 'documents'],
-  [/refinanc|refi\b|рефинанс/i, 'refinance'],
-  [/purchase|buy(ing)?\b|compra|покупк|купить/i, 'purchase'],
-  [/self[- ]employed|business owner|независим|самозанят|trabajador independiente|dueñ[oa] de negocio/i, 'self_employed'],
+  [/refinanc|refi\b|рефинанс|再融资|重新贷款|重贷/i, 'refinance'],
+  [/purchase|buy(ing)?\b|compra|покупк|купить|购房|买房|购买|买一套|买房子/i, 'purchase'],
+  [/self[- ]employed|business owner|независим|самозанят|trabajador independiente|dueñ[oa] de negocio|自雇|个体经营|个体户/i, 'self_employed'],
+  [/dscr|债务偿付覆盖率/i, 'dscr'],
+  [/投资房|投资房产|投资物业/i, 'purchase'],
 ];
 
 const any = (patterns, text) => patterns.some(re => re.test(text));
