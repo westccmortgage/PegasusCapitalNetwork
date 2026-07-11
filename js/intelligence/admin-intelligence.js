@@ -43,6 +43,26 @@
   function gv(id) { var e = document.getElementById(id); return e ? (e.value || "").trim() : ""; }
   function numOr(v) { v = String(v || "").replace(/[$,\s]/g, ""); if (v === "") return null; var n = Number(v); return isNaN(n) ? null : n; }
 
+  /* Accessible clickable row → opens Property Detail. Whole row is the target;
+     Enter/Space activate it; a visible hover/focus state comes from CSS
+     (.pit-clickable). Any inner element (incl. the recommendation badge) simply
+     bubbles to this handler, so the badge is clickable and never blocks the row. */
+  function clickRow(id, inner, extraStyle) {
+    return '<div class="pit-row pit-clickable" role="button" tabindex="0" data-prop="' + esc(id) + '"' +
+      (extraStyle ? ' style="' + extraStyle + '"' : "") +
+      ' onclick="PegIntel.openProperty(\'' + id + '\')" onkeydown="PegIntel._rowKey(event,\'' + id + '\')">' + inner + "</div>";
+  }
+  function _rowKey(e, id) {
+    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar" || e.keyCode === 13 || e.keyCode === 32) {
+      e.preventDefault(); openProperty(id);
+    }
+  }
+  // Deep-link plumbing so browser Back closes the Property Detail and returns to
+  // the Dashboard (or wherever it was opened from) WITHOUT re-rendering — the
+  // underlying view, including its filters, is left intact behind the modal.
+  function propUrl(id) { return location.pathname + "?property=" + encodeURIComponent(id); }
+  function currentPropParam() { try { return new URLSearchParams(location.search).get("property"); } catch (_) { return null; } }
+
   /* CSV export with formula-injection guard. */
   function csvExport(filename, headers, rows) {
     function cell(v) {
@@ -91,6 +111,10 @@
       }).join("") + "</div>" +
       '<div id="pitView"></div>';
     nav("dash");
+    wireHistory();
+    // Deep link: /admin/intelligence?property=<uuid> opens that property on load.
+    var deep = currentPropParam();
+    if (deep) { try { history.replaceState({}, "", location.pathname); } catch (_) {} openProperty(deep); }
   }
   function nav(tab) {
     if (tab === "import" && !CAP.canImport) tab = "dash"; // analysts have no import
@@ -123,22 +147,26 @@
         '</span><span class="pit-meta">' + esc(dt(c.changed_at)) + "</span></div>";
     }).join("") : empty("No changes recorded yet.", "Changes appear after your first import or edit.");
     var top = d.topOpportunities.length ? d.topOpportunities.map(function (p) {
-      return '<div class="pit-row" style="cursor:pointer" onclick="PegIntel.openProperty(\'' + p.id + '\')"><span class="grow strong">' + esc(p.property_name || p.address_line1) +
+      var inner = '<span class="grow strong">' + esc(p.property_name || p.address_line1) +
         '</span><span class="num">' + money(p.asking_price) + "</span>" + reco(p.recommendation) +
-        '<span class="num" style="width:30px;text-align:right;font-weight:600;color:var(--text)">' + (p.opportunity_score ?? "—") + "</span></div>";
+        '<span class="num" style="width:30px;text-align:right;font-weight:600;color:var(--text)">' + (p.opportunity_score ?? "—") + "</span>";
+      return clickRow(p.id, inner);
     }).join("") : empty("No scored properties yet.", "Scores arrive via the daily workbook or the Property Detail → Score tab.");
     var mat = d.maturities.length ? d.maturities.map(function (l) {
       var pr = l.pci_properties || {};
-      return '<div class="pit-row"><span class="grow">' + esc(pr.property_name || pr.address_line1 || "—") + " · " + esc(l.lender_name_snapshot || "lender ?") +
-        '</span><span class="num">' + money(l.estimated_balance) + '</span><span class="pit-meta">' + esc(dt(l.maturity_date)) + " · " + esc(l.maturity_basis || "basis ?") + "</span></div>";
+      var inner = '<span class="grow">' + esc(pr.property_name || pr.address_line1 || "—") + " · " + esc(l.lender_name_snapshot || "lender ?") +
+        '</span><span class="num">' + money(l.estimated_balance) + '</span><span class="pit-meta">' + esc(dt(l.maturity_date)) + " · " + esc(l.maturity_basis || "basis ?") + "</span>";
+      return l.property_id ? clickRow(l.property_id, inner) : '<div class="pit-row">' + inner + "</div>";
     }).join("") : empty("No loan maturities in the next 12 months.", "Maturities appear once loans are imported with maturity dates.");
     var acts = d.topActions.length ? d.topActions.map(function (a) {
       var pr = a.pci_properties || {}, ct = a.crm_contacts || {};
-      return '<div class="pit-row"><span style="font-weight:600;color:var(--text);width:18px">' + (a.priority ?? "·") + '</span><span class="grow">' + esc(a.action) +
+      var inner = '<span style="font-weight:600;color:var(--text);width:18px">' + (a.priority ?? "·") + '</span><span class="grow">' + esc(a.action) +
         (pr.property_name || pr.address_line1 ? ' <span class="pit-meta">· ' + esc(pr.property_name || pr.address_line1) + "</span>" : "") +
         (ct.name ? ' <span class="pit-meta">· ' + esc(ct.name) + "</span>" : "") +
         '</span><span class="pit-meta">' + esc(dt(a.due_date)) + '</span>' +
-        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();PegIntel.actionDone(\'' + a.id + '\')">Done</button></div>';
+        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();PegIntel.actionDone(\'' + a.id + '\')">Done</button>';
+      // Whole row opens the linked property; the Done button stops propagation.
+      return a.property_id ? clickRow(a.property_id, inner) : '<div class="pit-row">' + inner + "</div>";
     }).join("") : empty("No open actions.", "Daily actions arrive with the workbook import.");
     var imp = d.lastImport
       ? '<div class="pit-row"><span class="grow">' + esc(d.lastImport.filename) + '</span><span class="pit-conf ' + (d.lastImport.status === "committed" ? "Verified" : d.lastImport.status === "failed" ? "Unknown" : "Reported") + '">' + esc(d.lastImport.status) + '</span><span class="pit-meta">' + esc(dt(d.lastImport.created_at)) + "</span></div>"
@@ -280,15 +308,27 @@
   }
 
   /* ═══ 3. PROPERTY DETAIL (modal with sub-tabs) ═══ */
-  var DET = { id: null, p: null, kids: null, tab: "overview", docs: [] };
-  async function openProperty(id) {
-    DET = { id: id, p: null, kids: null, tab: "overview", docs: [] };
-    window.Pegasus.modal('<div class="sce-scrim" onclick="if(event.target===this)Pegasus.dismissModal()"><div class="sce-modal" style="max-width:880px">' +
-      '<div class="sce-head"><div class="sce-title" id="pitDetTitle">Property</div><button class="sce-x" onclick="Pegasus.closeModal()" aria-label="Close">✕</button></div>' +
+  var DET = { id: null, p: null, kids: null, tab: "overview", docs: [], open: false };
+  // fromHistory=true means we are opening in response to a popstate/deep-link
+  // (URL already reflects this property) — so we must NOT push another entry.
+  async function openProperty(id, fromHistory) {
+    if (!/^[0-9a-f-]{16,40}$/i.test(String(id || ""))) { toast(false, "Invalid property link"); return; }
+    if (!fromHistory) { try { history.pushState({ pciProp: id }, "", propUrl(id)); } catch (_) {} }
+    DET = { id: id, p: null, kids: null, tab: "overview", docs: [], open: true };
+    window.Pegasus.modal('<div class="sce-scrim" onclick="if(event.target===this)PegIntel.closeProperty()"><div class="sce-modal" style="max-width:880px">' +
+      '<div class="sce-head"><div class="sce-title" id="pitDetTitle">Property</div><button class="sce-x" onclick="PegIntel.closeProperty()" aria-label="Close">✕</button></div>' +
       '<div class="sce-body" style="max-height:76vh;overflow-y:auto" id="pitDet">' + empty("Loading…") + "</div></div></div>");
     try {
       if (!CACHE.properties) CACHE.properties = await A.listProperties();
       DET.p = (CACHE.properties || []).find(function (x) { return x.id === id; });
+      if (!DET.p) {
+        // Safe not-found state for a stale/invalid property id (e.g. a shared
+        // deep link to a removed property).
+        var nf = document.getElementById("pitDet");
+        if (nf) nf.innerHTML = empty("Property not found.", "It may have been removed. Close this and return to the dashboard.");
+        var tnf = document.getElementById("pitDetTitle"); if (tnf) tnf.textContent = "Property not found";
+        return;
+      }
       DET.kids = await A.propertyChildren(id);
       try { DET.docs = await A.listPropertyDocs(id); } catch (_) { DET.docs = []; }
       drawDetail();
@@ -297,6 +337,25 @@
     }
   }
   function detTab(t) { DET.tab = t; drawDetail(); }
+  // Close Property Detail. If we pushed a history entry, go back so the URL and
+  // history stay in sync (popstate then tears the modal down); otherwise close
+  // directly and strip the ?property= param.
+  function closeProperty() {
+    if (history.state && history.state.pciProp) { history.back(); }
+    else { window.Pegasus.closeModal(); DET.open = false; try { history.replaceState({}, "", location.pathname); } catch (_) {} }
+  }
+  // Browser Back/Forward: reconcile the modal with the URL. A ?property=<id>
+  // means "show that property"; its absence means "close the detail" — the
+  // Dashboard/Properties view underneath is untouched, so filters survive.
+  var _popWired = false;
+  function wireHistory() {
+    if (_popWired) return; _popWired = true;
+    window.addEventListener("popstate", function () {
+      var pid = currentPropParam();
+      if (pid) { if (!(DET.open && DET.id === pid)) openProperty(pid, true); }
+      else if (DET.open) { window.Pegasus.closeModal(); DET.open = false; }
+    });
+  }
   function drawDetail() {
     var p = DET.p || {}, k = DET.kids || {};
     var tEl = document.getElementById("pitDetTitle");
@@ -692,7 +751,12 @@
       });
     }
   }
-  function pickFile(input) { if (input.files && input.files[0]) handleFile(input.files[0]); }
+  function pickFile(input) {
+    var out = document.getElementById("pitImpOut"); if (out) out.innerHTML = ""; // clear any stale error the moment a new file is chosen
+    var f = input.files && input.files[0];
+    input.value = ""; // reset so re-selecting the same file still fires onchange
+    if (f) handleFile(f);
+  }
   async function handleFile(file, force) {
     var out = document.getElementById("pitImpOut");
     if (!/\.xlsx$/i.test(file.name)) { out.innerHTML = '<div class="pit-invalid">Only .xlsx files are accepted.</div>'; return; }
@@ -836,10 +900,10 @@
       '<div class="pit-grid2"><div>' +
       list("Properties missing critical fields", d.missingCritical, function (p) {
         var miss = [p.asking_price == null && "asking price", p.noi == null && "NOI", p.occupancy_pct == null && "occupancy"].filter(Boolean).join(", ");
-        return '<div class="pit-row" style="cursor:pointer" onclick="PegIntel.openProperty(\'' + p.id + '\')"><span class="grow">' + esc(p.property_name || p.address_line1) + '</span><span class="pit-meta">' + esc(miss) + "</span></div>";
+        return clickRow(p.id, '<span class="grow">' + esc(p.property_name || p.address_line1) + '</span><span class="pit-meta">' + esc(miss) + "</span>");
       }) +
       list("Properties without any linked contact", d.propsNoContacts, function (p) {
-        return '<div class="pit-row" style="cursor:pointer" onclick="PegIntel.openProperty(\'' + p.id + '\')"><span class="grow">' + esc(p.property_name || p.address_line1) + '</span><span class="pit-meta">' + esc(p.city || "") + "</span></div>";
+        return clickRow(p.id, '<span class="grow">' + esc(p.property_name || p.address_line1) + '</span><span class="pit-meta">' + esc(p.city || "") + "</span>");
       }) +
       "</div><div>" +
       list("Stale lender terms (90+ days unverified)", d.stalePrograms, function (g) {
@@ -858,6 +922,7 @@
 
   window.PegIntel = {
     mount: mount, nav: nav, openProperty: openProperty, detTab: detTab,
+    _rowKey: _rowKey, closeProperty: closeProperty,
     propertyModal: propertyModal, saveProperty: savePropertyUI,
     scoreModal: scoreModal, saveScore: saveScore, _scoreSum: _scoreSum,
     uploadDoc: uploadDoc, openDoc: openDoc, actionDone: actionDone,

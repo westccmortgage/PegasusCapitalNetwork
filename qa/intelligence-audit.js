@@ -327,6 +327,59 @@ section("Workbook round-trip (exceljs)");
     const fixProp = plan.rows.find((r) => r.target_type === "property" && r.after_data.external_id === "QA-PROP-1");
     ok("fixture loan wired to fixture property", fixLoan && fixProp && fixLoan.after_data.property_id === fixProp.after_data.id);
 
+    /* ── Issue 2: Dashboard clickable opportunity cards (source behavior) ── */
+    section("Issue 2: Dashboard clickable cards + property deep-link");
+    const adminJs = read("js/intelligence/admin-intelligence.js");
+    const flat = adminJs.replace(/\s+/g, " ");
+    // (1) dashboard property rows are accessible clickable rows opening the property.
+    ok("(1) Top Opportunities row opens property via accessible clickRow",
+      /clickRow\(p\.id, inner\)/.test(flat) &&
+      /function clickRow\(id, inner.*role="button" tabindex="0" data-prop=/.test(flat) &&
+      /onclick="PegIntel\.openProperty\(/.test(flat));
+    // (2) the recommendation badge is INSIDE the clickable row inner, so clicking
+    //     it opens the same property and never blocks row navigation.
+    ok("(2) recommendation badge is inside the clickable row (opens same property)",
+      /var inner = [\s\S]{0,400}reco\(p\.recommendation\)[\s\S]{0,400}return clickRow\(p\.id, inner\)/.test(adminJs));
+    // (3) keyboard: Enter and Space activate the row.
+    ok("(3) keyboard navigation — Enter/Space open the property",
+      /onkeydown="PegIntel\._rowKey\(event/.test(flat) &&
+      /_rowKey\(e, id\) \{ if \(e\.key === "Enter" \|\| e\.key === " "/.test(flat) &&
+      /keyCode === 13 \|\| e\.keyCode === 32/.test(flat));
+    // (4) invalid / stale property id → safe not-found state.
+    ok("(4) invalid property id shows a safe not-found state",
+      /if \(!DET\.p\) \{/.test(flat) && /Property not found\./.test(adminJs) &&
+      /\^\[0-9a-f-\]\{16,40\}\$/.test(adminJs));
+    // Back button: history push on open + popstate closes without re-render.
+    ok("(4b) Back returns to Dashboard without losing filters (history, no re-render)",
+      /history\.pushState\(\{ pciProp: id \}/.test(adminJs) &&
+      /addEventListener\("popstate"/.test(adminJs) &&
+      /function closeProperty\(\)/.test(adminJs));
+    // CSS focus/hover state present.
+    ok("(4c) visible hover/focus state for clickable rows",
+      /\.pit-row\.pit-clickable:hover/.test(read("css/admin-intelligence.css")) &&
+      /\.pit-row\.pit-clickable:focus/.test(read("css/admin-intelligence.css")));
+    // Stale upload-error banner clears on new file select + on success.
+    ok("stale upload error clears on new file / success",
+      /function pickFile\(input\) \{ var out = document\.getElementById\("pitImpOut"\); if \(out\) out\.innerHTML = "";/.test(flat));
+
+    /* ── Issue 1: cross-workbook rejection (behavioral, exact messages) ── */
+    section("Issue 1: cross-workbook rejection");
+    const pcore = require(path.join(ROOT, "netlify/functions/lib/partner-import-core.js"));
+    const pWbLib = require(path.join(ROOT, "netlify/functions/lib/partner-workbook.js"));
+    const caBuf = Buffer.from(await pWbLib.buildFixture(ExcelJS));
+    const caParsed = await require(path.join(ROOT, "netlify/functions/partner-import-preview.js"))._parseWorkbook(caBuf);
+    // (5) California workbook rejected by Capital Intelligence with the exact message.
+    const ciReject = core.foreignWorkbookError(caParsed.allSheetNames);
+    ok("(5) California workbook rejected by Capital Intelligence with the exact message",
+      ciReject === "This workbook belongs to California Partner Network. Upload it in /admin/partner-network.",
+      "got: " + ciReject);
+    // Symmetric: a Palm Beach CI workbook rejected by the Partner importer.
+    ok("(5b) Capital Intelligence workbook rejected by Partner Network with a clear message",
+      pcore.foreignWorkbookError(parsed.allSheetNames) === "This workbook belongs to Capital Intelligence (Palm Beach). Upload it in /admin/intelligence.");
+    // A real CI workbook is NOT falsely rejected by CI; a real CA workbook not by PN.
+    ok("(5c) no false rejection of a valid own-module workbook",
+      core.foreignWorkbookError(parsed.allSheetNames) === null && pcore.foreignWorkbookError(caParsed.allSheetNames) === null);
+
     /* ── 7. Optional live RLS probe ── */
     if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
       section("Live RLS probe (anon)");

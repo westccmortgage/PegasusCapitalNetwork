@@ -1,21 +1,20 @@
 // ============================================================================
-// PEGASUS CAPITAL INTELLIGENCE — import preview (admin only)
+// PEGASUS CALIFORNIA PARTNER NETWORK — import preview (admin only)
 // POST { filename, file_base64, force? }  with Authorization: Bearer <jwt>
 //
-// Validates the daily .xlsx workbook, stores the original privately, plans
-// insert/update/unchanged/conflict/invalid actions per row (all semantics in
-// lib/intelligence-import-core.js), and writes pci_import_batches +
-// pci_import_rows with status 'previewed'. NOTHING touches live tables here —
-// commit happens later via the transactional RPC.
+// Validates the partner .xlsx workbook (6 sheets), stores the original
+// privately, plans insert/update/unchanged/conflict/invalid per row (all
+// semantics in lib/partner-import-core.js), and writes pn_import_batches +
+// pn_import_rows with status 'previewed'. Nothing touches live pn_ tables here.
 // ============================================================================
 "use strict";
 
 const crypto = require("crypto");
 const ExcelJS = require("exceljs");
-const core = require("./lib/intelligence-import-core.js");
+const core = require("./lib/partner-import-core.js");
 const { requireAdmin, resp } = require("./lib/intelligence-auth.js");
 
-const BUCKET = "capital-intelligence-private";
+const BUCKET = "partner-network-private";
 
 function cellVal(cell) {
   if (!cell) return null;
@@ -40,6 +39,7 @@ async function parseWorkbook(buf) {
   const allSheetNames = wb.worksheets.map((ws) => ws.name);
   const contractNames = Object.keys(core.SHEETS);
   for (const ws of wb.worksheets) {
+    // OOXML/namespace-normalized sheet matching (see core.normHeader).
     const match = contractNames.find((n) => core.normHeader(n) === core.normHeader(ws.name));
     if (!match) continue;
     found.push(match);
@@ -66,74 +66,56 @@ async function parseWorkbook(buf) {
   return { bySheet, found, allSheetNames };
 }
 
-// Build key→{id,record} maps from live tables (service client bypasses RLS —
-// the caller was already verified as admin).
 async function loadExisting(supabase, adminId) {
-  const E = { properties: new Map(), contacts: new Map(), loans: new Map(), tenants: new Map(),
-    signals: new Map(), programs: new Map(), propertyContacts: new Map(), sources: new Map(),
-    openActions: new Set(), entitySources: new Set() };
+  const E = { companies: new Map(), agents: new Map(), escrow: new Map(), signals: new Map(),
+    dncs: new Map(), openOutreach: new Set(), crmByEmail: new Map() };
   const LIM = 10000;
   const q = async (t, sel) => {
     const { data, error } = await supabase.from(t).select(sel || "*").limit(LIM);
     if (error) { if (/does not exist|schema cache/i.test(error.message)) return []; throw new Error(t + ": " + error.message); }
     return data || [];
   };
-  for (const p of await q("pci_properties")) {
-    const rec = { id: p.id, record: p };
-    // County-aware parcel identity, matching core.propertyKeyOf exactly.
-    if (p.parcel_id) E.properties.set("parcel:" + core.normCounty(p.county) + ":" + core.normId(p.parcel_id), rec);
-    if (p.external_id) E.properties.set("ext:" + String(p.external_id).trim().toUpperCase(), rec);
-    if (p.normalized_address) E.properties.set("addr:" + p.normalized_address, rec);
-  }
-  const { data: cts, error: ce } = await supabase.from("crm_contacts").select("*").eq("owner_id", adminId).limit(LIM);
-  if (ce && !/does not exist/i.test(ce.message)) throw new Error("crm_contacts: " + ce.message);
-  for (const c of cts || []) {
+  for (const c of await q("pn_companies")) {
     const rec = { id: c.id, record: c };
-    if (c.email) E.contacts.set("email:" + String(c.email).trim().toLowerCase(), rec);
-    const ext = c.metadata && c.metadata.external_id;
-    if (ext) E.contacts.set("ext:" + String(ext).trim().toUpperCase(), rec);
-    if (c.name) E.contacts.set("name:" + (String(c.name).trim() + "|" + String(c.company || "").trim()).toUpperCase().replace(/\s+/g, " "), rec);
+    if (c.external_id) E.companies.set("ext:" + String(c.external_id).trim().toUpperCase(), rec);
+    E.companies.set("nat:" + core.normId(c.company_name) + ":" + core.normId(c.city), rec);
   }
-  for (const l of await q("pci_loans")) {
-    const rec = { id: l.id, record: l };
-    // Jurisdiction-aware instrument identity, matching core exactly.
-    if (l.instrument_number) E.loans.set("instr:" + core.normJur(l.recording_jurisdiction) + ":" + core.normId(l.instrument_number), rec);
-    if (l.external_id) E.loans.set("ext:" + String(l.external_id).trim().toUpperCase(), rec);
-    E.loans.set("nat:" + l.property_id + ":" + (l.lender_contact_id || "") + ":" + (l.recorded_date || "") + ":" + (l.original_amount ?? ""), rec);
+  for (const a of await q("pn_agents")) {
+    const rec = { id: a.id, record: a };
+    if (a.external_id) E.agents.set("ext:" + String(a.external_id).trim().toUpperCase(), rec);
+    if (a.email) E.agents.set("email:" + String(a.email).trim().toLowerCase(), rec);
+    if (a.license_number) E.agents.set("lic:" + core.normId(a.license_number), rec);
+    if (a.full_name) E.agents.set("nat:" + core.normId(a.full_name) + ":" + core.normId(a.company_name_snapshot), rec);
   }
-  for (const t of await q("pci_tenants")) {
-    E.tenants.set("t:" + t.property_id + ":" + String(t.tenant_name || "").trim().toUpperCase().replace(/\s+/g, " ") + ":" + String(t.suite || "").trim().toUpperCase(), { id: t.id, record: t });
+  for (const s of await q("pn_escrow_title")) {
+    const rec = { id: s.id, record: s };
+    if (s.external_id) E.escrow.set("ext:" + String(s.external_id).trim().toUpperCase(), rec);
+    if (s.email) E.escrow.set("email:" + String(s.email).trim().toLowerCase(), rec);
+    if (s.officer_name) E.escrow.set("nat:" + core.normId(s.officer_name) + ":" + core.normId(s.company_name_snapshot), rec);
   }
-  for (const s of await q("pci_distress_signals")) {
+  for (const s of await q("pn_activity_signals")) {
     const rec = { id: s.id, record: s };
     if (s.external_id) E.signals.set("ext:" + String(s.external_id).trim().toUpperCase(), rec);
-    E.signals.set("nat:" + s.property_id + ":" + s.signal_type + ":" + (s.event_date || "") + ":" + String(s.case_or_instrument_no || "").toUpperCase().replace(/[^A-Z0-9]/g, ""), rec);
+    E.signals.set("nat:" + core.normId(s.subject_name) + ":" + s.signal_type + ":" + (s.signal_date || ""), rec);
   }
-  for (const g of await q("pci_lender_programs")) {
-    const rec = { id: g.id, record: g };
-    if (g.external_id) E.programs.set("ext:" + String(g.external_id).trim().toUpperCase(), rec);
-    E.programs.set("nat:" + String(g.lender_name_snapshot || "").toUpperCase().replace(/\s+/g, " ") + ":" + String(g.program_name || "").toUpperCase().replace(/\s+/g, " "), rec);
+  for (const d of await q("pn_do_not_contact")) {
+    const rec = { id: d.id, record: d };
+    if (d.external_id) E.dncs.set("ext:" + String(d.external_id).trim().toUpperCase(), rec);
+    if (d.email) E.dncs.set("email:" + String(d.email).trim().toLowerCase(), rec);
+    if (d.subject_name) E.dncs.set("nat:" + core.normId(d.subject_name), rec);
   }
-  for (const pc of await q("pci_property_contacts")) {
-    E.propertyContacts.set("pc:" + pc.property_id + ":" + pc.crm_contact_id + ":" + pc.relationship_role, { id: pc.id, record: pc });
+  for (const o of await q("pn_outreach_actions", "action_type, subject_name, action, status")) {
+    if ((o.status || "open") === "open") {
+      E.openOutreach.add("oa:" + (o.action_type || "") + ":" + core.normId(o.subject_name) + ":" + String(o.action || "").toUpperCase().slice(0, 120));
+    }
   }
-  for (const s of await q("pci_sources", "id, normalized_url")) {
-    if (s.normalized_url) E.sources.set("url:" + s.normalized_url, { id: s.id, record: s });
-  }
-  // Existing provenance links, so re-import never trips the entity_source
-  // unique index (which, under atomic commit, would abort the whole batch).
-  for (const es of await q("pci_entity_sources", "entity_type, entity_id, source_id")) {
-    E.entitySources.add(es.entity_type + "|" + es.entity_id + "|" + es.source_id);
-  }
-  const { data: acts } = await supabase.from("pci_daily_actions")
-    .select("action_type, property_id, action").eq("status", "open").limit(LIM);
-  for (const a of acts || []) {
-    E.openActions.add("a:" + (a.action_type || "") + ":" + (a.property_id || "") + ":" + String(a.action || "").toUpperCase().slice(0, 120));
-  }
+  // Existing CRM contacts (this admin's) — LINK ONLY by email; never created here.
+  const { data: cts } = await supabase.from("crm_contacts").select("id, email").eq("owner_id", adminId).limit(LIM);
+  for (const c of cts || []) if (c.email) E.crmByEmail.set(String(c.email).trim().toLowerCase(), c.id);
   return E;
 }
 
-// Exported for offline QA (qa/intelligence-audit.js) — no I/O of its own.
+// Exported for offline QA — no I/O of its own.
 exports._parseWorkbook = parseWorkbook;
 
 exports.handler = async (event) => {
@@ -150,13 +132,11 @@ exports.handler = async (event) => {
     let buf;
     try { buf = Buffer.from(String(body.file_base64), "base64"); } catch (_) { return resp(400, { ok: false, error: "file_base64 is not valid base64" }); }
 
-    // 1. File-level validation (extension, signature, size, macros).
     const fileErrors = core.checkFile(filename, buf);
     if (fileErrors.length) return resp(422, { ok: false, error: "file rejected", details: fileErrors });
 
-    // 2. Checksum + duplicate-file detection.
     const checksum = crypto.createHash("sha256").update(buf).digest("hex");
-    const { data: dup } = await supabase.from("pci_import_batches")
+    const { data: dup } = await supabase.from("pn_import_batches")
       .select("id, status, created_at").eq("file_checksum", checksum)
       .in("status", ["previewed", "approved", "committed"]).limit(1);
     if (dup && dup.length && !force) {
@@ -165,13 +145,12 @@ exports.handler = async (event) => {
         " (batch " + dup[0].id + ", status " + dup[0].status + "). Pass force=true to import anyway." ] });
     }
 
-    // 3. Parse workbook.
     let parsed;
     try { parsed = await parseWorkbook(buf); }
     catch (e) { return resp(422, { ok: false, error: "could not read workbook: " + e.message }); }
     if (!parsed.found.length) {
-      // Wrong-module guard: a California Partner Network workbook gets a clear,
-      // actionable message instead of an opaque "no recognized sheets".
+      // Wrong-module guard: a Capital Intelligence (Palm Beach) workbook gets a
+      // clear, actionable message instead of an opaque "no recognized sheets".
       const foreign = core.foreignWorkbookError(parsed.allSheetNames);
       if (foreign) return resp(422, { ok: false, error: foreign });
       return resp(422, { ok: false, error: "no recognized sheets", details: [
@@ -181,48 +160,36 @@ exports.handler = async (event) => {
     if (!totalRows) return resp(422, { ok: false, error: "workbook has no data rows" });
     if (totalRows > 5000) return resp(422, { ok: false, error: "workbook too large (" + totalRows + " rows; max 5000 per import)" });
 
-    // 4. Plan actions against live data.
     const existing = await loadExisting(supabase, uid);
     const today = new Date().toISOString().slice(0, 10);
-    const plan = core.planActions(parsed.bySheet, existing, {
-      adminId: uid, today, genId: () => crypto.randomUUID(),
-    });
+    const plan = core.planActions(parsed.bySheet, existing, { adminId: uid, today, genId: () => crypto.randomUUID() });
 
-    // 5. Store the original file privately: imports/YYYY/MM/<checksum>-<name>.
     const ym = today.slice(0, 7).replace("-", "/");
     const safeName = filename.replace(/[^\w.\-]+/g, "_").slice(-80) || "import.xlsx";
     const storagePath = "imports/" + ym + "/" + checksum.slice(0, 16) + "-" + safeName;
     const up = await supabase.storage.from(BUCKET).upload(storagePath, buf, {
-      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      upsert: true,
+      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", upsert: true,
     });
-    if (up.error) return resp(500, { ok: false, error: "could not store file (apply migration 070?): " + up.error.message });
+    if (up.error) return resp(500, { ok: false, error: "could not store file (apply migration 074?): " + up.error.message });
 
-    // 6. Persist batch + rows.
-    const { data: batch, error: bErr } = await supabase.from("pci_import_batches").insert({
+    const { data: batch, error: bErr } = await supabase.from("pn_import_batches").insert({
       filename: filename || safeName, file_checksum: checksum, file_storage_path: storagePath,
       uploaded_by: uid, status: "previewed",
       summary: Object.assign({ sheets: parsed.found, total_rows: totalRows, forced: force }, plan.summary),
-      validation_errors: plan.errors.slice(0, 200).map((r) => ({
-        sheet: r.sheet_name, row: r.row_number, errors: r.validation_errors })),
+      validation_errors: plan.errors.slice(0, 200).map((r) => ({ sheet: r.sheet_name, row: r.row_number, errors: r.validation_errors })),
     }).select("id").single();
-    if (bErr) return resp(500, { ok: false, error: "could not create batch (apply migration 069?): " + bErr.message });
+    if (bErr) return resp(500, { ok: false, error: "could not create batch (apply migration 073?): " + bErr.message });
 
-    const rows = plan.rows.map((r) => {
-      // Stamp the batch id into entity_source links so provenance is traceable
-      // back to the import that created it.
-      if (r.target_type === "entity_source" && r.after_data) r.after_data.batch_id = batch.id;
-      return Object.assign({ batch_id: batch.id }, r);
-    });
+    const rows = plan.rows.map((r) => Object.assign({ batch_id: batch.id }, r));
     for (let i = 0; i < rows.length; i += 200) {
-      const { error: rErr } = await supabase.from("pci_import_rows").insert(rows.slice(i, i + 200));
+      const { error: rErr } = await supabase.from("pn_import_rows").insert(rows.slice(i, i + 200));
       if (rErr) {
-        await supabase.from("pci_import_batches").update({ status: "failed" }).eq("id", batch.id);
+        await supabase.from("pn_import_batches").update({ status: "failed" }).eq("id", batch.id);
         return resp(500, { ok: false, error: "could not store preview rows: " + rErr.message });
       }
     }
 
-    console.log("[intelligence-import-preview] batch=" + batch.id + " by admin=" + uid +
+    console.log("[partner-import-preview] batch=" + batch.id + " by admin=" + uid +
       " rows=" + rows.length + " summary=" + JSON.stringify(plan.summary));
     return resp(200, {
       ok: true, batch_id: batch.id, checksum, storage_path: storagePath,
@@ -230,12 +197,11 @@ exports.handler = async (event) => {
       conflicts: plan.conflicts.slice(0, 100).map((r) => ({
         row_id: null, sheet: r.sheet_name, row: r.row_number, key: r.dedupe_key,
         errors: r.validation_errors, changes: r.after_data })),
-      invalid: plan.errors.slice(0, 100).map((r) => ({
-        sheet: r.sheet_name, row: r.row_number, errors: r.validation_errors })),
+      invalid: plan.errors.slice(0, 100).map((r) => ({ sheet: r.sheet_name, row: r.row_number, errors: r.validation_errors })),
       duplicate_of: dup && dup.length ? dup[0].id : null,
     });
   } catch (err) {
-    console.error("[intelligence-import-preview] ERROR:", err.message);
+    console.error("[partner-import-preview] ERROR:", err.message);
     return resp(500, { ok: false, error: err.message });
   }
 };

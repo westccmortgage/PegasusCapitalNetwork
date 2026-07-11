@@ -155,6 +155,7 @@
         ${isAdm?`<div class="sb-sec">Admin</div>
         ${item('⚑','Admin Console','/admin.html',{act:'Admin'})}
         ${item('◆','Capital Intelligence','/admin/intelligence',{act:'Capital Intelligence Admin'})}
+        ${item('◆','Partner Network','/admin/partner-network',{act:'Partner Network Admin'})}
         ${item('◇','Admin Requests','/admin-requests.html')}
         ${item('◈','Admin Trust','/admin-trust-reviews.html',{act:'Admin · Trust'})}`:''}
       </div>
@@ -215,7 +216,8 @@
         if (!nav) return;
         var existing = nav.querySelector('[href="/admin.html"]');
         var ciLink = nav.querySelector('[href="/admin/intelligence"]');
-        /* Admin Console link — admins only. */
+        var pnLink = nav.querySelector('[href="/admin/partner-network"]');
+        /* Admin Console + Partner Network links — admins only. */
         if (isAdmin && !existing) {
           nav.insertAdjacentHTML('beforeend',
             '<a class="sb-item" href="/admin.html"><span class="sb-ic">⚑</span>Admin Console</a>');
@@ -223,6 +225,12 @@
         } else if (!isAdmin && existing) {
           existing.parentNode && existing.parentNode.removeChild(existing);
           console.debug('[Admin] Admin Console link removed — role is:', res.data && res.data.role);
+        }
+        if (isAdmin && !pnLink) {
+          nav.insertAdjacentHTML('beforeend',
+            '<a class="sb-item" href="/admin/partner-network"><span class="sb-ic">◆</span>Partner Network</a>');
+        } else if (!isAdmin && pnLink) {
+          pnLink.parentNode && pnLink.parentNode.removeChild(pnLink);
         }
         /* Capital Intelligence link — admins OR analysts. */
         if (canCI && !ciLink) {
@@ -726,6 +734,7 @@
     if(isAdm){
       adminRows.push(['\u26E8','Admin Console','/admin.html']);
       adminRows.push(['\u25C6','Capital Intelligence','/admin/intelligence']);
+      adminRows.push(['\u25C6','Partner Network','/admin/partner-network']);
       adminRows.push(['\u25C7','Admin Requests','/admin-requests.html']);
       adminRows.push(['\u25C8','Admin Trust','/admin-trust-reviews.html']);
     } else if(p && p.pci_role==='analyst'){
