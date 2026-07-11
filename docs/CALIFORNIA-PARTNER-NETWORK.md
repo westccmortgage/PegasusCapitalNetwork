@@ -61,6 +61,10 @@ contract the importer uses.
 
 - **File**: `.xlsx` only, ≤ 4MB. Macro/legacy formats rejected by signature +
   content; formulas rejected as data; URLs restricted to http(s).
+- **Excel Tables are ignored** — table parts/relationships are stripped before
+  parsing (shared `lib/xlsx-sanitize.js`) so a malformed or dangling table
+  relationship cannot crash the reader; cell values, styles, validations,
+  hyperlinks and formula/security checks are untouched.
 - **Confidence** ladder: Verified > Reported > Estimated > Unknown. Lower
   confidence never silently overwrites higher — it becomes a conflict.
 - **Company_Key** on Agents/Escrow points at a Companies row (name or `ext:ID`);

@@ -362,6 +362,40 @@ section("Workbook round-trip (exceljs)");
     ok("stale upload error clears on new file / success",
       /function pickFile\(input\) \{ var out = document\.getElementById\("pitImpOut"\); if \(out\) out\.innerHTML = "";/.test(flat));
 
+    /* ── Malformed/dangling Excel table relationships must not crash ExcelJS ── */
+    section("Malformed table relationships tolerated");
+    const { injectDanglingTable } = require(path.join(ROOT, "qa/lib/malformed-table.js"));
+    const { stripTableParts } = require(path.join(ROOT, "netlify/functions/lib/xlsx-sanitize.js"));
+    const badBuf = await injectDanglingTable(fixBuf);
+    // (a) prove the bug: raw ExcelJS crashes with the exact error.
+    let rawCrash = false, rawMsg = "";
+    try { const wb = new ExcelJS.Workbook(); await wb.xlsx.load(badBuf); }
+    catch (e) { rawCrash = true; rawMsg = e.message; }
+    ok("raw ExcelJS crashes on the dangling table (repro)", rawCrash && /reading 'name'/.test(rawMsg), rawMsg);
+    // (b) the importer's parser reads the worksheet data safely.
+    const badParsed = await preview._parseWorkbook(badBuf);
+    ok("Capital Intelligence reads worksheet data despite dangling table", badParsed.found.length === 9, "found: " + badParsed.found.join(","));
+    ok("worksheet VALUES preserved after stripping tables",
+      (badParsed.bySheet.Properties || []).length === 2 &&
+      (badParsed.bySheet.Properties || [])[0].data.address_line1 === "123 Example Street");
+    // (c) sanitizer is a no-op-safe on a clean workbook and on a non-zip buffer.
+    const cleanAfter = await stripTableParts(fixBuf);
+    const cleanParsed = await preview._parseWorkbook(cleanAfter);
+    ok("clean workbook still parses after sanitize (no regression)", cleanParsed.found.length === 9);
+    ok("non-zip buffer returned unchanged by sanitizer", (await stripTableParts(Buffer.from("not a zip"))).toString() === "not a zip");
+    // (d) security check preserved: a formula cell is still rejected as data even
+    //     with a dangling table present.
+    const fWb = new ExcelJS.Workbook();
+    const fWs = fWb.addWorksheet("Properties");
+    fWs.addRow(["Address", "City"]);
+    const fRow = fWs.addRow([null, "West Palm Beach"]);
+    fRow.getCell(1).value = { formula: "1+1", result: 2 };
+    const fBad = await injectDanglingTable(Buffer.from(await fWb.xlsx.writeBuffer()));
+    const fParsed = await preview._parseWorkbook(fBad);
+    const fRows = fParsed.bySheet.Properties || [];
+    ok("formula/security check preserved through sanitize (formula still rejected)",
+      fRows.length === 1 && fRows[0].errors.some((e) => /formula/i.test(e)), JSON.stringify(fRows.map((r) => r.errors)));
+
     /* ── Issue 1: cross-workbook rejection (behavioral, exact messages) ── */
     section("Issue 1: cross-workbook rejection");
     const pcore = require(path.join(ROOT, "netlify/functions/lib/partner-import-core.js"));
