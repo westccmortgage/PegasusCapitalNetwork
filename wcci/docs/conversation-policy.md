@@ -109,23 +109,57 @@ leads still flow through `partial-lead.js` separately.
 $50k-bucketed price/loan, normalized contact). The same scenario always yields
 the same id; a minor edit does not mint a new one.
 
-**Durable dedup** lives server-side in `netlify/functions/lib/idempotency.cjs`:
-Netlify Blobs (strong consistency) when available — true cross-request
-idempotency; otherwise a warm-instance in-memory map (best-effort, atomic
-within one process via synchronous check-and-set). The completed-lead function
-**claims** the event id before sending and marks it `delivered` only on success;
-a failed send releases the claim so a controlled retry (same id, capped
-attempts) proceeds. A duplicate resolves to `already_delivered` with no second
-email.
+**Durable dedup** lives server-side in `netlify/functions/lib/idempotency.cjs`.
+It is hardened against the classic "email accepted but our response was lost"
+failure at two layers:
+
+1. **Atomic Blobs claim.** The claim is a single conditional write —
+   `store.setJSON(key, rec, { onlyIfNew: true })` on a **site-wide** store
+   (`getStore`, not `getDeployStore`, so it survives deploys) with strong
+   consistency. It is NOT a get→check→set. `modified === false` means an
+   existing claim, so two simultaneous requests for the same event id can never
+   both win. Protected status transitions use the returned **ETag** with
+   `onlyIfMatch`, so a stale writer can't clobber a newer state.
+2. **Resend idempotency key.** The completed-lead email is sent with
+   `Idempotency-Key: <completedLeadEventId>` — the exact same event id, never a
+   fresh random key. If Resend already accepted the email, a retry returns
+   Resend's original response instead of sending a second one.
+
+**State machine:** `claimed → sending → delivered`, or, on trouble,
+`sending_unknown` / `failed_retryable`. An **ambiguous** network error or
+timeout is treated as *maybe delivered*: the claim is **kept** (never released),
+recorded `sending_unknown`, and a retry re-sends with the same event id +
+Resend key + **identical material payload** and resolves to the original
+delivery. A claim is released (deleted) **only** when it is proven no external
+request was accepted (missing API key, or an HTTP reject before send). A
+`delivered` record is never overwritten by a stale failed write (double-guarded
+by a status check and `onlyIfMatch`).
+
+**Payload stability.** The material email payload (contact, goal, geography,
+bucketed amounts, occupancy, resources, …) carries no timestamps, random ids,
+or regenerated wording, and arrays are order-independent. Its canonical hash
+(`canonicalLeadHash`) is pinned at claim time; a retry whose **material** payload
+changed under the same event id is **rejected** (`409`) rather than sent.
+
+Otherwise a warm-instance in-memory map is the fallback — best-effort, atomic
+within one process via synchronous check-and-set, and clearly reported as
+**non-durable** (`durable:false`, `mode:'memory'`). We never claim durable
+idempotency when only this tier is available.
 
 **Guarantees:** both markers in one reply → one delivery; response processed
-twice → one; retry after success → `already_delivered`; two tabs → one (durable
-tier, or one process); partial→complete → one record; failure → retryable, never
-`submitted`; repeated later signals → no repeat (material-change policy off by
-default). The conversation continues normally after qualification.
+twice → one; retry after success → `already_delivered`; two tabs / two server
+requests → one (atomic `onlyIfNew`); email accepted but response lost → one
+(Resend key); ambiguous timeout → claim kept, retried idempotently, never a
+second email; partial→complete → one record; failure → retryable, never
+`submitted`; changed material payload under the same id → rejected; repeated
+later signals → no repeat. The conversation continues normally after
+qualification.
 
 **Limitation (honest):** with only the in-memory tier (no Netlify Blobs
 configured), cross-instance concurrency is best-effort, not provably
 once-only. Enable Netlify Blobs — or wire GRCRM/DB — for guaranteed
 cross-request idempotency. The event id + fingerprint are included in every
-lead email so the team can spot the rare cross-instance repeat.
+lead email so the team can spot the rare cross-instance repeat. Tests:
+`test/lead-idempotency-hardening.test.mjs` (atomic claim, Resend key, ambiguous
+retry, payload stability, stale-write protection) and
+`test/lead-single-delivery.test.mjs`.

@@ -4,7 +4,7 @@ const https = require("https");
 // distinct — never interchange them).
 const LICENSE_HTML = 'West Coast Capital Mortgage Inc. · CA DRE Corporation License #02440065 · NMLS #2817729<br>Anatoliy Kanevsky · California Real Estate Broker · CA DRE Broker License #01385024 · NMLS #2775380';
 
-function postJSON(url, data, headers = {}) {
+function postJSON(url, data, headers = {}, { timeoutMs = 15000 } = {}) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
     const body = typeof data === "string" ? data : JSON.stringify(data);
@@ -18,7 +18,10 @@ function postJSON(url, data, headers = {}) {
       res.on("data", (c) => chunks += c);
       res.on("end", () => resolve({ status: res.statusCode, body: chunks }));
     });
-    req.on("error", reject);
+    // A timeout is AMBIGUOUS: the request may already have been accepted. We
+    // reject with a flagged error so the caller keeps the idempotency claim.
+    req.setTimeout(timeoutMs, () => { const e = new Error("request timeout"); e.ambiguous = true; req.destroy(e); });
+    req.on("error", (e) => { if (!("ambiguous" in e)) e.ambiguous = true; reject(e); });
     req.write(body);
     req.end();
   });
@@ -108,56 +111,13 @@ async function sendStructuredEmail(lead) {
 }
 
 // ── AI-QUALIFIED COMPLETED LEAD — model-triggered, server-validated ──
-function aiQualifiedHtml(l) {
-  const safe = (v) => String(v == null || v === "" ? "—" : v).replace(/</g, "&lt;");
-  const money = (n) => (n == null || n === "" ? "—" : "$" + Math.round(Number(n)).toLocaleString("en-US"));
-  const contactBanner = l.doNotContact
-    ? `<p style="background:#fdeee7;border:1px solid #e07a3a;padding:10px;border-radius:6px"><b>⛔ DO NOT CONTACT.</b> The borrower asked not to be contacted. This record is delivered for recordkeeping and scenario intelligence only — do not generate any outreach while this flag is set.</p>`
-    : `<p style="background:#e9f7ef;border:1px solid #1aa35a;padding:10px;border-radius:6px"><b>✅ AI-QUALIFIED LEAD</b> — the scenario is ready for licensed follow-up via the borrower's preferred method (${safe(l.contactPreference)}).</p>`;
-  return `<h2>🤖 AI-QUALIFIED LEAD — Scenario Complete</h2>
-${contactBanner}
-<h3>Contact</h3>
-<p><b>Name:</b> ${safe(l.name)}<br><b>Phone:</b> ${safe(l.phone)}<br><b>Email:</b> ${safe(l.email)}<br><b>Preferred language:</b> ${safe(l.preferredLanguage)}<br><b>Contact preference:</b> ${safe(l.contactPreference)}</p>
-<h3>Scenario</h3>
-<p><b>Loan goal:</b> ${safe(l.loanGoal)}<br><b>Location:</b> ${[l.city, l.county && l.county + " County", l.state, l.zip].filter(Boolean).map(safe).join(", ") || "—"}<br>
-<b>Price/value:</b> ${money(l.purchasePrice)} · <b>Loan:</b> ${money(l.loanAmount)} · <b>Down:</b> ${money(l.downPayment)}<br>
-<b>Occupancy:</b> ${safe(l.occupancy)} · <b>Property:</b> ${safe(l.propertyType)} · <b>Credit ~</b> ${safe(l.creditRange)}<br>
-<b>Income:</b> ${safe(l.incomeType)} · <b>Timing:</b> ${safe(l.expectedTiming)}</p>
-<h3>AI summary</h3><p>${safe(l.aiSummary)}</p>
-<h3>Context</h3>
-<p><b>Primary questions/topics:</b> ${(l.primaryQuestions || []).map(safe).join(", ") || "—"}<br>
-<b>Objections:</b> ${(l.objections || []).map(safe).join(", ") || "—"}<br>
-<b>Competitor mentioned:</b> ${safe(l.competitorMentioned)}<br>
-<b>Resources recommended:</b> ${(l.resourcesRecommended || []).map(safe).join(", ") || "—"}<br>
-<b>Resources opened:</b> ${(l.resourcesOpened || []).map(safe).join(", ") || "—"}<br>
-<b>Unresolved items:</b> ${(l.unresolvedItems || []).map(safe).join(", ") || "none"}</p>
-<h3>Qualification</h3>
-<p><b>Reason:</b> ${safe(l.qualificationReason)} · <b>Model confidence:</b> ${l.modelConfidence != null ? l.modelConfidence : "—"} · <b>Completeness:</b> ${l.scenarioCompleteness != null ? Math.round(l.scenarioCompleteness * 100) + "%" : "—"}<br>
-<b>Source:</b> ${safe(l.sourceWebsite)} (${safe(l.activeBrand)}) · <b>Session:</b> ${safe(l.sessionId)} · <b>Submitted:</b> ${safe(l.submittedAt)}</p>
-<p style="font-size:11px;color:#888"><i>One West Coast Capital Mortgage Inc. team handles this inquiry. Contact data is not distributed to multiple outside lenders.</i></p>
-<hr><p style="font-size:11px;color:#666"><i>Preliminary AI-qualified scenario. MLO review required. No approval, pricing, or commitment issued by AI.</i></p>
-<p style="font-size:11px;color:#888;line-height:1.6">${LICENSE_HTML}</p>`;
-}
-
-async function sendAiQualifiedEmail(lead) {
-  const API_KEY = process.env.RESEND_API_KEY;
-  const TO = process.env.LEAD_EMAIL_TO || "akanevsky1967@gmail.com";
-  const FROM = process.env.LEAD_EMAIL_FROM || "onboarding@resend.dev";
-  if (!API_KEY) { console.error("RESEND_API_KEY not configured"); return false; }
-  const flag = lead.doNotContact ? "⛔ DNC" : "✅";
-  try {
-    const r = await postJSON("https://api.resend.com/emails", {
-      from: FROM, to: [TO],
-      subject: `🤖 ${flag} AI-Qualified WCCI Lead — ${lead.name || lead.phone || lead.email || "Borrower"} · ${lead.loanGoal || ""} · ${lead.state || ""}`,
-      html: aiQualifiedHtml(lead),
-    }, { Authorization: `Bearer ${API_KEY}` });
-    if (r.status >= 400) console.error("AI-qualified lead email error:", r.status, r.body);
-    return r.status < 400;
-  } catch (e) { console.error("AI-qualified lead email failed:", e.message); return false; }
-}
+// The send + payload builder live in a .cjs module so they are unit-testable.
+const { sendAiQualifiedEmail, buildAiQualifiedEmailPayload } = require("./lib/ai-qualified-email.cjs");
 
 const { validateCompletedLead } = require("./lib/lead-validation.cjs");
-const { claimCompletedLead, markDelivered, markFailed } = require("./lib/idempotency.cjs");
+const {
+  claimCompletedLead, markSending, markDelivered, markSendingUnknown, markFailed, canonicalLeadHash,
+} = require("./lib/idempotency.cjs");
 
 exports.handler = async function(event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
@@ -178,21 +138,48 @@ exports.handler = async function(event) {
         return { statusCode: 400, body: JSON.stringify({ ok: false, error: "validation failed", details: check.errors }) };
       }
       const eventId = aiQualifiedLead.completedLeadEventId;
-      const claim = await claimCompletedLead(eventId);
-      if (!claim.firstTime) {
-        // Already delivered (or a concurrent in-flight attempt) — do NOT resend.
-        console.log("AI-qualified lead idempotent skip:", { eventId, mode: claim.mode });
+      // Canonical hash of the MATERIAL payload, pinned at claim time. A later
+      // attempt whose material content changed under the same id is rejected so a
+      // mismatched email can never be sent under a promised-stable idempotency key.
+      const payloadHash = canonicalLeadHash(aiQualifiedLead);
+      const claim = await claimCompletedLead(eventId, { payloadHash });
+
+      if (claim.payloadMismatch) {
+        console.warn("AI-qualified lead payload MISMATCH for existing event id:", { eventId });
+        return { statusCode: 409, body: JSON.stringify({ ok: false, error: "payload changed for existing event id" }) };
+      }
+      if (claim.alreadyDelivered) {
+        console.log("AI-qualified lead already delivered:", { eventId, mode: claim.mode });
         return { statusCode: 200, body: JSON.stringify({ ok: true, alreadyDelivered: true, idempotencyMode: claim.mode }) };
       }
-      const em = await sendAiQualifiedEmail(aiQualifiedLead);
-      if (em) {
-        await markDelivered(eventId, claim.blob, { channel: "email", doNotContact: !!aiQualifiedLead.doNotContact });
-        console.log("AI-qualified lead delivered:", { eventId, mode: claim.mode, doNotContact: aiQualifiedLead.doNotContact });
+      if (claim.inflightBusy) {
+        // A fresh concurrent attempt already holds the claim — do NOT send a
+        // second time. The winner's Resend idempotency key also backstops this.
+        console.log("AI-qualified lead in-flight, skipping duplicate send:", { eventId, mode: claim.mode });
+        return { statusCode: 200, body: JSON.stringify({ ok: true, alreadyDelivered: true, inFlight: true, idempotencyMode: claim.mode }) };
+      }
+      // firstTime OR retry (sending_unknown / failed_retryable) — send (or re-send)
+      // with the SAME event id + Resend idempotency key + identical material payload.
+      await markSending(eventId, claim.backend, claim.etag);
+      const send = await sendAiQualifiedEmail(aiQualifiedLead, { idempotencyKey: eventId });
+
+      if (send.outcome === "delivered") {
+        await markDelivered(eventId, claim.backend, { channel: "email", doNotContact: !!aiQualifiedLead.doNotContact });
+        console.log("AI-qualified lead delivered:", { eventId, mode: claim.mode, retry: claim.retry, doNotContact: aiQualifiedLead.doNotContact });
         return { statusCode: 200, body: JSON.stringify({ ok: true, email: true, alreadyDelivered: false, idempotencyMode: claim.mode }) };
       }
-      // Send failed — release the claim so a controlled retry (same eventId) can proceed.
-      await markFailed(eventId, claim.blob);
-      console.error("AI-qualified lead send FAILED, claim released:", { eventId });
+      if (send.outcome === "ambiguous") {
+        // AMBIGUOUS — Resend may already hold the request. KEEP the claim; a retry
+        // reuses the same event id + Resend idempotency key and resolves to the
+        // original delivery (never a second email).
+        await markSendingUnknown(eventId, claim.backend, { lastError: send.error });
+        console.error("AI-qualified lead delivery UNKNOWN, claim kept for idempotent retry:", { eventId });
+        return { statusCode: 504, body: JSON.stringify({ ok: false, error: "delivery outcome unknown; retry is idempotent", retryable: true, idempotencyMode: claim.mode }) };
+      }
+      // Definitive failure with a real HTTP rejection (or no API key) → no email
+      // was accepted, so it is safe to release the claim for a clean retry.
+      await markFailed(eventId, claim.backend);
+      console.error("AI-qualified lead send FAILED (no request accepted), claim released:", { eventId, status: send.status });
       return { statusCode: 502, body: JSON.stringify({ ok: false, error: "email delivery failed" }) };
     }
 
