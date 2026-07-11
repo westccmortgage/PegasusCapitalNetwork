@@ -37,6 +37,7 @@ section("Static wiring");
   "netlify/functions/lib/intelligence-workbook.js", "netlify/functions/lib/intelligence-auth.js",
   "supabase/067_crm_intelligence_fields.sql", "supabase/068_pci_core.sql",
   "supabase/069_pci_import.sql", "supabase/070_pci_storage_health.sql",
+  "supabase/071_pci_analyst_role.sql",
   "docs/CAPITAL-INTELLIGENCE.md", "docs/CAPITAL-INTELLIGENCE-IMPORT.md",
 ].forEach((f) => ok("exists: " + f, fs.existsSync(path.join(ROOT, f))));
 
@@ -46,7 +47,29 @@ ok("netlify.toml no-store on admin page", /for = "\/admin-intelligence\.html"[\s
 ok("netlify.toml X-Robots-Tag on admin page", /for = "\/admin-intelligence\.html"[\s\S]{0,220}X-Robots-Tag/.test(toml));
 const page = read("admin-intelligence.html");
 ok("admin page has meta noindex", /name="robots" content="noindex,nofollow"/.test(page));
-ok("admin page double-gates (store + live re-check)", /verifyAdmin/.test(page) && /PegStore/.test(page));
+ok("admin page double-gates (store + live re-check)", /verifyStaff/.test(page) && /PegStore/.test(page));
+ok("admin page redirects non-staff (no role → dashboard)", /if\(!access\.role\)/.test(page) && /dashboard\.html/.test(page));
+
+// ── Analyst role (migration 071) — RLS split + UI gating ─────────────────────
+const m071 = read("supabase/071_pci_analyst_role.sql");
+ok("071 adds profiles.pci_role column", /add column if not exists pci_role/.test(m071) && /pci_role in \('analyst'\)/.test(m071));
+ok("071 defines pci_is_staff() + pci_can_edit() as security definer", /function public\.pci_is_staff\(\)/.test(m071) && /function public\.pci_can_edit\(\)/.test(m071) && /security definer/.test(m071));
+ok("071 grants staff SELECT on all 14 pci_ tables", /_staff_select/.test(m071) && /pci_entity_sources/.test(m071) && /pci_change_log/.test(m071));
+ok("071 grants analyst INSERT/UPDATE only on properties + lender_programs", /pci_properties','pci_lender_programs/.test(m071) && /for insert to authenticated/.test(m071) && /for update to authenticated/.test(m071));
+ok("071 never grants analyst DELETE (relies on admin_all for delete)", !/for delete/.test(m071));
+const apijs = read("js/intelligence/intelligence-api.js");
+ok("intelligence-api exposes verifyStaff → {role,canImport,canEdit}", /verifyStaff/.test(apijs) && /pci_role/.test(apijs) && /canImport/.test(apijs));
+ok("verifyStaff analyst has canImport:false", /analyst".{0,40}canImport: false/.test(apijs.replace(/\s+/g, " ")));
+const adminjs = read("js/intelligence/admin-intelligence.js");
+ok("admin UI gates Import Center tab behind canImport", /CAP\.canImport \? ALL_TABS/.test(adminjs));
+{
+  const flat = adminjs.replace(/\s+/g, " ");
+  ok("admin UI hides score/doc/upload writes for analysts",
+    /if \(CAP\.canImport\) body \+= .{0,140}scoreModal/.test(flat) &&
+    /if \(CAP\.canImport\) \{ var docs/.test(flat) &&
+    /nav\(tab\) \{ if \(tab === "import" && !CAP\.canImport\)/.test(flat));
+}
+ok("import Netlify functions require full admin (auth lib rejects analysts)", /is_admin === true \|\| .*role === "admin"/.test(read("netlify/functions/lib/intelligence-auth.js")));
 const corejs = read("js/pegasus-core.js");
 ok("sidebar has admin Capital Intelligence link", corejs.indexOf("'/admin/intelligence'") >= 0 || corejs.indexOf('"/admin/intelligence"') >= 0);
 const memberIntel = read("intelligence.html");
@@ -303,6 +326,59 @@ section("Workbook round-trip (exceljs)");
     const fixLoan = plan.rows.find((r) => r.target_type === "loan");
     const fixProp = plan.rows.find((r) => r.target_type === "property" && r.after_data.external_id === "QA-PROP-1");
     ok("fixture loan wired to fixture property", fixLoan && fixProp && fixLoan.after_data.property_id === fixProp.after_data.id);
+
+    /* ── Issue 2: Dashboard clickable opportunity cards (source behavior) ── */
+    section("Issue 2: Dashboard clickable cards + property deep-link");
+    const adminJs = read("js/intelligence/admin-intelligence.js");
+    const flat = adminJs.replace(/\s+/g, " ");
+    // (1) dashboard property rows are accessible clickable rows opening the property.
+    ok("(1) Top Opportunities row opens property via accessible clickRow",
+      /clickRow\(p\.id, inner\)/.test(flat) &&
+      /function clickRow\(id, inner.*role="button" tabindex="0" data-prop=/.test(flat) &&
+      /onclick="PegIntel\.openProperty\(/.test(flat));
+    // (2) the recommendation badge is INSIDE the clickable row inner, so clicking
+    //     it opens the same property and never blocks row navigation.
+    ok("(2) recommendation badge is inside the clickable row (opens same property)",
+      /var inner = [\s\S]{0,400}reco\(p\.recommendation\)[\s\S]{0,400}return clickRow\(p\.id, inner\)/.test(adminJs));
+    // (3) keyboard: Enter and Space activate the row.
+    ok("(3) keyboard navigation — Enter/Space open the property",
+      /onkeydown="PegIntel\._rowKey\(event/.test(flat) &&
+      /_rowKey\(e, id\) \{ if \(e\.key === "Enter" \|\| e\.key === " "/.test(flat) &&
+      /keyCode === 13 \|\| e\.keyCode === 32/.test(flat));
+    // (4) invalid / stale property id → safe not-found state.
+    ok("(4) invalid property id shows a safe not-found state",
+      /if \(!DET\.p\) \{/.test(flat) && /Property not found\./.test(adminJs) &&
+      /\^\[0-9a-f-\]\{16,40\}\$/.test(adminJs));
+    // Back button: history push on open + popstate closes without re-render.
+    ok("(4b) Back returns to Dashboard without losing filters (history, no re-render)",
+      /history\.pushState\(\{ pciProp: id \}/.test(adminJs) &&
+      /addEventListener\("popstate"/.test(adminJs) &&
+      /function closeProperty\(\)/.test(adminJs));
+    // CSS focus/hover state present.
+    ok("(4c) visible hover/focus state for clickable rows",
+      /\.pit-row\.pit-clickable:hover/.test(read("css/admin-intelligence.css")) &&
+      /\.pit-row\.pit-clickable:focus/.test(read("css/admin-intelligence.css")));
+    // Stale upload-error banner clears on new file select + on success.
+    ok("stale upload error clears on new file / success",
+      /function pickFile\(input\) \{ var out = document\.getElementById\("pitImpOut"\); if \(out\) out\.innerHTML = "";/.test(flat));
+
+    /* ── Issue 1: cross-workbook rejection (behavioral, exact messages) ── */
+    section("Issue 1: cross-workbook rejection");
+    const pcore = require(path.join(ROOT, "netlify/functions/lib/partner-import-core.js"));
+    const pWbLib = require(path.join(ROOT, "netlify/functions/lib/partner-workbook.js"));
+    const caBuf = Buffer.from(await pWbLib.buildFixture(ExcelJS));
+    const caParsed = await require(path.join(ROOT, "netlify/functions/partner-import-preview.js"))._parseWorkbook(caBuf);
+    // (5) California workbook rejected by Capital Intelligence with the exact message.
+    const ciReject = core.foreignWorkbookError(caParsed.allSheetNames);
+    ok("(5) California workbook rejected by Capital Intelligence with the exact message",
+      ciReject === "This workbook belongs to California Partner Network. Upload it in /admin/partner-network.",
+      "got: " + ciReject);
+    // Symmetric: a Palm Beach CI workbook rejected by the Partner importer.
+    ok("(5b) Capital Intelligence workbook rejected by Partner Network with a clear message",
+      pcore.foreignWorkbookError(parsed.allSheetNames) === "This workbook belongs to Capital Intelligence (Palm Beach). Upload it in /admin/intelligence.");
+    // A real CI workbook is NOT falsely rejected by CI; a real CA workbook not by PN.
+    ok("(5c) no false rejection of a valid own-module workbook",
+      core.foreignWorkbookError(parsed.allSheetNames) === null && pcore.foreignWorkbookError(caParsed.allSheetNames) === null);
 
     /* ── 7. Optional live RLS probe ── */
     if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {

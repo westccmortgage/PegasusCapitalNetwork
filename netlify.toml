@@ -126,6 +126,12 @@
   to = "/admin-intelligence.html"
   status = 200
 
+# ── Private admin module: California Partner Network (no sitemap/index/cache).
+[[redirects]]
+  from = "/admin/partner-network"
+  to = "/admin-partner-network.html"
+  status = 200
+
 [[redirects]]
   from = "/dashboard"
   to = "/dashboard.html"
@@ -250,6 +256,18 @@
 
 [[headers]]
   for = "/admin/intelligence"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admin-partner-network.html"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admin/partner-network"
   [headers.values]
     Cache-Control = "no-store"
     X-Robots-Tag = "noindex, nofollow"

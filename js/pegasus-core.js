@@ -155,6 +155,7 @@
         ${isAdm?`<div class="sb-sec">Admin</div>
         ${item('⚑','Admin Console','/admin.html',{act:'Admin'})}
         ${item('◆','Capital Intelligence','/admin/intelligence',{act:'Capital Intelligence Admin'})}
+        ${item('◆','Partner Network','/admin/partner-network',{act:'Partner Network Admin'})}
         ${item('◇','Admin Requests','/admin-requests.html')}
         ${item('◈','Admin Trust','/admin-trust-reviews.html',{act:'Admin · Trust'})}`:''}
       </div>
@@ -191,14 +192,14 @@
         var userRes = await sb.auth.getUser();
         var uid = userRes && userRes.data && userRes.data.user && userRes.data.user.id;
         if (!uid) return;
-        var res = await sb.from('profiles').select('role, is_admin').eq('id', uid).maybeSingle();
+        var res = await sb.from('profiles').select('role, is_admin, pci_role').eq('id', uid).maybeSingle();
         /* CRITICAL: if query errored, do NOT remove the existing link.
          * A failed query must never remove the admin link — only an explicit
          * role !== 'admin' response should hide it. */
         if (res.error) {
           /* CRITICAL: failed query must NOT remove the link. Retry once, then bail. */
           console.debug('[Admin] query error — retrying once:', res.error.message);
-          var res2 = await sb.from('profiles').select('role, is_admin').eq('id', uid).maybeSingle();
+          var res2 = await sb.from('profiles').select('role, is_admin, pci_role').eq('id', uid).maybeSingle();
           if (res2.error) {
             window.__PEG_ADMIN_DEBUG = { uid: uid, role: null, isAdmin: false, error: res2.error.message, source: 'core-recheck-failed' };
             return; /* leave sidebar untouched */
@@ -206,22 +207,39 @@
           res = res2;
         }
         var isAdmin = res.data && (res.data.is_admin === true || res.data.role === 'admin');
-        window.__PEG_ADMIN_DEBUG = { uid: uid, role: res.data && res.data.role, is_admin_flag: res.data && res.data.is_admin, isAdmin: isAdmin, error: null, source: 'core-recheck' };
+        /* Capital Intelligence analyst — read + manual property/lender editing,
+         * no Admin Console. Gets only the Capital Intelligence link. */
+        var isAnalyst = res.data && res.data.pci_role === 'analyst';
+        var canCI = isAdmin || isAnalyst;
+        window.__PEG_ADMIN_DEBUG = { uid: uid, role: res.data && res.data.role, is_admin_flag: res.data && res.data.is_admin, pci_role: res.data && res.data.pci_role, isAdmin: isAdmin, source: 'core-recheck' };
         var nav = document.querySelector('.sb-nav');
         if (!nav) return;
         var existing = nav.querySelector('[href="/admin.html"]');
+        var ciLink = nav.querySelector('[href="/admin/intelligence"]');
+        var pnLink = nav.querySelector('[href="/admin/partner-network"]');
+        /* Admin Console + Partner Network links — admins only. */
         if (isAdmin && !existing) {
-          /* Admin confirmed in DB — inject the links */
           nav.insertAdjacentHTML('beforeend',
-            '<a class="sb-item" href="/admin.html"><span class="sb-ic">⚑</span>Admin Console</a>'+
-            '<a class="sb-item" href="/admin/intelligence"><span class="sb-ic">◆</span>Capital Intelligence</a>');
-          console.debug('[Admin] link injected for uid:', uid);
+            '<a class="sb-item" href="/admin.html"><span class="sb-ic">⚑</span>Admin Console</a>');
+          console.debug('[Admin] Admin Console link injected for uid:', uid);
         } else if (!isAdmin && existing) {
-          /* DB explicitly confirmed non-admin — remove the link */
           existing.parentNode && existing.parentNode.removeChild(existing);
-          console.debug('[Admin] link removed — role is:', res.data && res.data.role);
-        } else if (isAdmin && existing) {
-          console.debug('[Admin] link already present for admin uid:', uid);
+          console.debug('[Admin] Admin Console link removed — role is:', res.data && res.data.role);
+        }
+        if (isAdmin && !pnLink) {
+          nav.insertAdjacentHTML('beforeend',
+            '<a class="sb-item" href="/admin/partner-network"><span class="sb-ic">◆</span>Partner Network</a>');
+        } else if (!isAdmin && pnLink) {
+          pnLink.parentNode && pnLink.parentNode.removeChild(pnLink);
+        }
+        /* Capital Intelligence link — admins OR analysts. */
+        if (canCI && !ciLink) {
+          nav.insertAdjacentHTML('beforeend',
+            '<a class="sb-item" href="/admin/intelligence"><span class="sb-ic">◆</span>Capital Intelligence</a>');
+          console.debug('[Admin] Capital Intelligence link injected for uid:', uid);
+        } else if (!canCI && ciLink) {
+          ciLink.parentNode && ciLink.parentNode.removeChild(ciLink);
+          console.debug('[Admin] Capital Intelligence link removed for uid:', uid);
         }
       } catch(e) { /* Non-fatal — admin link just won't show if DB unreachable */ }
     })();
@@ -716,8 +734,12 @@
     if(isAdm){
       adminRows.push(['\u26E8','Admin Console','/admin.html']);
       adminRows.push(['\u25C6','Capital Intelligence','/admin/intelligence']);
+      adminRows.push(['\u25C6','Partner Network','/admin/partner-network']);
       adminRows.push(['\u25C7','Admin Requests','/admin-requests.html']);
       adminRows.push(['\u25C8','Admin Trust','/admin-trust-reviews.html']);
+    } else if(p && p.pci_role==='analyst'){
+      /* Capital Intelligence analyst \u2014 read + manual property/lender editing. */
+      adminRows.push(['\u25C6','Capital Intelligence','/admin/intelligence']);
     }
     m.innerHTML='<div class="acct-menu">'
       + '<div class="acct-head" style="padding:11px 14px 9px;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(name)+'</div><div style="font-size:11px;color:var(--text3)">'+esc((st.user&&st.user.email)||p.email||'')+'</div></div>'

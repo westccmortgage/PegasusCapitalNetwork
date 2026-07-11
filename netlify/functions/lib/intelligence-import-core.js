@@ -433,7 +433,36 @@ function checkFile(filename, buf) {
 }
 
 // ── Row normalization ────────────────────────────────────────────────────────
-function normHeader(h) { return String(h || "").toLowerCase().replace(/[\s_]+/g, ""); }
+// OOXML/namespace normalization for sheet-name and header matching. Some
+// non-Excel producers (LibreOffice, Google Sheets exports, third-party feeds)
+// emit worksheet/column names carrying an XML namespace prefix (e.g. "x:Agents",
+// "ss:Name") or exotic whitespace (NBSP, zero-width). We strip a single leading
+// "prefix:" and normalize whitespace/case so those files match the contract the
+// same way a clean Excel file does. Matching only — never mutates stored data.
+function normHeader(h) {
+  return String(h == null ? "" : h)
+    .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, " ") // zero-width + NBSP → space
+    .replace(/^[A-Za-z][A-Za-z0-9]*:(?=[A-Za-z0-9_])/, "") // drop an OOXML namespace prefix
+    .toLowerCase()
+    .replace(/[\s_]+/g, "");
+}
+
+// ── Cross-workbook guard ─────────────────────────────────────────────────────
+// The California Partner Network uses a completely separate module and import
+// contract. If a workbook contains ONLY partner sheets (and none of this
+// module's sheets), it was uploaded to the wrong importer — reject it with a
+// clear, actionable message rather than an opaque "no recognized sheets".
+const PARTNER_NETWORK_SHEETS = ["Agents", "Escrow_Title", "Companies",
+  "Activity_Signals", "Outreach_Actions", "Do_Not_Contact"];
+function foreignWorkbookError(allSheetNames) {
+  const norm = (allSheetNames || []).map(normHeader);
+  const ownHits = Object.keys(SHEETS).filter((s) => norm.includes(normHeader(s))).length;
+  const partnerHits = PARTNER_NETWORK_SHEETS.filter((s) => norm.includes(normHeader(s))).length;
+  if (ownHits === 0 && partnerHits > 0) {
+    return "This workbook belongs to California Partner Network. Upload it in /admin/partner-network.";
+  }
+  return null;
+}
 
 // rawRow: { headerKey(normalized) : value }. Returns {data, errors}.
 function normalizeRow(sheetName, rawRow, rowNumber) {
@@ -970,4 +999,5 @@ module.exports = {
   parsePropertyKeyCell, parseContactKeyCell, normalizeUrlKey, normHeader,
   isZipMagic, isLegacyCfb, hasVbaProject, checkFile, normalizeRow,
   recommendationFor, planActions,
+  PARTNER_NETWORK_SHEETS, foreignWorkbookError,
 };
