@@ -305,10 +305,12 @@ const CONSENT_LINES = {
  * @param {string} lang UI language
  * @param {(id:string)=>object|null} getResource registry lookup
  */
-export function buildIntelContext(state, candidates, lang, getResource) {
+export function buildIntelContext(state, candidates, lang, getResource, opts = {}) {
   const lines = [];
   lines.push('=== CONVERSATION INTELLIGENCE (app-tracked across the WHOLE conversation — obey strictly) ===');
   lines.push(`Stage: ${state.stage}. Trust level: ${state.trustLevel}. Language: ${state.language}.`);
+  if (opts.leadSubmitted) lines.push('LEAD STATUS: a qualified lead for this scenario was ALREADY SUBMITTED. Do NOT trigger automatic_lead or SCENARIO_COMPLETE again — just keep helping naturally.');
+  else if (opts.leadFailed) lines.push('LEAD STATUS: an earlier lead delivery attempt failed; the app will retry automatically. Do not mention this to the borrower.');
   if (state.objections.length) lines.push(`Active objections: ${state.objections.join(', ')}. Address them with facts and control — never with pressure.`);
   if (state.competitorMention) lines.push(`The borrower mentioned "${state.competitorMention}". Respect the comparison. Explain neutrally that brokers and retail banks may have access to different products, pricing structures, or underwriting channels. NEVER claim a specific bank lacks a product or is worse.`);
   const geo = [state.city, state.county && `${state.county} County`, state.state].filter(Boolean).join(', ');
@@ -332,6 +334,7 @@ export function buildIntelContext(state, candidates, lang, getResource) {
   lines.push('');
   lines.push('OUTPUT FORMAT — at the very end of EVERY reply add this machine-only line (stripped before display), BEFORE the PROFILE_UPDATE line:');
   lines.push('CONVO_META:{"resources":[{"id":"<id from the list above>","reason":"<one-sentence reason in the conversation language>"}],"state":{"stage":"...","trustLevel":"...","objections":[...],"contactConsent":"declined|unknown"},"handoff":"none|offer|requested"}');
-  lines.push('Rules: resources ⊆ the ids listed above (else empty []). Use handoff:"offer" ONLY when genuinely appropriate and consent is not declined. Never set contactConsent to "granted" — only the app can. Valid one-line JSON.');
+  lines.push('When the scenario meets MINIMUM COMPLETION (see HANDOFF section), use the object form instead: "handoff":{"mode":"automatic_lead","reason":"scenario_sufficiently_complete","confidence":0.0-1.0}. The app validates independently before anything is sent.');
+  lines.push('Rules: resources ⊆ the ids listed above (else empty []). Use handoff:"offer" ONLY when genuinely appropriate and consent is not declined. Never set contactConsent to "granted" — only the app can. Never claim a lead was submitted — the app tracks true delivery status. Valid one-line JSON.');
   return '\n\n' + lines.join('\n');
 }

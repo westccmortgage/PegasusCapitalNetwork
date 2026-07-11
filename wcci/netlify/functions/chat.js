@@ -143,6 +143,8 @@ async function sendEmail(scenario) {
 }
 
 
+const { validPhone, validEmail, completionEchoedFromUser } = require("./lib/lead-validation.cjs");
+
 exports.handler = async function(event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
   try {
@@ -151,17 +153,41 @@ exports.handler = async function(event) {
       "anthropic-version": "2023-06-01"
     });
     const data = JSON.parse(r.body);
-    
-    // Check if scenario complete — send email lead
+
+    // Model-initiated completion: the marker is read ONLY from the ASSISTANT
+    // response — never from user text. Before sending, independently validate
+    // that the contact is real and was authored by the USER in this session.
     const fullText = (data.content || []).map(b => b.text || "").join("");
     let delivery = null;
     if (fullText.includes("SCENARIO_COMPLETE:")) {
       try {
         const jsonLine = fullText.split("SCENARIO_COMPLETE:")[1].split("\n")[0].trim();
         const scenario = JSON.parse(jsonLine);
-        const em = await sendEmail(scenario);
-        delivery = { email: em, anyDelivered: em };
-        console.log("Lead delivery:", delivery);
+
+        // Independent server validation (the model's marker is only a trigger):
+        let reqMessages = [];
+        try { reqMessages = (JSON.parse(event.body).messages || []); } catch {}
+        const userMessages = reqMessages.filter(m => m && m.role === "user").map(m => String(m.content || ""));
+        const userText = userMessages.join("\n").toLowerCase();
+        const userDigits = userText.replace(/\D/g, "");
+        const phoneOk = scenario.phone && validPhone(scenario.phone) &&
+          userDigits.includes(String(scenario.phone).replace(/\D/g, "").replace(/^1(?=\d{10}$)/, ""));
+        const emailOk = scenario.email && validEmail(scenario.email) &&
+          userText.includes(String(scenario.email).toLowerCase());
+        const contactOk = phoneOk || emailOk;
+        const goalOk = scenario.loanPurpose && scenario.loanPurpose !== "not provided";
+        const geoOk = (scenario.state && scenario.state !== "not provided") ||
+          (scenario.propertyAddress && scenario.propertyAddress !== "not provided");
+        const echoed = completionEchoedFromUser(jsonLine, userMessages);
+
+        if (contactOk && goalOk && geoOk && !echoed) {
+          const em = await sendEmail(scenario);
+          delivery = { email: em, anyDelivered: em };
+          console.log("Lead delivery:", delivery);
+        } else {
+          console.warn("SCENARIO_COMPLETE rejected by server validation:", { contactOk, goalOk, geoOk, echoed });
+          delivery = { email: false, anyDelivered: false, rejected: true };
+        }
       } catch (e) {
         console.error("Lead delivery error:", e.message);
         delivery = { email: false, anyDelivered: false, error: e.message };

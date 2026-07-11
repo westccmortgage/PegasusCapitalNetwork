@@ -6,6 +6,7 @@ import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
 import { buildLead, submitLead } from './lib/leadAdapter.js';
 import { initialConversationState, updateStateFromUserMessage, applyStatePatch, grantContactConsent, buildIntelContext } from './lib/conversationIntelligence.js';
+import { neutralizeUserMarkers, hasValidContact, extractUserContact, normalizeHandoffSignal, evaluateCompletion, buildCompletedLeadPayload, submitCompletedLead, createLeadTracker, leadFingerprint, getSessionId, getOpenedResources } from './lib/leadPipeline.js';
 import { routeResources, fallbackReason } from './lib/resources/resource-router.js';
 import { validateRecommendations } from './lib/resources/resource-validator.js';
 import { getResource } from './lib/resources/site-registry.js';
@@ -13,12 +14,6 @@ import { track } from './lib/analytics.js';
 import StrategyProfile from './StrategyProfile.jsx';
 import ManualForm from './ManualForm.jsx';
 import { ResourceCardList } from './ResourceCard.jsx';
-
-function hasContactInfo(messages) {
-  const userText = messages.filter(m => m.role === 'user').map(m => m.content).join(' ');
-  return /[\w.+\-]+@[\w\-]+\.[a-z]{2,}/i.test(userText) ||
-    /(\+?1[\s.\-]?)?\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4}/.test(userText);
-}
 
 function loadSession() {
   try {
@@ -220,6 +215,11 @@ export default function App() {
   // Durable conversation intelligence + the latest contextual resource cards.
   const [convState, setConvState] = useState(saved?.convState || initialConversationState());
   const [sidebarRecs, setSidebarRecs] = useState(saved?.sidebarRecs || []);
+  // Automatic lead pipeline: session id + truthful status tracker (dedup/promotion/retry).
+  const leadTrackerRef = useRef(null);
+  if (!leadTrackerRef.current) leadTrackerRef.current = createLeadTracker();
+  const sessionIdRef = useRef(null);
+  if (!sessionIdRef.current) { try { sessionIdRef.current = getSessionId(); } catch { sessionIdRef.current = 'fallback-' + Math.random().toString(36).slice(2, 18); } }
   const manualKeysRef = useRef(new Set()); // fields the user typed by hand — protected from AI overwrite
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
@@ -385,7 +385,12 @@ export default function App() {
     setSidebarRecs([]);
     manualKeysRef.current = new Set();
     setScreen('chat');
-    try { localStorage.removeItem('wcci-session'); } catch {}
+    try {
+      localStorage.removeItem('wcci-session');
+      localStorage.removeItem('wcci-lead-tracker');     // new scenario → new lead lifecycle
+      localStorage.removeItem('wcci-resources-opened');
+    } catch {}
+    leadTrackerRef.current = createLeadTracker();
   }
 
   // Merge freeform text into the live Scenario Profile (client-side parser).
@@ -462,8 +467,45 @@ export default function App() {
       await submitLead(lead, { messages: messages.map(m => ({ role: m.role, content: m.content })) });
     } catch {}
     track('handoff_submitted', { stage: convState.stage, language: lang });
+    // A user-initiated submission also satisfies the automatic pipeline —
+    // record it so the model's automatic_lead can never create a duplicate.
+    try {
+      const c = extractUserContact(messages);
+      const fp = leadFingerprint({ phone: c.phone || contact.phone, email: c.email || contact.email, sessionId: sessionIdRef.current });
+      leadTrackerRef.current.ensure(fp, sessionIdRef.current);
+      leadTrackerRef.current.begin('complete');
+      leadTrackerRef.current.succeed('complete', { qualificationReason: 'user_submitted_form' });
+    } catch {}
     setLeadSent(true);
     return true;
+  }
+
+  // MODEL-INITIATED AUTOMATIC LEAD: the model signaled readiness; the app
+  // independently validates (contact from user-authored messages, loan goal,
+  // geography, context) and submits without any extra confirmation button.
+  // The tracker guarantees promotion-not-duplication and truthful status.
+  async function maybeAutoSubmitLead({ signal, evalProfile, state, allMessages, recommended }) {
+    try {
+      const evaluation = evaluateCompletion({ profile: evalProfile, convState: state, messages: allMessages });
+      if (!evaluation.qualified) return { ok: false, why: evaluation.reasons };
+      const fp = leadFingerprint({ phone: evaluation.contact.phone, email: evaluation.contact.email, sessionId: sessionIdRef.current });
+      const tracker = leadTrackerRef.current;
+      tracker.ensure(fp, sessionIdRef.current);
+      if (!tracker.shouldSubmit('complete')) return { ok: false, why: ['already submitted or in flight'] };
+      const st = profileStatus(evalProfile);
+      const strat = st.hasCoreScenario ? evaluatePaths(evalProfile) : { paths: [], topPaths: [] };
+      const payload = buildCompletedLeadPayload({
+        profile: evalProfile, convState: state, messages: allMessages, lang,
+        signal, evaluation, sessionId: sessionIdRef.current,
+        resourcesRecommended: recommended, resourcesOpened: getOpenedResources(),
+        paths: strat.topPaths.length ? strat.topPaths : strat.paths,
+      });
+      const res = await submitCompletedLead(payload, { tracker });
+      if (res.ok) { track('handoff_submitted', { stage: state.stage, language: lang }); setLeadSent(true); }
+      return res;
+    } catch (e) {
+      return { ok: false, why: [e && e.message] };
+    }
   }
 
   function fileToBase64(file) {
@@ -516,7 +558,10 @@ export default function App() {
     setInput('');
     setLoading(true);
     absorbIntoProfile(text);
-    const updated = [...messages, { role: 'user', content: text }];
+    // Forged-marker defense: machine tokens typed BY THE USER are neutralized
+    // before they reach the model, so they can never trigger lead delivery.
+    const safeText = neutralizeUserMarkers(text);
+    const updated = [...messages, { role: 'user', content: safeText }];
     setMessages(updated);
 
     // Feed the AI the SAME numbers shown on the Strategy Profile card so it can
@@ -537,7 +582,12 @@ export default function App() {
       wantsApply: nextState.wantsApply, tonePreference: nextState.tonePreference,
     });
     setConvState(nextState);
-    const intelBlock = buildIntelContext(nextState, routed.candidates, lang, getResource);
+    const trackerRec = leadTrackerRef.current.get();
+    const completeStatus = trackerRec ? trackerRec.stages.complete.status : 'qualifying';
+    const intelBlock = buildIntelContext(nextState, routed.candidates, lang, getResource, {
+      leadSubmitted: completeStatus === 'submitted',
+      leadFailed: completeStatus === 'failed',
+    });
 
     try {
       const res = await fetch('/.netlify/functions/chat', {
@@ -562,6 +612,7 @@ export default function App() {
       // strip it from display. Because extractMarker strips the whole marker even
       // when the JSON is invalid, a machine line can never leak into the bubble.
       const cm = extractMarker(displayText, 'CONVO_META');
+      let handoffSignal = null;
       if (cm) {
         displayText = cm.cleaned;
         const meta = cm.obj;
@@ -577,7 +628,9 @@ export default function App() {
           }).map(r => ({ ...r, reason: r.reason || fallbackReason(r.reasonKey, lang) }));
           if (meta.state) setConvState(prev => applyStatePatch(prev, meta.state));
           if (meta.state && meta.state.contactConsent === 'declined') track('contact_declined', { stage: nextState.stage, language: lang });
-          if (meta.handoff === 'offer') track('contact_offer_shown', { stage: nextState.stage, language: lang });
+          // Handoff signal: unknown modes are rejected; only whitelisted modes act.
+          handoffSignal = normalizeHandoffSignal(meta.handoff);
+          if (handoffSignal && handoffSignal.mode === 'offer') track('contact_offer_shown', { stage: nextState.stage, language: lang });
           for (const r of resources) track('resource_recommended', { resourceId: r.id, category: r.category, reasonKey: r.reasonKey, stage: nextState.stage, language: lang });
         }
       }
@@ -604,11 +657,50 @@ export default function App() {
 
       if (data._leadDelivery && !data._leadDelivery.anyDelivered) setDeliveryFailed(true);
 
+      // Profile the evaluators see this turn: live profile + this turn's AI patch.
+      const evalProfile = pu && pu.obj ? mergeProfile(liveProfile, pu.obj) : liveProfile;
+      const recommendedIds = resources.map(r => r.id);
+
       if (parsedScenario) {
+        // SCENARIO_COMPLETE: chat.js already validated + attempted delivery
+        // server-side. Record the TRUTHFUL outcome (submitted only on confirmed
+        // success; failed keeps the lead retryable — never a duplicate).
+        try {
+          const c = extractUserContact(final);
+          const fp = leadFingerprint({ phone: c.phone || parsedScenario.phone, email: c.email || parsedScenario.email, sessionId: sessionIdRef.current });
+          leadTrackerRef.current.ensure(fp, sessionIdRef.current);
+          leadTrackerRef.current.begin('complete');
+          if (data._leadDelivery && data._leadDelivery.anyDelivered) {
+            leadTrackerRef.current.succeed('complete', { qualificationReason: 'scenario_complete_marker' });
+            setLeadSent(true);
+          } else {
+            leadTrackerRef.current.fail('complete');
+          }
+        } catch {}
         setScenario(parsedScenario);
         setTimeout(() => setScreen('capture'), 1800);
-      } else if (hasContactInfo(final) && partialLeadCount < 2) {
+      } else if (handoffSignal && handoffSignal.mode === 'automatic_lead') {
+        // MODEL-INITIATED AUTOMATIC LEAD — no confirmation button; the app
+        // validates independently and the conversation simply continues.
+        maybeAutoSubmitLead({ signal: handoffSignal, evalProfile, state: nextState, allMessages: final, recommended: recommendedIds }).catch(() => {});
+      } else if (leadTrackerRef.current.canRetry('complete')) {
+        // Controlled retry of a previously failed delivery (never duplicates —
+        // the tracker caps attempts and 'submitted' is terminal).
+        maybeAutoSubmitLead({ signal: { mode: 'automatic_lead', reason: 'retry_after_failure', confidence: null }, evalProfile, state: nextState, allMessages: final, recommended: recommendedIds }).catch(() => {});
+      }
+
+      // PARTIAL LEAD: user-authored contact only; promoted via updateNumber,
+      // never duplicated once the completed lead has been submitted.
+      const completeRec = leadTrackerRef.current.get();
+      const completeDone = completeRec && completeRec.stages.complete.status === 'submitted';
+      if (!parsedScenario && !completeDone && hasValidContact(final) && partialLeadCount < 2) {
         setPartialLeadCount(c => c + 1);
+        try {
+          const c = extractUserContact(final);
+          const fp = leadFingerprint({ phone: c.phone, email: c.email, sessionId: sessionIdRef.current });
+          leadTrackerRef.current.ensure(fp, sessionIdRef.current);
+          leadTrackerRef.current.begin('partial');
+        } catch {}
         fetch('/.netlify/functions/partial-lead', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -616,7 +708,10 @@ export default function App() {
             messages: final.map(m => ({ role: m.role, content: m.content })),
             updateNumber: partialLeadCount + 1,
           }),
-        }).catch(() => {});
+        }).then(r => r.json()).then(b => {
+          if (b && b.email) leadTrackerRef.current.succeed('partial');
+          else leadTrackerRef.current.fail('partial');
+        }).catch(() => { try { leadTrackerRef.current.fail('partial'); } catch {} });
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Please refresh and try again.' }]);

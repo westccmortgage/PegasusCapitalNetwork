@@ -1,6 +1,7 @@
 import React from 'react';
 import { getResource } from './lib/resources/site-registry.js';
 import { track } from './lib/analytics.js';
+import { recordResourceOpen } from './lib/leadPipeline.js';
 
 // Contextual resource recommendation card. Renders a verified registry
 // resource as a safe, clickable card — never a raw URL. Trust label, brand,
@@ -42,7 +43,7 @@ export function ResourceCard({ rec, lang = 'en' }) {
       href={rec.url}
       target="_blank"
       rel="noopener noreferrer nofollow"
-      onClick={() => track('resource_clicked', { resourceId: rec.id, category: rec.category, reasonKey: rec.reasonKey })}
+      onClick={() => { track('resource_clicked', { resourceId: rec.id, category: rec.category, reasonKey: rec.reasonKey }); recordResourceOpen(rec.id); }}
       style={{
         display: 'block', textDecoration: 'none', border: `1px solid ${LINE}`, borderLeft: `3px solid ${label.accent}`,
         borderRadius: 10, background: 'white', padding: '10px 12px', boxShadow: '0 1px 3px rgba(10,36,99,0.05)',
