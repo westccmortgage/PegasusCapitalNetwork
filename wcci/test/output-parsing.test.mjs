@@ -34,6 +34,34 @@ test('CONVO_META with nested braces parses and strips cleanly', () => {
   assert.ok(pu.cleaned.includes('West Coast Capital Mortgage Inc.'), 'prose preserved');
 });
 
+test('pretty-printed / multiline CONVO_META parses fully and never leaks (regression)', () => {
+  // The regex approach stopped at the first inner "}" on a multiline object,
+  // dropping resources + state patch and leaking the JSON tail. Balanced-brace
+  // scanning must handle standard LLM pretty-printing.
+  const reply =
+    'Here is your answer about licensing.\n' +
+    'CONVO_META:{\n' +
+    '  "resources": [\n' +
+    '    { "id": "suncoast-about", "reason": "FL team" }\n' +
+    '  ],\n' +
+    '  "state": { "stage": "trust_building", "contactConsent": "declined" },\n' +
+    '  "handoff": "none"\n' +
+    '}';
+  const cm = extractMarker(reply, 'CONVO_META');
+  assert.ok(cm.obj, 'multiline JSON parses');
+  assert.equal(cm.obj.state.contactConsent, 'declined', 'state patch not dropped');
+  assert.deepEqual(cm.obj.resources.map(r => r.id), ['suncoast-about']);
+  assert.ok(!/CONVO_META|[{}]|handoff|contactConsent/.test(cm.cleaned), 'no JSON tail leaks');
+  assert.equal(cm.cleaned, 'Here is your answer about licensing.');
+});
+
+test('trailing prose after CONVO_META JSON is preserved, marker stripped (regression)', () => {
+  const cm = extractMarker('Sure.\nCONVO_META:{"resources":[],"handoff":"none"} hope that helps!', 'CONVO_META');
+  assert.ok(cm.obj, 'parses with trailing prose');
+  assert.ok(!/CONVO_META|[{}]/.test(cm.cleaned), 'marker + braces removed');
+  assert.ok(cm.cleaned.includes('hope that helps!'), 'trailing prose kept');
+});
+
 test('invalid/truncated CONVO_META is still fully stripped (never leaks)', () => {
   const reply = 'Here is your answer.\nCONVO_META:{"resources":[{"id":"x" BROKEN';
   const cm = extractMarker(reply, 'CONVO_META');
