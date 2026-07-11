@@ -13,6 +13,7 @@
 const crypto = require("crypto");
 const ExcelJS = require("exceljs");
 const core = require("./lib/intelligence-import-core.js");
+const { stripTableParts } = require("./lib/xlsx-sanitize.js");
 const { requireAdmin, resp } = require("./lib/intelligence-auth.js");
 
 const BUCKET = "capital-intelligence-private";
@@ -34,7 +35,10 @@ function cellVal(cell) {
 
 async function parseWorkbook(buf) {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(buf);
+  // Strip any Excel table parts first — a malformed/dangling table relationship
+  // otherwise crashes ExcelJS. Values/styles/validations/hyperlinks/formulas
+  // are untouched (see lib/xlsx-sanitize.js).
+  await wb.xlsx.load(await stripTableParts(buf));
   const bySheet = {};
   const found = [];
   const allSheetNames = wb.worksheets.map((ws) => ws.name);

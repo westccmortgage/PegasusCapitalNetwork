@@ -112,6 +112,23 @@ section("Issue 1 test #6: California workbook imports successfully in Partner Ne
       !/from\("crm_contacts"\)\.insert|target_type.*contact/.test(read("netlify/functions/lib/partner-import-core.js")) &&
       /link.*existing CRM|LINK/.test(read("netlify/functions/lib/partner-import-core.js")));
 
+    /* Malformed/dangling Excel table relationships must not crash ExcelJS ── */
+    section("Malformed table relationships tolerated");
+    const { injectDanglingTable } = require(path.join(ROOT, "qa/lib/malformed-table.js"));
+    const { stripTableParts } = require(path.join(ROOT, "netlify/functions/lib/xlsx-sanitize.js"));
+    const badBuf = await injectDanglingTable(fixBuf);
+    let rawCrash = false, rawMsg = "";
+    try { const wb = new ExcelJS.Workbook(); await wb.xlsx.load(badBuf); }
+    catch (e) { rawCrash = true; rawMsg = e.message; }
+    ok("raw ExcelJS crashes on the dangling table (repro)", rawCrash && /reading 'name'/.test(rawMsg), rawMsg);
+    const badParsed = await preview._parseWorkbook(badBuf);
+    ok("Partner Network reads worksheet data despite dangling table", badParsed.found.length === 6, "found: " + badParsed.found.join(","));
+    ok("worksheet VALUES preserved after stripping tables",
+      (badParsed.bySheet.Companies || []).length === 2 &&
+      (badParsed.bySheet.Companies || [])[0].data.company_name === "QA Coastal Realty");
+    ok("clean workbook still parses after sanitize (no regression)", (await preview._parseWorkbook(await stripTableParts(fixBuf))).found.length === 6);
+    ok("non-zip buffer returned unchanged by sanitizer", (await stripTableParts(Buffer.from("not a zip"))).toString() === "not a zip");
+
     /* Cross-workbook rejection (required test #5, symmetric side) ── */
     section("Issue 1 test #5 (symmetric): CA rejected by CI · CI rejected by PN");
     ok("#5 CA workbook rejected by Capital Intelligence (exact message)",

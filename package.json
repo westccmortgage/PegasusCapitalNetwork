@@ -1,7 +1,7 @@
 {
   "name": "pegasus-v69-platform-rebuild",
   "version": "69.0.0",
-  "description": "Pegasus Network \u2014 the operating system for structured real estate capital.",
+  "description": "Pegasus Network — the operating system for structured real estate capital.",
   "private": true,
   "scripts": {
     "build": "npm install",
@@ -16,9 +16,10 @@
     "qa:all": "npm run qa:links && npm run qa:runtime && npm run qa:auth && npm run qa:mobile"
   },
   "dependencies": {
-    "stripe": "^14.0.0",
     "@supabase/supabase-js": "^2.45.0",
-    "exceljs": "^4.4.0"
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1",
+    "stripe": "^14.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.0"

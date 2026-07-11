@@ -24,6 +24,11 @@ Template** — it is generated from the same contract the importer uses.
 - **Booleans**: `true/false`, `yes/no`, `1/0`.
 - **Duplicate protection**: the exact same file (checksum) is refused unless
   you force it; duplicate rows inside one file are marked invalid.
+- **Excel Tables are ignored.** Before parsing, the importer strips any Excel
+  table objects (table parts, `tableParts`, table relationships, and their
+  content-type overrides) so a malformed or dangling table relationship cannot
+  crash the reader. Your cell values, styles, data validations, hyperlinks, and
+  formula/security checks are untouched — only the table wrapper is removed.
 
 ## Keys
 
