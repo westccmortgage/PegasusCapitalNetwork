@@ -80,6 +80,8 @@ function structuredLeadHtml(lead) {
 <h3>Possible loan paths</h3><ul>${paths || "<li>—</li>"}</ul>
 ${ctc ? `<h3>Estimated cash to close</h3><p><b>${money(ctc.estimatedCashToClose)}</b> (down ${money(ctc.downPayment)} + closing ${money(ctc.closingCosts)})<br>Est. payment ${money(ctc.monthlyPayment)}/mo</p>` : ""}
 <h3>Missing fields</h3><p>${(lead.missingFields || []).join(", ") || "none"}</p>
+<h3>Lead routing</h3><p><b>Lead source:</b> ${lead.leadSource || "WCCI AI Mortgage Strategy Review"}<br><b>Conversation stage:</b> ${lead.conversationStage || "—"}<br><b>Recommended resource path:</b> ${(lead.recommendedResourcePath || []).join(", ") || "—"}</p>
+<p style="font-size:11px;color:#888"><i>One ${"West Coast Capital Mortgage Inc."} team handles this inquiry. Contact data is not distributed to multiple outside lenders.</i></p>
 <h3>Original message</h3><p style="color:#555">${(lead.originalMessage || "").replace(/</g, "&lt;")}</p>
 ${lead.utm ? `<h3>UTM</h3><pre>${JSON.stringify(lead.utm)}</pre>` : ""}
 <hr><p style="font-size:11px;color:#666"><i>Estimated / planning only. Not an application, approval, or commitment. MLO review required.</i></p>

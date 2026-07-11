@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "node --test test/*.test.mjs",
     "test:ai": "node test/conversation-test.mjs",
-    "lint": "node scripts/lint.mjs"
+    "lint": "node scripts/lint.mjs",
+    "sync:resources": "node scripts/sync-site-resources.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

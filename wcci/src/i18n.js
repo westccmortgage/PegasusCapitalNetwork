@@ -7,31 +7,35 @@ export const LANGS = ['en', 'es', 'ru'];
 export const DISCLAIMER = `WCCI Mortgage Strategy AI provides a preliminary mortgage scenario review and general educational information only. It is not a loan approval, preapproval, commitment to lend, rate quote, or underwriting decision. Educational information provided is general in nature and does not constitute mortgage advice for your specific situation. Actual loan terms, eligibility, pricing, and approval depend on full application review, credit review, income and asset documentation, property review, program guidelines, lender approval, and review by a licensed Mortgage Loan Originator. Specific numbers, thresholds, and program requirements change regularly — always consult with a licensed professional for current guidance.`;
 
 // ─────────────────────────────────────────────────────────────────────────
-// CANONICAL LICENSING — single source of truth. Use these everywhere.
+// CANONICAL LICENSING — derived from src/config/companyFacts.js (the single
+// source of truth). These re-exports keep every existing import site working.
 // The COMPANY NMLS (#2817729) and the BROKER's individual NMLS (#2775380) are
 // DIFFERENT and must never be interchanged.
 // ─────────────────────────────────────────────────────────────────────────
-export const COMPANY_NAME = 'West Coast Capital Mortgage Inc.';
-export const COMPANY_LICENSE = 'CA DRE Corporation License #02440065 · NMLS #2817729';
-export const COMPANY_NMLS = '2817729';
-export const COMPANY_DRE = '02440065';
+import { COMPANY_FACTS, COMPANY_LICENSE_LINE, BROKER_LICENSE_LINE } from './config/companyFacts.js';
 
-export const BROKER_NAME = 'Anatoliy Kanevsky';
-export const BROKER_TITLE = 'California Real Estate Broker';
-export const BROKER_LICENSE = 'CA DRE Broker License #01385024 · NMLS #2775380';
-export const BROKER_NMLS = '2775380';
-export const BROKER_DRE = '01385024';
+export const COMPANY_NAME = COMPANY_FACTS.legalEntity;
+export const COMPANY_LICENSE = COMPANY_LICENSE_LINE;
+export const COMPANY_NMLS = COMPANY_FACTS.companyNmls;
+export const COMPANY_DRE = COMPANY_FACTS.companyDreCorporationLicense;
+
+export const BROKER_NAME = COMPANY_FACTS.founderName;
+export const BROKER_TITLE = COMPANY_FACTS.founderTitle;
+export const BROKER_LICENSE = BROKER_LICENSE_LINE;
+export const BROKER_NMLS = COMPANY_FACTS.founderNmls;
+export const BROKER_DRE = COMPANY_FACTS.founderDreBrokerLicense;
 
 // Full two-line licensing block (for reports, disclosures, printable views).
 export const LICENSE_BLOCK = `${COMPANY_NAME}\n${COMPANY_LICENSE}\n\n${BROKER_NAME}\n${BROKER_TITLE}\n${BROKER_LICENSE}`;
 
 // Compact single-line footer used site-wide (header/footer, chat, emails).
-export const LICENSE_FOOTER = `${COMPANY_NAME} · ${COMPANY_LICENSE} · Equal Housing Lender  |  ${BROKER_NAME}, ${BROKER_TITLE} · ${BROKER_LICENSE}`;
+export const LICENSE_FOOTER = `${COMPANY_NAME} · ${COMPANY_LICENSE} · ${COMPANY_FACTS.equalHousingLanguage}  |  ${BROKER_NAME}, ${BROKER_TITLE} · ${BROKER_LICENSE}`;
 
 const NMLS_FOOTER = LICENSE_FOOTER;
 
-// Strategy-review disclaimer (English by design — legal).
-export const STRATEGY_DISCLAIMER = 'This is for educational and planning purposes only. It is not a mortgage application, Loan Estimate, loan approval, or commitment to lend. Actual loan terms, rates, APR, fees, mortgage insurance, reserve requirements, documentation requirements, and program availability vary by lender, borrower profile, property, market conditions, and closing date.';
+// Strategy-review disclaimer (English by design — legal). Derived from the
+// standard disclosures in company facts.
+export const STRATEGY_DISCLAIMER = COMPANY_FACTS.standardDisclosures.join(' ');
 
 // UI strings for the AI Mortgage Strategy Review. Kept in English within the
 // profile panel for consistency with the (English) lead the MLO receives.
@@ -58,6 +62,13 @@ export const STRATEGY_UI = {
   leadCta: 'Send My Strategy Summary',
   leadSentTitle: 'Summary on its way',
   leadSentBody: 'A licensed strategist will follow up shortly.',
+};
+
+// Localized labels for the contextual resource recommendation block.
+export const RESOURCE_UI = {
+  en: { recommendedTitle: 'Recommended for your situation', inlineTitle: 'Helpful resources' },
+  es: { recommendedTitle: 'Recomendado para su situación', inlineTitle: 'Recursos útiles' },
+  ru: { recommendedTitle: 'Рекомендовано для вашей ситуации', inlineTitle: 'Полезные ресурсы' },
 };
 
 // Secure document upload strings. The file is forwarded to the licensed team —

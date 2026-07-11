@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SYSTEM_PROMPT, langDirective, localeFor } from './systemPrompt.js';
-import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, UPLOAD_UI, LICENSE_FOOTER, COMPANY_NAME, COMPANY_LICENSE, BROKER_NAME, BROKER_TITLE, BROKER_LICENSE, getInitialMessage } from './i18n.js';
+import { T, LANGS, DISCLAIMER, STRATEGY_DISCLAIMER, STRATEGY_UI, UPLOAD_UI, RESOURCE_UI, LICENSE_FOOTER, COMPANY_NAME, COMPANY_LICENSE, BROKER_NAME, BROKER_TITLE, BROKER_LICENSE, getInitialMessage } from './i18n.js';
 import { parseScenario } from './lib/parser.js';
 import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
 import { buildLead, submitLead } from './lib/leadAdapter.js';
+import { initialConversationState, updateStateFromUserMessage, applyStatePatch, grantContactConsent, buildIntelContext } from './lib/conversationIntelligence.js';
+import { routeResources, fallbackReason } from './lib/resources/resource-router.js';
+import { validateRecommendations } from './lib/resources/resource-validator.js';
+import { getResource } from './lib/resources/site-registry.js';
+import { track } from './lib/analytics.js';
 import StrategyProfile from './StrategyProfile.jsx';
 import ManualForm from './ManualForm.jsx';
+import { ResourceCardList } from './ResourceCard.jsx';
 
 function hasContactInfo(messages) {
   const userText = messages.filter(m => m.role === 'user').map(m => m.content).join(' ');
@@ -102,6 +108,40 @@ function buildDocumentChecklist(scenario) {
 
 const money0 = (n) => (n == null || isNaN(n)) ? null : '$' + Math.round(Number(n)).toLocaleString('en-US');
 
+// Extract a `MARKER:{...}` machine line from an AI reply using string-aware
+// balanced-brace scanning (regex can't match nested braces, and CONVO_META
+// always nests state:{...} / resources:[{...}]). Returns { obj, cleaned } where
+// `cleaned` is the visible text with the marker + its JSON removed — so a
+// machine line can never leak into the chat bubble even if its JSON is invalid.
+function extractMarker(text, marker) {
+  const tag = marker + ':';
+  const idx = text.indexOf(tag);
+  if (idx === -1) return null;
+  const braceStart = text.indexOf('{', idx);
+  if (braceStart === -1) {
+    // Marker present but no JSON — still strip the marker token itself.
+    return { obj: null, cleaned: (text.slice(0, idx) + text.slice(idx + tag.length)).trim() };
+  }
+  let depth = 0, inStr = false, esc = false, end = -1;
+  for (let i = braceStart; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === '"') inStr = false;
+    } else if (c === '"') inStr = true;
+    else if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+  }
+  if (end === -1) end = text.length; // unterminated — drop the rest of the tail
+  let obj = null;
+  try { obj = JSON.parse(text.slice(braceStart, end)); } catch {}
+  const before = text.slice(0, idx).replace(/\s*$/, '');
+  const after = text.slice(end).replace(/^\s*/, '');
+  const cleaned = (before && after ? before + '\n' + after : before + after).trim();
+  return { obj, cleaned };
+}
+
 // Build the CURRENT ESTIMATES context block appended to the system prompt so the
 // AI can SPEAK the same numbers shown on the Strategy Profile card. Numbers come
 // from the deterministic engine (labeled estimates), never invented by the AI.
@@ -115,13 +155,17 @@ function buildEstimatesContext(profile) {
   const primary = ranked[0] || strat.paths[0];
   const e = primary && primary.estimate;
   const lines = [];
-  lines.push('=== CURRENT APP-COMPUTED ESTIMATES (share these conversationally when the borrower asks about payment, cash to close, or costs — ALWAYS call them "estimated" / "for planning", NEVER a quote, lock, or approval) ===');
+  lines.push('=== CURRENT APP-COMPUTED ESTIMATES (planning only — share conversationally when asked about payment, cash to close, or costs; ALWAYS call them "estimated"/"for planning", NEVER a quote, lock, or approval) ===');
   if (e) {
     lines.push(`Loan amount: ${money0(e.loanAmount)} (LTV ${e.ltv}%).`);
     lines.push(`Estimated monthly payment (principal, interest, taxes, insurance): about ${money0(e.monthlyPayment)}/month.`);
     lines.push(`Estimated cash to close: about ${money0(e.estimatedCashToClose)} — that's your down payment ${money0(e.downPayment)} plus about ${money0(e.closingCosts)} in estimated closing costs.`);
-    lines.push(`Cash-to-close breakdown (estimated): down payment ${money0(e.downPayment)}; lender fees ${money0(e.totalLenderFees)}; title/escrow ${money0(e.titleEscrowFees)}; third-party ${money0(e.thirdPartyFees)}; government fees ${money0(e.governmentFees)}; prepaid interest ${money0(e.prepaidInterest)}; escrow reserves ${money0(e.escrowReserves)}.`);
-    lines.push(`(These use a planning-assumption interest rate — mention that any rate/payment is a planning assumption, not a rate quote.)`);
+    lines.push('Itemized closing-cost ASSUMPTIONS (each is a separate category — NEVER merge points into "lender fees"):');
+    lines.push(`  • Origination-side (originator comp ${money0(e.originatorComp)} + application fee ${money0(e.applicationFee)}) = ${money0(e.totalLenderFees)}. This EXCLUDES discount points.`);
+    lines.push(`  • Discount points (ASSUMPTION — none selected yet): ${money0(e.pointsAmount)}. One point would be 1% of the loan = ${money0(e.onePointExample)} (example, not a quote).`);
+    lines.push(`  • Third-party (appraisal/credit): ${money0(e.thirdPartyFees)}; Title/escrow: ${money0(e.titleEscrowFees)}; Government/recording: ${money0(e.governmentFees)}; Prepaid interest: ${money0(e.prepaidInterest)}; Escrow reserves (taxes+insurance): ${money0(e.escrowReserves)}.`);
+    lines.push(`CRITICAL: No lender has quoted this scenario (lenderQuoteKnown=false). Do NOT present any figure as an actual lender fee. If asked, say lender charges and discount points are not known yet until a lender and a rate/point combination are selected. If the borrower challenges a fee, correct it — do not defend it.`);
+    lines.push(`Assumptions behind these numbers: ${(e.assumptions || []).join('; ')}.`);
   }
   if (ranked.length) {
     lines.push('Top possible paths (estimates):');
@@ -148,9 +192,14 @@ export default function App() {
   });
   // Sanitize restored messages: guarantee every message has string content so a
   // corrupted entry can never crash the render (which would wipe the chat).
+  // Preserve any validated `resources` recommendations on assistant messages.
   const [messages, setMessages] = useState(() => {
     const restored = saved?.messages?.length
-      ? saved.messages.filter(m => m && typeof m === 'object').map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: typeof m.content === 'string' ? m.content : String(m.content ?? '') }))
+      ? saved.messages.filter(m => m && typeof m === 'object').map(m => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: typeof m.content === 'string' ? m.content : String(m.content ?? ''),
+          ...(Array.isArray(m.resources) && m.resources.length ? { resources: m.resources } : {}),
+        }))
       : null;
     return (restored && restored.length) ? restored : [getInitialMessage(lang)];
   });
@@ -168,6 +217,9 @@ export default function App() {
   const [leadSent, setLeadSent] = useState(saved?.leadSent || false);
   const [profileOpenMobile, setProfileOpenMobile] = useState(false);
   const [winWidth, setWinWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  // Durable conversation intelligence + the latest contextual resource cards.
+  const [convState, setConvState] = useState(saved?.convState || initialConversationState());
+  const [sidebarRecs, setSidebarRecs] = useState(saved?.sidebarRecs || []);
   const manualKeysRef = useRef(new Set()); // fields the user typed by hand — protected from AI overwrite
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
@@ -209,12 +261,12 @@ export default function App() {
   // Resume-later: persist the session so a returning visitor picks up where they left off.
   const sessionRef = useRef(null);
   useEffect(() => {
-    const snapshot = { messages, scenario, confirmed, screen, partialLeadCount, profile, leadSent };
+    const snapshot = { messages, scenario, confirmed, screen, partialLeadCount, profile, leadSent, convState, sidebarRecs };
     sessionRef.current = snapshot;
     try {
       localStorage.setItem('wcci-session', JSON.stringify(snapshot));
     } catch {}
-  }, [messages, scenario, confirmed, screen, partialLeadCount, profile, leadSent]);
+  }, [messages, scenario, confirmed, screen, partialLeadCount, profile, leadSent, convState, sidebarRecs]);
 
   // Safety net for mobile Safari, which can skip the final save when the tab is
   // backgrounded or closed. Flush the latest snapshot on hide/pagehide.
@@ -329,6 +381,9 @@ export default function App() {
     setProfile({});
     setLeadSent(false);
     setManualOpen(false);
+    setConvState(initialConversationState());
+    setSidebarRecs([]);
+    manualKeysRef.current = new Set();
     setScreen('chat');
     try { localStorage.removeItem('wcci-session'); } catch {}
   }
@@ -380,10 +435,12 @@ export default function App() {
     setTimeout(() => sendMessage(msg), 60);
   }
 
-  // Value-first lead capture from the Strategy Profile panel.
+  // Value-first lead capture from the Strategy Profile panel. Submitting the
+  // form IS an explicit consent grant + handoff — a human-review OFFER is not.
   async function handleSubmitLead(contact) {
     const merged = mergeProfile(profile, contact);
     setProfile(merged);
+    setConvState(prev => ({ ...grantContactConsent(prev), handoff: 'submitted' }));
     const st = profileStatus(merged);
     const strat = st.hasCoreScenario ? evaluatePaths(merged) : { paths: [], topPaths: [] };
     const top = strat.topPaths[0] || strat.paths[0] || null;
@@ -397,9 +454,14 @@ export default function App() {
       strategySummary: top ? `${top.label}: ${top.status}` : '',
       timestamp: new Date().toISOString(),
     });
+    // Mark the lead source and the recommended resource path for the team.
+    lead.leadSource = 'WCCI AI Mortgage Strategy Review';
+    lead.recommendedResourcePath = sidebarRecs.map(r => r.id);
+    lead.conversationStage = convState.stage;
     try {
       await submitLead(lead, { messages: messages.map(m => ({ role: m.role, content: m.content })) });
     } catch {}
+    track('handoff_submitted', { stage: convState.stage, language: lang });
     setLeadSent(true);
     return true;
   }
@@ -463,6 +525,20 @@ export default function App() {
     const liveProfile = mergeProfile(profile, parseScenario(text), { fillOnly: true });
     const estimatesBlock = buildEstimatesContext(liveProfile);
 
+    // Conversation intelligence: update durable state from the WHOLE conversation,
+    // then run the DETERMINISTIC router to pick candidate resources. The model may
+    // only choose from these ids — it can never introduce a new URL.
+    const nextState = updateStateFromUserMessage(convState, text, liveProfile, lang);
+    for (const o of nextState.objections) if (!convState.objections.includes(o)) track('trust_objection_detected', { objection: o, stage: nextState.stage, language: lang });
+    if (nextState.userRequestedHuman && !convState.userRequestedHuman) track('human_review_requested', { stage: nextState.stage, language: lang });
+    const routed = routeResources({
+      audience: nextState.audience, state: nextState.state, county: nextState.county, city: nextState.city,
+      topics: nextState.topics, objections: nextState.objections, stage: nextState.stage,
+      wantsApply: nextState.wantsApply, tonePreference: nextState.tonePreference,
+    });
+    setConvState(nextState);
+    const intelBlock = buildIntelContext(nextState, routed.candidates, lang, getResource);
+
     try {
       const res = await fetch('/.netlify/functions/chat', {
         method: 'POST',
@@ -470,7 +546,7 @@ export default function App() {
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 1024,
-          system: SYSTEM_PROMPT + langDirective(lang) + estimatesBlock,
+          system: SYSTEM_PROMPT + langDirective(lang) + estimatesBlock + intelBlock,
           messages: updated.map(m => ({ role: m.role, content: m.content })),
         }),
       });
@@ -479,29 +555,52 @@ export default function App() {
 
       let displayText = fullText;
       let parsedScenario = null;
+      let resources = [];
 
-      // Live profile sync: pull the AI's PROFILE_UPDATE line, merge (fill-only so
-      // the deterministic parser / manual entries stay authoritative), and strip
-      // it from what the borrower sees.
-      if (displayText.includes('PROFILE_UPDATE:')) {
-        const m = displayText.match(/PROFILE_UPDATE:\s*(\{[^\n]*\})/);
-        if (m) {
-          try { applyAiProfile(JSON.parse(m[1])); } catch {}
+      // Structured output: pull CONVO_META (resource picks + state patch + handoff)
+      // via balanced-brace extraction, validate every id against the registry, and
+      // strip it from display. Because extractMarker strips the whole marker even
+      // when the JSON is invalid, a machine line can never leak into the bubble.
+      const cm = extractMarker(displayText, 'CONVO_META');
+      if (cm) {
+        displayText = cm.cleaned;
+        const meta = cm.obj;
+        if (meta && typeof meta === 'object') {
+          const allowed = routed.candidates.map(c => c.id);
+          const recs = (Array.isArray(meta.resources) ? meta.resources : []).map(rr => {
+            const cand = routed.candidates.find(c => c.id === (rr && rr.id));
+            return { id: rr && rr.id, reason: rr && rr.reason, reasonKey: cand ? cand.reasonKey : '' };
+          });
+          resources = validateRecommendations(recs, {
+            audience: nextState.audience, allowedIds: allowed,
+            onReject: (id, why) => track('broken_resource_detected', { resourceId: id, reasonKey: why }),
+          }).map(r => ({ ...r, reason: r.reason || fallbackReason(r.reasonKey, lang) }));
+          if (meta.state) setConvState(prev => applyStatePatch(prev, meta.state));
+          if (meta.state && meta.state.contactConsent === 'declined') track('contact_declined', { stage: nextState.stage, language: lang });
+          if (meta.handoff === 'offer') track('contact_offer_shown', { stage: nextState.stage, language: lang });
+          for (const r of resources) track('resource_recommended', { resourceId: r.id, category: r.category, reasonKey: r.reasonKey, stage: nextState.stage, language: lang });
         }
-        displayText = displayText.replace(/\n?PROFILE_UPDATE:\s*\{[^\n]*\}\s*/g, '').trim();
+      }
+      if (resources.length) setSidebarRecs(resources);
+
+      // Live profile sync: pull the AI's PROFILE_UPDATE line (fill-only merge so
+      // the deterministic parser / manual entries stay authoritative).
+      const pu = extractMarker(displayText, 'PROFILE_UPDATE');
+      if (pu) {
+        displayText = pu.cleaned;
+        if (pu.obj) applyAiProfile(pu.obj);
       }
 
-      if (displayText.includes('SCENARIO_COMPLETE:')) {
-        const parts = displayText.split('SCENARIO_COMPLETE:');
-        try {
-          parsedScenario = JSON.parse(parts[1].split('\n')[0].trim());
-        } catch {}
-        displayText = (parts[0].trim() + (parts[1].includes('\n') ? '\n' + parts[1].split('\n').slice(1).join('\n') : '')).trim();
+      const sc = extractMarker(displayText, 'SCENARIO_COMPLETE');
+      if (sc) {
+        displayText = sc.cleaned;      // keeps the thank-you text that follows
+        if (sc.obj) parsedScenario = sc.obj;
       }
 
-      const reply = { role: 'assistant', content: displayText };
+      const reply = { role: 'assistant', content: displayText, ...(resources.length ? { resources } : {}) };
       const final = [...updated, reply];
       setMessages(final);
+      for (const r of resources) track('resource_impression', { resourceId: r.id, category: r.category, stage: nextState.stage, language: lang });
 
       if (data._leadDelivery && !data._leadDelivery.anyDelivered) setDeliveryFailed(true);
 
@@ -689,6 +788,12 @@ export default function App() {
           onManualToggle={() => setManualOpen(o => !o)}
           t={su}
         />
+        {/* Contextual "Recommended for your situation" block — max 3, verified only. */}
+        {sidebarRecs.length > 0 && (
+          <div style={{ background: 'white', border: '1px solid #e7ebf3', borderRadius: 12, padding: 14 }}>
+            <ResourceCardList recs={sidebarRecs} lang={lang} title={(RESOURCE_UI[lang] || RESOURCE_UI.en).recommendedTitle} />
+          </div>
+        )}
         <p style={{ fontSize: 10, color: '#9aa6b8', lineHeight: 1.6, padding: '0 2px' }}>{STRATEGY_DISCLAIMER}</p>
       </div>
     );
@@ -734,17 +839,23 @@ export default function App() {
               {msg.role === 'assistant' && (
                 <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>AI</div>
               )}
-              <div style={{
-                background: msg.role === 'user' ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : 'white',
-                color: msg.role === 'user' ? 'white' : '#1e293b',
-                border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none',
-                borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-                padding: '10px 14px', fontSize: 14, lineHeight: 1.65, maxWidth: '82%',
-                boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
-              }}>
-                {String(msg.content ?? '').split('\n').map((line, j, arr) => (
-                  <span key={j}>{renderBold(line)}{j < arr.length - 1 && <br />}</span>
-                ))}
+              <div style={{ maxWidth: '82%', display: 'flex', flexDirection: 'column', gap: 8, alignItems: msg.role === 'user' ? 'flex-end' : 'stretch' }}>
+                <div style={{
+                  background: msg.role === 'user' ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : 'white',
+                  color: msg.role === 'user' ? 'white' : '#1e293b',
+                  border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none',
+                  borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                  padding: '10px 14px', fontSize: 14, lineHeight: 1.65,
+                  boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                }}>
+                  {String(msg.content ?? '').split('\n').map((line, j, arr) => (
+                    <span key={j}>{renderBold(line)}{j < arr.length - 1 && <br />}</span>
+                  ))}
+                </div>
+                {/* Contextual resource cards (verified registry ids only). */}
+                {msg.role === 'assistant' && Array.isArray(msg.resources) && msg.resources.length > 0 && (
+                  <ResourceCardList recs={msg.resources} lang={lang} title={(RESOURCE_UI[lang] || RESOURCE_UI.en).inlineTitle} />
+                )}
               </div>
             </div>
           ))}

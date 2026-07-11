@@ -57,10 +57,13 @@ export function calculateCashToClose(opts = {}) {
   const monthlyInsurance = purchasePrice * INS_ANNUAL_RATE / 12;
   const monthlyPrincipalInterest = monthlyPI(loanAmount, annualRate);
 
-  // ── Lender fees (scale from loan amount) ──
-  const pointsAmount = loanAmount * pointsPercent;
+  // ── Lender-side assumptions (scale from loan amount) ──
+  // FINANCIAL-ESTIMATE POLICY: no lender has quoted this scenario, so these are
+  // PLANNING ASSUMPTIONS, never "the lender fee". Discount points are a
+  // SEPARATE line — they must never be silently folded into lender fees.
+  const pointsAmount = loanAmount * pointsPercent;                 // discount-points assumption
   const originatorComp = loanAmount * originatorCompPercent;
-  const totalLenderFees = pointsAmount + originatorComp + applicationFee;
+  const totalLenderFees = originatorComp + applicationFee;         // EXCLUDES points by design
 
   // ── Third-party / title / escrow / government (scale from price) ──
   const thirdPartyFees = THIRD_PARTY_FIXED;                       // appraisal, credit, flood
@@ -74,8 +77,8 @@ export function calculateCashToClose(opts = {}) {
   // ── Escrow reserves collected at closing ──
   const escrowReserves = RESERVE_MONTHS_TAX * monthlyTax + RESERVE_MONTHS_INS * monthlyInsurance;
 
-  // ── Totals ──
-  const closingCosts = totalLenderFees + thirdPartyFees + titleEscrowFees +
+  // ── Totals (points included in the total, but always as their own line) ──
+  const closingCosts = pointsAmount + totalLenderFees + thirdPartyFees + titleEscrowFees +
     governmentFees + prepaidInterest + escrowReserves;
   const credits = sellerCredits + lenderCredits;
   const estimatedCashToClose = downPayment + closingCosts - credits;
@@ -91,11 +94,25 @@ export function calculateCashToClose(opts = {}) {
     monthlyTax: round2(monthlyTax),
     monthlyInsurance: round2(monthlyInsurance),
     monthlyPayment: round2(monthlyPayment),
-    // lender fees
-    pointsAmount: round2(pointsAmount),
+    // lender-side ASSUMPTIONS (no quote exists) — points always separate
+    pointsAmount: round2(pointsAmount),                 // discount-points assumption
+    discountPoints: round2(pointsAmount),               // explicit alias
     originatorComp: round2(originatorComp),
     applicationFee: round2(applicationFee),
-    totalLenderFees: round2(totalLenderFees),
+    totalLenderFees: round2(totalLenderFees),           // origination-side only, NO points
+    onePointExample: round2(loanAmount * 0.01),         // "1 point = 1% of loan" example
+    lenderQuoteKnown: false,                            // no lender has quoted this scenario
+    assumptions: [
+      `Interest rate ${(annualRate * 100).toFixed(3)}% is a planning assumption — not a quote or lock`,
+      `Discount points assumed at ${(pointsPercent * 100).toFixed(3)}% of the loan (points are optional and not selected yet)`,
+      `Originator compensation assumed at ${(originatorCompPercent * 100).toFixed(2)}% of the loan`,
+      `Application fee assumed at $${applicationFee.toLocaleString('en-US')}`,
+      `Property tax estimated from the purchase price (annualized local-average rate)`,
+      `Homeowners insurance estimated from the purchase price`,
+      `Prepaid interest: ${prepaidInterestDays} days on a 360-day basis`,
+      `Escrow reserves: ${RESERVE_MONTHS_TAX} months taxes + ${RESERVE_MONTHS_INS} months insurance`,
+      'Actual lender charges and discount points are not known until a lender and rate/point combination is selected',
+    ],
     // other closing costs
     thirdPartyFees: round2(thirdPartyFees),
     titleEscrowFees: round2(titleEscrowFees),

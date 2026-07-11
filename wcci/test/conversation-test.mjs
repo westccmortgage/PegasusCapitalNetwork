@@ -153,8 +153,11 @@ async function runPersona(persona) {
     transcript.push({ role: 'user', content: userText });
 
     const rawAi = await callClaude({ system, messages: transcript });
-    // Strip the machine-only PROFILE_UPDATE line the client removes before display.
-    const aiText = rawAi.replace(/\n?PROFILE_UPDATE:\s*\{[^\n]*\}\s*/g, '').trim();
+    // Strip the machine-only lines the client removes before display.
+    const aiText = rawAi
+      .replace(/\n?CONVO_META:\s*\{[\s\S]*?\}\s*(?=\n|PROFILE_UPDATE:|SCENARIO_COMPLETE:|$)/, '')
+      .replace(/\n?PROFILE_UPDATE:\s*\{[^\n]*\}\s*/g, '')
+      .trim();
     transcript.push({ role: 'assistant', content: aiText });
 
     // Compliance check on what the borrower would actually see (strip the JSON line).

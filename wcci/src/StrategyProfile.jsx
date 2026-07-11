@@ -107,10 +107,14 @@ function KV({ k, v }) {
 }
 
 function CashToClose({ e }) {
+  const [why, setWhy] = useState(false);
   if (!e) return null;
+  // Discount points are ALWAYS shown as their own line — never merged into
+  // "lender fees" (origination-side comp + application fee).
   const rows = [
     ['Down payment', e.downPayment],
-    ['Points', e.pointsAmount], ['Originator comp', e.originatorComp], ['Application fee', e.applicationFee],
+    ['Discount points (assumption)', e.pointsAmount],
+    ['Originator comp (assumption)', e.originatorComp], ['Application fee (assumption)', e.applicationFee],
     ['Title / escrow (est.)', e.titleEscrowFees], ['Third-party (est.)', e.thirdPartyFees],
     ['Government fees (est.)', e.governmentFees], ['Prepaid interest', e.prepaidInterest],
     ['Escrow reserves', e.escrowReserves],
@@ -132,8 +136,16 @@ function CashToClose({ e }) {
         <span style={{ color: GOLD, fontWeight: 700 }}>Extra above down payment</span>
         <span style={{ fontWeight: 700, color: GOLD }}>{money(e.extraFundsAboveDownPayment)}</span>
       </div>
+      <button onClick={() => setWhy(w => !w)} style={{ marginTop: 8, background: 'none', border: 'none', color: BLUE, fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+        {why ? 'Hide assumptions ▲' : 'Why this estimate? ▼'}
+      </button>
+      {why && (
+        <ul style={{ margin: '6px 0 0', paddingLeft: 16, fontSize: 10.5, color: SLATE, lineHeight: 1.6 }}>
+          {(e.assumptions || []).map((a, i) => <li key={i}>{a}</li>)}
+        </ul>
+      )}
       <p style={{ fontSize: 9.5, color: '#9aa6b8', lineHeight: 1.5, marginTop: 8 }}>
-        Estimated, based on planning assumptions (incl. an assumed rate) — not a quote, Loan Estimate, or commitment. Actual figures vary by lender, profile, property, and closing date.
+        Estimated, based on planning assumptions. No lender has quoted this scenario — lender charges and discount points are not known yet. Not a quote, Loan Estimate, or commitment; actual figures vary by lender, profile, property, and closing date.
       </p>
     </div>
   );
