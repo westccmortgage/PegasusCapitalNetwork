@@ -154,6 +154,7 @@
         ${item('⚙','Settings','/profile-edit.html',{act:'Settings'})}
         ${isAdm?`<div class="sb-sec">Admin</div>
         ${item('⚑','Admin Console','/admin.html',{act:'Admin'})}
+        ${item('◆','Capital Intelligence','/admin/intelligence',{act:'Capital Intelligence Admin'})}
         ${item('◇','Admin Requests','/admin-requests.html')}
         ${item('◈','Admin Trust','/admin-trust-reviews.html',{act:'Admin · Trust'})}`:''}
       </div>
@@ -210,9 +211,10 @@
         if (!nav) return;
         var existing = nav.querySelector('[href="/admin.html"]');
         if (isAdmin && !existing) {
-          /* Admin confirmed in DB — inject the link */
+          /* Admin confirmed in DB — inject the links */
           nav.insertAdjacentHTML('beforeend',
-            '<a class="sb-item" href="/admin.html"><span class="sb-ic">⚑</span>Admin Console</a>');
+            '<a class="sb-item" href="/admin.html"><span class="sb-ic">⚑</span>Admin Console</a>'+
+            '<a class="sb-item" href="/admin/intelligence"><span class="sb-ic">◆</span>Capital Intelligence</a>');
           console.debug('[Admin] link injected for uid:', uid);
         } else if (!isAdmin && existing) {
           /* DB explicitly confirmed non-admin — remove the link */
@@ -713,6 +715,7 @@
     var adminRows=[];
     if(isAdm){
       adminRows.push(['\u26E8','Admin Console','/admin.html']);
+      adminRows.push(['\u25C6','Capital Intelligence','/admin/intelligence']);
       adminRows.push(['\u25C7','Admin Requests','/admin-requests.html']);
       adminRows.push(['\u25C8','Admin Trust','/admin-trust-reviews.html']);
     }

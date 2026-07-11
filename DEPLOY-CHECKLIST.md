@@ -45,3 +45,19 @@ Then:
 apex/www canonicalization is owned by the Netlify dashboard Primary-domain setting,
 NOT by netlify.toml. Keep Primary = pegasuscapitalnetwork.com (apex) and add www as a
 domain so Netlify auto-redirects www→apex. Do not re-add an apex/www rule to the toml.
+
+---
+## Capital Intelligence (v71) deployment
+1. `npm install` locally / let Netlify build (new dependency: `exceljs` —
+   used only by Netlify functions and QA; never shipped to the browser).
+2. Apply Supabase migrations **067 → 068 → 069 → 070** (SQL editor, in order).
+3. No new environment variables — functions use the existing `SUPABASE_URL`
+   and `SUPABASE_SERVICE_ROLE_KEY`.
+4. Deploy (netlify.toml adds the `/admin/intelligence` rewrite and
+   no-store/noindex headers for the admin page).
+5. Verify: `npm run qa:intelligence` (all offline checks pass);
+   admin sees the sidebar link; signed-out `/admin/intelligence` redirects to
+   sign-in and shows no data; a non-admin member is redirected to dashboard
+   and direct `pci_` selects return nothing; upload the template with a test
+   row → preview → commit → property appears; re-upload same file → duplicate
+   refused; rollback restores.
