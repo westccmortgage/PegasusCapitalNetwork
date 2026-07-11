@@ -92,3 +92,40 @@ loan approval, not a commitment to lend, not a rate quote. Path labels are limit
 to: strong possible path · possible path · needs more information · higher-risk
 path · likely not suitable. (`scripts/lint.mjs` guards the prompt against banned
 assertions.)
+
+## Single completed-lead delivery (idempotency)
+
+Automatic delivery has exactly **one** authoritative path. `chat.js` no longer
+sends a completed lead — on `SCENARIO_COMPLETE` it only **qualifies** (validates
+the marker from the assistant response) and returns `_leadQualification`. Both
+compatibility signals (`SCENARIO_COMPLETE` and `CONVO_META` `handoff:
+automatic_lead`) converge in `App.jsx` into **one** call to the single
+authoritative endpoint — `partial-lead.js` → `sendAiQualifiedEmail`. Partial
+leads still flow through `partial-lead.js` separately.
+
+**Idempotency key** (`leadPipeline.computeCompletedLeadEventId`, no timestamp):
+`cle_ = hash(sessionId | leadFingerprint | "complete" | scenarioVersion)`, where
+`scenarioVersion` hashes only material, bucketed fields (loan goal, geography,
+$50k-bucketed price/loan, normalized contact). The same scenario always yields
+the same id; a minor edit does not mint a new one.
+
+**Durable dedup** lives server-side in `netlify/functions/lib/idempotency.cjs`:
+Netlify Blobs (strong consistency) when available — true cross-request
+idempotency; otherwise a warm-instance in-memory map (best-effort, atomic
+within one process via synchronous check-and-set). The completed-lead function
+**claims** the event id before sending and marks it `delivered` only on success;
+a failed send releases the claim so a controlled retry (same id, capped
+attempts) proceeds. A duplicate resolves to `already_delivered` with no second
+email.
+
+**Guarantees:** both markers in one reply → one delivery; response processed
+twice → one; retry after success → `already_delivered`; two tabs → one (durable
+tier, or one process); partial→complete → one record; failure → retryable, never
+`submitted`; repeated later signals → no repeat (material-change policy off by
+default). The conversation continues normally after qualification.
+
+**Limitation (honest):** with only the in-memory tier (no Netlify Blobs
+configured), cross-instance concurrency is best-effort, not provably
+once-only. Enable Netlify Blobs — or wire GRCRM/DB — for guaranteed
+cross-request idempotency. The event id + fingerprint are included in every
+lead email so the team can spot the rare cross-instance repeat.

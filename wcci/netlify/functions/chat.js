@@ -154,17 +154,18 @@ exports.handler = async function(event) {
     });
     const data = JSON.parse(r.body);
 
-    // Model-initiated completion: the marker is read ONLY from the ASSISTANT
-    // response — never from user text. Before sending, independently validate
-    // that the contact is real and was authored by the USER in this session.
+    // SCENARIO_COMPLETE is QUALIFY-ONLY here. chat.js NEVER sends a completed
+    // lead itself — that would be a second independent channel. It validates the
+    // marker (read ONLY from the assistant response, never user text) and returns
+    // a qualification verdict; the client then routes ALL completed leads through
+    // the single authoritative endpoint (partial-lead.js), which is idempotent.
     const fullText = (data.content || []).map(b => b.text || "").join("");
-    let delivery = null;
+    let qualification = null;
     if (fullText.includes("SCENARIO_COMPLETE:")) {
       try {
         const jsonLine = fullText.split("SCENARIO_COMPLETE:")[1].split("\n")[0].trim();
         const scenario = JSON.parse(jsonLine);
 
-        // Independent server validation (the model's marker is only a trigger):
         let reqMessages = [];
         try { reqMessages = (JSON.parse(event.body).messages || []); } catch {}
         const userMessages = reqMessages.filter(m => m && m.role === "user").map(m => String(m.content || ""));
@@ -179,24 +180,18 @@ exports.handler = async function(event) {
         const geoOk = (scenario.state && scenario.state !== "not provided") ||
           (scenario.propertyAddress && scenario.propertyAddress !== "not provided");
         const echoed = completionEchoedFromUser(jsonLine, userMessages);
-
-        if (contactOk && goalOk && geoOk && !echoed) {
-          const em = await sendEmail(scenario);
-          delivery = { email: em, anyDelivered: em };
-          console.log("Lead delivery:", delivery);
-        } else {
-          console.warn("SCENARIO_COMPLETE rejected by server validation:", { contactOk, goalOk, geoOk, echoed });
-          delivery = { email: false, anyDelivered: false, rejected: true };
-        }
+        const qualified = !!(contactOk && goalOk && geoOk && !echoed);
+        qualification = { qualified, reason: qualified ? "scenario_complete_marker" : "failed_server_validation", checks: { contactOk, goalOk, geoOk, echoed } };
+        console.log("SCENARIO_COMPLETE qualification (no send here):", qualification.checks);
       } catch (e) {
-        console.error("Lead delivery error:", e.message);
-        delivery = { email: false, anyDelivered: false, error: e.message };
+        console.error("SCENARIO_COMPLETE parse error:", e.message);
+        qualification = { qualified: false, reason: "parse_error" };
       }
     }
-    
-    // Attach delivery status to response body so client can show fallback on total failure
-    if (delivery) data._leadDelivery = delivery;
-    
+
+    // Verdict only — the client owns the single delivery call.
+    if (qualification) data._leadQualification = qualification;
+
     return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
   } catch (e) {
     console.error("Chat function error:", e.message);

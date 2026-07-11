@@ -100,7 +100,14 @@ export function evaluateCompletion({ profile = {}, convState = {}, messages = []
   return { qualified: reasons.length === 0, reasons, completeness, contact, loanGoal: loanGoal || null, geography: geography || null };
 }
 
-// ── Stable lead fingerprint ──
+// ── Stable hashing + lead fingerprint ──
+function djb2(str) {
+  let h = 5381;
+  const s = String(str);
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
 export function leadFingerprint({ phone, email, sessionId, domain = 'wcci.online' }) {
   const norm = [
     String(phone || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''),
@@ -108,9 +115,33 @@ export function leadFingerprint({ phone, email, sessionId, domain = 'wcci.online
     String(sessionId || ''),
     domain,
   ].join('|');
-  let h = 5381;
-  for (let i = 0; i < norm.length; i++) h = ((h << 5) + h + norm.charCodeAt(i)) >>> 0;
-  return 'lf_' + h.toString(36);
+  return 'lf_' + djb2(norm);
+}
+
+// A COARSE "meaningful scenario version" — only material fields, bucketed so
+// minor edits don't mint a new version. Drives the idempotency key: the same
+// scenario always yields the same completedLeadEventId.
+export function scenarioVersion({ profile = {}, convState = {}, contact = {} }) {
+  const bucket = (n, size) => (n == null || n === '' || isNaN(n) ? '' : Math.round(Number(n) / size) * size);
+  const norm = [
+    profile.loanPurpose || convState.loanGoal || '',
+    String(profile.state || convState.state || '').toUpperCase(),
+    String(convState.city || '').toLowerCase(),
+    String(convState.county || '').toLowerCase(),
+    bucket(profile.purchasePrice, 50000),
+    bucket(profile.loanAmount, 50000),
+    String(contact.phone || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''),
+    String(contact.email || '').trim().toLowerCase(),
+  ].join('|');
+  return djb2(norm);
+}
+
+// The one idempotency key that travels through every layer (model-response
+// processing → App.jsx → partial-lead.js → email/CRM payload → delivery status).
+// Deterministic: sessionId + fingerprint + stage + meaningful scenario version.
+// Never uses a timestamp.
+export function computeCompletedLeadEventId({ sessionId, fingerprint, scenarioVersion: sv }) {
+  return 'cle_' + djb2([String(sessionId || ''), String(fingerprint || ''), 'complete', String(sv || '')].join('|'));
 }
 
 export function getSessionId(storage) {
@@ -210,12 +241,17 @@ export function createLeadTracker(storage) {
 export function buildCompletedLeadPayload({
   profile = {}, convState = {}, messages = [], lang = 'en',
   signal = null, evaluation = null, sessionId = '', resourcesRecommended = [], resourcesOpened = [],
-  strategySummary = '', paths = [],
+  strategySummary = '', paths = [], scenarioComplete = null,
 }) {
   const ev = evaluation || evaluateCompletion({ profile, convState, messages });
   const st = profileStatus(profile);
   const doNotContact = convState.contactConsent === 'declined';
   const unresolved = st.needed.missing;
+  // The one idempotency key, derived from stable normalized fields (no timestamp).
+  const contact = ev.contact;
+  const fingerprint = leadFingerprint({ phone: contact.phone, email: contact.email, sessionId });
+  const sv = scenarioVersion({ profile, convState, contact });
+  const completedLeadEventId = computeCompletedLeadEventId({ sessionId, fingerprint, scenarioVersion: sv });
 
   // Concise deterministic AI summary — enough for the team to continue the
   // conversation without making the borrower repeat everything.
@@ -266,6 +302,20 @@ export function buildCompletedLeadPayload({
     qualificationReason: (signal && signal.reason) || 'scenario_sufficiently_complete',
     modelConfidence: signal ? signal.confidence : null,
     scenarioCompleteness: ev.completeness,
+    // Rich MLO fields from a SCENARIO_COMPLETE marker, when the trigger came
+    // that way (risk flag, possible path, documents, next step, main concern).
+    scenarioComplete: scenarioComplete ? {
+      riskFlag: scenarioComplete.riskFlag || null,
+      possiblePath: scenarioComplete.possiblePath || null,
+      documentsNeeded: scenarioComplete.documentsNeeded || null,
+      nextStep: scenarioComplete.nextStep || null,
+      mainConcern: scenarioComplete.mainConcern || null,
+    } : null,
+    // ── Idempotency (the single key that travels through every layer) ──
+    completedLeadEventId,
+    leadFingerprint: fingerprint,
+    scenarioVersion: sv,
+    leadStage: 'complete',
     sessionId,
     nonce: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2),
     submittedAt: new Date().toISOString(),
@@ -294,13 +344,15 @@ export async function submitCompletedLead(payload, { fetchFn, tracker, endpoint 
     });
     let body = {};
     try { body = await res.json(); } catch {}
-    if (res.ok && body && body.ok) {
+    // A prior attempt (retry, lost response, or the other signal in the same
+    // reply) that already delivered resolves to success WITHOUT a second send.
+    if (res.ok && body && (body.ok || body.alreadyDelivered)) {
       tr.succeed('complete', {
         qualificationReason: payload.qualificationReason,
         modelConfidence: payload.modelConfidence,
         scenarioCompleteness: payload.scenarioCompleteness,
       });
-      return { ok: true, status: 'submitted' };
+      return { ok: true, status: body.alreadyDelivered ? 'already_delivered' : 'submitted', idempotencyMode: body.idempotencyMode || null };
     }
     tr.fail('complete');
     return { ok: false, status: 'failed', error: (body && body.error) || `http ${res.status}` };

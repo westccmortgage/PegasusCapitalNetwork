@@ -157,6 +157,7 @@ async function sendAiQualifiedEmail(lead) {
 }
 
 const { validateCompletedLead } = require("./lib/lead-validation.cjs");
+const { claimCompletedLead, markDelivered, markFailed } = require("./lib/idempotency.cjs");
 
 exports.handler = async function(event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
@@ -164,18 +165,35 @@ exports.handler = async function(event) {
     const payload = JSON.parse(event.body);
     const { messages, updateNumber, structuredLead, aiQualifiedLead } = payload;
 
-    // AI-QUALIFIED COMPLETED LEAD: the model's signal is only a trigger — the
-    // server independently validates contact origin, loan goal, geography,
-    // context, schema, session, and rejects client-asserted "submitted".
+    // AI-QUALIFIED COMPLETED LEAD — the ONE authoritative completed-lead delivery
+    // function. Both model signals (SCENARIO_COMPLETE and CONVO_META
+    // automatic_lead) converge here via the client; chat.js never sends. The
+    // server independently validates, then claims the completedLeadEventId in a
+    // durable store so exactly one email is ever sent per qualifying scenario —
+    // no matter how many times the same event is delivered.
     if (aiQualifiedLead) {
       const check = validateCompletedLead(aiQualifiedLead);
       if (!check.ok) {
         console.warn("AI-qualified lead REJECTED:", check.errors);
         return { statusCode: 400, body: JSON.stringify({ ok: false, error: "validation failed", details: check.errors }) };
       }
+      const eventId = aiQualifiedLead.completedLeadEventId;
+      const claim = await claimCompletedLead(eventId);
+      if (!claim.firstTime) {
+        // Already delivered (or a concurrent in-flight attempt) — do NOT resend.
+        console.log("AI-qualified lead idempotent skip:", { eventId, mode: claim.mode });
+        return { statusCode: 200, body: JSON.stringify({ ok: true, alreadyDelivered: true, idempotencyMode: claim.mode }) };
+      }
       const em = await sendAiQualifiedEmail(aiQualifiedLead);
-      console.log("AI-qualified lead delivery:", { email: em, doNotContact: aiQualifiedLead.doNotContact });
-      return { statusCode: 200, body: JSON.stringify({ ok: em, email: em }) };
+      if (em) {
+        await markDelivered(eventId, claim.blob, { channel: "email", doNotContact: !!aiQualifiedLead.doNotContact });
+        console.log("AI-qualified lead delivered:", { eventId, mode: claim.mode, doNotContact: aiQualifiedLead.doNotContact });
+        return { statusCode: 200, body: JSON.stringify({ ok: true, email: true, alreadyDelivered: false, idempotencyMode: claim.mode }) };
+      }
+      // Send failed — release the claim so a controlled retry (same eventId) can proceed.
+      await markFailed(eventId, claim.blob);
+      console.error("AI-qualified lead send FAILED, claim released:", { eventId });
+      return { statusCode: 502, body: JSON.stringify({ ok: false, error: "email delivery failed" }) };
     }
 
     // Structured Strategy Review lead from the profile panel (user-initiated).

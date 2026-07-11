@@ -484,13 +484,16 @@ export default function App() {
   // independently validates (contact from user-authored messages, loan goal,
   // geography, context) and submits without any extra confirmation button.
   // The tracker guarantees promotion-not-duplication and truthful status.
-  async function maybeAutoSubmitLead({ signal, evalProfile, state, allMessages, recommended }) {
+  async function maybeAutoSubmitLead({ signal, evalProfile, state, allMessages, recommended, scenarioComplete }) {
     try {
       const evaluation = evaluateCompletion({ profile: evalProfile, convState: state, messages: allMessages });
       if (!evaluation.qualified) return { ok: false, why: evaluation.reasons };
       const fp = leadFingerprint({ phone: evaluation.contact.phone, email: evaluation.contact.email, sessionId: sessionIdRef.current });
       const tracker = leadTrackerRef.current;
       tracker.ensure(fp, sessionIdRef.current);
+      // Client-side guard #1: once complete is submitted, never trigger again
+      // (owner material-change policy is disabled by default). Combined with the
+      // server idempotency key, this makes double-delivery impossible.
       if (!tracker.shouldSubmit('complete')) return { ok: false, why: ['already submitted or in flight'] };
       const st = profileStatus(evalProfile);
       const strat = st.hasCoreScenario ? evaluatePaths(evalProfile) : { paths: [], topPaths: [] };
@@ -499,9 +502,13 @@ export default function App() {
         signal, evaluation, sessionId: sessionIdRef.current,
         resourcesRecommended: recommended, resourcesOpened: getOpenedResources(),
         paths: strat.topPaths.length ? strat.topPaths : strat.paths,
+        scenarioComplete: scenarioComplete || null,
       });
+      // submitCompletedLead carries payload.completedLeadEventId to the single
+      // authoritative endpoint; a duplicate resolves to already_delivered.
       const res = await submitCompletedLead(payload, { tracker });
-      if (res.ok) { track('handoff_submitted', { stage: state.stage, language: lang }); setLeadSent(true); }
+      if (res.ok) { track('handoff_submitted', { stage: state.stage, language: lang }); setLeadSent(true); setDeliveryFailed(false); }
+      else if (!tracker.canRetry('complete')) setDeliveryFailed(true);
       return res;
     } catch (e) {
       return { ok: false, why: [e && e.message] };
@@ -655,45 +662,47 @@ export default function App() {
       setMessages(final);
       for (const r of resources) track('resource_impression', { resourceId: r.id, category: r.category, stage: nextState.stage, language: lang });
 
-      if (data._leadDelivery && !data._leadDelivery.anyDelivered) setDeliveryFailed(true);
-
       // Profile the evaluators see this turn: live profile + this turn's AI patch.
       const evalProfile = pu && pu.obj ? mergeProfile(liveProfile, pu.obj) : liveProfile;
       const recommendedIds = resources.map(r => r.id);
 
+      // ── ONE unified completed-lead trigger ──
+      // Both compatibility signals converge here: SCENARIO_COMPLETE (server
+      // qualified it, no send) and CONVO_META automatic_lead. Whichever fires,
+      // the client makes EXACTLY ONE call to the single authoritative endpoint,
+      // guarded by the local tracker + the server idempotency key. chat.js never
+      // sends, so there is no second channel.
+      const serverQual = data._leadQualification;                       // from chat.js SCENARIO_COMPLETE validation
+      const autoSignal = handoffSignal && handoffSignal.mode === 'automatic_lead' ? handoffSignal : null;
+      const scenarioQualified = parsedScenario && serverQual && serverQual.qualified;
+      const completionTrigger = autoSignal ||
+        (scenarioQualified ? { mode: 'automatic_lead', reason: 'scenario_complete_marker', confidence: null } : null);
+
+      if (completionTrigger) {
+        maybeAutoSubmitLead({
+          signal: completionTrigger, evalProfile, state: nextState, allMessages: final,
+          recommended: recommendedIds, scenarioComplete: parsedScenario || null,
+        }).catch(() => {});
+      } else if (leadTrackerRef.current.canRetry('complete')) {
+        // Controlled retry of a previously failed delivery — SAME eventId, so a
+        // first delivery that actually succeeded resolves to already_delivered.
+        maybeAutoSubmitLead({
+          signal: { mode: 'automatic_lead', reason: 'retry_after_failure', confidence: null },
+          evalProfile, state: nextState, allMessages: final, recommended: recommendedIds,
+        }).catch(() => {});
+      }
+
+      // SCENARIO_COMPLETE still drives the capture-screen UX (independent of delivery).
       if (parsedScenario) {
-        // SCENARIO_COMPLETE: chat.js already validated + attempted delivery
-        // server-side. Record the TRUTHFUL outcome (submitted only on confirmed
-        // success; failed keeps the lead retryable — never a duplicate).
-        try {
-          const c = extractUserContact(final);
-          const fp = leadFingerprint({ phone: c.phone || parsedScenario.phone, email: c.email || parsedScenario.email, sessionId: sessionIdRef.current });
-          leadTrackerRef.current.ensure(fp, sessionIdRef.current);
-          leadTrackerRef.current.begin('complete');
-          if (data._leadDelivery && data._leadDelivery.anyDelivered) {
-            leadTrackerRef.current.succeed('complete', { qualificationReason: 'scenario_complete_marker' });
-            setLeadSent(true);
-          } else {
-            leadTrackerRef.current.fail('complete');
-          }
-        } catch {}
         setScenario(parsedScenario);
         setTimeout(() => setScreen('capture'), 1800);
-      } else if (handoffSignal && handoffSignal.mode === 'automatic_lead') {
-        // MODEL-INITIATED AUTOMATIC LEAD — no confirmation button; the app
-        // validates independently and the conversation simply continues.
-        maybeAutoSubmitLead({ signal: handoffSignal, evalProfile, state: nextState, allMessages: final, recommended: recommendedIds }).catch(() => {});
-      } else if (leadTrackerRef.current.canRetry('complete')) {
-        // Controlled retry of a previously failed delivery (never duplicates —
-        // the tracker caps attempts and 'submitted' is terminal).
-        maybeAutoSubmitLead({ signal: { mode: 'automatic_lead', reason: 'retry_after_failure', confidence: null }, evalProfile, state: nextState, allMessages: final, recommended: recommendedIds }).catch(() => {});
       }
 
       // PARTIAL LEAD: user-authored contact only; promoted via updateNumber,
       // never duplicated once the completed lead has been submitted.
       const completeRec = leadTrackerRef.current.get();
       const completeDone = completeRec && completeRec.stages.complete.status === 'submitted';
-      if (!parsedScenario && !completeDone && hasValidContact(final) && partialLeadCount < 2) {
+      if (!completionTrigger && !completeDone && hasValidContact(final) && partialLeadCount < 2) {
         setPartialLeadCount(c => c + 1);
         try {
           const c = extractUserContact(final);
