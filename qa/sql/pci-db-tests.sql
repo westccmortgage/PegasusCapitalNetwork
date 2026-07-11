@@ -68,11 +68,13 @@ insert into public.crm_activities(id, owner_id, contact_id, body) values ('00000
 \i supabase/069_pci_import.sql
 \i supabase/070_pci_storage_health.sql
 \i supabase/071_pci_analyst_role.sql
+\i supabase/076_pci_import_mapper.sql
 -- Idempotency: re-run must not error.
 \i supabase/068_pci_core.sql
 \i supabase/069_pci_import.sql
 \i supabase/070_pci_storage_health.sql
 \i supabase/071_pci_analyst_role.sql
+\i supabase/076_pci_import_mapper.sql
 
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 

@@ -271,8 +271,20 @@
     return r.data.signedUrl;
   }
 
+  /* ── Universal Import Mapper ── */
+  function mapPreview(payload) { return fn("import-map-preview", Object.assign({ module: "intelligence" }, payload)); }
+  async function listImportProfiles() { var c = await sb(); return err(await c.from("pci_import_profiles").select("*").order("name")).data || []; }
+  async function saveImportProfile(row) {
+    var c = await sb();
+    try { var u = await c.auth.getUser(); if (u && u.data && u.data.user) row.created_by = u.data.user.id; } catch (_) {}
+    return err(await c.from("pci_import_profiles").insert(row).select().single()).data;
+  }
+  async function deleteImportProfile(id) { var c = await sb(); return err(await c.from("pci_import_profiles").delete().eq("id", id)); }
+
   window.PegIntelAPI = {
     verifyAdmin: verifyAdmin, verifyStaff: verifyStaff, fn: fn,
+    mapPreview: mapPreview, listImportProfiles: listImportProfiles,
+    saveImportProfile: saveImportProfile, deleteImportProfile: deleteImportProfile,
     listProperties: listProperties, saveProperty: saveProperty, propertyChildren: propertyChildren,
     insertChild: insertChild, updateChild: updateChild, deleteChild: deleteChild,
     dashboard: dashboard, listPrograms: listPrograms, saveProgram: saveProgram,

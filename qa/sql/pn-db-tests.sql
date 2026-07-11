@@ -45,10 +45,12 @@ insert into public.profiles(id, full_name, email, is_admin) values
 \i supabase/072_pn_core.sql
 \i supabase/073_pn_import.sql
 \i supabase/074_pn_storage_health.sql
+\i supabase/075_pn_import_mapper.sql
 -- Idempotency: re-run must not error.
 \i supabase/072_pn_core.sql
 \i supabase/073_pn_import.sql
 \i supabase/074_pn_storage_health.sql
+\i supabase/075_pn_import_mapper.sql
 
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 
@@ -156,7 +158,52 @@ begin
 end $$;
 reset role;
 
+-- ══ PN-MAP: Universal Import Mapper — mapped batches commit atomically and
+--    roll back edit-aware, using the SAME RPCs + provenance columns (075). ══
+reset role;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+
+-- Profiles table is admin-writable and stores a mapping + fingerprints.
+insert into public.pn_import_profiles(id, name, fingerprints, sheet_name_hints, mapping)
+  values ('00000000-0000-0000-0000-00000000f001','LinkedIn Agent Export',
+          array['company|dre|email|name'], array['linkedinexport'],
+          '{"sheets":[{"sheet":"Sheet1","entity":"Agents"}]}'::jsonb);
+
+-- Mapped batch with provenance columns populated.
+insert into public.pn_import_batches(id, filename, original_filename, status, source_kind,
+                                     import_profile_id, mapping, mapping_version)
+  values ('00000000-0000-0000-0000-0000000b0f01','linkedin.csv','linkedin.csv','previewed','mapped',
+          '00000000-0000-0000-0000-00000000f001','{"sheets":[]}'::jsonb, 1);
+insert into public.pn_import_rows(batch_id, sheet_name, row_number, target_type, proposed_action, after_data,
+                                  source_sheet, source_row, source_raw, import_profile_id, mapping_version)
+  values ('00000000-0000-0000-0000-0000000b0f01','Agents',2,'agent','insert',
+          jsonb_build_object('id','00000000-0000-0000-0000-00000000a901','full_name','Mapped Agent','company_name_snapshot','Coastal'),
+          'Sheet1', 2, '{"Agent Name":"Mapped Agent","Brokerage":"Coastal"}'::jsonb,
+          '00000000-0000-0000-0000-00000000f001', 1);
+
+do $$
+declare res jsonb; v int; sraw jsonb;
+begin
+  res := public.pn_commit_import_batch('00000000-0000-0000-0000-0000000b0f01','00000000-0000-0000-0000-0000000000a1','{}');
+  if not (res->>'ok')::boolean then raise exception 'PN-MAP FAIL: mapped commit not ok (%)', res; end if;
+  select count(*) into v from public.pn_agents where id='00000000-0000-0000-0000-00000000a901';
+  if v <> 1 then raise exception 'PN-MAP FAIL: mapped agent not inserted'; end if;
+  -- provenance survived on the committed row
+  select source_raw into sraw from public.pn_import_rows where batch_id='00000000-0000-0000-0000-0000000b0f01';
+  if sraw->>'Agent Name' <> 'Mapped Agent' then raise exception 'PN-MAP FAIL: provenance source_raw lost (%)', sraw; end if;
+  -- edit-aware rollback still applies to mapped batches
+  update public.pn_agents set company_name_snapshot='Edited' where id='00000000-0000-0000-0000-00000000a901';
+  res := public.pn_rollback_import_batch('00000000-0000-0000-0000-0000000b0f01','00000000-0000-0000-0000-0000000000a1');
+  if (res->>'ok')::boolean then raise exception 'PN-MAP FAIL: rollback did not refuse after manual edit'; end if;
+  update public.pn_agents set company_name_snapshot='Coastal' where id='00000000-0000-0000-0000-00000000a901';
+  res := public.pn_rollback_import_batch('00000000-0000-0000-0000-0000000b0f01','00000000-0000-0000-0000-0000000000a1');
+  if not (res->>'ok')::boolean then raise exception 'PN-MAP FAIL: rollback refused after restore (%)', res; end if;
+  select count(*) into v from public.pn_agents where id='00000000-0000-0000-0000-00000000a901';
+  if v <> 0 then raise exception 'PN-MAP FAIL: mapped agent not removed on rollback'; end if;
+  raise notice 'PN-MAP PASS — mapped batch: atomic commit, provenance retained, edit-aware rollback';
+end $$;
+
 \echo ''
 \echo '════════════════════════════════════════════'
-\echo 'ALL PN DB-LEVEL PROOFS PASSED (atomic commit · edit-aware rollback · admin RLS · schema · idempotency)'
+\echo 'ALL PN DB-LEVEL PROOFS PASSED (atomic commit · edit-aware rollback · admin RLS · schema · idempotency · PN-MAP mapper)'
 \echo '════════════════════════════════════════════'
