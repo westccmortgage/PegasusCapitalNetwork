@@ -39,15 +39,32 @@ test('zh-CN switches the workspace into Chinese', async ({ page }) => {
   await expect(page.getByText('贷款策略助手')).toBeVisible();
 });
 
-test('trust panel exposes licensing + office/direct tap-to-call from the workspace', async ({ page }) => {
+test('Company & Licensing drawer (via mobile menu) shows correct licensing + tap-to-call', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Company & Licensing/ }).click();
+  // Mobile header: open the menu, then the clearly-labeled Company & Licensing item.
+  await page.getByRole('button', { name: /Menu/ }).click();
+  await page.getByRole('menuitem', { name: /Company & Licensing/ }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('Company & Licensing')).toBeVisible();
+  await expect(dialog.getByText(/mortgage strategy platform operated for/i)).toBeVisible();
   await expect(dialog.getByText('NMLS #2817729')).toBeVisible();
   await expect(dialog.getByText('NMLS #2775380')).toBeVisible();
   await expect(dialog.locator('a[href="tel:+13106541577"]').first()).toBeVisible();
   await expect(dialog.locator('a[href="tel:+13106865053"]').first()).toBeVisible();
+  // Escape-to-close (keyboard accessible).
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+});
+
+test('mobile menu exposes phone actions with 44px targets', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Menu/ }).click();
+  const office = page.getByRole('menuitem', { name: /Call Office/ });
+  await expect(office).toBeVisible();
+  const box = await office.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await expect(page.getByRole('menuitem', { name: /Call Anatoliy/ })).toBeVisible();
 });
 
 for (const s of SIZES) {

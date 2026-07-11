@@ -11,6 +11,21 @@ const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragi
 const NMLS_CONSUMER_ACCESS = 'https://www.nmlsconsumeraccess.org/';
 // Owner-approved corporate site (for "Meet the Broker").
 const COMPANY_FACTS_PRIMARY = PRIMARY_WEBSITES[0];
+
+// WCCI brand mark — a bronze "W" drawn as rooftop peaks in a warm ivory tile
+// (premium mortgage/capital tone). Pure SVG so it scales from favicon to drawer.
+function BrandMark({ size = 34, title = 'WCCI' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" role="img" aria-label={title}
+      style={{ display: 'block', flexShrink: 0 }}>
+      <rect x="1.6" y="1.6" width="36.8" height="36.8" rx="10" fill="#fffdf8" stroke="#a97b3f" strokeWidth="1.7" />
+      <path d="M9 12.5 L14.5 27.5 L20 18 L25.5 27.5 L31 12.5" fill="none"
+        stroke="#a97b3f" strokeWidth="2.7" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M20 18 L25.5 27.5 L31 12.5" fill="none"
+        stroke="#3a3026" strokeWidth="2.7" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
 import { parseScenario } from './lib/parser.js';
 import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
@@ -226,8 +241,11 @@ export default function App() {
   const [manualOpen, setManualOpen] = useState(false);
   const [leadSent, setLeadSent] = useState(saved?.leadSent || false);
   const [profileOpenMobile, setProfileOpenMobile] = useState(false);
-  const [trustOpen, setTrustOpen] = useState(false);        // compact company/licensing trust panel
-  const [privacyOpen, setPrivacyOpen] = useState(false);    // inline "Privacy & AI Use" note inside the trust panel
+  const [trustOpen, setTrustOpen] = useState(false);        // Company & Licensing drawer
+  const [privacyOpen, setPrivacyOpen] = useState(false);    // inline "Privacy & AI Use" note inside the drawer
+  const [menuOpen, setMenuOpen] = useState(false);          // compact mobile header menu
+  const trustDialogRef = useRef(null);
+  const trustCloseRef = useRef(null);
   const [winWidth, setWinWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const composingRef = useRef(false);                        // true while an IME composition is active
   // Durable conversation intelligence + the latest contextual resource cards.
@@ -263,6 +281,35 @@ export default function App() {
 
   // Keep the document language in sync for accessibility + correct CJK shaping.
   useEffect(() => { try { document.documentElement.lang = lang; } catch {} }, [lang]);
+
+  // Escape closes the mobile menu.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  // Company & Licensing drawer: focus the close button on open, Escape to close,
+  // and trap Tab focus within the dialog (accessible modal).
+  useEffect(() => {
+    if (!trustOpen) return;
+    const prev = document.activeElement;
+    setTimeout(() => { try { trustCloseRef.current?.focus(); } catch {} }, 0);
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setTrustOpen(false); setPrivacyOpen(false); return; }
+      if (e.key !== 'Tab') return;
+      const root = trustDialogRef.current;
+      if (!root) return;
+      const f = root.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); try { prev && prev.focus && prev.focus(); } catch {} };
+  }, [trustOpen]);
 
   // Keep the input box sized to its content (covers typing, voice, and clearing).
   useEffect(() => {
@@ -803,14 +850,19 @@ export default function App() {
     );
     return (
       <div onClick={() => { setTrustOpen(false); setPrivacyOpen(false); }}
-        style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: FONT }}>
-        <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={cu.trustHeading}
-          style={{ background: 'white', width: '100%', maxWidth: 460, maxHeight: '90dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '18px 18px 0 0', padding: '18px clamp(16px,4vw,24px)', paddingBottom: 'max(18px, env(safe-area-inset-bottom, 18px))' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#3a3026' }}>🛡️ {cu.trustHeading}</span>
-            <button onClick={() => { setTrustOpen(false); setPrivacyOpen(false); }} aria-label={cu.close}
-              style={{ background: '#f0e9db', border: 'none', borderRadius: 8, width: 40, height: 40, fontSize: 16, cursor: 'pointer', color: '#8c8375' }}>✕</button>
+        style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(58,48,38,0.34)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: FONT }}>
+        <div ref={trustDialogRef} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="cl-drawer-title"
+          style={{ background: '#fffdf8', width: '100%', maxWidth: 460, maxHeight: '90dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '18px 18px 0 0', padding: '18px clamp(16px,4vw,24px)', paddingBottom: 'max(18px, env(safe-area-inset-bottom, 18px))' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+              <BrandMark size={30} />
+              <span id="cl-drawer-title" style={{ fontSize: 16, fontWeight: 700, color: '#3a3026', letterSpacing: '0.01em' }}>{cu.companyAndLicensing}</span>
+            </div>
+            <button ref={trustCloseRef} onClick={() => { setTrustOpen(false); setPrivacyOpen(false); }} aria-label={cu.close}
+              style={{ background: '#f0e9db', border: '1px solid #e7ddc9', borderRadius: 9, width: 40, height: 40, fontSize: 16, cursor: 'pointer', color: '#8c8375', flexShrink: 0 }}>✕</button>
           </div>
+          {/* One-sentence plain explainer (not a warning) */}
+          <p style={{ fontSize: 12.5, color: '#6b6152', lineHeight: 1.6, marginBottom: 12 }}>{cu.platformExplainer}</p>
 
           {/* Licensing — never translated */}
           <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#4a4235', borderTop: '1px solid #efe8da', paddingTop: 12 }}>
@@ -856,10 +908,10 @@ export default function App() {
 
         <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #e7ddc9', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 100 }}>
           {/* Brand lockup — WCCI, by the legal company (never positioned as an AI tech company) */}
-          <a href="https://wcci.online" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 1, minWidth: 0 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>W</div>
+          <a href="https://wcci.online" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 1, minWidth: 0 }}>
+            <BrandMark size={34} />
             <div style={{ minWidth: 0, lineHeight: 1.15 }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#3a3026' }}>WCCI</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#3a3026', letterSpacing: '0.03em' }}>WCCI</div>
               <div style={{ fontSize: 10.5, color: '#8c8375', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brandBy} {COMPANY_NAME}</div>
             </div>
           </a>
@@ -1019,29 +1071,71 @@ export default function App() {
     return (
       <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#f6f1e8', fontFamily: FONT }}>
         {/* Workspace header — WCCI, by West Coast Capital Mortgage Inc. */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: '#fffdf8', borderBottom: '1px solid #e7ddc9', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg, #a97b3f, #855f2c)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fffdf8', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>W</div>
-            <div style={{ minWidth: 0, lineHeight: 1.16 }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#3a3026', letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>WCCI</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 14px', background: '#fffdf8', borderBottom: '1px solid #e7ddc9', flexShrink: 0, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <BrandMark size={34} />
+            <div style={{ minWidth: 0, lineHeight: 1.18 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#3a3026', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>WCCI</div>
               <div style={{ fontSize: 10.5, color: '#8c8375', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brandBy} {COMPANY_NAME}</div>
             </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-            {messages.length > 1 && (
-              <button onClick={resetSession} title={t.startOver}
-                style={{ background: 'none', border: '1px solid #e7ddc9', color: '#8c8375', cursor: 'pointer', fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8, minHeight: 34 }}>{t.startOver}</button>
+            {/* Office number visible in the header where space allows (desktop). */}
+            {isWide && (
+              <a href={OFFICE_PHONE_HREF} style={{ marginLeft: 8, fontSize: 12.5, color: '#6b6152', textDecoration: 'none', whiteSpace: 'nowrap', borderLeft: '1px solid #e7ddc9', paddingLeft: 12 }}>
+                <span style={{ color: '#a99e8b' }}>{cu.officeLabel}:</span> <span style={{ fontWeight: 600, color: '#855f2c' }}>{OFFICE_PHONE}</span>
+              </a>
             )}
-            <button onClick={() => setTrustOpen(true)} aria-label={cu.companyAndLicensing} title={cu.companyAndLicensing}
-              style={{ background: 'none', border: '1px solid #e7ddc9', color: '#3a3026', cursor: 'pointer', fontSize: 14, padding: '6px 9px', borderRadius: 8, minHeight: 34 }}>🛡️</button>
-            {!isWide && (
-              <button onClick={() => setProfileOpenMobile(true)} aria-label={`${su.profileTitle} · ${pstatus.percent}%`}
-                style={{ background: 'linear-gradient(135deg, #3a3026, #a97b3f)', color: '#fffdf8', border: 'none', borderRadius: 8, padding: '6px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', minHeight: 34 }}>
-                📋 {pstatus.percent}%
+          </div>
+
+          {isWide ? (
+            // ── Desktop actions ──
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              {messages.length > 1 && (
+                <button onClick={resetSession}
+                  style={{ background: 'none', border: '1px solid #e7ddc9', color: '#8c8375', cursor: 'pointer', fontSize: 12, fontWeight: 600, padding: '8px 12px', borderRadius: 9, minHeight: 40 }}>{t.startOver}</button>
+              )}
+              <button onClick={() => setTrustOpen(true)} aria-haspopup="dialog" aria-label={cu.companyAndLicensing}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#f7efe0', border: '1px solid #e2d6c0', color: '#3a3026', cursor: 'pointer', fontSize: 13, fontWeight: 600, padding: '8px 13px', borderRadius: 9, minHeight: 40, whiteSpace: 'nowrap' }}>
+                <span aria-hidden="true">🛡️</span>{cu.companyAndLicensing}
               </button>
-            )}
-            <LangSwitch />
-          </div>
+              <LangSwitch />
+            </div>
+          ) : (
+            // ── Mobile actions: phone · language · menu ──
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <a href={OFFICE_PHONE_HREF} aria-label={`${cu.callOffice} ${OFFICE_PHONE}`} title={`${cu.callOffice} ${OFFICE_PHONE}`}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 40, minHeight: 40, fontSize: 17, textDecoration: 'none', border: '1px solid #e7ddc9', borderRadius: 9, color: '#3a3026' }}>📞</a>
+              <LangSwitch />
+              <button onClick={() => setMenuOpen(o => !o)} aria-haspopup="menu" aria-expanded={menuOpen} aria-label={cu.menuLabel} title={cu.menuLabel}
+                style={{ minWidth: 40, minHeight: 40, background: menuOpen ? '#f2e7d3' : 'none', border: '1px solid #e7ddc9', borderRadius: 9, color: '#3a3026', fontSize: 17, cursor: 'pointer' }}>☰</button>
+            </div>
+          )}
+
+          {/* Mobile menu dropdown */}
+          {!isWide && menuOpen && (
+            <>
+              <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 210 }} aria-hidden="true" />
+              <div role="menu" aria-label={cu.menuLabel}
+                style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 10, zIndex: 220, background: '#fffdf8', border: '1px solid #e7ddc9', borderRadius: 12, boxShadow: '0 12px 34px rgba(74,58,32,0.16)', padding: 6, minWidth: 232, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {[
+                  { key: 'profile', label: `${su.profileTitle} · ${pstatus.percent}%`, icon: '📋', on: () => { setMenuOpen(false); setProfileOpenMobile(true); } },
+                  { key: 'company', label: cu.companyAndLicensing, icon: '🛡️', on: () => { setMenuOpen(false); setTrustOpen(true); } },
+                  { key: 'office', label: `${cu.callOffice} · ${OFFICE_PHONE}`, icon: '📞', href: OFFICE_PHONE_HREF },
+                  { key: 'direct', label: `${cu.callAnatoliy} · ${DIRECT_PHONE}`, icon: '📱', href: DIRECT_PHONE_HREF },
+                  { key: 'privacy', label: cu.privacyAiUse, icon: '🔒', on: () => { setMenuOpen(false); setPrivacyOpen(true); setTrustOpen(true); } },
+                ].map(item => item.href ? (
+                  <a key={item.key} role="menuitem" href={item.href} onClick={() => setMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '10px 12px', borderRadius: 9, textDecoration: 'none', color: '#3a3026', fontSize: 14, fontWeight: 500 }}>
+                    <span aria-hidden="true" style={{ width: 20, textAlign: 'center' }}>{item.icon}</span>{item.label}
+                  </a>
+                ) : (
+                  <button key={item.key} role="menuitem" onClick={item.on}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '10px 12px', borderRadius: 9, background: 'none', border: 'none', textAlign: 'left', color: '#3a3026', fontSize: 14, fontWeight: 500, cursor: 'pointer', width: '100%' }}>
+                    <span aria-hidden="true" style={{ width: 20, textAlign: 'center' }}>{item.icon}</span>{item.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Body: conversation (left) + live profile (right, desktop) */}

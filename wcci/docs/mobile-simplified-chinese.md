@@ -10,6 +10,25 @@ as an opt-in route: `/?intro`** (`src/App.jsx` — `screen` init reads
 `e2e/mobile.spec.mjs` (“default route opens directly into the workspace” +
 “the old landing is preserved only at /?intro”).
 
+## Header & Company-trust UX
+
+The generic "W" tile and the ambiguous shield-only button are gone. The header
+now uses a real **WCCI brand mark** (`BrandMark` — an SVG bronze "W" drawn as
+rooftop peaks in a warm ivory tile; also the favicon) beside the lockup
+**WCCI / by West Coast Capital Mortgage Inc.**, shown without a click. On desktop
+the **Office: (310) 654-1577** number is visible in the header and the trust
+control is a clearly-labeled **🛡️ Company & Licensing** button (icon + text). On
+mobile the right-side actions are **phone · language · menu (☰)**; the menu holds
+Loan Strategy Profile, Company & Licensing, Call Office, Call Anatoliy, and
+Privacy & AI Use (44px targets, no clipping/overflow at 360px, Chinese-safe).
+
+The **Company & Licensing drawer** is titled plainly (not a security alert),
+opens with the one-line explainer *"WCCI is the mortgage strategy platform
+operated for West Coast Capital Mortgage Inc."*, then the full licensing blocks,
+Office/Direct/Email, and the five actions. It is an accessible modal:
+`role="dialog"`, focus moves to Close on open, **Tab is trapped**, **Escape
+closes**, and focus returns to the trigger. Verified by `e2e/mobile.spec.mjs`.
+
 ## Visual system — CaliforniaMTG warm concierge palette
 
 Design tokens live in `src/theme.js` (`C`): warm ivory app canvas, soft-cream
