@@ -19,8 +19,47 @@
 import { allResources } from './site-registry.js';
 import { audienceAllowed, isUrlAllowed } from './resource-validator.js';
 import { isSupportedState } from '../../config/companyFacts.js';
+import { classifyLoanSize } from '../../config/conformingLimits.js';
 
 const TRUST_OBJECTIONS = ['identity', 'licensing', 'privacy', 'company_background'];
+
+// Broad educational / state-brand categories that must NOT interrupt an active
+// data-gathering conversation (discovery / profile_building / clarification /
+// calculation) unless the user asked, a tool is needed, or it is trust/licensing.
+const BROAD_EDU_CATEGORIES = new Set(['mortgage_education', 'state_mortgage']);
+
+// Topics tied to the conforming-vs-jumbo question (used for resolution cleanup).
+export const JUMBO_TOPICS = ['jumbo', 'conforming', 'county_limit', 'high_balance'];
+
+// Where a recommended resource should render — inline (directly answers the
+// current message) vs. sidebar (passive next-step). A given resource lands in
+// exactly ONE place so it is never duplicated across both surfaces.
+const INLINE_REASONS = new Set(['trust', 'licensing', 'privacy', 'topic', 'apply',
+  'private_capital', 'investor', 'tokenization', 'network', 'development', 'professional_tool']);
+export function placementFor(reasonKey) {
+  return INLINE_REASONS.has(reasonKey) ? 'inline' : 'sidebar';
+}
+
+// BeforeJumboLoan is materially useful ONLY in specific cases. It is NOT a
+// generic "large loan / California / used the word conforming" recommendation,
+// and once the classification is resolved as conforming it is suppressed.
+export function beforeJumboEligible(ctx = {}, size = null) {
+  const t = ctx.topics || [];
+  const s = size || classifyLoanSize({ loanAmount: ctx.loanAmount, units: ctx.units });
+  const resolved = new Set(ctx.resolvedTopics || []);
+  const topicRaised = JUMBO_TOPICS.some(x => t.includes(x));
+  const wantsStructure = ctx.wantsStructureCompare || t.includes('buydown') || t.includes('interest_only') || t.includes('points');
+  const explicitCompare = !!ctx.explicitResourceRequest && topicRaised;
+
+  // Resolved as conforming → suppress unless they now want a structure comparison.
+  if (resolved.has('jumbo') || resolved.has('conforming')) return wantsStructure;
+  // KNOWN conforming by loan size → not jumbo by size; only structure/explicit keeps it.
+  if (s.conformingBySize) return wantsStructure || explicitCompare;
+  // KNOWN jumbo by loan size.
+  if (s.jumboBySize) return true;
+  // Loan size UNKNOWN → genuine jumbo uncertainty (topic) or a structure ask.
+  return topicRaised || wantsStructure;
+}
 
 // Cities/counties gates: these local brands may ONLY appear on a real
 // geography match — never as generic state fallbacks.
@@ -66,6 +105,12 @@ export function routeResources(ctx = {}) {
   const objections = ctx.objections || [];
   const hasTrustConcern = objections.some(o => TRUST_OBJECTIONS.includes(o)) || ctx.stage === 'trust_building';
   const wantsDevProof = topics.includes('development') || topics.includes('construction_experience');
+  // Stage/eligibility gating inputs.
+  const size = classifyLoanSize({ loanAmount: ctx.loanAmount, units: ctx.units });
+  const dataGathering = !!ctx.dataGathering;              // still collecting core scenario fields
+  const explicitReq = !!ctx.explicitResourceRequest;      // user explicitly asked for a link/resource
+  const wantsCalculator = !!ctx.wantsCalculator;
+  const wantsCaliforniaResources = !!ctx.wantsCaliforniaResources;
   const scored = [];
 
   for (const r of allResources()) {
@@ -90,6 +135,31 @@ export function routeResources(ctx = {}) {
 
     // A privacy policy is only a useful recommendation when privacy is the concern.
     if (r.id === 'californiamtg-privacy' && !objections.includes('privacy')) continue;
+
+    // ── Conforming-threshold correction: BeforeJumboLoan materiality gate ──
+    // Never recommend it merely because a loan is "large" or in CA; suppress it
+    // once the loan is known conforming by size or the question is resolved.
+    if (r.id === 'beforejumbo-home' && !beforeJumboEligible(ctx, size)) continue;
+
+    // ── CaliforniaMTG must not appear merely because state = CA, and not while
+    // still collecting core fields unless the user explicitly asked or a tool /
+    // completed scenario / trust context makes it material.
+    if (r.id === 'californiamtg-home') {
+      const material = explicitReq || wantsCaliforniaResources || wantsCalculator ||
+        ctx.stage === 'strategy_complete' || ctx.stage === 'human_review_ready' || ctx.stage === 'handoff_requested' ||
+        hasTrustConcern;
+      if (dataGathering && !material) continue;
+    }
+
+    // ── Stage gate: don't interrupt active data-gathering with broad education /
+    // state-brand resources. Exempt: explicit request, trust/licensing, a needed
+    // calculator/tool, and BeforeJumboLoan (which already passed its own
+    // materiality gate for the current jumbo question).
+    if (dataGathering && BROAD_EDU_CATEGORIES.has(r.category) && r.id !== 'beforejumbo-home') {
+      const allow = explicitReq || hasTrustConcern || wantsCalculator ||
+        (r.topics || []).includes('calculator') || wantsCaliforniaResources;
+      if (!allow) continue;
+    }
 
     // Orange Mortgage is the friendly-education brand for Orange County and
     // first-time/plain-English borrowers — never a generic fallback elsewhere
@@ -135,8 +205,11 @@ export function routeResources(ctx = {}) {
     // Trust + matching geography beats generic corporate trust (FL identity → Suncoast first).
     if (hasTrustConcern && trustHits && (geo === 'state' || geo === 'city' || geo === 'county')) score += 12;
     // State-specialist bonus: a brand dedicated to exactly the borrower's state
-    // outranks multi-state corporate pages for that state's questions.
-    if (geo && r.states && r.states.length === 1) score += 10;
+    // outranks multi-state corporate pages — but ONLY on a city/county match, so
+    // a bare state match can never clear the bar on geography alone.
+    if ((geo === 'city' || geo === 'county') && r.states && r.states.length === 1) score += 10;
+    // Explicit "show me California resources" surfaces the CA state brand.
+    if (wantsCaliforniaResources && r.category === 'state_mortgage' && geo) { score += 30; if (reasonKey === 'education') reasonKey = 'local_market'; }
 
     // Loan topic (routing priority 4).
     const topicHits = (r.topics || []).filter(t => topics.includes(t)).length;
@@ -161,6 +234,15 @@ export function routeResources(ctx = {}) {
 
     // Registry priority as a gentle tiebreaker.
     score += (r.priority || 0) / 10;
+
+    // STATE MATCH ALONE IS NEVER SUFFICIENT. If geography is the only positive
+    // signal (bare state, no city/county, topic, trust, tone, or specialty), the
+    // resource is excluded unless the user explicitly asked for it.
+    const nonGeoSignal = topicHits > 0 || trustHits > 0 || geo === 'city' || geo === 'county' ||
+      (ctx.tonePreference === 'plain_english' && (r.topics || []).includes('plain_english')) ||
+      (topics.includes('first_time_buyer') && (r.topics || []).includes('first_time_buyer')) ||
+      r.category === 'secure_application';
+    if (geo === 'state' && !nonGeoSignal && !explicitReq && !wantsCaliforniaResources) continue;
 
     if (score >= 20) scored.push({ id: r.id, score: Math.round(score * 10) / 10, reasonKey });
   }

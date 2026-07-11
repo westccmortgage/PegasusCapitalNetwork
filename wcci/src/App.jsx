@@ -30,9 +30,10 @@ import { parseScenario } from './lib/parser.js';
 import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
 import { buildLead, submitLead } from './lib/leadAdapter.js';
-import { initialConversationState, updateStateFromUserMessage, applyStatePatch, grantContactConsent, buildIntelContext } from './lib/conversationIntelligence.js';
+import { initialConversationState, updateStateFromUserMessage, applyStatePatch, grantContactConsent, buildIntelContext, detectResourceIntents } from './lib/conversationIntelligence.js';
 import { neutralizeUserMarkers, hasValidContact, extractUserContact, normalizeHandoffSignal, evaluateCompletion, buildCompletedLeadPayload, submitCompletedLead, createLeadTracker, leadFingerprint, getSessionId, getOpenedResources } from './lib/leadPipeline.js';
-import { routeResources, fallbackReason } from './lib/resources/resource-router.js';
+import { routeResources, fallbackReason, placementFor, JUMBO_TOPICS } from './lib/resources/resource-router.js';
+import { classifyLoanSize, CONFORMING_YEAR } from './config/conformingLimits.js';
 import { validateRecommendations } from './lib/resources/resource-validator.js';
 import { getResource } from './lib/resources/site-registry.js';
 import { track } from './lib/analytics.js';
@@ -178,6 +179,14 @@ function buildEstimatesContext(profile) {
   lines.push('=== CURRENT APP-COMPUTED ESTIMATES (planning only — share conversationally when asked about payment, cash to close, or costs; ALWAYS call them "estimated"/"for planning", NEVER a quote, lock, or approval) ===');
   if (e) {
     lines.push(`Loan amount: ${money0(e.loanAmount)} (LTV ${e.ltv}%).`);
+    // Deterministic conforming-by-size check so the assistant answers threshold
+    // questions with the verified number BEFORE offering any resource.
+    const size = classifyLoanSize({ loanAmount: e.loanAmount, units: profile.units || 1 });
+    if (size.known) {
+      lines.push(size.conformingBySize
+        ? `Conforming check: this loan (${money0(e.loanAmount)}) is AT/BELOW the ${CONFORMING_YEAR} national baseline conforming limit of ${money0(size.baseline)} for a one-unit property, so it is NOT jumbo based on loan size alone. Say this plainly if asked. County may still affect high-balance classification, pricing, or program structure — but NOT the fact that it is below the national baseline. Do not say the county decides whether it is conforming or jumbo here.`
+        : `Conforming check: this loan (${money0(e.loanAmount)}) is ABOVE the ${CONFORMING_YEAR} national baseline conforming limit of ${money0(size.baseline)} for a one-unit property; whether it is high-balance vs. jumbo then depends on the county-specific limit (the licensed team confirms the current county figure).`);
+    }
     lines.push(`Estimated monthly payment (principal, interest, taxes, insurance): about ${money0(e.monthlyPayment)}/month.`);
     lines.push(`Estimated cash to close: about ${money0(e.estimatedCashToClose)} — that's your down payment ${money0(e.downPayment)} plus about ${money0(e.closingCosts)} in estimated closing costs.`);
     lines.push('Itemized closing-cost ASSUMPTIONS (each is a separate category — NEVER merge points into "lender fees"):');
@@ -652,12 +661,36 @@ export default function App() {
     const nextState = updateStateFromUserMessage(convState, text, liveProfile, lang);
     for (const o of nextState.objections) if (!convState.objections.includes(o)) track('trust_objection_detected', { objection: o, stage: nextState.stage, language: lang });
     if (nextState.userRequestedHuman && !convState.userRequestedHuman) track('human_review_requested', { stage: nextState.stage, language: lang });
+
+    // ── Conforming-threshold + stage-aware routing inputs ──
+    const size = classifyLoanSize({ loanAmount: liveProfile.loanAmount, units: liveProfile.units || 1 });
+    const intents = detectResourceIntents(text);
+    const pst = profileStatus(liveProfile);
+    // Still gathering core scenario fields (and the user hasn't asked for a link)?
+    const dataGathering = pst.needed.missing.length > 0 && !intents.explicit &&
+      !['trust_building', 'human_review_ready', 'handoff_requested'].includes(nextState.stage);
+    // Resolution: once the loan is known conforming BY SIZE and a jumbo-class topic
+    // was raised, the conforming-vs-jumbo question is settled → mark it resolved.
+    let resolvedTopics = nextState.resolvedTopics || [];
+    if (size.conformingBySize && JUMBO_TOPICS.some(x => (nextState.topics || []).includes(x))) {
+      resolvedTopics = Array.from(new Set([...resolvedTopics, 'jumbo', 'conforming']));
+    }
+    nextState.resolvedTopics = resolvedTopics;
+    const jumboResolved = resolvedTopics.includes('jumbo') || resolvedTopics.includes('conforming');
+
     const routed = routeResources({
       audience: nextState.audience, state: nextState.state, county: nextState.county, city: nextState.city,
       topics: nextState.topics, objections: nextState.objections, stage: nextState.stage,
       wantsApply: nextState.wantsApply, tonePreference: nextState.tonePreference,
+      loanAmount: liveProfile.loanAmount, units: liveProfile.units || 1,
+      dataGathering, resolvedTopics,
+      explicitResourceRequest: intents.explicit, wantsCalculator: intents.calculator,
+      wantsCaliforniaResources: intents.california, wantsStructureCompare: intents.structure,
     });
     setConvState(nextState);
+    // Resolution-aware cleanup: a settled jumbo question removes any stale
+    // BeforeJumboLoan card already sitting in the sidebar.
+    if (jumboResolved) setSidebarRecs(prev => prev.filter(r => r.id !== 'beforejumbo-home'));
     const trackerRec = leadTrackerRef.current.get();
     const completeStatus = trackerRec ? trackerRec.stages.complete.status : 'qualifying';
     const intelBlock = buildIntelContext(nextState, routed.candidates, lang, getResource, {
@@ -710,7 +743,22 @@ export default function App() {
           for (const r of resources) track('resource_recommended', { resourceId: r.id, category: r.category, reasonKey: r.reasonKey, stage: nextState.stage, language: lang });
         }
       }
-      if (resources.length) setSidebarRecs(resources);
+      // ── No duplicate presentation ── each recommended resource renders in
+      // exactly ONE surface: inline (directly answers this message) OR sidebar
+      // (passive next-step). Never both.
+      var inlineRecs = resources.filter(r => placementFor(r.reasonKey) === 'inline');
+      var passiveRecs = resources.filter(r => placementFor(r.reasonKey) === 'sidebar');
+      const inlineIds = new Set(inlineRecs.map(r => r.id));
+      setSidebarRecs(prev => {
+        // Drop stale (resolved-topic) cards and anything now shown inline.
+        const kept = prev.filter(r => !(jumboResolved && r.id === 'beforejumbo-home') && !inlineIds.has(r.id));
+        const merged = [...kept];
+        for (const r of passiveRecs) {
+          if (jumboResolved && r.id === 'beforejumbo-home') continue;
+          if (!merged.some(x => x.id === r.id)) merged.push(r);
+        }
+        return merged.slice(-4);
+      });
 
       // Live profile sync: pull the AI's PROFILE_UPDATE line (fill-only merge so
       // the deterministic parser / manual entries stay authoritative).
@@ -726,7 +774,7 @@ export default function App() {
         if (sc.obj) parsedScenario = sc.obj;
       }
 
-      const reply = { role: 'assistant', content: displayText, ...(resources.length ? { resources } : {}) };
+      const reply = { role: 'assistant', content: displayText, ...(inlineRecs && inlineRecs.length ? { resources: inlineRecs } : {}) };
       const final = [...updated, reply];
       setMessages(final);
       for (const r of resources) track('resource_impression', { resourceId: r.id, category: r.category, stage: nextState.stage, language: lang });

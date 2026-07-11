@@ -32,6 +32,7 @@ export function initialConversationState() {
     tonePreference: undefined,
     audience: 'consumer_borrower',
     topics: [],
+    resolvedTopics: [],       // topics deterministically settled (e.g. jumbo→conforming)
     wantsApply: false,
     handoff: 'none',          // none | offer | requested | consented | submitted | declined
     recommendedResourceIds: [],
@@ -170,6 +171,25 @@ const TOPIC_PATTERNS = [
 ];
 
 const any = (patterns, text) => patterns.some(re => re.test(text));
+
+// Detect explicit user requests that unlock stage-gated resources (EN/ES/RU/zh).
+// Used so the router can honor "unless the user explicitly asks for a link/tool".
+export function detectResourceIntents(text) {
+  const t = String(text || '');
+  const explicit = /\b(link|links|resource|resources|page|website|url|show me|send me|give me|do you have)\b/i.test(t)
+    || /enlace|recurso|página|sitio web/i.test(t)
+    || /ссылк|ресурс|страниц|сайт/i.test(t)
+    || /链接|资源|网站|页面|发(给我|我)|给我看/.test(t);
+  const calculator = /calculat|estimate tool|payment tool/i.test(t)
+    || /calculadora/i.test(t) || /калькулятор|посчита/i.test(t) || /计算器|计算一下|算一下/.test(t);
+  const california = /california\s+(resource|guide|page|info|specific|tool|calculator)|california[- ]specific|about california/i.test(t)
+    || /recursos? de california|guía de california/i.test(t)
+    || /калифорнийск/i.test(t)
+    || /加州(的)?(资源|指南|信息|工具|计算器|页面)/.test(t);
+  const structure = /buy[- ]?down|interest[- ]only|discount points?|\bpoints?\b|payment strategy|compare (loan )?structures?/i.test(t)
+    || /买断利率|折扣点|只付利息|付款策略/.test(t);
+  return { explicit, calculator, california, structure };
+}
 
 // Curated, unambiguous city→county facts (NOT guesses — these cities are
 // wholly within the county). Used only to preserve routing context.

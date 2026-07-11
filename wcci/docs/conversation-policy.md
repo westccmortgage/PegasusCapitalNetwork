@@ -76,6 +76,47 @@ engine enforce together:
 - The prior failure (a merged **$18,565** presented as a "lender fee" on a $1.12M
   loan) is fixed and locked by `test/resource-routing.test.mjs` T13.
 
+## Conforming threshold & stage-aware routing (correction)
+
+**Verified 2026 baseline.** `src/config/conformingLimits.js` holds the national
+baseline conforming limits (one-unit **$832,750**; 2–4 units configured).
+`classifyLoanSize({loanAmount, units})` decides conforming-vs-jumbo **by loan
+size**: a loan ≤ the applicable baseline is conforming by size — not jumbo — and
+county is NOT required to establish that. The estimates block emits a
+"Conforming check" line and the prompt answers **with the number first**
+("This is below the 2026 baseline conforming limit of $832,750, so it is not
+jumbo based on loan size alone"), never "the county determines whether this is
+conforming or jumbo" when the loan is already below baseline. County still
+affects high-balance classification, pricing, or structure — only above baseline
+does county decide high-balance vs. jumbo.
+
+**BeforeJumboLoan materiality gate** (`beforeJumboEligible`): allowed only when
+the loan exceeds baseline, a county-specific high-balance question materially
+applies, the user explicitly asks to compare conforming/high-balance/jumbo, they
+want a structure comparison (buydown / interest-only / points), or the tool adds
+a comparison not already resolved in chat. Never for "large loan", "in
+California", "used the word conforming", or after the question is resolved — and
+once `resolvedTopics` contains `jumbo`/`conforming`, the stale card is removed
+from the sidebar.
+
+**State match alone is never sufficient.** The router excludes a resource whose
+only positive signal is a bare state match (no city/county, topic, trust, tone,
+or specialty) unless the user explicitly asked. **CaliforniaMTG** is not
+recommended merely because `state = CA`, and not during active data-gathering
+unless the user explicitly asks, wants a CA tool/calculator, has a trust
+question, or the scenario is complete.
+
+**Stage gating.** While still collecting core fields (data-gathering) the router
+suppresses broad educational / state-brand resources unless the user asked, it's
+trust/licensing, or a needed calculator/tool — it does not interrupt an active
+scenario intake.
+
+**No duplicate presentation.** `placementFor(reasonKey)` sends each recommended
+resource to exactly one surface — **inline** (directly answers the current
+message: trust/licensing/privacy/topic/apply/specialty) or **sidebar** (passive
+next-step: local_market/education) — never both. Verified by
+`test/resource-routing-correction.test.mjs` (10 required cases).
+
 ## Language (Phase 11)
 
 Detect + persist EN/ES/RU; keep the whole reply in one language; never switch
