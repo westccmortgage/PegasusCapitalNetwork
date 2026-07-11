@@ -328,6 +328,7 @@
       '<div class="pit-panel"><h3>Upload partner workbook (.xlsx)</h3>' +
         '<div class="pit-drop" id="pnDrop" onclick="document.getElementById(\'pnFile\').click()">Drop a .xlsx here or click to choose. Six sheets: Agents · Escrow_Title · Companies · Activity_Signals · Outreach_Actions · Do_Not_Contact.</div>' +
         '<input type="file" id="pnFile" accept=".xlsx" style="display:none" onchange="PegPartner.fileChosen(this)">' +
+        '<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="PegPartner.universalImport()">Universal Import — map any CSV/XLSX</button><span class="pit-meta">External file with different headers? Detect → map → normalize → preview.</span></div>' +
         '<div id="pnImpErr" class="pit-invalid" style="display:none;margin-top:10px"></div>' +
         '<div id="pnPreview" style="margin-top:12px"></div>' +
         '<div class="pit-note">Commit is transactional — either the batch applies cleanly or nothing changes. This importer is only for California Partner Network workbooks.</div>' +
@@ -467,5 +468,9 @@
     exportDnc: exportDnc,
     fileChosen: fileChosen, forcePreview: forcePreview, resolve: resolve, reopenBatch: reopenBatch,
     commit: commit, rejectPreview: rejectPreview, rollback: rollback, downloadTemplate: downloadTemplate,
+    universalImport: function () {
+      window.PegMapper.open({ module: "partner", moduleLabel: "California Partner Network",
+        api: window.PegPartnerAPI, onDone: function () { CACHE = { agents: null, escrow: null, companies: null, signals: null, outreach: null, dnc: null }; nav("import"); } });
+    },
   };
 })();

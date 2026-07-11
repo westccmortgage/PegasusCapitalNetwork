@@ -119,8 +119,9 @@ async function loadExisting(supabase, adminId) {
   return E;
 }
 
-// Exported for offline QA — no I/O of its own.
+// Exported for offline QA + reuse by the Universal Import Mapper.
 exports._parseWorkbook = parseWorkbook;
+exports._loadExisting = loadExisting;
 
 exports.handler = async (event) => {
   const auth = await requireAdmin(event);

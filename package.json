@@ -13,6 +13,7 @@
     "qa:mobile": "QA_BASE_URL=https://pegasuslendersgroup.com node qa/mobile-audit.js",
     "qa:intelligence": "node qa/intelligence-audit.js",
     "qa:partner": "node qa/partner-audit.js",
+    "qa:mapper": "node qa/mapper-audit.js",
     "qa:all": "npm run qa:links && npm run qa:runtime && npm run qa:auth && npm run qa:mobile"
   },
   "dependencies": {

@@ -724,6 +724,7 @@
         '<div class="pit-panel"><h3>Upload the daily workbook</h3>' +
           '<div class="pit-drop" id="pitDrop" onclick="document.getElementById(\'pitFile\').click()">Drop the .xlsx here or click to choose<br><span style="font-size:11px">Max 4MB · .xlsx only · no macros · values only (no formulas)</span></div>' +
           '<input type="file" id="pitFile" accept=".xlsx" style="display:none" onchange="PegIntel.pickFile(this)">' +
+          '<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="PegIntel.universalImport()">Universal Import — map any CSV/XLSX</button><span class="pit-meta">External file with different headers? Detect → map → normalize → preview.</span></div>' +
           '<div id="pitImpOut"></div>' +
         "</div>" +
         '<div class="pit-panel"><h3>Template</h3><div class="pit-note" style="margin:0">The importer and the template are generated from the same contract. Use <b>Download Import Template</b> (top of the page) and keep the sheet names and headers unchanged. Full field documentation: docs/CAPITAL-INTELLIGENCE-IMPORT.md.</div></div>' +
@@ -932,5 +933,9 @@
     commit: commit, reject: reject, rollback: rollback, errorReport: errorReport,
     reopenBatch: reopenBatch, reopenFromQuality: reopenFromQuality,
     downloadTemplate: downloadTemplate,
+    universalImport: function () {
+      window.PegMapper.open({ module: "intelligence", moduleLabel: "Capital Intelligence",
+        api: window.PegIntelAPI, onDone: function () { CACHE.properties = null; CACHE.programs = null; nav("import"); } });
+    },
   };
 })();
