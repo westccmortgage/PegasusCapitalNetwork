@@ -325,10 +325,11 @@
     var batches = [];
     try { batches = await A.listBatches(); } catch (_) {}
     host.innerHTML =
-      '<div class="pit-panel"><h3>Upload partner workbook (.xlsx)</h3>' +
-        '<div class="pit-drop" id="pnDrop" onclick="document.getElementById(\'pnFile\').click()">Drop a .xlsx here or click to choose. Six sheets: Agents · Escrow_Title · Companies · Activity_Signals · Outreach_Actions · Do_Not_Contact.</div>' +
-        '<input type="file" id="pnFile" accept=".xlsx" style="display:none" onchange="PegPartner.fileChosen(this)">' +
-        '<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="PegPartner.universalImport()">Universal Import — map any CSV/XLSX</button><span class="pit-meta">External file with different headers? Detect → map → normalize → preview.</span></div>' +
+      '<div class="pit-panel"><h3>Upload partner workbook (.xlsx / .csv)</h3>' +
+        '<div class="pit-drop" id="pnDrop" onclick="document.getElementById(\'pnFile\').click()">Drop a .xlsx or .csv here or click to choose.<br><span style="font-size:11px">Every file goes through Detect → Map → Normalize → Review before commit. Native Pegasus templates skip mapping automatically.</span></div>' +
+        '<input type="file" id="pnFile" accept=".xlsx,.csv" style="display:none" onchange="PegPartner.mapChosen(this)">' +
+        '<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="PegPartner.strictUpload()">Strict native importer (advanced)</button><span class="pit-meta">Bypass the mapper for an exact native template.</span></div>' +
+        '<input type="file" id="pnFileStrict" accept=".xlsx" style="display:none" onchange="PegPartner.fileChosen(this)">' +
         '<div id="pnImpErr" class="pit-invalid" style="display:none;margin-top:10px"></div>' +
         '<div id="pnPreview" style="margin-top:12px"></div>' +
         '<div class="pit-note">Commit is transactional — either the batch applies cleanly or nothing changes. This importer is only for California Partner Network workbooks.</div>' +
@@ -343,6 +344,18 @@
             (b.status === "previewed" ? '<button class="btn btn-ghost btn-sm" onclick="PegPartner.reopenBatch(\'' + b.id + '\')">Review</button>' : "") +
             (canRoll ? '<button class="btn btn-ghost btn-sm" onclick="PegPartner.rollback(\'' + b.id + '\')">Roll back</button>' : "") + "</div>";
         }).join("") : empty("No imports yet.")) + "</div>";
+    var drop = document.getElementById("pnDrop");
+    if (drop) {
+      ["dragover", "dragleave", "drop"].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) {
+          e.preventDefault(); drop.classList.toggle("over", ev === "dragover");
+          if (ev === "drop" && e.dataTransfer.files.length) {
+            window.PegMapper.openWithFile(e.dataTransfer.files[0], { module: "partner", moduleLabel: "California Partner Network",
+              api: window.PegPartnerAPI, onDone: function () { CACHE = { agents: null, escrow: null, companies: null, signals: null, outreach: null, dnc: null }; nav("import"); } });
+          }
+        });
+      });
+    }
   }
   function fileChosen(input) {
     impErr("");                              // clear any stale error when a new file is selected
@@ -472,5 +485,14 @@
       window.PegMapper.open({ module: "partner", moduleLabel: "California Partner Network",
         api: window.PegPartnerAPI, onDone: function () { CACHE = { agents: null, escrow: null, companies: null, signals: null, outreach: null, dnc: null }; nav("import"); } });
     },
+    // Primary upload → route the file through the Universal Import Mapper
+    // (which handles the native fast-path) before strict validation.
+    mapChosen: function (input) {
+      var f = input.files && input.files[0]; input.value = "";
+      if (!f) return;
+      window.PegMapper.openWithFile(f, { module: "partner", moduleLabel: "California Partner Network",
+        api: window.PegPartnerAPI, onDone: function () { CACHE = { agents: null, escrow: null, companies: null, signals: null, outreach: null, dnc: null }; nav("import"); } });
+    },
+    strictUpload: function () { var el = document.getElementById("pnFileStrict"); if (el) el.click(); },
   };
 })();

@@ -14,6 +14,7 @@
     "qa:intelligence": "node qa/intelligence-audit.js",
     "qa:partner": "node qa/partner-audit.js",
     "qa:mapper": "node qa/mapper-audit.js",
+    "qa:acceptance": "node qa/acceptance-ca-partner.js",
     "qa:all": "npm run qa:links && npm run qa:runtime && npm run qa:auth && npm run qa:mobile"
   },
   "dependencies": {

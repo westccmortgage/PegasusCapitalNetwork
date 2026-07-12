@@ -55,40 +55,68 @@ const PARTNER = {
     Agents: buildEntity(pcore, "Agents", {
       nameField: "Full_Name", companyField: "Company",
       detectHints: ["agent", "realtor", "dre", "license", "brokerage", "producer"],
+      transforms: { Priority: "priority" },
       aliases: {
         Full_Name: ["name", "full name", "agent name", "realtor name", "agent", "contact name", "rep name", "licensee name", "licensee", "first name", "last name", "first name last name"],
         Company: ["brokerage", "office", "company name", "firm", "company", "brokerage name", "brokerage/office"],
-        License_Number: ["dre", "dre number", "license #", "license number", "license", "dre #", "lic", "lic #", "dre lic"],
+        License_Number: ["dre", "dre number", "license #", "license number", "license", "dre #", "lic", "lic #", "dre lic", "dre license id", "dre_license_id"],
+        License_Status: ["license status", "dre status", "status of license"],
         Job_Title: ["title", "job title", "position", "designation"],
-        Email: ["email address", "work email", "e-mail", "business email", "email"],
-        Phone: ["cell", "mobile", "business phone", "telephone", "direct", "cell phone", "phone number", "phone"],
+        Email: ["email address", "work email", "e-mail", "business email", "email", "public email", "public_email"],
+        Phone: ["cell", "mobile", "business phone", "telephone", "direct", "cell phone", "phone number", "phone", "public phone", "public_phone"],
         Website: ["url", "web", "website", "profile url"],
-        City: ["area", "market", "territory", "location", "region", "city"],
-        Specialty: ["focus", "niche", "segment", "expertise", "specialty", "specialties"],
+        LinkedIn_URL: ["linkedin", "linkedin url", "linkedin_url"],
+        City: ["area", "territory", "location", "city"],
+        County: ["county"],
+        Service_Areas: ["service areas", "areas served", "coverage", "service area", "markets"],
+        Specialty: ["focus", "niche", "segment", "expertise", "specialty", "specialties", "specialization"],
         Production_Volume: ["volume", "sales", "production", "gci", "sales volume", "annual volume", "production volume", "$ volume"],
+        Production_Tier: ["estimated production tier", "production tier", "tier"],
         Deal_Count: ["transactions", "sides", "deals", "closings", "units", "transaction count", "deal count", "# of deals"],
+        Activity_Evidence: ["recent activity evidence", "activity evidence", "recent activity", "evidence"],
+        Buyer_Side_Relevance: ["buyer side relevance", "buyer-side relevance", "buyer relevance"],
+        Partner_Score: ["partner potential score", "partner score", "partner potential", "score"],
+        Why_Relevant: ["why relevant", "why", "rationale"],
+        Next_Step: ["recommended next step", "next step", "suggested next step"],
+        Connection_Note: ["connection note", "intro note", "outreach note"],
+        Priority: ["priority", "rank", "tier"],
         Status: ["active", "status"],
         Tags: ["labels", "tags"],
         External_ID: ["id", "source id", "record id", "external id"],
         Notes: ["comments", "note", "notes"],
         Source_URL: ["source", "source url", "source link"],
+        Last_Verified_Date: ["last verified date", "last verified", "verified date"],
       },
     }),
     Escrow_Title: buildEntity(pcore, "Escrow_Title", {
       nameField: "Officer_Name", companyField: "Company",
       detectHints: ["escrow", "title", "officer", "settlement"],
+      transforms: { Priority: "priority" },
       aliases: {
         Officer_Name: ["name", "officer", "escrow officer", "officer name", "title officer", "title rep", "contact", "settlement officer", "licensee name"],
         Company: ["company", "brokerage", "office", "escrow company", "title company", "firm", "company name"],
+        Organization_Type: ["organization type", "org type", "entity type", "company type"],
+        Regulator: ["regulator", "regulatory body", "agency", "regulated by"],
         Role: ["role", "title rep", "title officer", "escrow officer", "type", "position"],
-        License_Number: ["license", "license number", "lic", "escrow license", "dre"],
-        Email: ["email", "email address", "work email", "e-mail"],
-        Phone: ["phone", "cell", "mobile", "business phone", "direct", "phone number"],
+        License_Number: ["license", "license number", "lic", "escrow license", "dre", "license or entity id", "entity id", "license id", "nmls"],
+        License_Status: ["license status", "status of license"],
+        Email: ["email", "email address", "work email", "e-mail", "public email", "public_email"],
+        Phone: ["phone", "cell", "mobile", "business phone", "direct", "phone number", "public phone", "public_phone"],
+        Website: ["website", "url", "web"],
+        LinkedIn_URL: ["linkedin", "linkedin url", "linkedin_url"],
         City: ["city", "area", "location", "region"],
+        County: ["county"],
+        Service_Areas: ["service areas", "areas served", "coverage", "service area"],
         Transaction_Volume: ["volume", "transaction volume", "escrow volume", "closings"],
+        Partner_Score: ["partner potential score", "partner score", "partner potential", "score"],
+        Why_Relevant: ["why relevant", "why", "rationale"],
+        Next_Step: ["recommended next step", "next step"],
+        Connection_Note: ["connection note", "intro note"],
+        Priority: ["priority", "rank", "tier"],
         Status: ["status", "active"],
         Source_URL: ["source", "source url"],
         External_ID: ["id", "external id", "source id"],
+        Last_Verified_Date: ["last verified date", "last verified", "verified date"],
       },
     }),
     Companies: buildEntity(pcore, "Companies", {
@@ -117,10 +145,13 @@ const PARTNER = {
       transforms: { Signal_Type: "signal_type" },
       aliases: {
         Subject_Name: ["contact", "subject", "agent name", "name", "subject name", "agent", "who"],
-        Subject_Type: ["subject type", "type of subject"],
+        Subject_Key: ["contact key", "contact_key", "subject key", "contact id", "ref"],
+        Subject_Type: ["subject type", "type of subject", "contact type", "contact_type"],
         Signal_Type: ["signal type", "activity", "event", "type", "headline", "category", "recent sale", "closed transaction", "new listing", "price reduction"],
         Signal_Date: ["date", "signal date", "event date", "when", "activity date"],
         Detail: ["detail", "details", "description", "summary", "headline", "note"],
+        Market: ["property or market", "property/market", "market", "property", "location"],
+        Relevance: ["relevance", "why relevant", "significance"],
         URL: ["url", "link", "source"],
         Source_URL: ["source", "source url"],
         Source_Title: ["source title", "publisher"],
@@ -133,7 +164,8 @@ const PARTNER = {
       transforms: { Priority: "priority" },
       aliases: {
         Subject_Name: ["contact", "subject", "agent name", "name", "who"],
-        Subject_Type: ["subject type", "type of subject"],
+        Subject_Key: ["contact key", "contact_key", "subject key", "contact id", "ref"],
+        Subject_Type: ["subject type", "type of subject", "contact type", "contact_type"],
         Action: ["message", "task", "next step", "action", "todo", "to-do", "to do", "activity", "step"],
         Priority: ["urgency", "rank", "tier", "priority", "importance", "level"],
         Action_Type: ["action type", "type", "kind"],
@@ -141,6 +173,7 @@ const PARTNER = {
         Due_Date: ["due date", "due", "follow up date", "date", "when", "followup"],
         Reason: ["reason", "why", "context"],
         Status: ["status"],
+        Notes: ["notes", "note", "comments"],
         External_ID: ["id", "external id"],
       },
     }),
@@ -162,6 +195,35 @@ const PARTNER = {
       },
     }),
   },
+};
+
+// Partner Network rejects consumer/borrower lead data.
+PARTNER.rejectBorrower = true;
+
+// Cross-sheet reference resolution (runs in the mapper BEFORE schema
+// validation): resolve Activity/Outreach Contact_Key → subject_name from the
+// same-batch Agents/Escrow_Title records (by External_ID, then normalized name).
+PARTNER.resolveReferences = function (canonical, warnings) {
+  const norm = (s) => String(s == null ? "" : s).trim().toUpperCase();
+  const normName = (s) => String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const byExt = {}, byName = {};
+  (canonical.Agents || []).forEach((a) => {
+    if (a.External_ID) byExt[norm(a.External_ID)] = { name: a.Full_Name, type: "agent" };
+    if (a.Full_Name) byName[normName(a.Full_Name)] = { name: a.Full_Name, type: "agent" };
+  });
+  (canonical.Escrow_Title || []).forEach((e) => {
+    if (e.External_ID) byExt[norm(e.External_ID)] = { name: e.Officer_Name, type: "escrow_title" };
+    if (e.Officer_Name) byName[normName(e.Officer_Name)] = { name: e.Officer_Name, type: "escrow_title" };
+  });
+  ["Activity_Signals", "Outreach_Actions"].forEach((cs) => {
+    (canonical[cs] || []).forEach((rec, i) => {
+      const hasName = rec.Subject_Name && String(rec.Subject_Name).trim() !== "";
+      if (hasName || !rec.Subject_Key) return;
+      const hit = byExt[norm(rec.Subject_Key)] || byName[normName(rec.Subject_Key)];
+      if (hit) { rec.Subject_Name = hit.name; if (!rec.Subject_Type) rec.Subject_Type = hit.type; }
+      else warnings.push({ sheet: cs, row: i + 2, message: 'Contact_Key "' + rec.Subject_Key + '" did not match any Agent or Escrow/Title in this workbook.' });
+    });
+  });
 };
 
 // ── Capital Intelligence descriptor (Palm Beach CRE) ─────────────────────────
@@ -290,4 +352,70 @@ function detectModule(sheets, currentModule) {
   };
 }
 
-module.exports = { DESCRIPTORS, PARTNER, INTELLIGENCE, buildEntity, detectModule, bestScore };
+// ── Built-in Import Profiles (code-defined; module-isolated) ─────────────────
+// A built-in profile recognizes a file by its sheet signature and supplies
+// explicit value transforms (whitelisted maps) that the generic engine can't
+// infer. Column→field mapping is left to alias auto-mapping (which the admin
+// can still edit); the profile only pins the enum/value normalizations.
+const SIGNAL_VALUE_MAP = {
+  "buyer-side closing": "closed_deal", "luxury closing": "closed_deal",
+  "recent closing": "closed_deal", "multiple recent closings": "closed_deal",
+  "buyer-side activity": "closed_deal",
+  "current local practice": "marketing", "active market presence": "marketing",
+  "relationship development role": "other", "residential escrow specialization": "other",
+  "association / settlement expertise": "other", "association/settlement expertise": "other",
+  "current title team role": "other",
+};
+const SUBJECT_TYPE_MAP = {
+  "residential real estate agent": "agent", "real estate agent": "agent", "agent": "agent",
+  "escrow/title professional": "escrow_title", "escrow / title professional": "escrow_title",
+  "escrow officer": "escrow_title", "title officer": "escrow_title", "escrow_title": "escrow_title",
+};
+const PRIORITY_VALUE_MAP = { a: 1, b: 2, c: 3 };
+
+const BUILTIN_PROFILES = {
+  partner: [{
+    id: "builtin:chatgpt-ca-partner",
+    name: "ChatGPT California Partner Research",
+    description: "Built-in mapping for the ChatGPT California Partner Research workbook (Agents, Escrow_Title, Companies, Activity_Signals, Outreach_Actions, Do_Not_Contact).",
+    sheetSignature: ["Agents", "Escrow_Title", "Companies", "Activity_Signals", "Outreach_Actions", "Do_Not_Contact"],
+    // valueTransforms[entity][targetField] = { rawLowercased: normalized }
+    valueTransforms: {
+      Activity_Signals: { Signal_Type: SIGNAL_VALUE_MAP },
+      Outreach_Actions: { Priority: PRIORITY_VALUE_MAP, Subject_Type: SUBJECT_TYPE_MAP },
+      Agents: { Priority: PRIORITY_VALUE_MAP },
+      Escrow_Title: { Priority: PRIORITY_VALUE_MAP },
+    },
+  }],
+  intelligence: [],
+};
+
+function _nh(s) { return String(s == null ? "" : s).toLowerCase().replace(/[\s_]+/g, ""); }
+// Match a file's sheets against built-in profiles for a module. Returns
+// { profile, score } for the best match at or above a threshold, else null.
+function matchBuiltinProfile(sheets, module) {
+  const names = (sheets || []).map((s) => _nh(s.name));
+  let best = null;
+  for (const p of (BUILTIN_PROFILES[module] || [])) {
+    const need = p.sheetSignature.map(_nh);
+    const hit = need.filter((n) => names.includes(n)).length;
+    const score = need.length ? hit / need.length : 0;
+    if (score >= 0.6 && (!best || score > best.score)) best = { profile: p, score: Math.round(score * 100) / 100 };
+  }
+  return best;
+}
+// Overlay a built-in profile's value transforms onto an auto-mapped suggestion.
+// Mutates each matching column to carry a whitelisted valueMap.
+function applyBuiltinTransforms(suggestion, profile) {
+  (suggestion || []).forEach((sh) => {
+    const vt = profile.valueTransforms && profile.valueTransforms[sh.entity];
+    if (!vt) return;
+    (sh.columns || []).forEach((c) => { if (c.target && vt[c.target]) c.valueMap = vt[c.target]; });
+  });
+  return suggestion;
+}
+
+module.exports = {
+  DESCRIPTORS, PARTNER, INTELLIGENCE, buildEntity, detectModule, bestScore,
+  BUILTIN_PROFILES, matchBuiltinProfile, applyBuiltinTransforms,
+};

@@ -71,6 +71,19 @@ const SHEETS = {
       ["Confidence", "data_confidence", "confidence"],
       ["Last_Verified_Date", "last_verified_at", "date"],
       ["Source_URL", "source_url", "url"],
+      // Research fields (migration 077)
+      ["License_Status", "license_status", "text"],
+      ["County", "county", "text"],
+      ["Service_Areas", "service_areas", "text"],
+      ["Activity_Evidence", "activity_evidence", "text"],
+      ["Buyer_Side_Relevance", "buyer_side_relevance", "text"],
+      ["Production_Tier", "production_tier", "text"],
+      ["Partner_Score", "partner_score", "number"],
+      ["Why_Relevant", "why_relevant", "text"],
+      ["Next_Step", "next_step", "text"],
+      ["Connection_Note", "connection_note", "text"],
+      ["Priority", "priority", "int"],
+      ["LinkedIn_URL", "linkedin_url", "url"],
     ],
     required: ["full_name"],
   },
@@ -94,6 +107,18 @@ const SHEETS = {
       ["Confidence", "data_confidence", "confidence"],
       ["Last_Verified_Date", "last_verified_at", "date"],
       ["Source_URL", "source_url", "url"],
+      // Research fields (migration 077)
+      ["Organization_Type", "organization_type", "text"],
+      ["Regulator", "regulator", "text"],
+      ["License_Status", "license_status", "text"],
+      ["County", "county", "text"],
+      ["Service_Areas", "service_areas", "text"],
+      ["Partner_Score", "partner_score", "number"],
+      ["Why_Relevant", "why_relevant", "text"],
+      ["Next_Step", "next_step", "text"],
+      ["Connection_Note", "connection_note", "text"],
+      ["Priority", "priority", "int"],
+      ["LinkedIn_URL", "linkedin_url", "url"],
     ],
     required: ["officer_name"],
   },
@@ -107,6 +132,8 @@ const SHEETS = {
       ["Signal_Type", "signal_type", "text"],
       ["Signal_Date", "signal_date", "date"],
       ["Detail", "detail", "text"],
+      ["Market", "market", "text"],
+      ["Relevance", "relevance", "text"],
       ["URL", "url", "url"],
       ["Confidence", "confidence", "confidence"],
       ["Source_URL", "source_url", "url"],
@@ -163,12 +190,16 @@ const TIME_VARYING = {
     "source_url", "last_verified_at"],
   agent: ["company_name_snapshot", "company_id", "license_number", "job_title", "email", "phone",
     "website", "city", "state", "specialty", "production_volume", "deal_count", "status",
-    "tags", "notes", "data_confidence", "source_url", "last_verified_at", "linked_contact_id"],
+    "tags", "notes", "data_confidence", "source_url", "last_verified_at", "linked_contact_id",
+    "license_status", "county", "service_areas", "activity_evidence", "buyer_side_relevance",
+    "production_tier", "partner_score", "why_relevant", "next_step", "connection_note", "priority"],
   escrow_title: ["company_name_snapshot", "company_id", "role", "license_number", "email", "phone",
     "city", "state", "transaction_volume", "status", "tags", "notes", "data_confidence",
-    "source_url", "last_verified_at", "linked_contact_id"],
-  activity_signal: ["subject_type", "signal_date", "detail", "url", "confidence", "source_url",
-    "source_title", "agent_id", "company_id"],
+    "source_url", "last_verified_at", "linked_contact_id", "organization_type", "regulator",
+    "license_status", "county", "service_areas", "partner_score", "why_relevant", "next_step",
+    "connection_note", "priority"],
+  activity_signal: ["subject_type", "signal_date", "detail", "market", "relevance", "url",
+    "confidence", "source_url", "source_title", "agent_id", "company_id"],
 };
 
 function blank(v) { return v === null || v === undefined || (typeof v === "string" && v.trim() === ""); }
@@ -384,7 +415,11 @@ function planActions(rows, existing, ctx) {
       tags: d.tags ? d.tags.split(",").map((t) => t.trim()).filter(Boolean) : null,
       notes: d.notes, linked_contact_id: linkCrm(d.email),
       data_confidence: d.data_confidence, source_url: d.source_url,
-      last_verified_at: d.last_verified_at ? d.last_verified_at + "T00:00:00Z" : null };
+      last_verified_at: d.last_verified_at ? d.last_verified_at + "T00:00:00Z" : null,
+      license_status: d.license_status, county: d.county, service_areas: d.service_areas,
+      activity_evidence: d.activity_evidence, buyer_side_relevance: d.buyer_side_relevance,
+      production_tier: d.production_tier, partner_score: d.partner_score, why_relevant: d.why_relevant,
+      next_step: d.next_step, connection_note: d.connection_note, priority: d.priority, linkedin_url: d.linkedin_url };
     if (!hit) {
       const id = ctx.genId();
       allKeys.forEach((k) => newAgents.set(k, id));
@@ -416,7 +451,10 @@ function planActions(rows, existing, ctx) {
       state: d.state || "CA", transaction_volume: d.transaction_volume, status: d.status || "active",
       tags: d.tags ? d.tags.split(",").map((t) => t.trim()).filter(Boolean) : null, notes: d.notes,
       linked_contact_id: linkCrm(d.email), data_confidence: d.data_confidence, source_url: d.source_url,
-      last_verified_at: d.last_verified_at ? d.last_verified_at + "T00:00:00Z" : null };
+      last_verified_at: d.last_verified_at ? d.last_verified_at + "T00:00:00Z" : null,
+      organization_type: d.organization_type, regulator: d.regulator, license_status: d.license_status,
+      county: d.county, service_areas: d.service_areas, partner_score: d.partner_score,
+      why_relevant: d.why_relevant, next_step: d.next_step, connection_note: d.connection_note, priority: d.priority, linkedin_url: d.linkedin_url };
     if (!hit) {
       const id = ctx.genId();
       const ins = Object.assign({ id, created_by: ctx.adminId }, rec, { tags: rec.tags || [] });
@@ -488,8 +526,8 @@ function planActions(rows, existing, ctx) {
     const hit = keys.map((k) => maps.signals.get(k)).find(Boolean);
     const rec = { external_id: d.external_id, subject_type: d.subject_type, subject_name: d.subject_name,
       agent_id: sub.agentId, company_id: sub.companyId, signal_type: d.signal_type,
-      signal_date: d.signal_date, detail: d.detail, url: d.url, confidence: d.confidence,
-      source_url: d.source_url, source_title: d.source_title };
+      signal_date: d.signal_date, detail: d.detail, market: d.market, relevance: d.relevance,
+      url: d.url, confidence: d.confidence, source_url: d.source_url, source_title: d.source_title };
     if (!hit) {
       const id = ctx.genId();
       const ins = Object.assign({ id, created_by: ctx.adminId }, rec);
