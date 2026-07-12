@@ -11,13 +11,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 export const C = {
   // Backgrounds
-  appBg: '#f2efe7',       // warm paper (app canvas)
+  appBg: '#f8f6f0',       // warm paper (app canvas)
   card: '#ffffff',        // clean white card on paper
-  panelBg: '#f6f4ee',     // slightly off panel / asides
+  panelBg: '#faf9f4',     // slightly off panel / asides
   surface: '#fbfaf6',     // input / secondary surface
-  sand: '#efece3',        // muted paper chips / wells
-  sand2: '#efece3',
-  accentWash: '#edeae0',  // quiet wash (badges, hovers)
+  sand: '#f4f1ea',        // muted paper chips / wells
+  sand2: '#f4f1ea',
+  accentWash: '#f2efe8',  // quiet wash (badges, hovers)
 
   // Text (ink)
   text: '#171717',        // ink (primary)

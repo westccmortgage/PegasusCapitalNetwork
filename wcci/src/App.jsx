@@ -905,7 +905,7 @@ export default function App() {
     return (
       <button onClick={openLang} aria-haspopup="dialog" aria-label={cu.selectLanguageAria}
         style={{ display: 'inline-flex', alignItems: 'center', gap: 5, minHeight: 44, padding: '0 11px', borderRadius: 10, cursor: 'pointer',
-          background: dark ? 'rgba(255,255,255,0.12)' : '#f2efe7', border: dark ? '1px solid rgba(255,255,255,0.25)' : '1px solid #d6d0c2',
+          background: dark ? 'rgba(255,255,255,0.12)' : '#f8f6f0', border: dark ? '1px solid rgba(255,255,255,0.25)' : '1px solid #d6d0c2',
           color: dark ? '#ffffff' : '#141414', fontSize: 13, fontWeight: 700 }}>
         <span aria-hidden="true">🌐</span>{LANG_LABELS[lang] || 'EN'}<span aria-hidden="true" style={{ fontSize: 10, opacity: 0.7 }}>▾</span>
       </button>
@@ -930,7 +930,7 @@ export default function App() {
               <span id={titleId} style={{ fontSize: 16, fontWeight: 700, color: '#141414', letterSpacing: '0.01em' }}>{title}</span>
             </div>
             <button ref={sheetCloseRef} onClick={closeSheet} aria-label={cu.close}
-              style={{ background: '#efece3', border: '1px solid #ddd7c9', borderRadius: 9, width: 40, height: 40, fontSize: 16, cursor: 'pointer', color: '#837f74', flexShrink: 0 }}>✕</button>
+              style={{ background: '#f4f1ea', border: '1px solid #ddd7c9', borderRadius: 9, width: 40, height: 40, fontSize: 16, cursor: 'pointer', color: '#837f74', flexShrink: 0 }}>✕</button>
           </div>
           {body}
         </div>
@@ -940,7 +940,7 @@ export default function App() {
 
   const rowBtn = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 48, padding: '11px 12px', borderRadius: 10, background: 'none', border: 'none', textAlign: 'left', color: '#141414', fontSize: 15, fontWeight: 500, cursor: 'pointer' };
   const rowLink = { ...rowBtn, textDecoration: 'none' };
-  const actionCell = { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 46, textAlign: 'center', textDecoration: 'none', background: '#efece3', border: '1px solid #d6d0c2', borderRadius: 10, color: '#141414', fontSize: 13.5, fontWeight: 600, padding: '10px 12px' };
+  const actionCell = { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 46, textAlign: 'center', textDecoration: 'none', background: '#f4f1ea', border: '1px solid #d6d0c2', borderRadius: 10, color: '#141414', fontSize: 13.5, fontWeight: 600, padding: '10px 12px' };
 
   // Language sheet
   function renderLangSheet() {
@@ -951,7 +951,7 @@ export default function App() {
           return (
             <button key={l} lang={l} onClick={() => { changeLang(l); closeSheet(); }}
               aria-label={LANG_NATIVE[l]} aria-pressed={active}
-              style={{ ...rowBtn, justifyContent: 'space-between', background: active ? '#f2efe7' : 'none', border: active ? '1px solid #d6d0c2' : '1px solid transparent', fontWeight: active ? 700 : 500 }}>
+              style={{ ...rowBtn, justifyContent: 'space-between', background: active ? '#f8f6f0' : 'none', border: active ? '1px solid #d6d0c2' : '1px solid transparent', fontWeight: active ? 700 : 500 }}>
               <span>{LANG_NATIVE[l]}</span>
               {active && <span aria-hidden="true" style={{ color: '#171717' }}>✓</span>}
             </button>
@@ -1060,7 +1060,7 @@ export default function App() {
           <Action onClick={() => setPrivacyOpen(o => !o)}>🔒 {cu.privacyAiUse}</Action>
         </div>
         {privacyOpen && (
-          <p style={{ fontSize: 12.5, color: '#6f6b62', lineHeight: 1.7, marginTop: 10, background: '#f2efe7', border: '1px solid #e9e4d8', borderRadius: 10, padding: '12px' }}>{cu.privacyNote}</p>
+          <p style={{ fontSize: 12.5, color: '#6f6b62', lineHeight: 1.7, marginTop: 10, background: '#f8f6f0', border: '1px solid #e9e4d8', borderRadius: 10, padding: '12px' }}>{cu.privacyNote}</p>
         )}
       </div>
     ), { brand: true });
@@ -1079,7 +1079,7 @@ export default function App() {
   // ─── Landing ───
   if (screen === 'landing') {
     return (
-      <div style={{ minHeight: '100dvh', background: '#f2efe7', fontFamily: FONT, color: '#171717' }}>
+      <div style={{ minHeight: '100dvh', background: '#f8f6f0', fontFamily: FONT, color: '#171717' }}>
         <div style={{ height: 3, background: 'linear-gradient(90deg, #171717, #000000, #333333)' }} />
 
         <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd7c9', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 100 }}>
@@ -1099,7 +1099,7 @@ export default function App() {
 
         <div style={{ maxWidth: 860, margin: '0 auto', padding: 'clamp(24px, 6vw, 72px) clamp(16px, 4vw, 40px) clamp(32px, 8vw, 80px)', textAlign: 'center' }}>
           {/* Badge — AI is SECONDARY (company is primary) */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#edeae0', border: '1px solid #cfc9bc', borderRadius: 20, padding: '5px 12px', marginBottom: 18 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#f2efe8', border: '1px solid #cfc9bc', borderRadius: 20, padding: '5px 12px', marginBottom: 18 }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#171717', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
             <span style={{ fontSize: 12.5, color: '#171717', fontWeight: 500 }}>{t.badge}</span>
           </div>
@@ -1137,9 +1137,9 @@ export default function App() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 }}>
               {su.heroChips.map((chip, i) => (
                 <button key={i} onClick={() => analyzeScenario(chip)}
-                  style={{ background: '#efece3', border: '1px solid #ddd7c9', color: '#333333', borderRadius: 18, padding: '8px 12px', minHeight: 36, fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }}
+                  style={{ background: '#f4f1ea', border: '1px solid #ddd7c9', color: '#333333', borderRadius: 18, padding: '8px 12px', minHeight: 36, fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#e9e4d8'; e.currentTarget.style.borderColor = '#cfc9bc'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#efece3'; e.currentTarget.style.borderColor = '#ddd7c9'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#f4f1ea'; e.currentTarget.style.borderColor = '#ddd7c9'; }}
                 >{chip}</button>
               ))}
             </div>
@@ -1156,7 +1156,7 @@ export default function App() {
 
           {/* Demo chat preview */}
           <div style={{ marginTop: 48, background: 'white', borderRadius: 16, border: '1px solid #ddd7c9', boxShadow: '0 20px 60px rgba(0,0,0,0.08)', padding: 'clamp(14px, 3vw, 24px)', maxWidth: 540, margin: '48px auto 0', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #efece3' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f4f1ea' }}>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #171717, #000000)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700 }}>AI</div>
               <span style={{ fontSize: 13, fontWeight: 600 }}>Loan Strategy AI</span>
               <span style={{ marginLeft: 'auto', fontSize: 11, color: '#5f7d55', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -1165,7 +1165,7 @@ export default function App() {
             </div>
             {t.demo.map((msg, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: msg.ai ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
-                <div style={{ background: msg.ai ? '#f2efe7' : 'linear-gradient(135deg, #171717, #000000)', color: msg.ai ? '#333333' : 'white', border: msg.ai ? '1px solid #ddd7c9' : 'none', borderRadius: msg.ai ? '4px 12px 12px 12px' : '12px 4px 12px 12px', padding: '10px 14px', fontSize: 13, lineHeight: 1.6, maxWidth: '82%' }}>
+                <div style={{ background: msg.ai ? '#f8f6f0' : 'linear-gradient(135deg, #171717, #000000)', color: msg.ai ? '#333333' : 'white', border: msg.ai ? '1px solid #ddd7c9' : 'none', borderRadius: msg.ai ? '4px 12px 12px 12px' : '12px 4px 12px 12px', padding: '10px 14px', fontSize: 13, lineHeight: 1.6, maxWidth: '82%' }}>
                   {msg.text}
                 </div>
               </div>
@@ -1177,7 +1177,7 @@ export default function App() {
         <div style={{ background: 'white', borderTop: '1px solid #ddd7c9', padding: 'clamp(40px, 8vw, 72px) clamp(16px, 4vw, 40px)' }}>
           <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 20 }}>
             {t.features.map((f, i) => (
-              <div key={i} style={{ padding: 'clamp(18px, 3vw, 28px)', borderRadius: 12, border: '1px solid #efece3', background: '#f2efe7' }}>
+              <div key={i} style={{ padding: 'clamp(18px, 3vw, 28px)', borderRadius: 12, border: '1px solid #f4f1ea', background: '#f8f6f0' }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: f.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{f.icon}</div>
                 <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{f.title}</h3>
                 <p style={{ fontSize: 14, color: '#837f74', lineHeight: 1.7 }}>{f.desc}</p>
@@ -1187,7 +1187,7 @@ export default function App() {
         </div>
 
         {/* Disclaimer (English, legal) */}
-        <div style={{ background: '#f2efe7', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #ddd7c9' }}>
+        <div style={{ background: '#f8f6f0', padding: '24px clamp(16px, 4vw, 40px)', borderTop: '1px solid #ddd7c9' }}>
           <p style={{ maxWidth: 800, margin: '0 auto', fontSize: 11, color: '#9a958a', lineHeight: 1.7, textAlign: 'center' }}>{DISCLAIMER}</p>
         </div>
 
@@ -1245,7 +1245,7 @@ export default function App() {
     );
 
     return (
-      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#f2efe7', fontFamily: FONT }}>
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#f8f6f0', fontFamily: FONT }}>
         {/* Workspace header — company-first (WCCI is the product/domain identifier) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 14px', background: '#ffffff', borderBottom: '1px solid #ddd7c9', flexShrink: 0 }}>
           {/* Left: square logo mark. Desktop adds the company lockup; mobile is logo-only. */}
@@ -1275,7 +1275,7 @@ export default function App() {
             )}
             {isWide && (
               <button onClick={openTrust} aria-haspopup="dialog" aria-label={cu.companyAndLicensing}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#f2efe7', border: '1px solid #d6d0c2', color: '#141414', cursor: 'pointer', fontSize: 13, fontWeight: 600, padding: '0 13px', borderRadius: 10, minHeight: 44, whiteSpace: 'nowrap' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#f8f6f0', border: '1px solid #d6d0c2', color: '#141414', cursor: 'pointer', fontSize: 13, fontWeight: 600, padding: '0 13px', borderRadius: 10, minHeight: 44, whiteSpace: 'nowrap' }}>
                 {cu.companyAndLicensing}
               </button>
             )}
@@ -1338,7 +1338,7 @@ export default function App() {
                 key={i}
                 onClick={() => sendMessage(chip)}
                 style={{ background: 'white', border: '1px solid #cfc9bc', color: '#171717', borderRadius: 18, padding: '7px 12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#edeae0'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#f2efe8'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
               >{chip}</button>
             ))}
@@ -1371,7 +1371,7 @@ export default function App() {
               onCompositionEnd={() => { composingRef.current = false; }}
               placeholder={t.placeholder}
               rows={2}
-              style={{ flex: 1, border: '1px solid #ddd7c9', borderRadius: 16, padding: '12px 16px', fontSize: 16, resize: 'none', fontFamily: FONT, lineHeight: 1.55, color: '#171717', background: '#f2efe7', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 64, maxHeight: 160, overflowY: 'auto' }}
+              style={{ flex: 1, border: '1px solid #ddd7c9', borderRadius: 16, padding: '12px 16px', fontSize: 16, resize: 'none', fontFamily: FONT, lineHeight: 1.55, color: '#171717', background: '#f8f6f0', transition: 'border-color 0.2s, box-shadow 0.2s', minHeight: 64, maxHeight: 160, overflowY: 'auto' }}
             />
             {speechSupported && (
               <button
@@ -1400,7 +1400,7 @@ export default function App() {
 
         {/* Desktop: live Loan Strategy Profile aside */}
         {isWide && (
-          <aside style={{ width: 390, flexShrink: 0, borderLeft: '1px solid #ddd7c9', background: '#f6f4ee', overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16 }}>
+          <aside style={{ width: 390, flexShrink: 0, borderLeft: '1px solid #ddd7c9', background: '#faf9f4', overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16 }}>
             {profilePanel}
           </aside>
         )}
@@ -1409,10 +1409,10 @@ export default function App() {
         {/* Mobile: collapsible Loan Strategy Profile sheet */}
         {!isWide && profileOpenMobile && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.35)' }}>
-            <div style={{ marginTop: 'auto', maxHeight: '88%', background: '#f6f4ee', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ marginTop: 'auto', maxHeight: '88%', background: '#faf9f4', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'white', borderBottom: '1px solid #ddd7c9' }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: '#141414' }}>{su.profileTitle}</span>
-                <button onClick={() => setProfileOpenMobile(false)} style={{ background: '#efece3', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 16, cursor: 'pointer', color: '#837f74' }}>✕</button>
+                <button onClick={() => setProfileOpenMobile(false)} style={{ background: '#f4f1ea', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 16, cursor: 'pointer', color: '#837f74' }}>✕</button>
               </div>
               <div style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 16, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
                 {profilePanel}
@@ -1430,7 +1430,7 @@ export default function App() {
   const checklist = buildDocumentChecklist(s);
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#f2efe7', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px)' }}>
+    <div style={{ minHeight: '100dvh', background: '#f8f6f0', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px)' }}>
       <div className="fade-up" style={{ background: 'white', maxWidth: 520, width: '100%', boxShadow: '0 12px 56px rgba(20,20,20,0.14)', overflow: 'hidden', borderRadius: 12 }}>
         {/* Header */}
         <div style={{ background: '#141414', padding: 'clamp(24px, 4vw, 36px) clamp(20px, 4vw, 40px) clamp(20px, 3vw, 32px)', textAlign: 'center' }}>
@@ -1471,7 +1471,7 @@ export default function App() {
         {/* Possible path */}
         {s.possiblePath && (
           <div style={{ margin: '20px clamp(20px, 4vw, 40px) 0' }}>
-            <div style={{ borderLeft: '3px solid #141414', background: '#f2efe7', padding: '13px 16px' }}>
+            <div style={{ borderLeft: '3px solid #141414', background: '#f8f6f0', padding: '13px 16px' }}>
               <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13, color: '#141414', lineHeight: 1.75, fontStyle: 'italic' }}>
                 Possible path: {s.possiblePath}
               </p>

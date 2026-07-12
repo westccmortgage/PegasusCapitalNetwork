@@ -12,7 +12,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return React.createElement('div', {
-        style: { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT_STACK, background: '#f2efe7', textAlign: 'center' },
+        style: { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT_STACK, background: '#f8f6f0', textAlign: 'center' },
       },
         React.createElement('div', { style: { maxWidth: 340 } },
           React.createElement('div', { style: { fontSize: 32, marginBottom: 12 } }, '↻'),

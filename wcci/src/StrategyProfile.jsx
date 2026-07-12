@@ -16,7 +16,7 @@ const pctText = (n) => (n == null ? '—' : `${n}%`);
 
 const STATUS_STYLE = {
   [STATUS.STRONG]:      { bg: '#e9f7ef', fg: '#137a43', dot: '#1aa35a' },
-  [STATUS.POSSIBLE]:    { bg: '#f2efe7', fg: '#000000', dot: '#171717' },
+  [STATUS.POSSIBLE]:    { bg: '#f8f6f0', fg: '#000000', dot: '#171717' },
   [STATUS.MORE_INFO]:   { bg: '#fbf3e2', fg: '#8a6d1b', dot: GOLD },
   [STATUS.HIGHER_RISK]: { bg: '#fdeee7', fg: '#b4531b', dot: '#e07a3a' },
   [STATUS.UNLIKELY]:    { bg: '#e9e4d8', fg: '#837f74', dot: '#9a958a' },
@@ -208,7 +208,7 @@ export default function StrategyProfile({ profile, onSubmitLead, leadSent, onMan
         </div>
         <ProgressBar percent={status.percent} />
         {nextQ && (
-          <div style={{ marginTop: 10, background: '#f2efe7', borderRadius: 8, padding: '9px 11px' }}>
+          <div style={{ marginTop: 10, background: '#f8f6f0', borderRadius: 8, padding: '9px 11px' }}>
             <div style={{ fontSize: 9.5, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 2 }}>{t.nextQuestion}</div>
             <div style={{ fontSize: 12, color: '#333333', lineHeight: 1.45 }}>{nextQ.text}</div>
           </div>
@@ -229,7 +229,7 @@ export default function StrategyProfile({ profile, onSubmitLead, leadSent, onMan
           {strat.paths.filter(p => p.status !== STATUS.UNLIKELY).map(p => <PathCard key={p.id} path={p} />)}
         </div>
       ) : (
-        <div style={{ background: '#f2efe7', border: `1px dashed ${LINE}`, borderRadius: 12, padding: 16, textAlign: 'center' }}>
+        <div style={{ background: '#f8f6f0', border: `1px dashed ${LINE}`, borderRadius: 12, padding: 16, textAlign: 'center' }}>
           <p style={{ fontSize: 12.5, color: SLATE, lineHeight: 1.5 }}>{t.pathsLocked}</p>
         </div>
       )}
