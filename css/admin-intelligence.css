@@ -97,3 +97,20 @@
   #pmBody .pit-table td:first-child{font-weight:600;color:var(--text)}
   #pmBody .pit-table td::before{content:attr(data-label);display:inline-block;min-width:92px;color:var(--text3);font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
 }
+
+/* ── Editor / review / mapper modal (the .sce-* dialog surface used by the
+      admin apps + the Universal Import Mapper). These styles live in showcase.css,
+      which the admin pages do NOT load, so mirror the core set here — otherwise
+      Pegasus.modal() injects unstyled markup that stacks at the bottom-left of
+      the page instead of a centered overlay. Inline max-width on .sce-modal wins. */
+.sce-scrim{position:fixed;inset:0;background:rgba(18,22,28,0.46);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:1000;overflow-y:auto}
+.sce-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);width:100%;max-width:880px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden;animation:scePop .18s ease}
+@keyframes scePop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sce-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
+.sce-title{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--text)}
+.sce-x{border:none;background:var(--bg2);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px}
+.sce-x:hover{background:var(--bg3);color:var(--text)}
+.sce-body{padding:18px 24px}
+.sce-foot{display:flex;align-items:center;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--bg1)}
+.sce-err{flex:1;font-size:11px;font-family:var(--mono);color:var(--red);min-height:14px;text-align:left}
+@media(max-width:640px){.sce-scrim{padding:16px 10px}.sce-modal .row2{grid-template-columns:1fr}}
