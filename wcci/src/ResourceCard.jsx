@@ -7,25 +7,25 @@ import { recordResourceOpen } from './lib/leadPipeline.js';
 // resource as a safe, clickable card — never a raw URL. Trust label, brand,
 // one-sentence reason, accessible action button, safe target/rel.
 
-const NAVY = '#3a3026';
-const BLUE = '#a97b3f';
+const NAVY = '#141414';
+const BLUE = '#171717';
 const GOLD = '#b08d3a';
-const LINE = '#e7ddc9';
+const LINE = '#ddd7c9';
 
 // Category → localized trust label + accent.
 const LABELS = {
   corporate_trust: { accent: NAVY, en: 'Company information', es: 'Información de la compañía', ru: 'Информация о компании' },
   state_mortgage: { accent: BLUE, en: 'State resource', es: 'Recurso estatal', ru: 'Региональный ресурс' },
   local_mortgage: { accent: BLUE, en: 'Local resource', es: 'Recurso local', ru: 'Локальный ресурс' },
-  mortgage_education: { accent: '#cbb079', en: 'Education', es: 'Educación', ru: 'Обучение' },
-  scenario_tool: { accent: '#855f2c', en: 'Scenario tool', es: 'Herramienta de escenarios', ru: 'Инструмент сценариев' },
+  mortgage_education: { accent: '#333333', en: 'Education', es: 'Educación', ru: 'Обучение' },
+  scenario_tool: { accent: '#000000', en: 'Scenario tool', es: 'Herramienta de escenarios', ru: 'Инструмент сценариев' },
   secure_application: { accent: '#137a43', en: 'Secure application', es: 'Solicitud segura', ru: 'Защищённая заявка' },
   private_real_estate_capital: { accent: GOLD, en: 'Private capital', es: 'Capital privado', ru: 'Частный капитал' },
   investor_capital: { accent: GOLD, en: 'Investor information', es: 'Información para inversionistas', ru: 'Для инвесторов' },
-  professional_network: { accent: '#6b6152', en: 'Professional network', es: 'Red profesional', ru: 'Профсеть' },
-  digital_assets: { accent: '#855f2c', en: 'Digital assets', es: 'Activos digitales', ru: 'Цифровые активы' },
+  professional_network: { accent: '#6f6b62', en: 'Professional network', es: 'Red profesional', ru: 'Профсеть' },
+  digital_assets: { accent: '#000000', en: 'Digital assets', es: 'Activos digitales', ru: 'Цифровые активы' },
   development_proof: { accent: GOLD, en: 'Development portfolio', es: 'Portafolio de desarrollo', ru: 'Портфолио девелопмента' },
-  internal_platform: { accent: '#6b6152', en: 'Professional platform', es: 'Plataforma profesional', ru: 'Профессиональная платформа' },
+  internal_platform: { accent: '#6f6b62', en: 'Professional platform', es: 'Plataforma profesional', ru: 'Профессиональная платформа' },
 };
 
 const pick = (obj, lang) => (obj && (obj[lang] || obj.en)) || '';
@@ -55,10 +55,10 @@ export function ResourceCard({ rec, lang = 'en' }) {
         <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: label.accent }}>
           {pick(label, lang)}
         </span>
-        <span style={{ marginLeft: 'auto', fontSize: 9.5, color: '#a99e8b' }}>{host} ↗</span>
+        <span style={{ marginLeft: 'auto', fontSize: 9.5, color: '#9a958a' }}>{host} ↗</span>
       </div>
       <div style={{ fontSize: 13, fontWeight: 700, color: NAVY, lineHeight: 1.3 }}>{r.brand}</div>
-      <div style={{ fontSize: 11.5, color: '#6b6152', lineHeight: 1.5, marginTop: 3 }}>{reason}</div>
+      <div style={{ fontSize: 11.5, color: '#6f6b62', lineHeight: 1.5, marginTop: 3 }}>{reason}</div>
       <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: BLUE }}>
         {pick(rec.actionLabel, lang)} <span aria-hidden="true">→</span>
       </div>

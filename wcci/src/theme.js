@@ -1,56 +1,57 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// WCCI DESIGN TOKENS — CaliforniaMTG-inspired warm concierge palette.
+// WCCI DESIGN TOKENS — Private Note Capital editorial palette.
 //
-// Direction: warm ivory / stone backgrounds, soft cream panels, muted
-// bronze/gold accents, deep espresso text, subtle warm-gray borders. Calm,
-// premium, mortgage-concierge — not a cold "AI app".
+// Direction: warm paper (cream) backgrounds, near-black "ink" text and accents,
+// hairline warm-gray borders, restrained black rectangular CTAs. Quiet,
+// editorial, premium finance — monochrome ink on paper, not tech-blue, not
+// bronze.
 //
 // App.jsx's legacy inline styles use the raw hex VALUES below (kept in sync);
 // components import { C } and reference the tokens directly.
 // ─────────────────────────────────────────────────────────────────────────────
 export const C = {
   // Backgrounds
-  appBg: '#f6f1e8',       // warm ivory (app canvas)
-  card: '#fffdf8',        // soft cream (raised cards)
-  panelBg: '#f3ede1',     // light sand (right-side panel / asides)
-  surface: '#fbf6ec',     // input / secondary surface
-  sand: '#f0e9db',        // muted sand chips / wells
-  sand2: '#f3ecdf',       // lighter sand
-  accentWash: '#f5ecda',  // gold wash (badges, hovers)
+  appBg: '#f2efe7',       // warm paper (app canvas)
+  card: '#ffffff',        // clean white card on paper
+  panelBg: '#f6f4ee',     // slightly off panel / asides
+  surface: '#fbfaf6',     // input / secondary surface
+  sand: '#efece3',        // muted paper chips / wells
+  sand2: '#efece3',
+  accentWash: '#edeae0',  // quiet wash (badges, hovers)
 
-  // Text
-  text: '#2f2a23',        // deep espresso (primary)
-  textStrong: '#3a3026',  // near-black warm (headings on light)
-  textSoft: '#8c8375',    // muted warm gray (secondary)
-  textFaint: '#a99e8b',   // faint warm gray (labels, captions)
-  disabled: '#cec3ae',    // disabled / placeholder
+  // Text (ink)
+  text: '#171717',        // ink (primary)
+  textStrong: '#141414',  // near-black (headings)
+  textSoft: '#6f6b62',    // muted warm gray (secondary)
+  textFaint: '#9a958a',   // faint warm gray (labels, captions)
+  disabled: '#c7c2b6',    // disabled / placeholder
 
-  // Accent / CTA (muted bronze / gold)
-  accent: '#a97b3f',
-  accentDeep: '#855f2c',  // hover / gradient partner
-  accentSoft: '#d8c4a0',  // soft accent border
-  onAccent: '#fffdf8',    // text on accent
+  // Accent / CTA (black ink)
+  accent: '#171717',
+  accentDeep: '#000000',  // hover / gradient partner
+  accentSoft: '#cfc9bc',  // soft border / selected
+  onAccent: '#ffffff',    // text on accent
 
-  // Borders / dividers (warm gray)
-  border: '#e7ddc9',
-  borderSoft: '#efe8da',
+  // Borders / dividers (hairline warm gray)
+  border: '#ddd7c9',
+  borderSoft: '#e9e4d8',
 
-  // Status (softened, on-palette)
-  success: '#5f8a5c',
-  successBg: '#eaf1e6',
-  warnBg: '#f7ecd6',
-  warnBorder: '#e3c489',
-  warnText: '#8a5a2f',
-  danger: '#b4553f',
+  // Status (muted, on-palette)
+  success: '#5f7d55',
+  successBg: '#e9efe3',
+  warnBg: '#f4efe1',
+  warnBorder: '#d9cfb0',
+  warnText: '#6f5a2a',
+  danger: '#a23b2a',
 
   // Effects
-  focus: 'rgba(169,123,63,0.28)',
-  shadow: 'rgba(74,58,32,0.12)',
-  shadowStrong: 'rgba(74,58,32,0.16)',
+  focus: 'rgba(20,20,20,0.20)',
+  shadow: 'rgba(20,20,20,0.10)',
+  shadowStrong: 'rgba(20,20,20,0.14)',
 
-  // Gradients (bronze)
-  grad: 'linear-gradient(135deg, #a97b3f, #855f2c)',
-  gradDeep: 'linear-gradient(135deg, #3a3026, #a97b3f)',
+  // Gradients (near-black ink)
+  grad: 'linear-gradient(135deg, #171717, #000000)',
+  gradDeep: 'linear-gradient(135deg, #141414, #171717)',
 };
 
 export default C;

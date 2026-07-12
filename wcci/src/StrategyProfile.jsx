@@ -4,11 +4,11 @@ import { nextBestQuestion } from './lib/questionEngine.js';
 import { evaluatePaths, STATUS } from './lib/strategyEngine.js';
 
 // ── Design tokens (navy / slate / soft blue + subtle gold) ──
-const NAVY = '#3a3026';
-const SLATE = '#6b6152';
-const BLUE = '#a97b3f';
+const NAVY = '#141414';
+const SLATE = '#6f6b62';
+const BLUE = '#171717';
 const GOLD = '#b08d3a';
-const LINE = '#e7ddc9';
+const LINE = '#ddd7c9';
 
 const money = (n) => (n == null || n === '' || isNaN(n)) ? '—'
   : '$' + Math.round(Number(n)).toLocaleString('en-US');
@@ -16,10 +16,10 @@ const pctText = (n) => (n == null ? '—' : `${n}%`);
 
 const STATUS_STYLE = {
   [STATUS.STRONG]:      { bg: '#e9f7ef', fg: '#137a43', dot: '#1aa35a' },
-  [STATUS.POSSIBLE]:    { bg: '#f4ecdd', fg: '#855f2c', dot: '#a97b3f' },
+  [STATUS.POSSIBLE]:    { bg: '#f2efe7', fg: '#000000', dot: '#171717' },
   [STATUS.MORE_INFO]:   { bg: '#fbf3e2', fg: '#8a6d1b', dot: GOLD },
   [STATUS.HIGHER_RISK]: { bg: '#fdeee7', fg: '#b4531b', dot: '#e07a3a' },
-  [STATUS.UNLIKELY]:    { bg: '#efe8da', fg: '#8c8375', dot: '#a99e8b' },
+  [STATUS.UNLIKELY]:    { bg: '#e9e4d8', fg: '#837f74', dot: '#9a958a' },
 };
 
 function Pill({ status }) {
@@ -34,7 +34,7 @@ function Pill({ status }) {
 
 function ProgressBar({ percent }) {
   return (
-    <div style={{ background: '#efe8da', borderRadius: 20, height: 8, overflow: 'hidden' }}>
+    <div style={{ background: '#e9e4d8', borderRadius: 20, height: 8, overflow: 'hidden' }}>
       <div style={{ width: `${percent}%`, height: '100%', borderRadius: 20,
         background: `linear-gradient(90deg, ${NAVY}, ${BLUE})`, transition: 'width 0.4s ease' }} />
     </div>
@@ -42,7 +42,7 @@ function ProgressBar({ percent }) {
 }
 
 const TIER_LABEL = { needed: 'Needed', helpful: 'Helpful', optional: 'Optional' };
-const TIER_COLOR = { needed: '#c2410c', helpful: GOLD, optional: '#a99e8b' };
+const TIER_COLOR = { needed: '#c2410c', helpful: GOLD, optional: '#9a958a' };
 
 function FieldRow({ f, value }) {
   const filled = value !== undefined && value !== null && value !== '' && value !== 'unsure';
@@ -51,10 +51,10 @@ function FieldRow({ f, value }) {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${LINE}` }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <span style={{ width: 15, height: 15, borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: filled ? '#e9f7ef' : '#efe8da', color: filled ? '#1aa35a' : '#d8ccb6', fontSize: 10, fontWeight: 700 }}>
+          background: filled ? '#e9f7ef' : '#e9e4d8', color: filled ? '#1aa35a' : '#d8ccb6', fontSize: 10, fontWeight: 700 }}>
           {filled ? '✓' : ''}
         </span>
-        <span style={{ fontSize: 12.5, color: filled ? '#2f2a23' : SLATE }}>{f.label}</span>
+        <span style={{ fontSize: 12.5, color: filled ? '#171717' : SLATE }}>{f.label}</span>
       </span>
       {filled
         ? <span style={{ fontSize: 12.5, fontWeight: 600, color: NAVY, textAlign: 'right', maxWidth: '52%' }}>{disp}</span>
@@ -75,9 +75,9 @@ function PathCard({ path }) {
       <p style={{ fontSize: 12, color: SLATE, lineHeight: 1.5, margin: '6px 0 0' }}>{path.why}</p>
       {e && (
         <div style={{ display: 'flex', gap: 14, marginTop: 8 }}>
-          <div><div style={{ fontSize: 9.5, color: '#a99e8b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Est. payment</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>{money(e.monthlyPayment)}<span style={{ fontSize: 10, color: '#a99e8b', fontWeight: 500 }}>/mo</span></div></div>
-          <div><div style={{ fontSize: 9.5, color: '#a99e8b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Est. cash to close</div>
+          <div><div style={{ fontSize: 9.5, color: '#9a958a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Est. payment</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>{money(e.monthlyPayment)}<span style={{ fontSize: 10, color: '#9a958a', fontWeight: 500 }}>/mo</span></div></div>
+          <div><div style={{ fontSize: 9.5, color: '#9a958a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Est. cash to close</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>{money(e.estimatedCashToClose)}</div></div>
         </div>
       )}
@@ -99,11 +99,11 @@ function PathCard({ path }) {
 }
 function Detail({ label, items }) {
   return <div style={{ marginBottom: 5 }}>
-    <span style={{ fontWeight: 700, color: '#4a4235' }}>{label}: </span>{items.join(' · ')}
+    <span style={{ fontWeight: 700, color: '#333333' }}>{label}: </span>{items.join(' · ')}
   </div>;
 }
 function KV({ k, v }) {
-  return <div style={{ marginBottom: 3 }}><span style={{ fontWeight: 700, color: '#4a4235' }}>{k}: </span>{v}</div>;
+  return <div style={{ marginBottom: 3 }}><span style={{ fontWeight: 700, color: '#333333' }}>{k}: </span>{v}</div>;
 }
 
 function CashToClose({ e }) {
@@ -120,14 +120,14 @@ function CashToClose({ e }) {
     ['Escrow reserves', e.escrowReserves],
   ];
   return (
-    <div style={{ border: `1px solid ${LINE}`, borderRadius: 10, padding: 12, background: '#fbf6ec' }}>
+    <div style={{ border: `1px solid ${LINE}`, borderRadius: 10, padding: 12, background: '#fbfaf6' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{ fontSize: 12.5, fontWeight: 700, color: NAVY }}>Estimated cash to close</span>
         <span style={{ fontSize: 15, fontWeight: 800, color: NAVY }}>{money(e.estimatedCashToClose)}</span>
       </div>
       {rows.map(([k, v]) => (
         <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 11.5, color: SLATE }}>
-          <span>{k}</span><span style={{ fontWeight: 600, color: '#4a4235' }}>{money(v)}</span>
+          <span>{k}</span><span style={{ fontWeight: 600, color: '#333333' }}>{money(v)}</span>
         </div>
       ))}
       {e.sellerCredits > 0 && <CreditRow k="Seller credits" v={e.sellerCredits} />}
@@ -144,7 +144,7 @@ function CashToClose({ e }) {
           {(e.assumptions || []).map((a, i) => <li key={i}>{a}</li>)}
         </ul>
       )}
-      <p style={{ fontSize: 9.5, color: '#a99e8b', lineHeight: 1.5, marginTop: 8 }}>
+      <p style={{ fontSize: 9.5, color: '#9a958a', lineHeight: 1.5, marginTop: 8 }}>
         Estimated, based on planning assumptions. No lender has quoted this scenario — lender charges and discount points are not known yet. Not a quote, Loan Estimate, or commitment; actual figures vary by lender, profile, property, and closing date.
       </p>
     </div>
@@ -172,7 +172,7 @@ function LeadCapture({ profile, onSubmit, sent, t }) {
       </div>
     );
   }
-  const inp = { width: '100%', border: `1px solid ${LINE}`, borderRadius: 8, padding: '9px 11px', fontSize: 13, marginBottom: 7, fontFamily: 'inherit', color: '#2f2a23', background: 'white' };
+  const inp = { width: '100%', border: `1px solid ${LINE}`, borderRadius: 8, padding: '9px 11px', fontSize: 13, marginBottom: 7, fontFamily: 'inherit', color: '#171717', background: 'white' };
   return (
     <div style={{ background: 'white', border: `1px solid ${GOLD}33`, borderRadius: 10, padding: 14 }}>
       <p style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 3 }}>{t.leadTitle}</p>
@@ -183,7 +183,7 @@ function LeadCapture({ profile, onSubmit, sent, t }) {
       <button
         disabled={!canSend || busy}
         onClick={async () => { setBusy(true); await onSubmit({ name: name.trim(), phone: phone.trim(), email: email.trim() }); setBusy(false); }}
-        style={{ width: '100%', marginTop: 4, background: canSend ? `linear-gradient(135deg, ${NAVY}, ${BLUE})` : '#cec3ae',
+        style={{ width: '100%', marginTop: 4, background: canSend ? `linear-gradient(135deg, ${NAVY}, ${BLUE})` : '#c7c2b6',
           color: 'white', border: 'none', borderRadius: 8, padding: '11px', fontSize: 13.5, fontWeight: 700, cursor: canSend ? 'pointer' : 'default' }}
       >{busy ? '…' : t.leadCta}</button>
     </div>
@@ -208,9 +208,9 @@ export default function StrategyProfile({ profile, onSubmitLead, leadSent, onMan
         </div>
         <ProgressBar percent={status.percent} />
         {nextQ && (
-          <div style={{ marginTop: 10, background: '#f6efe2', borderRadius: 8, padding: '9px 11px' }}>
+          <div style={{ marginTop: 10, background: '#f2efe7', borderRadius: 8, padding: '9px 11px' }}>
             <div style={{ fontSize: 9.5, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 2 }}>{t.nextQuestion}</div>
-            <div style={{ fontSize: 12, color: '#4a4235', lineHeight: 1.45 }}>{nextQ.text}</div>
+            <div style={{ fontSize: 12, color: '#333333', lineHeight: 1.45 }}>{nextQ.text}</div>
           </div>
         )}
         <div style={{ marginTop: 10 }}>
@@ -225,11 +225,11 @@ export default function StrategyProfile({ profile, onSubmitLead, leadSent, onMan
       {strat ? (
         <div style={{ background: 'white', border: `1px solid ${LINE}`, borderRadius: 12, padding: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 3 }}>{t.pathsTitle}</div>
-          <p style={{ fontSize: 11, color: '#a99e8b', marginBottom: 10 }}>{t.pathsSub}</p>
+          <p style={{ fontSize: 11, color: '#9a958a', marginBottom: 10 }}>{t.pathsSub}</p>
           {strat.paths.filter(p => p.status !== STATUS.UNLIKELY).map(p => <PathCard key={p.id} path={p} />)}
         </div>
       ) : (
-        <div style={{ background: '#f6efe2', border: `1px dashed ${LINE}`, borderRadius: 12, padding: 16, textAlign: 'center' }}>
+        <div style={{ background: '#f2efe7', border: `1px dashed ${LINE}`, borderRadius: 12, padding: 16, textAlign: 'center' }}>
           <p style={{ fontSize: 12.5, color: SLATE, lineHeight: 1.5 }}>{t.pathsLocked}</p>
         </div>
       )}

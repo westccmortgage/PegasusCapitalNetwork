@@ -5,23 +5,23 @@ import { PROFILE_FIELDS } from './lib/scenarioProfile.js';
 // Edits the same Scenario Profile the AI conversation fills, so the two modes
 // stay in sync. Derived fields (loan amount, LTV) are read-only.
 
-const NAVY = '#3a3026';
-const LINE = '#e7ddc9';
+const NAVY = '#141414';
+const LINE = '#ddd7c9';
 
 export default function ManualForm({ profile, onChange, t }) {
   const set = (key, val) => onChange({ [key]: val });
   const editable = PROFILE_FIELDS.filter(f => !f.derived);
 
-  const inp = { width: '100%', border: `1px solid ${LINE}`, borderRadius: 8, padding: '9px 11px', fontSize: 13, fontFamily: 'inherit', color: '#2f2a23', background: 'white' };
+  const inp = { width: '100%', border: `1px solid ${LINE}`, borderRadius: 8, padding: '9px 11px', fontSize: 13, fontFamily: 'inherit', color: '#171717', background: 'white' };
 
   return (
     <div style={{ background: 'white', border: `1px solid ${LINE}`, borderRadius: 12, padding: 14 }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 4 }}>{t.manualTitle}</div>
-      <p style={{ fontSize: 11.5, color: '#8c8375', marginBottom: 12 }}>{t.manualSub}</p>
+      <p style={{ fontSize: 11.5, color: '#837f74', marginBottom: 12 }}>{t.manualSub}</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
         {editable.map(f => (
           <label key={f.key} style={{ display: 'block' }}>
-            <span style={{ fontSize: 10.5, color: '#8c8375', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>{f.label}</span>
+            <span style={{ fontSize: 10.5, color: '#837f74', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>{f.label}</span>
             {f.type === 'enum' ? (
               <select style={inp} value={profile[f.key] || ''} onChange={e => set(f.key, e.target.value || undefined)}>
                 <option value="">—</option>

@@ -12,16 +12,16 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return React.createElement('div', {
-        style: { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT_STACK, background: '#f6f1e8', textAlign: 'center' },
+        style: { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT_STACK, background: '#f2efe7', textAlign: 'center' },
       },
         React.createElement('div', { style: { maxWidth: 340 } },
           React.createElement('div', { style: { fontSize: 32, marginBottom: 12 } }, '↻'),
-          React.createElement('h2', { style: { fontSize: 18, color: '#3a3026', marginBottom: 8 } }, 'One moment…'),
-          React.createElement('p', { style: { fontSize: 14, color: '#6b6152', lineHeight: 1.6, marginBottom: 18 } },
+          React.createElement('h2', { style: { fontSize: 18, color: '#141414', marginBottom: 8 } }, 'One moment…'),
+          React.createElement('p', { style: { fontSize: 14, color: '#6f6b62', lineHeight: 1.6, marginBottom: 18 } },
             'We hit a hiccup, but your conversation is saved. Tap below to pick up right where you left off.'),
           React.createElement('button', {
             onClick: () => window.location.reload(),
-            style: { background: 'linear-gradient(135deg, #3a3026, #a97b3f)', color: 'white', border: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 15, fontWeight: 700, cursor: 'pointer' },
+            style: { background: 'linear-gradient(135deg, #141414, #171717)', color: 'white', border: 'none', borderRadius: 10, padding: '13px 28px', fontSize: 15, fontWeight: 700, cursor: 'pointer' },
           }, 'Resume my conversation'),
         ),
       );
@@ -52,11 +52,11 @@ style.textContent = `
   @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   .fade-up { animation: fadeUp 0.5s ease forwards; }
   .chat-msg { animation: fadeUp 0.3s ease forwards; }
-  textarea:focus, input:focus, select:focus { outline: none; border-color: #a97b3f !important; box-shadow: 0 0 0 3px rgba(169,123,63,0.20) !important; }
+  textarea:focus, input:focus, select:focus { outline: none; border-color: #171717 !important; box-shadow: 0 0 0 3px rgba(20,20,20,0.18) !important; }
   textarea::placeholder { color: #b1a793; }
   button:active { opacity: 0.85; }
   ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-thumb { background: #e2d6c0; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb { background: #d6d0c2; border-radius: 4px; }
   @supports(padding: max(0px)) {
     body { padding-bottom: env(safe-area-inset-bottom, 0px); }
   }
