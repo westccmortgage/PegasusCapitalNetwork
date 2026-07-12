@@ -148,10 +148,47 @@
   }
   async function deleteImportProfile(id) { var c = await sb(); return err(await c.from("pn_import_profiles").delete().eq("id", id)); }
 
+  /* ── Enrichment ── */
+  function enrichmentRun(payload) { return fn("enrichment-run", payload); }
+  function enrichmentCommit(jobId, decisions) { return fn("enrichment-commit", { job_id: jobId, decisions: decisions || {} }); }
+  async function listEnrichmentJobs() { var c = await sb(); return err(await c.from("pn_enrichment_jobs").select("*").order("created_at", { ascending: false }).limit(200)).data || []; }
+  async function enrichmentFields(jobId) { var c = await sb(); return err(await c.from("pn_enrichment_fields").select("*").eq("job_id", jobId).order("created_at")).data || []; }
+  async function saveEnrichmentField(id, row) {
+    var c = await sb();
+    if (id) return err(await c.from("pn_enrichment_fields").update(row).eq("id", id).select().single()).data;
+    return err(await c.from("pn_enrichment_fields").insert(row).select().single()).data;
+  }
+
+  /* ── Outreach approval ── */
+  async function listProspects() {
+    var c = await sb();
+    return err(await c.from("pn_outreach_prospects").select("*, pn_agents(full_name,email)").order("status").order("due_date", { nullsFirst: false }).limit(2000)).data || [];
+  }
+  async function saveProspect(id, row) {
+    var c = await sb();
+    if (id) return err(await c.from("pn_outreach_prospects").update(row).eq("id", id).select().single()).data;
+    return err(await c.from("pn_outreach_prospects").insert(row).select().single()).data;
+  }
+  async function prospectEvent(row) { var c = await sb(); try { var u = await c.auth.getUser(); if (u && u.data && u.data.user) row.actor = u.data.user.id; } catch (_) {} return err(await c.from("pn_outreach_events").insert(row).select().single()).data; }
+  async function listProspectEvents(id) { var c = await sb(); return err(await c.from("pn_outreach_events").select("*").eq("prospect_id", id).order("created_at", { ascending: false }).limit(100)).data || []; }
+
+  /* ── Settings ── */
+  async function getSetting(key) { var c = await sb(); var r = await c.from("pn_settings").select("value").eq("key", key).maybeSingle(); return r.error ? null : (r.data && r.data.value); }
+  async function setSetting(key, value) {
+    var c = await sb(); var patch = { key: key, value: value };
+    try { var u = await c.auth.getUser(); if (u && u.data && u.data.user) patch.updated_by = u.data.user.id; } catch (_) {}
+    patch.updated_at = new Date().toISOString();
+    return err(await c.from("pn_settings").upsert(patch, { onConflict: "key" }).select().single()).data;
+  }
+
   window.PegPartnerAPI = {
     verifyAdmin: verifyAdmin, fn: fn,
     mapPreview: mapPreview, listImportProfiles: listImportProfiles,
     saveImportProfile: saveImportProfile, deleteImportProfile: deleteImportProfile,
+    enrichmentRun: enrichmentRun, enrichmentCommit: enrichmentCommit, listEnrichmentJobs: listEnrichmentJobs,
+    enrichmentFields: enrichmentFields, saveEnrichmentField: saveEnrichmentField,
+    listProspects: listProspects, saveProspect: saveProspect, prospectEvent: prospectEvent, listProspectEvents: listProspectEvents,
+    getSetting: getSetting, setSetting: setSetting,
     listAgents: listAgents, listEscrow: listEscrow, listCompanies: listCompanies,
     listSignals: listSignals, listDnc: listDnc, listOutreach: listOutreach,
     saveAgent: saveAgent, saveCompany: saveCompany, setOutreachStatus: setOutreachStatus,

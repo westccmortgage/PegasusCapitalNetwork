@@ -47,12 +47,16 @@ insert into public.profiles(id, full_name, email, is_admin) values
 \i supabase/074_pn_storage_health.sql
 \i supabase/075_pn_import_mapper.sql
 \i supabase/077_pn_research_fields.sql
+\i supabase/078_pn_enrichment.sql
+\i supabase/079_pn_outreach_approval.sql
 -- Idempotency: re-run must not error.
 \i supabase/072_pn_core.sql
 \i supabase/073_pn_import.sql
 \i supabase/074_pn_storage_health.sql
 \i supabase/075_pn_import_mapper.sql
 \i supabase/077_pn_research_fields.sql
+\i supabase/078_pn_enrichment.sql
+\i supabase/079_pn_outreach_approval.sql
 
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 

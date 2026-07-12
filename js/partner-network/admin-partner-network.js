@@ -45,7 +45,8 @@
   }
 
   var TABS = [["dash", "Dashboard"], ["agents", "Agents"], ["escrow", "Escrow & Title"],
-    ["companies", "Companies"], ["outreach", "Outreach Queue"], ["signals", "Activity Signals"],
+    ["companies", "Companies"], ["enrich", "Enrichment"], ["approval", "Outreach Approval"],
+    ["outreach", "Outreach Queue"], ["signals", "Activity Signals"],
     ["dnc", "Do Not Contact"], ["import", "Import Center"]];
   function mount(v) {
     view = v; A = window.PegPartnerAPI;
@@ -67,8 +68,9 @@
     var host = document.getElementById("pnView"); if (!host) return;
     host.innerHTML = '<div class="pit-empty">Loading…</div>';
     ({ dash: renderDash, agents: renderAgents, escrow: renderEscrow, companies: renderCompanies,
+       enrich: renderEnrichTab, approval: renderApprovalTab,
        outreach: renderOutreach, signals: renderSignals, dnc: renderDnc, import: renderImport }[tab] || renderDash)(host)
-      .catch(function (e) { host.innerHTML = empty("Could not load this view.", (e && e.message || "") + " — check that migrations 072–074 are applied."); });
+      .catch(function (e) { host.innerHTML = empty("Could not load this view.", (e && e.message || "") + " — check that migrations 072–079 are applied."); });
   }
 
   /* ═══ 1. DASHBOARD ═══ */
@@ -96,6 +98,10 @@
       '<div class="pit-panel"><h3>Top outreach — open</h3>' + oa + "</div></div>" +
       '<div class="pit-panel"><h3>Latest import</h3>' + imp + "</div>";
   }
+
+  /* ═══ Enrichment + Outreach Approval (delegated to PegPartnerX) ═══ */
+  async function renderEnrichTab(host) { window.PegPartnerX.bind(function () { nav("enrich"); }); return window.PegPartnerX.renderEnrichment(host); }
+  async function renderApprovalTab(host) { window.PegPartnerX.bind(function () { nav("approval"); }); return window.PegPartnerX.renderOutreach(host); }
 
   /* ═══ 2. AGENTS ═══ */
   var AF = { q: "", city: "", status: "", conf: "" };
