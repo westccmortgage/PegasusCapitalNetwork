@@ -174,6 +174,38 @@ async function buildWorkbook() {
     ok("Agent research fields preserved (license_status/county/partner_score/linkedin_url)",
       a0.after_data.license_status === "Active" && a0.after_data.county === "San Diego" && typeof a0.after_data.partner_score === "number" && /linkedin/.test(a0.after_data.linkedin_url || ""));
 
+    // 10. Duplicate import — re-run the SAME workbook against the committed
+    //     records; the planner must produce ZERO new inserts (no duplicates).
+    console.log("== Duplicate import produces no duplicates ==");
+    const nid = (s) => String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const existing = { agents: new Map(), escrow: new Map(), companies: new Map(), signals: new Map(), dncs: new Map(), openOutreach: new Set(), crmByEmail: new Map() };
+    plan.rows.forEach((r) => {
+      if (r.proposed_action !== "insert") return; const d = r.after_data || {}; const rec = { id: d.id, record: d };
+      if (r.target_type === "agent") {
+        if (d.external_id) existing.agents.set("ext:" + String(d.external_id).toUpperCase(), rec);
+        if (d.email) existing.agents.set("email:" + String(d.email).toLowerCase(), rec);
+        if (d.license_number) existing.agents.set("lic:" + nid(d.license_number), rec);
+        if (d.full_name) existing.agents.set("nat:" + nid(d.full_name) + ":" + nid(d.company_name_snapshot), rec);
+      } else if (r.target_type === "escrow_title") {
+        if (d.external_id) existing.escrow.set("ext:" + String(d.external_id).toUpperCase(), rec);
+        if (d.email) existing.escrow.set("email:" + String(d.email).toLowerCase(), rec);
+        if (d.officer_name) existing.escrow.set("nat:" + nid(d.officer_name) + ":" + nid(d.company_name_snapshot), rec);
+      } else if (r.target_type === "company") {
+        if (d.external_id) existing.companies.set("ext:" + String(d.external_id).toUpperCase(), rec);
+        existing.companies.set("nat:" + nid(d.company_name) + ":" + nid(d.city), rec);
+      } else if (r.target_type === "activity_signal") {
+        if (d.external_id) existing.signals.set("ext:" + String(d.external_id).toUpperCase(), rec);
+        existing.signals.set("nat:" + nid(d.subject_name) + ":" + d.signal_type + ":" + (d.signal_date || ""), rec);
+      } else if (r.target_type === "outreach_action") {
+        existing.openOutreach.add("oa:" + (d.action_type || "") + ":" + nid(d.subject_name) + ":" + String(d.action).toUpperCase().slice(0, 120));
+      }
+    });
+    const rows2 = mapper.buildPlannerRows(applied.canonical, P);
+    let n2 = 0;
+    const plan2 = P.planActions(rows2, existing, { adminId: "00000000-0000-0000-0000-0000000000a1", today: "2026-07-11", genId: () => "00000000-0000-0000-0000-" + String(++n2 + 900).padStart(12, "0") });
+    ok("re-import: 0 new inserts (no duplicate agents/escrow/companies/signals/outreach)", plan2.summary.insert === 0, JSON.stringify(plan2.summary));
+    ok("re-import: 0 invalid, 0 conflict", plan2.summary.invalid === 0 && plan2.summary.conflict === 0, JSON.stringify(plan2.summary));
+
     console.log("\n──────────────────────────────");
     console.log("PASS " + pass + " · FAIL " + fail);
     console.log("Expected normalized result: Agents 11 · Escrow_Title 4 · Companies 12 · Activity_Signals 15 · Outreach_Actions 15 · Do_Not_Contact 0 · blocking 0");
