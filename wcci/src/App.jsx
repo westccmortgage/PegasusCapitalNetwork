@@ -26,6 +26,33 @@ function BrandMark({ size = 34, title = 'WCCI' }) {
     </svg>
   );
 }
+
+// Modern thin line icons (inherit color via currentColor).
+function IconPaperclip({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.5 11.5 L11.7 20.3a5 5 0 0 1-7.1-7.1l8.8-8.8a3.3 3.3 0 0 1 4.7 4.7l-8.8 8.8a1.6 1.6 0 0 1-2.3-2.3l7.9-7.9" />
+    </svg>
+  );
+}
+function IconMic({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="9" y="2.5" width="6" height="11.5" rx="3" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+      <line x1="12" y1="17.5" x2="12" y2="21" />
+      <line x1="8.5" y1="21" x2="15.5" y2="21" />
+    </svg>
+  );
+}
+function IconArrowUp({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="12" y1="19" x2="12" y2="5.5" />
+      <polyline points="6 11.5 12 5.5 18 11.5" />
+    </svg>
+  );
+}
 import { parseScenario } from './lib/parser.js';
 import { mergeProfile, profileStatus } from './lib/scenarioProfile.js';
 import { evaluatePaths } from './lib/strategyEngine.js';
@@ -964,7 +991,7 @@ export default function App() {
     if (!isWide) items.push({ key: 'profile', icon: '📋', label: `${su.profileTitle} · ${pct}%`, on: () => { closeSheet(); setProfileOpenMobile(true); } });
     items.push(
       { key: 'new', icon: '✨', label: cu.startNewScenario, on: () => { closeSheet(); confirmStartNew(); } },
-      { key: 'company', icon: '🛡️', label: cu.companyAndLicensing, on: () => { openTrust(); } },
+      { key: 'company', icon: '', label: cu.companyAndLicensing, on: () => { openTrust(); } },
       { key: 'about', icon: '🏢', label: cu.aboutCompany, href: COMPANY_FACTS_PRIMARY },
       { key: 'privacy', icon: '🔒', label: cu.privacyAiUse, on: () => { openPrivacy(); } },
       { key: 'contact', icon: '📞', label: cu.contact, on: () => { openContact(); } },
@@ -1123,7 +1150,7 @@ export default function App() {
           <div style={{ marginTop: 14 }}>
             <button onClick={openTrust} aria-haspopup="dialog" aria-label={cu.companyAndLicensing}
               style={{ background: 'white', border: '1px solid #d6d0c2', borderRadius: 10, padding: '10px 16px', minHeight: 44, fontSize: 13, fontWeight: 600, color: '#141414', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              🛡️ {cu.companyAndLicensing}
+              {cu.companyAndLicensing}
             </button>
           </div>
 
@@ -1249,7 +1276,7 @@ export default function App() {
             {isWide && (
               <button onClick={openTrust} aria-haspopup="dialog" aria-label={cu.companyAndLicensing}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#f2efe7', border: '1px solid #d6d0c2', color: '#141414', cursor: 'pointer', fontSize: 13, fontWeight: 600, padding: '0 13px', borderRadius: 10, minHeight: 44, whiteSpace: 'nowrap' }}>
-                <span aria-hidden="true">🛡️</span>{cu.companyAndLicensing}
+                {cu.companyAndLicensing}
               </button>
             )}
             <LangButton />
@@ -1333,8 +1360,8 @@ export default function App() {
               disabled={uploading}
               title={uu.hint}
               aria-label={uu.hint}
-              style={{ width: 44, height: 44, background: '#efece3', border: '1px solid #ddd7c9', borderRadius: 22, color: uploading ? '#c7c2b6' : '#837f74', fontSize: 18, cursor: uploading ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >📎</button>
+              style={{ width: 44, height: 44, background: 'transparent', border: '1px solid #ddd7c9', borderRadius: 12, color: uploading ? '#c7c2b6' : '#171717', cursor: uploading ? 'default' : 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            ><IconPaperclip /></button>
             <textarea
               ref={inputRef}
               value={input}
@@ -1351,20 +1378,21 @@ export default function App() {
                 onClick={toggleMic}
                 title={listening ? t.micStop : t.micStart}
                 aria-label={listening ? t.micStop : t.micStart}
-                style={{ width: 44, height: 44, background: listening ? '#a23b2a' : '#efece3', border: listening ? 'none' : '1px solid #ddd7c9', borderRadius: 22, color: listening ? 'white' : '#837f74', fontSize: 18, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: listening ? 'pulse 1.4s ease-in-out infinite' : 'none' }}
-              >🎤</button>
+                style={{ width: 44, height: 44, background: listening ? '#171717' : 'transparent', border: listening ? 'none' : '1px solid #ddd7c9', borderRadius: 12, color: listening ? '#ffffff' : '#171717', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: listening ? 'pulse 1.4s ease-in-out infinite' : 'none' }}
+              ><IconMic /></button>
             )}
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || loading}
-              style={{ width: 44, height: 44, background: input.trim() ? 'linear-gradient(135deg, #171717, #000000)' : '#ddd7c9', border: 'none', borderRadius: 22, color: 'white', fontSize: 18, cursor: input.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >→</button>
+              aria-label={cu.send}
+              style={{ width: 44, height: 44, background: input.trim() ? '#171717' : '#e9e4d8', border: 'none', borderRadius: 12, color: input.trim() ? '#ffffff' : '#b3aea1', cursor: input.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            ><IconArrowUp /></button>
           </div>
           {/* Compact trust link instead of a heavy multiline legal block. */}
           <div style={{ textAlign: 'center', marginTop: 6 }}>
             <button onClick={openTrust} aria-haspopup="dialog" aria-label={cu.companyAndLicensing}
               style={{ background: 'none', border: 'none', color: '#9a958a', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 6px', minHeight: 28 }}>
-              <span aria-hidden="true">🛡️</span>{cu.licensedInfo}
+              {cu.licensedInfo}
             </button>
           </div>
         </div>
