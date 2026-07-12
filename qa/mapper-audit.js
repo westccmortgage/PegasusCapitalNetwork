@@ -46,6 +46,30 @@ ok("intelligence API exposes mapPreview + profiles", /mapPreview/.test(read("js/
 ok("both Import Centers expose Universal Import", /universalImport/.test(read("js/partner-network/admin-partner-network.js")) && /universalImport/.test(read("js/intelligence/admin-intelligence.js")));
 ok("mapper UI script included on both pages", /import-mapper-ui\.js/.test(read("admin-partner-network.html")) && /import-mapper-ui\.js/.test(read("admin-intelligence.html")));
 
+/* ── Borrower-data rejection + CSV encoding/delimiter (acceptance items) ── */
+section("Borrower-data rejection + CSV encoding/delimiter");
+ok("borrower fields detected (SSN / DOB / income / credit score)",
+  M.borrowerFieldsPresent([sheet("X", ["Name", "SSN", "Date of Birth", "Credit Score"], [])]).length >= 3);
+ok("clean partner file has no borrower fields", M.borrowerFieldsPresent([sheet("Agents", ["Full_Name", "Company", "DRE"], [])]).length === 0);
+ok("map-preview rejects borrower data with the exact message",
+  /This file appears to contain borrower or consumer lead data\. Use the authorized borrower CRM workflow instead\./.test(read("netlify/functions/import-map-preview.js")) &&
+  /rejectBorrower/.test(read("netlify/functions/lib/import-mapper-schemas.js")));
+{
+  const bom = "﻿Agent Name;Brokerage;DRE\nJane;Coastal;01998877\n";
+  const s = M.sheetFromCsv("x.csv", bom);
+  ok("CSV: UTF-8 BOM stripped + semicolon delimiter detected", s.headers[0] === "Agent Name" && s.delimiter === ";" && s.rows.length === 1);
+  const tab = "Agent Name\tBrokerage\tDRE\nBob\tSummit\t02011223\n";
+  ok("CSV: tab delimiter detected", M.sheetFromCsv("x.csv", tab).delimiter === "\t" && M.sheetFromCsv("x.csv", tab).headers.length === 3);
+  ok("CSV: quoted field with embedded delimiter + newline preserved",
+    M.parseCsv('a,"b,c\nd",e\n')[0][1] === "b,c\nd");
+}
+ok("production upload routes through the mapper (partner primary input)",
+  /mapChosen/.test(read("js/partner-network/admin-partner-network.js")) &&
+  /openWithFile/.test(read("js/partner-network/admin-partner-network.js")) &&
+  /onchange="PegPartner\.mapChosen/.test(read("js/partner-network/admin-partner-network.js")));
+ok("native fast-path present (skip mapping for exact native template)",
+  /Native Pegasus template detected/.test(read("js/lib/import-mapper-ui.js")) && /reviewMapping/.test(read("js/lib/import-mapper-ui.js")));
+
 /* ── (1) exact Pegasus template ── */
 section("(1) exact Pegasus template maps 1:1");
 const peg = sheet("Agents", ["External_ID", "Full_Name", "Company", "License_Number", "Email", "Phone", "City"],

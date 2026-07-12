@@ -156,6 +156,16 @@ exports.handler = async (event) => {
     if (!totalRows) return resp(422, { ok: false, error: "file has no data rows" });
     if (totalRows > 5000) return resp(422, { ok: false, error: "file too large (" + totalRows + " rows; max 5000 per import)" });
 
+    // Borrower/consumer PII guard — Partner Network must reject lead data.
+    if (descriptor.rejectBorrower) {
+      const borrower = mapper.borrowerFieldsPresent(sheets);
+      if (borrower.length) {
+        return resp(422, { ok: false, error: "This file appears to contain borrower or consumer lead data. Use the authorized borrower CRM workflow instead.", borrower_fields: borrower });
+      }
+    }
+    // Built-in profile recognition (module-isolated).
+    const builtin = schemas.matchBuiltinProfile(sheets, modKey);
+
     // ── DETECT phase (no mapping supplied) ──
     if (!body.mapping) {
       const modDetect = schemas.detectModule(sheets, modKey);
@@ -168,6 +178,8 @@ exports.handler = async (event) => {
         });
       }
       const suggestion = mapper.autoMap(sheets, descriptor);
+      // Overlay a matching built-in profile's whitelisted value transforms.
+      if (builtin) schemas.applyBuiltinTransforms(suggestion, builtin.profile);
       // Match saved profiles by header fingerprint or sheet-name hint.
       const fps = suggestion.map((s) => s.fingerprint);
       const { data: profs } = await supabase.from(M.profiles).select("id, name, description, fingerprints, sheet_name_hints, mapping, mapping_version").limit(200);
@@ -186,6 +198,7 @@ exports.handler = async (event) => {
       return resp(200, {
         ok: true, phase: "map", module: modKey,
         detection: modDetect, entityFields: entityFields,
+        detected_profile: builtin ? { id: builtin.profile.id, name: builtin.profile.name, description: builtin.profile.description, score: builtin.score } : null,
         sheets: suggestion.map((s) => ({
           sheet: s.sheet, headers: s.headers, fingerprint: s.fingerprint,
           detection: s.detection, entity: s.entity, entityConfidence: s.entityConfidence,
@@ -201,6 +214,10 @@ exports.handler = async (event) => {
     const mapping = body.mapping;
     const mappingSheets = Array.isArray(mapping.sheets) ? mapping.sheets : [];
     if (!mappingSheets.some((m) => m.entity)) return resp(422, { ok: false, error: "no sheet is mapped to a target entity" });
+
+    // Re-apply the built-in profile's whitelisted value transforms server-side,
+    // so the enum normalizations always run even if the client dropped them.
+    if (builtin) schemas.applyBuiltinTransforms(mappingSheets, builtin.profile);
 
     const applied = mapper.applyMapping(sheets, mappingSheets, descriptor);
     const plannerRows = mapper.buildPlannerRows(applied.canonical, descriptor);
@@ -258,10 +275,23 @@ exports.handler = async (event) => {
       if (rErr) { await supabase.from(M.batches).update({ status: "failed" }).eq("id", batch.id); return resp(500, { ok: false, error: "could not store preview rows: " + rErr.message }); }
     }
 
+    // Per-entity counts (each canonical sheet = one target entity).
+    const entityCounts = {};
+    plan.rows.forEach((r) => {
+      const e = r.sheet_name; if (!e) return;
+      const c = entityCounts[e] || (entityCounts[e] = { new: 0, updated: 0, unchanged: 0, conflict: 0, invalid: 0 });
+      if (r.proposed_action === "insert") c.new++;
+      else if (r.proposed_action === "update") c.updated++;
+      else if (r.proposed_action === "unchanged") c.unchanged++;
+      else if (r.proposed_action === "conflict") c.conflict++;
+      else if (r.proposed_action === "invalid") c.invalid++;
+    });
+
     console.log("[import-map-preview] module=" + modKey + " batch=" + batch.id + " by admin=" + uid + " rows=" + rows.length + " summary=" + JSON.stringify(plan.summary));
     return resp(200, {
       ok: true, phase: "preview", module: modKey, batch_id: batch.id, checksum, storage_path: storagePath,
-      summary: plan.summary,
+      summary: plan.summary, entity_counts: entityCounts,
+      detected_profile: builtin ? { id: builtin.profile.id, name: builtin.profile.name } : null,
       conflicts: plan.conflicts.slice(0, 100).map((r) => ({ sheet: r.sheet_name, row: r.row_number, key: r.dedupe_key, errors: r.validation_errors, changes: r.after_data })),
       invalid: plan.errors.slice(0, 100).map((r) => ({ sheet: r.sheet_name, row: r.row_number, errors: r.validation_errors })),
       quality: {

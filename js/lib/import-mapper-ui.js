@@ -35,8 +35,18 @@
 
   function open(opts) {
     S = { api: opts.api, module: opts.module, label: opts.moduleLabel || opts.module, onDone: opts.onDone,
-      step: "upload", fileB64: null, filename: null, detect: null, sheets: [], entityFields: {}, profiles: [], override: false, batch: null };
+      step: "upload", fileB64: null, filename: null, detect: null, sheets: [], entityFields: {}, profiles: [], override: false, batch: null, forceReview: false, native: false };
     window.Pegasus.modal(shell(uploadView()));
+  }
+  // Open the mapper on a file already chosen in the Import Center (the primary
+  // upload path routes every file through here before strict validation).
+  function openWithFile(file, opts) {
+    open(opts);
+    if (!file) return;
+    if (!/\.(xlsx|csv)$/i.test(file.name)) { err("Only .xlsx or .csv files are accepted."); return; }
+    S.filename = file.name;
+    render('<div class="pit-empty">Uploading · Reading workbook · Detecting sheets…</div>');
+    fileToB64(file).then(function (b64) { S.fileB64 = b64; return detect(); }).catch(function (e) { render(uploadView()); err(e.message); });
   }
   function close() { window.Pegasus.closeModal(); S = null; }
 
@@ -63,10 +73,19 @@
     if (r.phase === "wrong_module") { S.step = "wrong"; renderWrong(r.wrong_module); return; }
     S.detect = r; S.sheets = r.sheets || []; S.entityFields = r.entityFields || {}; S.entities = r.entities || Object.keys(S.entityFields);
     try { S.profiles = await S.api.listImportProfiles(); } catch (_) { S.profiles = []; }
-    // Auto-apply a matched profile if exactly one came back.
+    // Auto-apply a matched saved profile if exactly one came back.
     if (r.profiles && r.profiles.length === 1) applyProfileMapping(r.profiles[0]);
-    S.step = "map"; renderMap(r.profiles || []);
+    // Native fast-path: every sheet + column matches the native template exactly.
+    var native = !S.forceReview && S.sheets.length > 0 && S.sheets.every(function (sh) {
+      return sh.entity && sh.entityConfidence >= 0.85 &&
+        (sh.columns || []).every(function (c) { return !c.target || c.confidence === 1; }) &&
+        requiredMissing(sh).length === 0;
+    });
+    S.step = "map";
+    if (native && !r.detected_profile) { S.native = true; render('<div class="pit-empty">Native Pegasus template detected — normalizing…</div>'); buildPreview(); return; }
+    renderMap(r.profiles || []);
   }
+  function reviewMapping() { S.forceReview = true; S.native = false; S.step = "map"; renderMap((S.detect && S.detect.profiles) || []); }
 
   /* ── Wrong-module guard ── */
   function renderWrong(w) {
@@ -90,6 +109,11 @@
   function renderMap(matchedProfiles) {
     var det = S.detect.detection || {};
     var wrongHint = det.wrongModule ? '<div class="pit-note" style="color:var(--amber)">Heads up: this file scores higher for ' + esc(det.otherLabel) + ' — proceed only if these are generic contacts.</div>' : "";
+    var dp = S.detect.detected_profile;
+    var profileHint = dp ? '<div class="pit-panel" style="border-color:var(--blue-dim);background:var(--blue-dim)"><b style="color:var(--text)">Detected profile: ' + esc(dp.name) + "</b> " + (dp.score ? '<span class="pit-meta">' + Math.round(dp.score * 100) + "% match</span>" : "") + "<div class=\"pit-note\" style=\"margin-top:4px\">Column mappings and value transforms below are pre-filled from this profile. Review and edit before committing.</div></div>" : "";
+    var mappedCounts = '<div class="pit-import-sum" style="margin:0 0 12px">' + S.sheets.map(function (sh) {
+      return '<span class="chip">' + esc((sh.entity || sh.sheet).replace(/_/g, " ")) + " <b>" + (sh.entity ? sh.rowCount : 0) + "</b> mapped</span>";
+    }).join("") + "</div>";
     var profileBar =
       '<div class="pit-panel" style="margin-bottom:12px"><h3>Import profile</h3>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">' +
@@ -107,9 +131,9 @@
         '<div class="field" style="margin:0;min-width:220px"><label class="label">Target entity</label><select class="input pm-entity" data-sheet="' + si + '" onchange="PegMapper.entityChange(' + si + ')">' + entOpts + "</select></div></div>" +
         '<div id="pmCols' + si + '">' + cols + "</div></div>";
     }).join("");
-    render(wrongHint + profileBar + body +
+    render(wrongHint + profileHint + mappedCounts + profileBar + body +
       '<div id="pmErr" class="pit-invalid" style="display:none;margin:8px 0"></div>' +
-      '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-pri" onclick="PegMapper.buildPreview()">Build preview</button>' +
+      '<div class="pm-sticky" style="display:flex;gap:8px;margin-top:8px;position:sticky;bottom:0;background:var(--bg1);padding:8px 0"><button class="btn btn-pri" onclick="PegMapper.buildPreview()">Build normalized preview</button>' +
       '<button class="btn btn-ghost" onclick="PegMapper.back()">Start over</button></div>');
   }
   function colTable(sh, si) {
@@ -119,12 +143,12 @@
     };
     var rows = (sh.columns || []).map(function (c, ci) {
       var fld = fields.find(function (f) { return f.target === c.target; });
-      return "<tr><td class=\"strong\">" + esc(c.source) + '</td>' +
-        '<td><select class="input pm-col" data-sheet="' + si + '" data-src="' + esc(c.source) + '" data-idx="' + (c.sourceIndex != null ? c.sourceIndex : ci) + '">' + targetOpts(c.target || "") + "</select></td>" +
-        "<td>" + confBadge(c.confidence || 0) + "</td>" +
-        '<td class="pit-meta">' + esc((c.samples || []).join(", ")).slice(0, 60) + "</td>" +
-        "<td class=\"pit-meta\">" + (fld && fld.transform ? esc(fld.transform) : "—") + "</td>" +
-        "<td>" + (fld && fld.required ? '<span class="pit-conf Estimated">required</span>' : '<span class="pit-meta">optional</span>') + "</td></tr>";
+      return "<tr><td class=\"strong\" data-label=\"Source\">" + esc(c.source) + '</td>' +
+        '<td data-label="Target"><label class="sr-only">Map ' + esc(c.source) + '</label><select class="input pm-col" aria-label="Target field for ' + esc(c.source) + '" data-sheet="' + si + '" data-src="' + esc(c.source) + '" data-idx="' + (c.sourceIndex != null ? c.sourceIndex : ci) + '">' + targetOpts(c.target || "") + "</select></td>" +
+        '<td data-label="Confidence">' + confBadge(c.confidence || 0) + "</td>" +
+        '<td class="pit-meta" data-label="Samples">' + esc((c.samples || []).join(", ")).slice(0, 60) + "</td>" +
+        '<td class="pit-meta" data-label="Transform">' + (fld && fld.transform ? esc(fld.transform) : (c.valueMap ? "value map" : "—")) + "</td>" +
+        '<td data-label="Req">' + (fld && fld.required ? '<span class="pit-conf Estimated">required</span>' : '<span class="pit-meta">optional</span>') + "</td></tr>";
     }).join("");
     var missing = requiredMissing(sh);
     return '<div class="pit-table-wrap"><table class="pit-table" style="min-width:720px"><thead><tr><th class="noclick">Source column</th><th class="noclick">Target field</th><th class="noclick">Confidence</th><th class="noclick">Samples</th><th class="noclick">Transform</th><th class="noclick">Req</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
@@ -238,7 +262,14 @@
     var r = S.preview, s = r.summary || {}, q = r.quality || {};
     function chip(n, l) { return '<span class="chip"><b>' + (n || 0) + "</b> " + l + "</span>"; }
     var blocking = (q.missingRequired || []).length;
-    var html = '<div class="pit-import-sum">' + chip(s.insert, "new") + chip(s.update, "updates") + chip(s.unchanged, "unchanged") + chip(s.conflict, "conflicts") + chip(s.invalid, "invalid") + "</div>";
+    var nativeBadge = S.native ? '<div class="pit-panel" style="border-color:var(--green-dim);background:var(--green-dim)"><b style="color:var(--text)">Native Pegasus template detected</b> — mapping skipped. <a href="#" onclick="PegMapper.reviewMapping();return false" style="color:var(--blue)">Review mapping</a></div>' : "";
+    var dp = r.detected_profile ? '<div class="pit-note">Import profile: <b style="color:var(--text)">' + esc(r.detected_profile.name) + "</b></div>" : "";
+    var ec = r.entity_counts || {};
+    var perEntity = Object.keys(ec).length ? '<div class="pit-grid2">' + Object.keys(ec).map(function (e) {
+      var c = ec[e];
+      return '<div class="pit-panel"><h3>' + esc(e.replace(/_/g, " ")) + "</h3><div class=\"pit-import-sum\" style=\"margin:0\">" + chip(c.new, "new") + chip(c.updated, "updated") + chip(c.unchanged, "unchanged") + chip(c.conflict, "conflicts") + chip(c.invalid, "invalid") + "</div></div>";
+    }).join("") + "</div>" : "";
+    var html = nativeBadge + dp + '<div class="pit-import-sum">' + chip(s.insert, "new") + chip(s.update, "updates") + chip(s.unchanged, "unchanged") + chip(s.conflict, "conflicts") + chip(s.invalid, "invalid") + "</div>" + perEntity;
     html += '<div class="pit-note">Batch ' + esc(r.batch_id) + " · provenance (original file, sheet, row, raw JSON, profile) retained for every row.</div>";
     function block(title, arr, fmt, warn) {
       if (!arr || !arr.length) return "";
@@ -275,8 +306,8 @@
   }
 
   window.PegMapper = {
-    open: open, close: close, fileChosen: fileChosen, back: back,
+    open: open, openWithFile: openWithFile, close: close, fileChosen: fileChosen, back: back,
     overrideWrong: overrideWrong, entityChange: entityChange, applyProfile: applyProfile,
-    saveProfile: saveProfile, buildPreview: buildPreview, commit: commit,
+    saveProfile: saveProfile, buildPreview: buildPreview, commit: commit, reviewMapping: reviewMapping,
   };
 })();

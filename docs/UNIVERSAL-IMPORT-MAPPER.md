@@ -8,7 +8,31 @@ import history, and commit pipeline. **Records never cross modules.**
 
 Workflow: **Upload → Detect → Map → Normalize → Preview → Resolve → Commit.**
 
-Open it from either Import Center → **Universal Import — map any CSV/XLSX**.
+**Every file uploaded in an Import Center now goes through the mapper before
+strict validation.** The primary drop-zone routes the file to Detect → Map →
+Normalize → Review → Commit; an exact native Pegasus template is detected and
+skips the mapping screen (with an optional "Review mapping" link). A **Strict
+native importer (advanced)** button bypasses the mapper for a known-native file.
+
+### Built-in profile: ChatGPT California Partner Research
+
+The Partner Network ships a built-in profile recognized by the six sheet names
+(Agents, Escrow_Title, Companies, Activity_Signals, Outreach_Actions,
+Do_Not_Contact). It supplies the value transforms the generic engine can't infer
+(Signal_Type phrase → enum, Priority A/B/C → 1/2/3, Contact_Type → agent /
+escrow_title) and, together with cross-sheet resolution, maps the research
+workbook to **zero blocking errors** (Agents 11 · Escrow 4 · Companies 12 ·
+Activity 15 · Outreach 15 · DNC 0). Migration **077** adds the research columns
+(license_status, county, service_areas, partner_score, why_relevant, next_step,
+connection_note, priority, linkedin_url, …) so the data lands in typed columns.
+
+### Cross-sheet reference resolution
+
+Activity_Signals / Outreach_Actions `Contact_Key` is resolved to `subject_name`
+against the **same-batch** Agents / Escrow_Title records (by External_ID, then
+normalized name) **before** strict validation, so referenced contacts need not
+already exist in the database. Unresolved keys are surfaced as warnings, never
+silently attached to the wrong person.
 
 ## How it works
 

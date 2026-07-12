@@ -253,6 +253,11 @@ function applyMapping(sheets, mappingSheets, descriptor) {
         let value;
         if (parts.length > 1) value = parts.map((p) => p.val).filter((v) => v != null && String(v).trim() !== "").join(" ").trim() || null;
         else value = parts[0].val;
+        // Column-level explicit value map (from a saved or built-in Import Profile),
+        // e.g. "Buyer-Side Closing" → "closed_deal". Takes precedence over the
+        // field's generic transform; whitelist only (no user code executed).
+        const vm = parts[0].c && parts[0].c.valueMap;
+        if (vm && value != null) { const hit = vm[String(value).trim().toLowerCase()]; if (hit !== undefined) value = hit; }
         const t = transformValue(field, value);
         if (t.warn) warnings.push({ sheet: ms.sheet, row: rowNum, message: t.warn });
         rec[target] = t.value;
@@ -264,6 +269,12 @@ function applyMapping(sheets, mappingSheets, descriptor) {
       canonical[contractSheet].push(rec);
       provenance.push({ contractSheet: contractSheet, sourceSheet: ms.sheet, sourceRow: rowNum, raw: rawObject(src.headers, row), entity: ms.entity });
     });
+  }
+  // Cross-sheet reference resolution (module-specific), e.g. resolving
+  // Activity/Outreach Contact_Key → subject_name from same-batch Agents/Escrow.
+  // Runs BEFORE schema validation so resolved required fields are populated.
+  if (descriptor.resolveReferences) {
+    try { descriptor.resolveReferences(canonical, warnings); } catch (_) {}
   }
   return { canonical, provenance, warnings };
 }
@@ -345,10 +356,21 @@ function buildPlannerRows(canonical, descriptor) {
 }
 
 // ── CSV parsing (RFC4180-ish; no dependency) ─────────────────────────────────
-function parseCsv(text) {
+// Supports UTF-8 (+ BOM), comma / tab / semicolon delimiters, quoted values,
+// embedded delimiters, and line breaks inside quoted fields. Values are treated
+// as data only — never interpreted as formulas.
+function stripBom(s) { return String(s).replace(/^﻿/, ""); }
+function detectDelimiter(text) {
+  const line = stripBom(String(text)).split(/\r?\n/)[0] || "";
+  const count = (ch) => { let n = 0, q = false; for (const c of line) { if (c === '"') q = !q; else if (c === ch && !q) n++; } return n; };
+  const cands = [[",", count(",")], ["\t", count("\t")], [";", count(";")]].sort((a, b) => b[1] - a[1]);
+  return cands[0][1] > 0 ? cands[0][0] : ",";
+}
+function parseCsv(text, delim) {
+  delim = delim || ",";
   const rows = [];
   let row = [], field = "", inQ = false;
-  const s = String(text).replace(/^﻿/, ""); // strip BOM
+  const s = stripBom(text);
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
     if (inQ) {
@@ -356,7 +378,7 @@ function parseCsv(text) {
       else field += c;
     } else {
       if (c === '"') inQ = true;
-      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === delim) { row.push(field); field = ""; }
       else if (c === "\r") { /* ignore */ }
       else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
       else field += c;
@@ -365,12 +387,26 @@ function parseCsv(text) {
   if (field !== "" || row.length) { row.push(field); rows.push(row); }
   return rows;
 }
-// Turn a CSV buffer into a single-sheet structure.
+// Turn a CSV buffer into a single-sheet structure (delimiter auto-detected).
 function sheetFromCsv(name, text) {
-  const rows = parseCsv(text).filter((r) => r.some((c) => String(c).trim() !== ""));
-  if (!rows.length) return { name: name, headers: [], rows: [], firstDataRow: 2 };
+  const delim = detectDelimiter(text);
+  const rows = parseCsv(text, delim).filter((r) => r.some((c) => String(c).trim() !== ""));
+  if (!rows.length) return { name: name, headers: [], rows: [], firstDataRow: 2, delimiter: delim };
   const headers = rows[0].map((h) => String(h).trim());
-  return { name: name, headers: headers, rows: rows.slice(1), firstDataRow: 2 };
+  return { name: name, headers: headers, rows: rows.slice(1), firstDataRow: 2, delimiter: delim, encoding: /^﻿/.test(String(text)) ? "utf-8-bom" : "utf-8" };
+}
+
+// ── Borrower / consumer PII guard (Partner Network must reject lead data) ────
+const BORROWER_PATTERNS = [/\bssn\b/, /social security/, /date of birth/, /\bdob\b/,
+  /\bincome\b/, /\bassets?\b/, /credit score/, /\bfico\b/, /loan application/,
+  /bank account/, /routing number/, /account number/, /consumer/, /borrower/];
+function borrowerFieldsPresent(sheets) {
+  const hits = new Set();
+  (sheets || []).forEach((s) => (s.headers || []).forEach((h) => {
+    const nh = String(h == null ? "" : h).toLowerCase();
+    BORROWER_PATTERNS.forEach((re) => { const m = nh.match(re); if (m) hits.add(m[0]); });
+  }));
+  return Array.from(hits);
 }
 
 module.exports = {
@@ -379,5 +415,5 @@ module.exports = {
   isEmail, isPhone, phoneDigits,
   scoreEntity, detectEntity, autoMapColumns, autoMap, sampleValues,
   applyMapping, rawObject, qualityReport, fuzzyDuplicates, buildPlannerRows,
-  parseCsv, sheetFromCsv,
+  parseCsv, sheetFromCsv, detectDelimiter, borrowerFieldsPresent, BORROWER_PATTERNS,
 };
