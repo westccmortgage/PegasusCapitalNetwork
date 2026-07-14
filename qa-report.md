@@ -1,16 +1,16 @@
 # Pegasus QA Report
-Generated: 2026-05-24 15:29:34 UTC
+Generated: 2026-07-14 10:21:38 UTC
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
-| Files scanned | 65 |
-| Files with no issues | 86 |
-| Total issues | 1 |
-| 🔴 CRITICAL | 0 |
+| Files scanned | 89 |
+| Files with no issues | 121 |
+| Total issues | 6 |
+| 🔴 CRITICAL | 2 |
 | 🟠 IMPORTANT | 0 |
-| 🟡 LATER | 1 |
+| 🟡 LATER | 4 |
 
 ---
 
@@ -22,8 +22,10 @@ Generated: 2026-05-24 15:29:34 UTC
 - **LATER** — Console.logs, minor UX issues, cosmetic link problems
 
 
-### 🔴 CRITICAL — ✅ None
+### 🔴 CRITICAL (2)
 
+| `profile.html` | L0 | MISSING_AUTH_GUARD | Protected route "My Profile" has no auth guard (Pegasus.boot or admin-auth.js) | Add Pegasus.boot() or the admin-auth.js script |
+| `admin.html` | L0 | MISSING_ADMIN_GUARD | Admin page "Admin Dashboard" does not load admin-auth.js | Add <script src="/js/admin-auth.js"></script> |
 
 ---
 | File | Line | Type | Detail | Suggested Fix |
@@ -38,9 +40,12 @@ Generated: 2026-05-24 15:29:34 UTC
 |------|------|------|--------|---------------|
 
 
-### 🟡 LATER (1)
+### 🟡 LATER (4)
 
-| `js/access/access-system.js` | L31 | CONSOLE_LOG | console.log() left in production JS | Remove or replace with a QA flag |
+| `js/access/access-system.js` | L32 | CONSOLE_LOG | console.log() left in production JS | Remove or replace with a QA flag |
+| `js/profile/profile-showcase.js` | L268 | CONSOLE_LOG | console.log() left in production JS | Remove or replace with a QA flag |
+| `js/profile/profile-showcase.js` | L270 | CONSOLE_LOG | console.log() left in production JS | Remove or replace with a QA flag |
+| `js/profile/profile-showcase.js` | L279 | CONSOLE_LOG | console.log() left in production JS | Remove or replace with a QA flag |
 
 ---
 | File | Line | Type | Detail | Suggested Fix |

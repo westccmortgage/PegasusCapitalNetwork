@@ -84,4 +84,16 @@ async function stripTableParts(buf) {
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
-module.exports = { stripTableParts };
+// Turn ExcelJS's cryptic internal parse failures into an actionable message.
+// Files exported by some tools/libraries produce a workbook ExcelJS cannot read
+// (it throws e.g. "Cannot read properties of undefined (reading 'sheets')" or
+// "…(reading 'name')") — surface guidance instead of the raw stack text.
+function friendlyParseError(err) {
+  const m = (err && err.message) || String(err);
+  if (/reading '(sheets|name|model|worksheets)'/.test(m) || /Cannot read propert/.test(m)) {
+    return "the .xlsx structure could not be read — it may have been produced by a tool that writes an incompatible workbook. Re-save it as .xlsx from Excel or Google Sheets (File → Save As / Download → .xlsx), or start from Download Import Template.";
+  }
+  return m;
+}
+
+module.exports = { stripTableParts, friendlyParseError };

@@ -936,13 +936,15 @@
     downloadTemplate: downloadTemplate,
     universalImport: function () {
       window.PegMapper.open({ module: "intelligence", moduleLabel: "Capital Intelligence",
-        api: window.PegIntelAPI, onDone: function () { CACHE.properties = null; CACHE.programs = null; nav("import"); } });
+        api: window.PegIntelAPI, onNative: handleFile,
+        onDone: function () { CACHE.properties = null; CACHE.programs = null; nav("import"); } });
     },
     mapChosen: function (input) {
       var f = input.files && input.files[0]; input.value = "";
       if (!f) return;
       window.PegMapper.openWithFile(f, { module: "intelligence", moduleLabel: "Capital Intelligence",
-        api: window.PegIntelAPI, onDone: function () { CACHE.properties = null; CACHE.programs = null; nav("import"); } });
+        api: window.PegIntelAPI, onNative: handleFile,
+        onDone: function () { CACHE.properties = null; CACHE.programs = null; nav("import"); } });
     },
   };
 })();

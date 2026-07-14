@@ -35,6 +35,7 @@
 
   function open(opts) {
     S = { api: opts.api, module: opts.module, label: opts.moduleLabel || opts.module, onDone: opts.onDone,
+      onNative: opts.onNative || null, file: null,
       step: "upload", fileB64: null, filename: null, detect: null, sheets: [], entityFields: {}, profiles: [], override: false, batch: null, forceReview: false, native: false };
     window.Pegasus.modal(shell(uploadView()));
   }
@@ -44,7 +45,7 @@
     open(opts);
     if (!file) return;
     if (!/\.(xlsx|csv)$/i.test(file.name)) { err("Only .xlsx or .csv files are accepted."); return; }
-    S.filename = file.name;
+    S.filename = file.name; S.file = file;
     render('<div class="pit-empty">Uploading · Reading workbook · Detecting sheets…</div>');
     fileToB64(file).then(function (b64) { S.fileB64 = b64; return detect(); }).catch(function (e) { render(uploadView()); err(e.message); });
   }
@@ -70,6 +71,13 @@
   }
   async function detect() {
     var r = await S.api.mapPreview({ filename: S.filename, file_base64: S.fileB64, override: S.override });
+    // Native workbook → hand off to the module's strict native importer, which
+    // handles every native sheet (the mapper models only a subset as entities).
+    if (r.phase === "native") {
+      if (S.onNative && S.file) { var f = S.file; var nat = S.onNative; close(); nat(f); return; }
+      // No native handler wired — fall back to the mapper with a clear heads-up.
+      S.override = true; render('<div class="pit-empty">Loading mapper…</div>'); return detect();
+    }
     if (r.phase === "wrong_module") { S.step = "wrong"; renderWrong(r.wrong_module); return; }
     S.detect = r; S.sheets = r.sheets || []; S.entityFields = r.entityFields || {}; S.entities = r.entities || Object.keys(S.entityFields);
     try { S.profiles = await S.api.listImportProfiles(); } catch (_) { S.profiles = []; }

@@ -227,6 +227,23 @@ section("(12) malformed table relationships tolerated");
     ok("CRE property mapped (address/price/noi)", pr && pr.after_data.asking_price === 5250000 && pr.after_data.noi === 315000);
     ok("CI descriptor never references pn_ entities", !Object.keys(I.entities).some((e) => ["Agents", "Escrow_Title", "Do_Not_Contact"].includes(e)));
 
+    /* ── Native workbook → strict native importer (mapper models only a subset) ── */
+    section("Native workbook routes to the strict native importer");
+    const nativeIntel = ["Properties", "Property_Updates", "Contacts", "Property_Contacts", "Loans", "Tenants", "Distress_Signals", "Lender_Programs", "Daily_Actions"].map((n) => ({ name: n }));
+    const intelHit = mp._nativeOnlySheetsPresent("intelligence", nativeIntel);
+    ok("native CI workbook flagged for the strict importer", intelHit.length > 0 && ["Tenants", "Distress_Signals", "Property_Contacts", "Property_Updates", "Daily_Actions"].every((s) => intelHit.includes(s)));
+    ok("CI file with only mapper-covered sheets stays in the mapper",
+      mp._nativeOnlySheetsPresent("intelligence", [{ name: "Properties" }, { name: "Contacts" }, { name: "Loans" }]).length === 0);
+    ok("a lone coincidental native sheet name is NOT diverted (needs ≥2)",
+      mp._nativeOnlySheetsPresent("intelligence", [{ name: "Tenants" }]).length === 0);
+    ok("Partner native workbook is never diverted (mapper covers all 6 entities)",
+      mp._nativeOnlySheetsPresent("partner", ["Agents", "Escrow_Title", "Companies", "Activity_Signals", "Outreach_Actions", "Do_Not_Contact"].map((n) => ({ name: n }))).length === 0);
+    ok("mapper UI hands a native file to onNative + strict importer wired in admin",
+      /phase === "native"/.test(read("js/lib/import-mapper-ui.js")) && /onNative: handleFile/.test(read("js/intelligence/admin-intelligence.js")));
+    const fpe = require(path.join(ROOT, "netlify/functions/lib/xlsx-sanitize.js")).friendlyParseError;
+    ok("cryptic ExcelJS parse error becomes actionable guidance",
+      /Save As|Download Import Template/.test(fpe(new Error("Cannot read properties of undefined (reading 'sheets')"))));
+
     /* ── DB proofs (optional) ── */
     section("DB-level proofs (optional)");
     const sqlPath = path.join(ROOT, "qa/sql/pn-db-tests.sql");
