@@ -13,7 +13,7 @@
 const crypto = require("crypto");
 const ExcelJS = require("exceljs");
 const core = require("./lib/intelligence-import-core.js");
-const { stripTableParts } = require("./lib/xlsx-sanitize.js");
+const { stripTableParts, friendlyParseError } = require("./lib/xlsx-sanitize.js");
 const { requireAdmin, resp } = require("./lib/intelligence-auth.js");
 
 const BUCKET = "capital-intelligence-private";
@@ -173,7 +173,7 @@ exports.handler = async (event) => {
     // 3. Parse workbook.
     let parsed;
     try { parsed = await parseWorkbook(buf); }
-    catch (e) { return resp(422, { ok: false, error: "could not read workbook: " + e.message }); }
+    catch (e) { return resp(422, { ok: false, error: "could not read workbook: " + friendlyParseError(e) }); }
     if (!parsed.found.length) {
       // Wrong-module guard: a California Partner Network workbook gets a clear,
       // actionable message instead of an opaque "no recognized sheets".

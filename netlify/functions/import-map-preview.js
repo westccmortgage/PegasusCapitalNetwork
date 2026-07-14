@@ -25,7 +25,7 @@
 
 const crypto = require("crypto");
 const ExcelJS = require("exceljs");
-const { stripTableParts } = require("./lib/xlsx-sanitize.js");
+const { stripTableParts, friendlyParseError } = require("./lib/xlsx-sanitize.js");
 const icore = require("./lib/intelligence-import-core.js");
 const mapper = require("./lib/import-mapper-core.js");
 const schemas = require("./lib/import-mapper-schemas.js");
@@ -35,16 +35,44 @@ const MOD = {
   partner: {
     batches: "pn_import_batches", rows: "pn_import_rows", profiles: "pn_import_profiles",
     bucket: "partner-network-private", descriptor: schemas.DESCRIPTORS.partner,
+    core: require("./lib/partner-import-core.js"), label: "California Partner Network",
     loadExisting: () => require("./partner-import-preview.js")._loadExisting,
     nameIndex: partnerNameIndex,
   },
   intelligence: {
     batches: "pci_import_batches", rows: "pci_import_rows", profiles: "pci_import_profiles",
     bucket: "capital-intelligence-private", descriptor: schemas.DESCRIPTORS.intelligence,
+    core: icore, label: "Capital Intelligence",
     loadExisting: () => require("./intelligence-import-preview.js")._loadExisting,
     nameIndex: intelNameIndex,
   },
 };
+
+// A native module workbook can carry sheets the mapper does not model as
+// mappable entities (e.g. Capital Intelligence's Property_Updates,
+// Property_Contacts, Tenants, Distress_Signals, Daily_Actions). Routing such a
+// file through the 4-entity mapper would silently mis-assign those sheets, so
+// the DETECT phase hands it to the module's STRICT NATIVE importer instead.
+// Returns the list of native-only sheet names present, or [] when the mapper
+// can represent every sheet (then normal mapping proceeds — e.g. every Partner
+// Network sheet is a mapper entity, so partner files never divert here).
+function nativeOnlySheetsPresent(M, sheets) {
+  const norm = icore.normHeader;
+  const nativeNames = Object.keys(M.core.SHEETS).map(norm);
+  const mapperEnts = new Set(Object.keys(M.descriptor.entities).map(norm));
+  const nativeOnly = new Set(nativeNames.filter((n) => !mapperEnts.has(n)));
+  const present = new Set(nativeNames);
+  let nativeMatches = 0;
+  const hit = [];
+  for (const s of sheets) {
+    const n = norm(s.name);
+    if (present.has(n)) nativeMatches++;
+    if (nativeOnly.has(n)) hit.push(s.name);
+  }
+  // Require ≥2 native sheets total so a lone coincidental sheet name never
+  // diverts an otherwise-foreign file away from the mapper.
+  return hit.length && nativeMatches >= 2 ? hit : [];
+}
 
 async function partnerNameIndex(supabase) {
   const idx = { Agents: [], Escrow_Title: [], Companies: [] };
@@ -127,6 +155,7 @@ function sampleRows(sheet, n) {
 }
 
 exports._extractSheets = extractSheets; // offline QA
+exports._nativeOnlySheetsPresent = (modKey, sheets) => nativeOnlySheetsPresent(MOD[modKey], sheets); // offline QA
 
 exports.handler = async (event) => {
   const auth = await requireAdmin(event);
@@ -149,7 +178,7 @@ exports.handler = async (event) => {
 
     let sheets;
     try { sheets = await extractSheets(filename, buf); }
-    catch (e) { return resp(422, { ok: false, error: "could not read file: " + e.message }); }
+    catch (e) { return resp(422, { ok: false, error: "could not read file: " + friendlyParseError(e) }); }
     sheets = sheets.filter((s) => (s.headers || []).some((h) => String(h).trim() !== ""));
     if (!sheets.length) return resp(422, { ok: false, error: "no readable sheets/columns in the file" });
     const totalRows = sheets.reduce((n, s) => n + (s.rows || []).length, 0);
@@ -168,6 +197,22 @@ exports.handler = async (event) => {
 
     // ── DETECT phase (no mapping supplied) ──
     if (!body.mapping) {
+      // Native workbook → strict native importer (handles every native sheet,
+      // including ones the mapper cannot model). Skipped when overriding.
+      if (!body.override) {
+        const nativeOnly = nativeOnlySheetsPresent(M, sheets);
+        if (nativeOnly.length) {
+          return resp(200, {
+            ok: true, phase: "native", module: modKey,
+            native: {
+              module: modKey, label: M.label, sheets: nativeOnly,
+              message: "This is a native " + M.label + " workbook — it includes sheet" +
+                (nativeOnly.length > 1 ? "s" : "") + " (" + nativeOnly.join(", ") +
+                ") that only the strict native importer handles. Routing to the native importer so every sheet imports correctly.",
+            },
+          });
+        }
+      }
       const modDetect = schemas.detectModule(sheets, modKey);
       if (modDetect.wrongModule && !body.override) {
         return resp(200, {
