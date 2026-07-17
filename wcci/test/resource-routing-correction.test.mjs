@@ -8,6 +8,19 @@ import assert from 'node:assert/strict';
 
 import { routeResources, placementFor, beforeJumboEligible, JUMBO_TOPICS } from '../src/lib/resources/resource-router.js';
 import { classifyLoanSize, baselineConformingLimit } from '../src/config/conformingLimits.js';
+import { SYSTEM_PROMPT } from '../src/systemPrompt.js';
+
+// Prompt guidance: classify jumbo by LOAN AMOUNT, never the purchase price, and
+// never before the loan amount is known (the exact bug seen with a $1.1M price
+// and no down payment yet).
+test('system prompt classifies jumbo by loan amount (not price) and not before the loan is known', () => {
+  assert.match(SYSTEM_PROMPT, /LOAN AMOUNT, NEVER THE PURCHASE PRICE/);
+  assert.match(SYSTEM_PROMPT, /until you actually know the LOAN AMOUNT/);
+  assert.match(SYSTEM_PROMPT, /HIGH-BALANCE CONFORMING tier/);
+  assert.ok(SYSTEM_PROMPT.includes('$832,750'));
+  // Do not instruct quoting a specific county figure.
+  assert.match(SYSTEM_PROMPT, /Do NOT quote a specific COUNTY high-balance dollar figure/);
+});
 
 const ids = (ctx) => routeResources(ctx).candidates.map(c => c.id);
 const has = (arr, id) => arr.includes(id);

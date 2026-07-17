@@ -196,7 +196,16 @@ function extractMarker(text, marker) {
 function buildEstimatesContext(profile) {
   const st = profileStatus(profile);
   if (!st.hasCoreScenario) {
-    return `\n\n=== CURRENT APP-COMPUTED ESTIMATES ===\nNot available yet — still missing: ${st.needed.missing.join(', ') || 'price/down/state'}. Ask for what's missing; do not invent numbers.`;
+    // Jumbo/conforming guard: if a PRICE is known but the LOAN AMOUNT is not
+    // (down payment missing), the model must not classify from the price.
+    let guard = '';
+    const priceKnown = profile.purchasePrice != null && !isNaN(profile.purchasePrice);
+    const loanKnown = profile.loanAmount != null && !isNaN(profile.loanAmount) && Number(profile.loanAmount) > 0;
+    if (priceKnown && !loanKnown) {
+      const baseline = classifyLoanSize({ units: profile.units || 1 }).baseline;
+      guard = `\n\nCONFORMING/JUMBO GUARD: a purchase price is known but the LOAN AMOUNT is NOT (no down payment yet). Do NOT call this loan jumbo, high-balance, or conforming yet — that classification is based on the LOAN AMOUNT (price minus down payment), NEVER the purchase price. A large price alone does not make a loan jumbo. Ask for the down payment (or expected loan amount) first, then classify. Reference only: the ${CONFORMING_YEAR} one-unit national baseline conforming limit is ${money0(baseline)}; high-cost counties have a higher high-balance ceiling the licensed team confirms — do NOT quote a specific county figure.`;
+    }
+    return `\n\n=== CURRENT APP-COMPUTED ESTIMATES ===\nNot available yet — still missing: ${st.needed.missing.join(', ') || 'price/down/state'}. Ask for what's missing; do not invent numbers.${guard}`;
   }
   const strat = evaluatePaths(profile);
   const ranked = (strat.topPaths.length ? strat.topPaths : strat.paths).slice(0, 3);
