@@ -21,6 +21,7 @@ if (payloadHash !== "3904a652aa40ab4f181ba2f4c744de3d396c9a5c8e7aad9384d3017257f
   throw new Error(`Payload chunk checksum mismatch: ${payloadHash}`);
 }
 const payload = JSON.parse(zlib.gunzipSync(Buffer.from(payloadB64, "base64")).toString("utf8"));
+payload.datasets.Distress_Signals = payload.datasets.Distress_Signals.filter(r => r[0] !== "SIG-PAZ-OCC-CONFLICT");
 const out = path.join(__dirname, "..", "Pegasus-Intelligence-2026-07-27.xlsx");
 const reportPath = path.join(__dirname, "..", "Pegasus-Intelligence-2026-07-27-validation.json");
 
