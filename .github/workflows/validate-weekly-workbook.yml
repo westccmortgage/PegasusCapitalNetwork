@@ -1,0 +1,23 @@
+name: Validate weekly Pegasus workbook
+on:
+  push:
+    branches:
+      - automation/exceljs-validation-20260727
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci --ignore-scripts
+      - run: node qa/generate-validate-weekly-workbook.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pegasus-Intelligence-2026-07-27
+          path: |
+            Pegasus-Intelligence-2026-07-27.xlsx
+            Pegasus-Intelligence-2026-07-27-validation.json
+          if-no-files-found: error
