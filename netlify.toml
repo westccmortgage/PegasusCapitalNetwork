@@ -69,8 +69,9 @@
 # ════════════════════════════════════════════════════════════════════════════
 [[redirects]]
   from = "/u/:slug"
-  to = "/public-profile.html?slug=:slug"
+  to = "/.netlify/functions/profile-seo-page?slug=:slug"
   status = 200
+  force = true
 
 # ── Clean business/project page URLs → internal presence resolver (200 rewrite;
 #    browser URL stays clean). The legacy /presence.html?slug=… still works. ──
