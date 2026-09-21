@@ -354,12 +354,6 @@ Pegasus.boot(async function () {
   var name = p.full_name || 'Pegasus Member';
   var firstName = name.split(' ')[0];
 
-  /* SEO */
-  document.title = name + ' — Pegasus Network';
-  var mDesc = document.querySelector('meta[name=description]');
-  if(mDesc) mDesc.content = (p.professional_title||roleLabel(p.role)) + (p.company_name?' · '+p.company_name:'') + (p.markets&&p.markets.length?' · '+p.markets.slice(0,2).join(', '):'');
-  if(p.avatar_url){var og=document.createElement('meta');og.setAttribute('property','og:image');og.content=p.avatar_url;document.head.appendChild(og);}
-
   /* ── Header badges — trust signals ONLY (Verified / Ambassador). Role is shown
      once as the role line; markets belong to the member's business pages, not the
      person, so they are NOT shown as personal badges here. ── */
