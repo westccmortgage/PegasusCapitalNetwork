@@ -269,6 +269,24 @@
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
+  for = "/public-profile.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/presence.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/members.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
   for = "/build-info.json"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
