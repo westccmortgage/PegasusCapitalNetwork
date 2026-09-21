@@ -189,10 +189,11 @@ Pegasus.boot(async function(){
   var cleanPath = Pegasus.presencePath(p.presence_type, p.slug);
   var cleanUrl = CANON + cleanPath;
   (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
-  // Public-preview pages are indexable; member_only/private keep the default noindex.
-  if (p.visibility === 'public_preview') {
+  // Only clean public entity routes are indexable. The technical
+  // /presence.html resolver stays noindex even when it resolves a public record.
+  if (p.visibility === 'public_preview' && location.pathname !== '/presence.html') {
     var rmeta = document.querySelector('meta[name="robots"]');
-    if (rmeta) rmeta.setAttribute('content', 'index,follow');
+    if (rmeta) rmeta.setAttribute('content', 'index,follow,max-image-preview:large');
   }
 
   var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';
