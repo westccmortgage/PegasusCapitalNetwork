@@ -119,10 +119,11 @@ function response(body, status=200) {
 
 export default async (request) => {
   try {
-    const path = new URL(request.url).pathname;
-    if (path.endsWith("/sitemap-people.xml")) return response(await peopleSitemap());
-    if (path.endsWith("/sitemap-businesses.xml")) return response(await presenceSitemap("businesses"));
-    if (path.endsWith("/sitemap-events.xml")) return response(await presenceSitemap("events"));
+    const u = new URL(request.url);
+    const kind = u.searchParams.get("kind") || "index";
+    if (kind === "people") return response(await peopleSitemap());
+    if (kind === "businesses") return response(await presenceSitemap("businesses"));
+    if (kind === "events") return response(await presenceSitemap("events"));
     return response(sitemapIndex());
   } catch (err) {
     console.error("[entity-sitemap]", err);
