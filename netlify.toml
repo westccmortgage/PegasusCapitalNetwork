@@ -83,6 +83,24 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/people"
+  to = "/.netlify/functions/public-directory"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/businesses"
+  to = "/.netlify/functions/public-directory"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/events"
+  to = "/.netlify/functions/public-directory"
+  status = 200
+  force = true
+
 # PATH REWRITES (status 200 internal rewrites; none touch "/", apex, or www)
 # ════════════════════════════════════════════════════════════════════════════
 [[redirects]]
