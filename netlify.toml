@@ -58,24 +58,70 @@
 # setting owns that. Adding one back is what caused the loop.
 
 # ════════════════════════════════════════════════════════════════════════════
+# DYNAMIC SEO SITEMAP — public Person profiles only (P0)
+[[redirects]]
+  from = "/sitemap-entities.xml"
+  to = "/.netlify/functions/entity-sitemap?kind=index"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap-people.xml"
+  to = "/.netlify/functions/entity-sitemap?kind=people"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap-businesses.xml"
+  to = "/.netlify/functions/entity-sitemap?kind=businesses"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap-events.xml"
+  to = "/.netlify/functions/entity-sitemap?kind=events"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/people"
+  to = "/.netlify/functions/public-directory?kind=people"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/businesses"
+  to = "/.netlify/functions/public-directory?kind=businesses"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/events"
+  to = "/.netlify/functions/public-directory?kind=events"
+  status = 200
+  force = true
+
 # PATH REWRITES (status 200 internal rewrites; none touch "/", apex, or www)
 # ════════════════════════════════════════════════════════════════════════════
 [[redirects]]
   from = "/u/:slug"
-  to = "/public-profile.html?slug=:slug"
+  to = "/.netlify/functions/profile-seo-page?slug=:slug"
   status = 200
+  force = true
 
 # ── Clean business/project page URLs → internal presence resolver (200 rewrite;
 #    browser URL stays clean). The legacy /presence.html?slug=… still works. ──
 [[redirects]]
   from = "/business/:slug"
-  to = "/presence.html?kind=business&slug=:slug"
+  to = "/.netlify/functions/presence-seo-page?kind=business&slug=:slug"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/company/:slug"
-  to = "/presence.html?kind=company&slug=:slug"
-  status = 200
+  to = "/business/:slug"
+  status = 301
+  force = true
 
 [[redirects]]
   from = "/project/:slug"
@@ -89,8 +135,9 @@
 
 [[redirects]]
   from = "/event/:slug"
-  to = "/presence.html?kind=event&slug=:slug"
+  to = "/.netlify/functions/presence-seo-page?kind=event&slug=:slug"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/property/:slug"
@@ -220,6 +267,24 @@
   for = "/"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/public-profile.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/presence.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/members.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "noindex, follow"
 
 [[headers]]
   for = "/build-info.json"

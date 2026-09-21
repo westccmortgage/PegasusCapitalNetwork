@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><title>Business Page — Pegasus Network</title>
-<link rel="canonical" href="https://www.pegasuscapitalnetwork.com/presence.html">
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/presence.html">
 <!-- Default noindex: member_only/private pages must never be indexable. For
      public_preview records the loader flips this to index,follow at render
      time (Google indexes the rendered DOM). -->
@@ -70,7 +70,7 @@ Pegasus.boot(async function(){
   Pegasus.mountPublic('');
 
   var esc = Pegasus.esc;
-  var CANON = 'https://www.pegasuscapitalnetwork.com';
+  var CANON = 'https://pegasuscapitalnetwork.com';
 
   var TYPE_LABEL = {
     personal:'Personal', company:'Company', project:'Project',
@@ -179,19 +179,22 @@ Pegasus.boot(async function(){
 
   // ── Full view (profile-shell layout) ─────────────────────────────────────────
   var p = data.presence;
+  var seoSnap=document.getElementById('peg-seo-snapshot'); if(seoSnap) seoSnap.remove();
   var canManage = !!data.can_manage;
   var typeLbl = TYPE_LABEL[p.presence_type] || p.presence_type;
   var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
   var loc = [p.location, p.market].filter(Boolean).join(' · ');
-  document.title = (p.name || 'Business Page') + ' — Pegasus Network';
+  var seoKindLabel = p.presence_type === 'event' ? 'Event' : (p.presence_type === 'company' ? 'Business' : typeLbl);
+  document.title = (p.name || 'Business Page') + ' — ' + seoKindLabel + ' | Pegasus Capital Network';
   // Clean public URL for this page (shown/copied; never the technical resolver).
   var cleanPath = Pegasus.presencePath(p.presence_type, p.slug);
   var cleanUrl = CANON + cleanPath;
   (function(){ var cl=document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', cleanUrl); })();
-  // Public-preview pages are indexable; member_only/private keep the default noindex.
-  if (p.visibility === 'public_preview') {
+  // Only clean public entity routes are indexable. The technical
+  // /presence.html resolver stays noindex even when it resolves a public record.
+  if (p.visibility === 'public_preview' && location.pathname !== '/presence.html') {
     var rmeta = document.querySelector('meta[name="robots"]');
-    if (rmeta) rmeta.setAttribute('content', 'index,follow');
+    if (rmeta) rmeta.setAttribute('content', 'index,follow,max-image-preview:large');
   }
 
   var initials = (p.name||'?').trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() || '◈';

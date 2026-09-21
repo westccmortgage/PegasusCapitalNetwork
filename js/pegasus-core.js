@@ -90,11 +90,11 @@
   // --- public nav (full-site mega menu) ---
   function publicNav(active){
     const G=(label,items)=>`<div class="nav-group"><span tabindex="0" role="button" aria-haspopup="true">${label} \u25BE</span><div class="nav-drop">${items.map(i=>`<a href="${i[1]}"><span>${i[0]}</span>${i[2]?`<small>${i[2]}</small>`:''}</a>`).join('')}</div></div>`;
-    const who=G('Who It’s For',[['Capital Providers','/category-capital-providers.html','Lenders, funds & investors'],['Capital Seekers','/category-capital-seekers.html','Developers & borrowers'],['Real Estate Agents','/category-real-estate-agents.html','Agents & brokers'],['RWA Partners','/category-rwa.html','Real-world asset partners'],['Browse Members','/members.html','The member directory']]);
+    const who=G('Who It’s For',[['Capital Providers','/category-capital-providers.html','Lenders, funds & investors'],['Capital Seekers','/category-capital-seekers.html','Developers & borrowers'],['Real Estate Agents','/category-real-estate-agents.html','Agents & brokers'],['RWA Partners','/category-rwa.html','Real-world asset partners'],['People','/people','Public professional profiles'],['Businesses','/businesses','Companies across the network'],['Events','/events','Capital & industry events']]);
     const learn=G('Learn',[['How Pegasus Works','/how-it-works.html','The system explained'],['Growth Capital','/growth-capital.html','Financing & programs'],['Capital Sessions','/capital-sessions.html','Live institutional briefings'],['Capital Academy','/capital-academy.html','Finance fundamentals'],['Network Badge','/network-badge.html','Show your Pegasus connection'],['FAQ','/faq.html','Common questions']]);
     return `<a href="#maincontent" class="skip-link" onclick="var m=document.getElementById('maincontent')||document.querySelector('main,section,.section,.auth-wrap,.ar-wrap,.view');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</a><nav class="pub-nav">
       <a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a>
-      <div class="pub-links"><a href="/how-it-works.html" class="${active==='How It Works'?'on':''}">How It Works</a><a href="/explore.html" class="${active==='Inside Pegasus'||active==='Explore'?'on':''}">Inside Pegasus</a>${who}${learn}</div>
+      <div class="pub-links"><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html" class="${active==='Inside Pegasus'||active==='Explore'?'on':''}">Inside Pegasus</a>${who}${learn}</div>
       <div class="nav-cta" id="pub-nav-cta"><a class="btn btn-ghost" id="nav-signin-btn" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" id="nav-create-btn" href="/signup.html">Create Free Profile</a></div>
       <button class="mob-menu-btn" id="mobMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
     </nav>
@@ -102,13 +102,13 @@
     <div class="mob-drawer" id="mobDrawer">
       <div class="mob-drawer-head"><img src="/assets/brand/pegasus-wordmark.png" style="height:24px"><button class="mob-drawer-close" id="mobClose" aria-label="Close menu">✕</button></div>
       <div class="mob-drawer-nav" id="mobDrawerNav">
-        <a href="/how-it-works.html">How It Works</a><a href="/explore.html">Inside Pegasus</a>
+        <a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html">Inside Pegasus</a>
         <div class="mob-sec">Who It’s For</div>
-        <a href="/category-capital-providers.html">Capital Providers</a><a href="/category-capital-seekers.html">Capital Seekers</a><a href="/category-real-estate-agents.html">Real Estate Agents</a><a href="/category-rwa.html">RWA Partners</a><a href="/members.html">Browse Members</a>
+        <a href="/category-capital-providers.html">Capital Providers</a><a href="/category-capital-seekers.html">Capital Seekers</a><a href="/category-real-estate-agents.html">Real Estate Agents</a><a href="/category-rwa.html">RWA Partners</a><a href="/people">Browse People</a><a href="/businesses">Browse Businesses</a><a href="/events">Browse Events</a>
         <div class="mob-sec">Learn</div>
         <a href="/how-it-works.html">How Pegasus Works</a><a href="/growth-capital.html">Growth Capital</a><a href="/capital-sessions.html">Capital Sessions</a><a href="/capital-academy.html">Capital Academy</a><a href="/network-badge.html">Network Badge</a><a href="/faq.html">FAQ</a>
         <div class="mob-sec">Company</div>
-        <a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="https://pegasusevents.net/" target="_blank" rel="noopener noreferrer">Events ↗</a>
+        <a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/events">Events</a>
       </div>
       <div class="mob-drawer-foot" id="mobDrawerFoot"><a class="btn btn-ghost" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" href="/signup.html">Create Profile</a></div>
     </div>

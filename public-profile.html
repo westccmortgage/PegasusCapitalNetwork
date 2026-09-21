@@ -6,6 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="description" content="Pegasus Network member profile.">
+<meta name="robots" content="noindex,follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529">
@@ -322,6 +323,7 @@ Pegasus.boot(async function () {
   }
 
   var p = route.profile;
+  var seoSnap=document.getElementById('peg-seo-snapshot'); if(seoSnap) seoSnap.remove();
 
   /* Tell core's header nav this is the owner's own profile, so the single
      "Manage Profile" dropdown renders in the top-right (replacing the old 3
@@ -335,15 +337,16 @@ Pegasus.boot(async function () {
     var canonUrl = slug ? 'https://pegasuscapitalnetwork.com/u/'+slug
                         : 'https://pegasuscapitalnetwork.com/public-profile.html?id='+p.id;
     var cl = document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', canonUrl);
-    var roleLbl = (p.role||'member').replace(/_/g,' ');
-    document.title = (p.full_name||'Member') + ' — Pegasus Network';
-    var desc = (p.headline || p.current_focus || (p.full_name+' · '+roleLbl+(p.location?' · '+p.location:'')) ).slice(0,160);
+    var roleLbl = roleLabel(p.role||'member');
+    var jobLbl = p.professional_title || roleLbl;
+    document.title = (p.full_name||'Member') + (jobLbl ? ' — '+jobLbl : '') + ' | Pegasus Capital Network';
+    var desc = (p.headline || p.current_focus || p.bio || ([jobLbl,p.company_name,p.location].filter(Boolean).join(' · ')) || ((p.full_name||'Member')+' on Pegasus Capital Network')).slice(0,160);
     var md = document.querySelector('meta[name="description"]');
     if(!md){ md=document.createElement('meta'); md.name='description'; document.head.appendChild(md); }
     md.setAttribute('content', desc);
     /* Open Graph for link sharing */
     function og(prop,val){ var m=document.querySelector('meta[property="'+prop+'"]'); if(!m){ m=document.createElement('meta'); m.setAttribute('property',prop); document.head.appendChild(m);} m.setAttribute('content',val); }
-    og('og:title', (p.full_name||'Member')+' — Pegasus Network');
+    og('og:title', document.title);
     og('og:description', desc);
     og('og:url', canonUrl);
     og('og:type', 'profile');
@@ -351,12 +354,6 @@ Pegasus.boot(async function () {
   })();
   var name = p.full_name || 'Pegasus Member';
   var firstName = name.split(' ')[0];
-
-  /* SEO */
-  document.title = name + ' — Pegasus Network';
-  var mDesc = document.querySelector('meta[name=description]');
-  if(mDesc) mDesc.content = (p.professional_title||roleLabel(p.role)) + (p.company_name?' · '+p.company_name:'') + (p.markets&&p.markets.length?' · '+p.markets.slice(0,2).join(', '):'');
-  if(p.avatar_url){var og=document.createElement('meta');og.setAttribute('property','og:image');og.content=p.avatar_url;document.head.appendChild(og);}
 
   /* ── Header badges — trust signals ONLY (Verified / Ambassador). Role is shown
      once as the role line; markets belong to the member's business pages, not the
