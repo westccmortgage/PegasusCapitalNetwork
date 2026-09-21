@@ -61,43 +61,43 @@
 # DYNAMIC SEO SITEMAP — public Person profiles only (P0)
 [[redirects]]
   from = "/sitemap-entities.xml"
-  to = "/.netlify/functions/entity-sitemap"
+  to = "/.netlify/functions/entity-sitemap?kind=index"
   status = 200
   force = true
 
 [[redirects]]
   from = "/sitemap-people.xml"
-  to = "/.netlify/functions/entity-sitemap"
+  to = "/.netlify/functions/entity-sitemap?kind=people"
   status = 200
   force = true
 
 [[redirects]]
   from = "/sitemap-businesses.xml"
-  to = "/.netlify/functions/entity-sitemap"
+  to = "/.netlify/functions/entity-sitemap?kind=businesses"
   status = 200
   force = true
 
 [[redirects]]
   from = "/sitemap-events.xml"
-  to = "/.netlify/functions/entity-sitemap"
+  to = "/.netlify/functions/entity-sitemap?kind=events"
   status = 200
   force = true
 
 [[redirects]]
   from = "/people"
-  to = "/.netlify/functions/public-directory"
+  to = "/.netlify/functions/public-directory?kind=people"
   status = 200
   force = true
 
 [[redirects]]
   from = "/businesses"
-  to = "/.netlify/functions/public-directory"
+  to = "/.netlify/functions/public-directory?kind=businesses"
   status = 200
   force = true
 
 [[redirects]]
   from = "/events"
-  to = "/.netlify/functions/public-directory"
+  to = "/.netlify/functions/public-directory?kind=events"
   status = 200
   force = true
 
