@@ -95,7 +95,7 @@ export default async (request)=>{
   try{
     const {rows,total}=await load(kind,page);
     if(page>1&&!rows.length) return errPage(404,"Directory page not found");
-    return new Response(render(kind,page,rows,total),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+    return new Response(render(kind,page,rows,total),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page","X-Robots-Tag":"index,follow,max-image-preview:large"}});
   }catch(err){
     console.error("[public-directory]",err);
     return errPage(503,"Directory temporarily unavailable");
