@@ -15,13 +15,36 @@ function cleanSlug(v){const s=String(v||"").trim();return /^[a-z0-9][a-z0-9-]*$/
 function replaceOrInsert(html,regex,replacement,before="</head>"){return regex.test(html)?html.replace(regex,replacement):html.replace(before,replacement+"\n"+before);}
 async function getPresence(slug){
   const {url,key}=cfg();
-  const res=await fetch(url+"/rest/v1/rpc/get_presence_page_by_slug",{
-    method:"POST",
-    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Accept:"application/json"},
-    body:JSON.stringify({p_slug:slug})
+  try{
+    const res=await fetch(url+"/rest/v1/rpc/get_presence_page_by_slug",{
+      method:"POST",
+      headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Accept:"application/json"},
+      body:JSON.stringify({p_slug:slug})
+    });
+    if(res.ok) return await res.json();
+    const body=await res.text().catch(()=> "");
+    console.warn("[presence-seo-page] RPC unavailable, using public view:",res.status,body.slice(0,180));
+  }catch(err){
+    console.warn("[presence-seo-page] RPC threw, using public view:",err&&err.message);
+  }
+
+  // Deployment-safe fallback when the latest RPC migration/schema cache is not
+  // live yet. public_presence_previews is already the anonymous-safe surface.
+  const params=new URLSearchParams({
+    select:"id,presence_type,name,slug,tagline,short_description,category,industry,location,market,public_cta_label,public_cta_url,status",
+    slug:"eq."+slug,
+    limit:"1"
   });
-  if(!res.ok){const body=await res.text().catch(()=> "");throw new Error("presence rpc failed: "+res.status+" "+body.slice(0,300));}
-  return await res.json();
+  const fallback=await fetch(url+"/rest/v1/public_presence_previews?"+params.toString(),{
+    headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}
+  });
+  if(!fallback.ok){
+    const body=await fallback.text().catch(()=> "");
+    throw new Error("presence fallback failed: "+fallback.status+" "+body.slice(0,300));
+  }
+  const rows=await fallback.json();
+  if(!Array.isArray(rows)||!rows.length) return null;
+  return {access:"full",presence:{...rows[0],visibility:"public_preview"},can_manage:false};
 }
 async function getTemplate(request){
   const u=new URL(request.url);
@@ -75,18 +98,21 @@ function render(html,p,kind){
     '<meta name="twitter:description" content="'+esc(desc)+'">',
     image?'<meta name="twitter:image" content="'+esc(image)+'">':''
   ].filter(Boolean).join("\n");
-  let mainEntity;
+  let schema;
   if(kind==="event"){
-    // Event-specific dates are not yet canonical fields; keep valid generic schema
-    // instead of emitting incomplete Google Event rich-result markup.
-    mainEntity={"@type":"Thing",name:txt(p.name),url:canonical,description:desc};
+    // The current canonical Event record does not yet have structured start/end
+    // dates. Describe it truthfully as a WebPage about an Event without claiming
+    // Google Event rich-result eligibility until those fields exist.
+    const eventEntity={"@type":"Event",name:txt(p.name),url:canonical,description:desc};
+    if(txt(p.location)) eventEntity.location={"@type":"Place","name":txt(p.location)};
+    schema={"@context":"https://schema.org","@type":"WebPage",url:canonical,name:title,description:desc,about:eventEntity,mainEntity:eventEntity};
   }else{
-    mainEntity={"@type":"Organization",name:txt(p.name),url:canonical,description:desc};
+    const mainEntity={"@type":"Organization",name:txt(p.name),url:canonical,description:desc};
     if(image) mainEntity.logo=image;
     if(safeHttp(p.website_url)) mainEntity.sameAs=[safeHttp(p.website_url)];
     if(txt(p.location)) mainEntity.location=txt(p.location);
+    schema={"@context":"https://schema.org","@type":"ProfilePage",url:canonical,name:title,description:desc,mainEntity};
   }
-  const schema={"@context":"https://schema.org","@type":"ProfilePage",url:canonical,name:title,description:desc,mainEntity};
   const jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
   html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical));
