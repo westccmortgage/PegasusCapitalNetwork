@@ -146,7 +146,7 @@
     <div class="xp-section-head">
       <div class="eyebrow" style="justify-content:center">Who belongs here</div>
       <h2>People you may meet inside Pegasus</h2>
-      <p>A private network of serious participants across capital, real estate, and growth. Individual members stay private until you join — here's who's inside.</p>
+      <p>A professional network across capital, real estate, and growth. Public profiles are discoverable by visitors and search engines; private activity stays protected.</p>
     </div>
     <div class="xp-who" id="who"></div>
   </section>
@@ -185,9 +185,9 @@
         <h3>🔭 As a visitor</h3>
         <ul>
           <li>Explore the entire ecosystem</li>
+          <li>Browse public people, businesses, and events</li>
           <li>Understand roles and opportunities</li>
           <li>View public capital sessions</li>
-          <li>See anonymized network activity</li>
           <li>Understand how Pegasus works</li>
         </ul>
       </div>
@@ -251,10 +251,19 @@ document.getElementById('footer').outerHTML=Pegasus.footer();
   try{
     var sb=await window.PegSB.ready;
     try{
+      var pp=await sb.from('profiles').select('profile_slug,full_name,role,professional_title,company_name,location,avatar_url,headline').not('profile_slug','is',null).not('full_name','is',null).limit(48);
+      if(pp && !pp.error && Array.isArray(pp.data)) pp.data.forEach(function(p){
+        items.push({cat:'member',label:'Member',href:'/u/'+encodeURIComponent(p.profile_slug),name:p.full_name||'Pegasus Member',
+          sub:[p.professional_title||(p.role||'').replace(/_/g,' '),p.company_name,p.location].filter(Boolean).join(' · '),
+          action:'View profile →',owner:('person:'+p.profile_slug).toLowerCase()});
+      });
+    }catch(_){ }
+    try{
       var na=await sb.rpc('get_recent_network_activity');
       if(na&&!na.error&&Array.isArray(na.data)) na.data.forEach(function(a){
         var isPerson=a.kind==='person';
-        items.push({ cat:isPerson?'member':'business', label:KINDLBL[a.kind]||a.kind,
+        if(isPerson) return;
+        items.push({ cat:a.kind==='event'?'event':'business', label:KINDLBL[a.kind]||a.kind,
           href:isPerson?(a.url||'#'):Pegasus.presencePath(a.kind,a.slug),
           name:a.name||'—', sub:[a.meta,a.location].filter(Boolean).join(' · '),
           action:isPerson?'View profile →':'View business →', owner:(a.owner_group||a.name||'').toLowerCase() });
@@ -282,7 +291,7 @@ document.getElementById('footer').outerHTML=Pegasus.footer();
     '</a>';
   }
 
-  var FILTERS=[['all','All'],['member','Members'],['business','Businesses'],['opportunity','Opportunities'],['showcase','Showcases']];
+  var FILTERS=[['all','All'],['member','People'],['business','Businesses'],['event','Events'],['opportunity','Opportunities'],['showcase','Showcases']];
   var active='all';
   function render(){
     var list=items.filter(function(x){ return active==='all' || x.cat===active; });
@@ -299,9 +308,9 @@ document.getElementById('footer').outerHTML=Pegasus.footer();
     paint();
   }
   render();
-  if(ctaEl){ ctaEl.innerHTML = authed
+  if(ctaEl){ ctaEl.innerHTML = '<a class="btn btn-ghost" href="/people">Browse People</a> <a class="btn btn-ghost" href="/businesses">Browse Businesses</a> <a class="btn btn-ghost" href="/events">Browse Events</a> ' + (authed
     ? '<a class="btn btn-pri" href="/members.html">Open Members Network</a>'
-    : '<a class="btn btn-pri" href="/signup.html?intent=profile">Create Free Profile to connect</a> <a class="btn btn-ghost" href="/signin.html">Sign In</a>'; }
+    : '<a class="btn btn-pri" href="/signup.html?intent=profile">Create Free Profile</a>'); }
 })();
 
 /* ── What's moving inside Pegasus — real, visibility-safe Network Signals
