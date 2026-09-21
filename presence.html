@@ -178,7 +178,8 @@ Pegasus.boot(async function(){
   if(access !== 'full' || !data.presence){ stateView('Not found', 'This business page could not be found.', '<a class="btn btn-ghost" href="/">Return home</a>'); return; }
 
   // ── Full view (profile-shell layout) ─────────────────────────────────────────
-  var p = data.presence;\n  var seoSnap=document.getElementById('peg-seo-snapshot'); if(seoSnap) seoSnap.remove();
+  var p = data.presence;
+  var seoSnap=document.getElementById('peg-seo-snapshot'); if(seoSnap) seoSnap.remove();
   var canManage = !!data.can_manage;
   var typeLbl = TYPE_LABEL[p.presence_type] || p.presence_type;
   var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
