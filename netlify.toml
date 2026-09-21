@@ -65,6 +65,24 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/sitemap-people.xml"
+  to = "/.netlify/functions/entity-sitemap"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap-businesses.xml"
+  to = "/.netlify/functions/entity-sitemap"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap-events.xml"
+  to = "/.netlify/functions/entity-sitemap"
+  status = 200
+  force = true
+
 # PATH REWRITES (status 200 internal rewrites; none touch "/", apex, or www)
 # ════════════════════════════════════════════════════════════════════════════
 [[redirects]]
@@ -77,13 +95,15 @@
 #    browser URL stays clean). The legacy /presence.html?slug=… still works. ──
 [[redirects]]
   from = "/business/:slug"
-  to = "/presence.html?kind=business&slug=:slug"
+  to = "/.netlify/functions/presence-seo-page?kind=business&slug=:slug"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/company/:slug"
-  to = "/presence.html?kind=company&slug=:slug"
-  status = 200
+  to = "/business/:slug"
+  status = 301
+  force = true
 
 [[redirects]]
   from = "/project/:slug"
@@ -97,8 +117,9 @@
 
 [[redirects]]
   from = "/event/:slug"
-  to = "/presence.html?kind=event&slug=:slug"
+  to = "/.netlify/functions/presence-seo-page?kind=event&slug=:slug"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/property/:slug"
