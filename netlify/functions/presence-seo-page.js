@@ -52,7 +52,9 @@ async function getTemplate(request){
   if(!res.ok) throw new Error("presence template fetch failed: "+res.status);
   return await res.text();
 }
-function expectedType(kind){return kind==="event"?"event":"company";}
+function typeAllowed(kind,type){
+  return kind==="event" ? type==="event" : (type==="company" || type==="capital_program");
+}
 function segment(kind){return kind==="event"?"event":"business";}
 function snapshot(p,kind,canonical){
   const name=txt(p.name),tagline=txt(p.tagline),desc=trunc(p.short_description,700);
@@ -106,12 +108,15 @@ function render(html,p,kind){
     const eventEntity={"@type":"Event",name:txt(p.name),url:canonical,description:desc};
     if(txt(p.location)) eventEntity.location={"@type":"Place","name":txt(p.location)};
     schema={"@context":"https://schema.org","@type":"WebPage",url:canonical,name:title,description:desc,about:eventEntity,mainEntity:eventEntity};
-  }else{
+  }else if(p.presence_type==="company"){
     const mainEntity={"@type":"Organization",name:txt(p.name),url:canonical,description:desc};
     if(image) mainEntity.logo=image;
     if(safeHttp(p.website_url)) mainEntity.sameAs=[safeHttp(p.website_url)];
     if(txt(p.location)) mainEntity.location=txt(p.location);
     schema={"@context":"https://schema.org","@type":"ProfilePage",url:canonical,name:title,description:desc,mainEntity};
+  }else{
+    const mainEntity={"@type":"Service",name:txt(p.name),url:canonical,description:desc};
+    schema={"@context":"https://schema.org","@type":"WebPage",url:canonical,name:title,description:desc,about:mainEntity,mainEntity};
   }
   const jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
@@ -137,7 +142,7 @@ export default async (request) => {
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
     }
     const p=data.presence;
-    if(p.presence_type!==expectedType(kind)) return simple(404,"Page not found","This page does not exist.");
+    if(!typeAllowed(kind,p.presence_type)) return simple(404,"Page not found","This page does not exist.");
     if(p.visibility!=="public_preview"||p.status!=="active") {
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
     }
