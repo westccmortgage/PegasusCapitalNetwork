@@ -57,13 +57,26 @@
     return st && st.profile ? st.profile : null;
   }
 
+  /* Public profile columns intentionally exclude email, access/referral data,
+     and internal moderation fields that migration 045 withholds from anon.
+     Signed-in members retain the existing full-profile read path. */
+  var PUBLIC_PROFILE_FIELDS = [
+    'id','full_name','role','company_name','created_at','updated_at',
+    'headline','bio','markets','specialties','location','website','avatar_color',
+    'verification_status','onboarding_complete','profile_completion','profile_slug',
+    'professional_title','current_focus','ecosystem_contribution','ecosystem_goals',
+    'ecosystem_role','expertise_areas','featured_modules','additional_roles',
+    'ambassador_status','avatar_url','institutional_visibility','verified_identity',
+    'linkedin_url','facebook_url','instagram_url','x_url','youtube_url','tiktok_url'
+  ].join(',');
+
   /* ── Load: any profile by slug or id (for public view) ──────────────────── */
   async function loadProfile(opts) {
     opts = opts || {};
     var c = await sb();
     if (!c) return null;
     try {
-      var q = c.from('profiles').select('*');
+      var q = c.from('profiles').select(isSignedIn() ? '*' : PUBLIC_PROFILE_FIELDS);
       q = opts.slug ? q.eq('profile_slug', opts.slug) : q.eq('id', opts.id);
       var res = await q.maybeSingle();
       return res.data || null;
