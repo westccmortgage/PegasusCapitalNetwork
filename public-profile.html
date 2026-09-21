@@ -337,15 +337,16 @@ Pegasus.boot(async function () {
     var canonUrl = slug ? 'https://pegasuscapitalnetwork.com/u/'+slug
                         : 'https://pegasuscapitalnetwork.com/public-profile.html?id='+p.id;
     var cl = document.querySelector('link[rel="canonical"]'); if(cl) cl.setAttribute('href', canonUrl);
-    var roleLbl = (p.role||'member').replace(/_/g,' ');
-    document.title = (p.full_name||'Member') + ' — Pegasus Network';
-    var desc = (p.headline || p.current_focus || (p.full_name+' · '+roleLbl+(p.location?' · '+p.location:'')) ).slice(0,160);
+    var roleLbl = roleLabel(p.role||'member');
+    var jobLbl = p.professional_title || roleLbl;
+    document.title = (p.full_name||'Member') + (jobLbl ? ' — '+jobLbl : '') + ' | Pegasus Capital Network';
+    var desc = (p.headline || p.current_focus || p.bio || ([jobLbl,p.company_name,p.location].filter(Boolean).join(' · ')) || ((p.full_name||'Member')+' on Pegasus Capital Network')).slice(0,160);
     var md = document.querySelector('meta[name="description"]');
     if(!md){ md=document.createElement('meta'); md.name='description'; document.head.appendChild(md); }
     md.setAttribute('content', desc);
     /* Open Graph for link sharing */
     function og(prop,val){ var m=document.querySelector('meta[property="'+prop+'"]'); if(!m){ m=document.createElement('meta'); m.setAttribute('property',prop); document.head.appendChild(m);} m.setAttribute('content',val); }
-    og('og:title', (p.full_name||'Member')+' — Pegasus Network');
+    og('og:title', document.title);
     og('og:description', desc);
     og('og:url', canonUrl);
     og('og:type', 'profile');
