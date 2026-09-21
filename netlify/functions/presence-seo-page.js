@@ -105,8 +105,8 @@ function render(html,p,kind){
     // The current canonical Event record does not yet have structured start/end
     // dates. Describe it truthfully as a WebPage about an Event without claiming
     // Google Event rich-result eligibility until those fields exist.
-    const eventEntity={"@type":"Event",name:txt(p.name),url:canonical,description:desc};
-    if(txt(p.location)) eventEntity.location={"@type":"Place","name":txt(p.location)};
+    const eventEntity={"@type":"Thing",additionalType:"https://schema.org/Event",name:txt(p.name),url:canonical,description:desc};
+    if(txt(p.location)) eventEntity.location=txt(p.location);
     schema={"@context":"https://schema.org","@type":"WebPage",url:canonical,name:title,description:desc,about:eventEntity,mainEntity:eventEntity};
   }else if(p.presence_type==="company"){
     const mainEntity={"@type":"Organization",name:txt(p.name),url:canonical,description:desc};
