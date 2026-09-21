@@ -89,7 +89,8 @@ function errPage(status,title){
 
 export default async (request)=>{
   const u=new URL(request.url);
-  const kind=u.pathname.startsWith("/businesses")?"businesses":u.pathname.startsWith("/events")?"events":"people";
+  const requested=u.searchParams.get("kind");
+  const kind=requested==="businesses"?"businesses":requested==="events"?"events":"people";
   const page=pageNum(u.searchParams.get("page"));
   try{
     const {rows,total}=await load(kind,page);
