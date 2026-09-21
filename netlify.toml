@@ -58,6 +58,13 @@
 # setting owns that. Adding one back is what caused the loop.
 
 # ════════════════════════════════════════════════════════════════════════════
+# DYNAMIC SEO SITEMAP — public Person profiles only (P0)
+[[redirects]]
+  from = "/sitemap-entities.xml"
+  to = "/.netlify/functions/entity-sitemap"
+  status = 200
+  force = true
+
 # PATH REWRITES (status 200 internal rewrites; none touch "/", apex, or www)
 # ════════════════════════════════════════════════════════════════════════════
 [[redirects]]
