@@ -184,7 +184,8 @@ Pegasus.boot(async function(){
   var typeLbl = TYPE_LABEL[p.presence_type] || p.presence_type;
   var visLbl  = VIS_LABEL[p.visibility] || p.visibility;
   var loc = [p.location, p.market].filter(Boolean).join(' · ');
-  document.title = (p.name || 'Business Page') + ' — Pegasus Network';
+  var seoKindLabel = p.presence_type === 'event' ? 'Event' : (p.presence_type === 'company' ? 'Business' : typeLbl);
+  document.title = (p.name || 'Business Page') + ' — ' + seoKindLabel + ' | Pegasus Capital Network';
   // Clean public URL for this page (shown/copied; never the technical resolver).
   var cleanPath = Pegasus.presencePath(p.presence_type, p.slug);
   var cleanUrl = CANON + cleanPath;
