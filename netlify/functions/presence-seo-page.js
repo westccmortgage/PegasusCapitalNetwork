@@ -130,9 +130,10 @@ function simple(status,title,message){
 }
 
 export default async (request) => {
-  const q=new URL(request.url).searchParams;
-  const slug=cleanSlug(q.get("slug"));
-  const kind=q.get("kind")==="event"?"event":"business";
+  const u=new URL(request.url);
+  const publicPath=u.pathname.match(/^\/(business|event)\/([^/]+)\/?$/);
+  const slug=cleanSlug(publicPath ? publicPath[2] : u.searchParams.get("slug"));
+  const kind=publicPath ? publicPath[1] : (u.searchParams.get("kind")==="event"?"event":"business");
   if(!slug) return simple(404,"Page not found","This page does not exist.");
   try{
     const [data,template]=await Promise.all([getPresence(slug),getTemplate(request)]);

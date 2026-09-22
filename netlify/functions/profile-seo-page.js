@@ -53,7 +53,9 @@ async function getProfile(slug){
     }
     const body=await res.text().catch(()=> "");
     lastError=res.status+" "+body.slice(0,300);
-    if(res.status!==400) break;
+    // PostgREST returns 401/42501 when an optional column is not granted to
+    // anon; retry only with the narrower, explicitly public field sets.
+    if(![400,401,403].includes(res.status)) break;
   }
   throw new Error("profile query failed: "+lastError);
 }
@@ -132,7 +134,11 @@ function simple(status,title,message){
 }
 
 export default async (request) => {
-  const slug=cleanSlug(new URL(request.url).searchParams.get("slug"));
+  const u=new URL(request.url);
+  // Netlify function rewrites preserve the incoming public path, but do not
+  // reliably expose query parameters supplied by the rewrite destination.
+  const publicPath=u.pathname.match(/^\/u\/([^/]+)\/?$/);
+  const slug=cleanSlug(publicPath ? publicPath[1] : u.searchParams.get("slug"));
   if(!slug) return simple(404,"Profile not found","This profile does not exist.");
   try{
     const [profile,template]=await Promise.all([getProfile(slug),getTemplate(request)]);

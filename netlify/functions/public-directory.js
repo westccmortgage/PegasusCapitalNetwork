@@ -89,7 +89,8 @@ function errPage(status,title){
 
 export default async (request)=>{
   const u=new URL(request.url);
-  const requested=u.searchParams.get("kind");
+  const publicPath=u.pathname.match(/^\/(people|businesses|events)\/?$/);
+  const requested=publicPath ? publicPath[1] : u.searchParams.get("kind");
   const kind=requested==="businesses"?"businesses":requested==="events"?"events":"people";
   const page=pageNum(u.searchParams.get("page"));
   try{
