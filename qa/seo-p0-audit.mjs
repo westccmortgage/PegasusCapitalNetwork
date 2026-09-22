@@ -17,8 +17,14 @@ globalThis.fetch = async (input, init) => {
   const u = new URL(input);
   if (u.pathname.endsWith(".html")) return new Response(template);
   if (u.pathname === "/rest/v1/profiles") {
-    // The live database rejects the optional field set with 401/42501.
-    if (u.searchParams.get("select")?.includes("linkedin_url")) return Response.json({ code: "42501" }, { status: 401 });
+    if (init?.headers?.Range?.startsWith("48-")) return new Response(null, { status: 416, headers: { "content-range": "*/1" } });
+    if (u.searchParams.has("limit")) {
+      const fields = u.searchParams.get("select")?.split(",") || [];
+      assert.deepEqual(fields, [
+        "id", "profile_slug", "full_name", "role", "company_name", "headline", "bio", "location",
+        "website", "avatar_url", "professional_title", "current_focus", "updated_at"
+      ]);
+    }
     const slugFilter = u.searchParams.get("profile_slug");
     const rows = slugFilter?.startsWith("eq.") && slugFilter !== "eq.jane-doe" ? [] : [profile];
     return Response.json(rows, { headers: { "content-range": `0-${Math.max(0, rows.length - 1)}/${rows.length}` } });
@@ -30,6 +36,7 @@ globalThis.fetch = async (input, init) => {
     return Response.json(p ? { access: "full", presence: p } : null);
   }
   if (u.pathname === "/rest/v1/public_presence_previews") {
+    if (init?.headers?.Range?.startsWith("48-")) return new Response(null, { status: 416, headers: { "content-range": "*/1" } });
     const p = u.searchParams.get("presence_type") === "eq.event" ? event : company;
     return Response.json([p], { headers: { "content-range": "0-0/1" } });
   }
@@ -52,12 +59,16 @@ let html = await r.text();
 assert.match(html, /<h1[^>]*>Jane Doe<\/h1>/);
 assert.match(html, /<link rel="canonical" href="https:\/\/pegasuscapitalnetwork.com\/u\/jane-doe">/);
 assert.doesNotMatch(html, /noindex/);
+r = await personPage(get("/u/jane-doe?slug=missing-person"));
+assert.equal(r.status, 200);
 r = await personPage(get("/u/missing-person"));
 assert.equal(r.status, 404);
 
 r = await presencePage(get("/business/example-capital"));
 assert.equal(r.status, 200);
 assert.match(await r.text(), /Example Capital/);
+r = await presencePage(get("/business/example-capital?slug=capital-forum&kind=event"));
+assert.equal(r.status, 200);
 r = await presencePage(get("/event/capital-forum"));
 assert.equal(r.status, 200);
 assert.match(await r.text(), /Capital Forum/);
@@ -72,6 +83,13 @@ for (const [path, title] of [["/people", "People"], ["/businesses", "Businesses"
   r = await directory(get(path));
   assert.equal(r.status, 200);
   assert.match(await r.text(), new RegExp(`<title>${title} — Pegasus Capital Network`));
+}
+r = await directory(get("/businesses?kind=people"));
+assert.match(await r.text(), /<title>Businesses — Pegasus Capital Network/);
+for (const path of ["/people?page=2", "/businesses?page=2", "/events?page=2"]) {
+  r = await directory(get(path));
+  assert.equal(r.status, 404);
+  assert.match(r.headers.get("x-robots-tag"), /noindex/);
 }
 for (const [path, fragment] of [["/sitemap-entities.xml", "sitemapindex"], ["/sitemap-people.xml", "/u/jane-doe"], ["/sitemap-businesses.xml", "/business/example-capital"], ["/sitemap-events.xml", "/event/capital-forum"]]) {
   r = await sitemap(get(path));

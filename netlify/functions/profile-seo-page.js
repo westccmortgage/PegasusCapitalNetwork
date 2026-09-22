@@ -1,21 +1,10 @@
 // Pegasus SEO — server-delivered public Person profile metadata + semantic snapshot.
 
 const ORIGIN = "https://pegasuscapitalnetwork.com";
-const PROFILE_FIELD_SETS = [
-  [
-    "id","profile_slug","full_name","role","company_name","headline","bio","location",
-    "website","avatar_url","professional_title","current_focus","linkedin_url",
-    "facebook_url","instagram_url","x_url","youtube_url","tiktok_url","updated_at"
-  ].join(","),
-  [
-    "id","profile_slug","full_name","role","company_name","headline","bio","location",
-    "website","avatar_url","professional_title","current_focus","updated_at"
-  ].join(","),
-  [
-    "id","profile_slug","full_name","role","company_name","headline","bio","location",
-    "website","updated_at"
-  ].join(",")
-];
+const PUBLIC_PROFILE_FIELDS = [
+  "id","profile_slug","full_name","role","company_name","headline","bio","location",
+  "website","avatar_url","professional_title","current_focus","updated_at"
+].join(",");
 
 function env(name) { return globalThis.Netlify?.env?.get(name) || ""; }
 function cfg() {
@@ -41,23 +30,16 @@ function replaceOrInsert(html,regex,replacement,before="</head>"){
 }
 async function getProfile(slug){
   const {url,key}=cfg();
-  let lastError="";
-  for(const fields of PROFILE_FIELD_SETS){
-    const params=new URLSearchParams({select:fields,profile_slug:"eq."+slug,limit:"1"});
-    const res=await fetch(url+"/rest/v1/profiles?"+params.toString(),{
-      headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}
-    });
-    if(res.ok){
-      const rows=await res.json();
-      return Array.isArray(rows)&&rows.length?rows[0]:null;
-    }
+  const params=new URLSearchParams({select:PUBLIC_PROFILE_FIELDS,profile_slug:"eq."+slug,limit:"1"});
+  const res=await fetch(url+"/rest/v1/profiles?"+params.toString(),{
+    headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}
+  });
+  if(!res.ok){
     const body=await res.text().catch(()=> "");
-    lastError=res.status+" "+body.slice(0,300);
-    // PostgREST returns 401/42501 when an optional column is not granted to
-    // anon; retry only with the narrower, explicitly public field sets.
-    if(![400,401,403].includes(res.status)) break;
+    throw new Error("profile query failed: "+res.status+" "+body.slice(0,300));
   }
-  throw new Error("profile query failed: "+lastError);
+  const rows=await res.json();
+  return Array.isArray(rows)&&rows.length?rows[0]:null;
 }
 async function getTemplate(request){
   const u=new URL(request.url);
