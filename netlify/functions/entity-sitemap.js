@@ -120,7 +120,9 @@ function response(body, status=200) {
 export default async (request) => {
   try {
     const u = new URL(request.url);
-    const kind = u.searchParams.get("kind") || "index";
+    const publicPath = u.pathname.match(/^\/sitemap-(entities|people|businesses|events)\.xml$/);
+    const kind = publicPath ? (publicPath[1] === "entities" ? "index" : publicPath[1])
+      : (u.searchParams.get("kind") || "index");
     if (kind === "people") return response(await peopleSitemap());
     if (kind === "businesses") return response(await presenceSitemap("businesses"));
     if (kind === "events") return response(await presenceSitemap("events"));

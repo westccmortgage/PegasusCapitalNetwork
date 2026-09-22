@@ -20,6 +20,9 @@ async function fetchRows(path,params,page){
   const res=await fetch(url+"/rest/v1/"+path+"?"+qs.toString(),{
     headers:{apikey:key,Authorization:"Bearer "+key,Range:offset+"-"+(offset+PAGE_SIZE-1),"Range-Unit":"items",Prefer:"count=exact"}
   });
+  // PostgREST responds 416 when an offset is beyond the final row. That is an
+  // empty directory page, not a backend outage.
+  if(res.status===416) return {rows:[],total:parseTotal(res.headers.get("content-range"))};
   if(!res.ok){const body=await res.text().catch(()=> "");throw new Error(path+" directory query failed: "+res.status+" "+body.slice(0,300));}
   return {rows:await res.json(),total:parseTotal(res.headers.get("content-range"))};
 }
@@ -89,7 +92,8 @@ function errPage(status,title){
 
 export default async (request)=>{
   const u=new URL(request.url);
-  const requested=u.searchParams.get("kind");
+  const publicPath=u.pathname.match(/^\/(people|businesses|events)\/?$/);
+  const requested=publicPath ? publicPath[1] : u.searchParams.get("kind");
   const kind=requested==="businesses"?"businesses":requested==="events"?"events":"people";
   const page=pageNum(u.searchParams.get("page"));
   try{
