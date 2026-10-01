@@ -647,6 +647,55 @@
       card:{ eyebrow:badge, title:opp.title, subtitle: biz?('Presented by '+biz):'', summary:opp.summary||'', url:path, coverUrl:cover } });
   }
 
+  /* ── Invite / referral — the growth loop's "bring your network" rung ──────────
+     Surfaces the member's personal invite link (get_or_create_referral_code),
+     shows how many joined through them, and lets them share it. The link is
+     /signup.html?ref=CODE, which signup already captures and redeems; the
+     referrer is notified on redemption. Backend already exists — this is the UI. */
+  async function inviteOpen(){
+    var c=null; try{ c=await window.PegSB.ready; }catch(e){ c=null; }
+    var uid=null; if(c){ try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){} }
+    if(!uid){ location.href='/signin.html'; return; }
+    var sc='position:fixed;inset:0;background:rgba(8,12,18,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:34px 18px;z-index:1000;overflow-y:auto';
+    var bx='background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.42)';
+    modal('<div style="'+sc+'" onclick="if(event.target===this)Pegasus.closeModal()"><div style="'+bx+'">'+
+      '<div style="padding:20px 22px;border-bottom:1px solid var(--border)"><div style="font-family:var(--serif);font-size:21px;color:var(--text)">Invite your network</div>'+
+      '<div style="font-size:12.5px;color:var(--text3);line-height:1.5;margin-top:5px">Pegasus grows through the people you bring. Share your personal invite link — the right people join, and you see who did.</div></div>'+
+      '<div id="peg-invite-body" style="padding:18px 22px"><div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Preparing your invite link…</div></div>'+
+    '</div></div>');
+    var code=null, joined=0;
+    try{
+      var r=await c.rpc('get_or_create_referral_code'); if(r && !r.error && r.data) code=r.data;
+      var s=await c.rpc('my_referral_stats'); if(s && !s.error && s.data){ code=code||s.data.code; joined=s.data.joined||0; }
+    }catch(e){ console.warn('[invite] rpc failed:', e); }
+    var host=el('peg-invite-body'); if(!host) return;
+    if(!code){
+      host.innerHTML='<div style="font-size:13px;color:var(--gold);line-height:1.5">Your invite link isn’t ready yet. Please try again shortly.</div>'+
+        '<div style="margin-top:14px"><button class="btn btn-ghost" onclick="Pegasus.closeModal()">Close</button></div>';
+      return;
+    }
+    var link=SHARE_ORIGIN+'/signup.html?ref='+encodeURIComponent(code);
+    var caption='I’m building my presence on Pegasus Capital Network — a professional network for capital, real estate, and business growth. Join me:\n'+link;
+    var u=encodeURIComponent(link), cap=encodeURIComponent(caption);
+    host.innerHTML=
+      '<label style="display:block;font-size:11px;color:var(--text3);margin-bottom:5px">Your personal invite link</label>'+
+      '<div style="display:flex;gap:8px"><input id="peg-invite-link" readonly value="'+esc(link)+'" onclick="this.select()" style="flex:1;min-width:0;padding:10px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:var(--mono)">'+
+      '<button class="btn btn-pri" id="peg-invite-copy">Copy</button></div>'+
+      '<div style="font-size:11.5px;color:var(--text3);margin-top:8px">'+(joined>0?('<b style="color:var(--text)">'+joined+'</b> '+(joined===1?'person has':'people have')+' joined through you.'):'No one has joined yet — be the first to share it.')+'</div>'+
+      '<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px">Share</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px"><button class="btn btn-pri" id="peg-invite-li">Share on LinkedIn</button>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn btn-ghost" id="peg-invite-fb">Facebook</button><button class="btn btn-ghost" id="peg-invite-x">X</button></div>'+
+      '<button class="btn btn-ghost" id="peg-invite-em">Invite by Email</button></div>'+
+      '<div style="font-size:10.5px;color:var(--text4);margin-top:12px;line-height:1.5">Anyone who signs up through your link is connected to you — and you’re notified when they join.</div>';
+    function openWin(x){ window.open(x,'_blank','noopener,noreferrer'); }
+    function on(id,fn){ var e=el(id); if(e) e.onclick=fn; }
+    on('peg-invite-copy', function(){ shareClip(link).then(function(){ toast('⧉','var(--green-dim)','Invite link copied', link.replace(/^https?:\/\//,'')); }); });
+    on('peg-invite-li', function(){ shareClip(caption).then(function(){ toast('⧉','var(--green-dim)','Message copied','Paste it into your LinkedIn post.'); openWin('https://www.linkedin.com/sharing/share-offsite/?url='+u); }); });
+    on('peg-invite-fb', function(){ openWin('https://www.facebook.com/sharer/sharer.php?u='+u); });
+    on('peg-invite-x', function(){ openWin('https://twitter.com/intent/tweet?text='+cap); });
+    on('peg-invite-em', function(){ location.href='mailto:?subject='+encodeURIComponent('Join me on Pegasus Capital Network')+'&body='+cap; });
+  }
+
   // notifications dropdown
   function toggleNotif(ev){ if(ev) ev.stopPropagation(); const p=el('notifPanel'); if(!p) return;
     if(p.innerHTML){ p.innerHTML=''; return; }
@@ -822,6 +871,8 @@
               '<button class="pp-manage-item" onclick="window.ppShare&&ppShare(\'email\')">Share by Email</button>'+
               '<div class="pp-manage-label">Business</div>'+
               '<a class="pp-manage-item" href="/my-presences.html">Manage Businesses</a>'+
+              '<div class="pp-manage-label">Grow</div>'+
+              '<button class="pp-manage-item" onclick="Pegasus.inviteOpen&&Pegasus.inviteOpen()">Invite to Pegasus</button>'+
               '<div class="pp-manage-label">Workspace</div>'+
               '<a class="pp-manage-item" href="/dashboard.html">My Workspace</a>'+
             '</div>'+
@@ -905,7 +956,7 @@
     get session(){ return sessionProxy(); },
     tier:()=>Store.get().tier, meta:T, limit:lim, store:Store,
     fmt, toast, esc, safeUrl, mountApp, mountPublic, publicNav, footer, modal, closeModal, dismissModal, clearDraft, clearModalFields, modalDirty, guardUnsaved,
-    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, ownProfilePath, slugify, presencePath, opportunityPath, engageOpen, shareSheet, opportunityShare, buildShareCard,
+    toggleNotif, markNotifs, toggleAccount, copyProfileLink, profileUrl, ownProfilePath, slugify, presencePath, opportunityPath, engageOpen, shareSheet, opportunityShare, buildShareCard, inviteOpen,
     refreshNav: pegApplyAuthedNav,
     setTier(t){ Store.set({tier:t}); },
   };
