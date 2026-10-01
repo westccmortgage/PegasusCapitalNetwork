@@ -75,6 +75,21 @@ function snapshot(p,kind,canonical){
     (website?'<p style="margin:18px 0 0"><a href="'+esc(website)+'">Official website</a></p>':'')+
     '<link rel="canonical" href="'+esc(canonical)+'"></article>';
 }
+// Server-rendered conversion CTA for business/event pages — converts anonymous
+// discovery traffic into signups. Honest + working today (routes to real
+// signup/sign-in; no not-yet-built claim flow is promised). Hidden for
+// signed-in visitors.
+function joinCta(kind){
+  var line=kind==="event"
+    ? "Host sessions and present who you are inside Pegasus Capital Network. Creating your profile is free."
+    : "Represent a company, project, or capital program? Pegasus Capital Network is where professionals present what they do — and get found. Creating your profile is free.";
+  return '<aside id="peg-seo-join" style="max-width:1000px;margin:0 auto 34px;padding:22px 32px;border:1px solid #e4e7eb;border-radius:18px;background:#0b1626;color:#f4f8fc;font-family:Arial,sans-serif;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">'+
+    '<div style="min-width:240px;flex:1"><div style="font-size:18px;font-weight:700;margin-bottom:4px">Be discovered by the right people.</div>'+
+    '<div style="font-size:13px;color:#adbdd0;line-height:1.5">'+esc(line)+'</div></div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap"><a href="/signup.html" style="background:#3a8fe8;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:10px">Create your free profile</a>'+
+    '<a href="/signin.html" style="border:1px solid rgba(255,255,255,.3);color:#f4f8fc;text-decoration:none;font-size:14px;padding:11px 18px;border-radius:10px">Sign in</a></div>'+
+    '<script>try{if(localStorage.getItem("pegasus.auth")){var e=document.getElementById("peg-seo-join");if(e)e.style.display="none";}}catch(_){}</script></aside>';
+}
 function render(html,p,kind){
   const slug=cleanSlug(p.slug),seg=segment(kind);
   const canonical=ORIGIN+"/"+seg+"/"+encodeURIComponent(slug);
@@ -120,7 +135,7 @@ function render(html,p,kind){
   }
   const jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
-  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical));
+  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+joinCta(kind));
   return html;
 }
 function simple(status,title,message){
