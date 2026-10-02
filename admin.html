@@ -66,7 +66,7 @@ const v=Pegasus.mountApp({active:'Admin',title:'Admin Console',sub:'Platform ope
   })();
 // section tabs
 v.insertAdjacentHTML('beforeend','<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap" id="atabs"></div><div id="apanel"></div>');
-const sections=['Users','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
+const sections=['Users','Claims','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
 document.getElementById('atabs').innerHTML=sections.map((s,i)=>'<div class="toggle-opt '+(i===0?'on':'')+'" style="font-size:11px" onclick="aShow(\''+s+'\')">'+s+'</div>').join('');
 function tbl(cols,rows){return '<div class="card"><table class="tbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
 const chip=(t,c)=>'<span class="badge '+c+'">'+t+'</span>';
@@ -87,6 +87,52 @@ function adminEmpty(icon, title, body){
     '<div style="max-width:520px;margin:0 auto;line-height:1.55;color:var(--text3);font-size:12px">'+body+'</div>'+
   '</div>';
 }
+/* ── Entity claims review (migration 080) — approve/reject "claim this page"
+   requests. Approving adds the claimant as a manager of the presence. ── */
+async function loadClaims(p){
+  p.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading claims…</div>';
+  try{
+    var c=await window.PegSB.ready;
+    var r=await c.rpc('get_entity_claims_pending');
+    if(r.error) throw r.error;
+    var rows=(r.data&&Array.isArray(r.data))?r.data:[];
+    if(!rows.length){ p.innerHTML=adminEmpty('⚑','No pending claims','When a member claims a business, project, or event page, it appears here for review. Approving adds them as a manager of that page.'); return; }
+    function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    var TSEG={company:'business',capital_program:'business',fund:'fund',project:'project',showcase:'showcase',event:'event',property:'property'};
+    window.__claimRows=rows;
+    p.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">'+rows.length+' pending</div>'+
+      rows.map(function(q){
+        var pr=q.presence||{}, cm=q.claimant||{};
+        var seg=TSEG[pr.presence_type]||'business';
+        var pageLink=pr.slug?('/'+seg+'/'+encodeURIComponent(pr.slug)):'';
+        var profLink=cm.slug?('/u/'+encodeURIComponent(cm.slug)):'';
+        return '<div class="card" style="margin-bottom:12px"><div class="card-body">'+
+          '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">'+
+            '<div style="min-width:240px"><div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue-lt)">'+e(pr.presence_type||'page')+'</div>'+
+            '<div style="font-size:15px;font-weight:600;color:var(--text)">'+(pageLink?'<a href="'+e(pageLink)+'" target="_blank" style="color:var(--text)">'+e(pr.name||'Page')+'</a>':e(pr.name||'Page'))+'</div>'+
+            '<div style="font-size:12px;color:var(--text3);margin-top:4px">Claimed by '+(profLink?'<a href="'+e(profLink)+'" target="_blank" style="color:var(--blue)">'+e(cm.name||'Member')+'</a>':e(cm.name||'Member'))+(cm.role?(' · '+e(cm.role)):'')+(cm.email?(' · '+e(cm.email)):'')+'</div>'+
+            (q.evidence?'<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px 10px;background:var(--bg2);border-radius:8px">Evidence: '+e(q.evidence)+'</div>':'')+
+            (q.contact_note?'<div style="font-size:11px;color:var(--text3);margin-top:4px">Contact: '+e(q.contact_note)+'</div>':'')+
+            '</div>'+
+            '<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end"><button class="btn btn-pri btn-sm" onclick="claimReview(\''+e(q.id)+'\',\'approved\')">Approve</button>'+
+            '<button class="btn btn-ghost btn-sm" onclick="claimReview(\''+e(q.id)+'\',\'rejected\')">Reject</button></div>'+
+          '</div></div></div>';
+      }).join('');
+  }catch(err){
+    p.innerHTML='<div class="banner bn-cancel"><div class="banner-msg">🔴 <span>Could not load claims — apply migration 080 in Supabase. ('+((err&&err.message)||err)+')</span></div></div>';
+  }
+}
+window.claimReview=async function(id,decision){
+  var note=null;
+  if(decision==='rejected'){ note=prompt('Reason for rejection (optional, shown to the claimant):')||null; }
+  else { if(!confirm('Approve this claim? The claimant becomes a manager of this page.')) return; }
+  try{
+    var c=await window.PegSB.ready;
+    var r=await c.rpc('review_entity_claim',{p_id:id,p_decision:decision,p_note:note});
+    if(r.error) throw r.error;
+    loadClaims(document.getElementById('apanel'));
+  }catch(err){ alert('Could not update claim: '+((err&&err.message)||err)); }
+};
 async function loadUsers(p){
   p.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading members\u2026</div>';
   try{
@@ -387,6 +433,7 @@ var HEALTH_MANUAL_HTML =
 
 window.aShow=function(s){[...document.querySelectorAll('#atabs .toggle-opt')].forEach(e=>e.classList.toggle('on',e.textContent===s));const p=document.getElementById('apanel');
   if(s==='Users'){ loadUsers(p); return; }
+  if(s==='Claims'){ loadClaims(p); return; }
   if(s==='Subscriptions'){ loadSubscriptions(p); return; }
   if(s==='Deal Rooms')p.innerHTML=tbl(['Deal Room','Sponsor','Amount','Stage','Alignment','Lenders'],PEG_DATA.dealRooms.map(d=>[d.name,d.participants[0].n,Pegasus.fmt(d.amount),chip(['Draft','Submitted','Reviewing','Matched','Docs Req','Term Sheet','Funded','Closed'][d.stage],'b-trial'),d.alignment,d.lenders.length]).concat([['Lakeside Industrial','Tom A.','.5M',chip('Draft','b-none'),'—','0']]));
   if(s==='Lender Profiles'){ loadLenders(p); return; }

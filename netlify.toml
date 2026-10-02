@@ -189,6 +189,11 @@
   to = "/dashboard.html"
   status = 200
 
+[[redirects]]
+  from = "/claim"
+  to = "/claim.html"
+  status = 200
+
 # ── Retired destinations — Deal Feeder + Get Started are no longer user-facing.
 #    force=true so these fire even though the .html files still exist on disk. ──
 [[redirects]]

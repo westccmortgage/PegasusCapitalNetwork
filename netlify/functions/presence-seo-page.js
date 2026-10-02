@@ -90,6 +90,15 @@ function joinCta(kind){
     '<a href="/signin.html" style="border:1px solid rgba(255,255,255,.3);color:#f4f8fc;text-decoration:none;font-size:14px;padding:11px 18px;border-radius:10px">Sign in</a></div>'+
     '<script>try{if(localStorage.getItem("pegasus.auth")){var e=document.getElementById("peg-seo-join");if(e)e.style.display="none";}}catch(_){}</script></aside>';
 }
+// "Is this your business?" claim strip — always visible (claiming is relevant to
+// signed-in members too). Routes to the claim flow with the presence slug.
+function claimCta(kind,slug){
+  var noun=kind==="event"?"event":"business";
+  var href="/claim?presence="+encodeURIComponent(slug);
+  return '<aside style="max-width:1000px;margin:0 auto 34px;padding:14px 20px;border:1px dashed #cdd6e0;border-radius:14px;background:#f7f9fb;color:#51607a;font-family:Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13.5px">'+
+    '<span>Is this your '+noun+' on Pegasus?</span>'+
+    '<a href="'+esc(href)+'" style="color:#235fa6;font-weight:600;text-decoration:none">Claim this page →</a></aside>';
+}
 function render(html,p,kind){
   const slug=cleanSlug(p.slug),seg=segment(kind);
   const canonical=ORIGIN+"/"+seg+"/"+encodeURIComponent(slug);
@@ -135,7 +144,7 @@ function render(html,p,kind){
   }
   const jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
-  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+joinCta(kind));
+  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+claimCta(kind,slug)+"\n"+joinCta(kind));
   return html;
 }
 function simple(status,title,message){
