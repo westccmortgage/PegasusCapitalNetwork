@@ -42,6 +42,18 @@ Pegasus.boot((st)=>{
         '<a class="btn btn-ghost btn-sm" href="/share-studio.html">Share My Profile</a>'+
         '<a class="btn btn-ghost btn-sm" href="/showcase.html">Create Opportunity / Showcase</a>'+
         '<a class="btn btn-ghost btn-sm" href="/my-presences.html">View Business Pages</a>'+
+        '<button class="btn btn-ghost btn-sm" onclick="Pegasus.inviteOpen&&Pegasus.inviteOpen()">Invite to Pegasus</button>'+
+      '</div>'+
+    '</div>');
+
+  /* ── Invite your network — the growth loop. Opens the personal invite-link
+     modal (Pegasus.inviteOpen); link routes to /signup.html?ref=CODE. ── */
+  v.insertAdjacentHTML('beforeend',
+    '<div class="card" style="padding:16px 18px;margin-bottom:16px;border:1px solid var(--border);background:linear-gradient(135deg,rgba(58,143,232,.07),transparent)">'+
+      '<div style="display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap">'+
+        '<div style="min-width:240px;flex:1"><div style="font-family:var(--serif);font-size:17px;color:var(--text);margin-bottom:3px">Grow the network — invite your people</div>'+
+        '<div style="font-size:12.5px;color:var(--text3);line-height:1.55">Pegasus is worth more with your partners, clients, and capital contacts in it. Share your personal invite link — you’ll see who joins through you.</div></div>'+
+        '<button class="btn btn-pri" onclick="Pegasus.inviteOpen&&Pegasus.inviteOpen()" style="white-space:nowrap">Get my invite link</button>'+
       '</div>'+
     '</div>');
 
