@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang="en"><head><title>Claim your page — Pegasus Network</title>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=IBM+Plex+Serif:wght@0,300;0,400;0,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css?v=dealroom-entitlements-20260524-1529">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<meta name="theme-color" content="#08111C">
+<style>
+.cl-wrap{max-width:560px;margin:70px auto;padding:0 20px}
+.cl-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;padding:28px 26px}
+.cl-eyebrow{font-size:9px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.cl-h1{font-family:var(--serif);font-weight:300;font-size:26px;line-height:1.15;color:var(--text);margin:0 0 8px}
+.cl-sub{font-size:13.5px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.cl-label{display:block;font-size:11px;color:var(--text3);margin:0 0 6px}
+.cl-input,.cl-ta{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13.5px;font-family:var(--sans);margin-bottom:16px;resize:vertical}
+.cl-ta{min-height:96px;line-height:1.55}
+.cl-note{font-size:11.5px;color:var(--text4);line-height:1.5;margin-top:4px}
+</style>
+</head><body>
+<div id="nav"></div>
+<div class="cl-wrap"><div class="cl-card" id="cl-card">
+  <div style="text-align:center;color:var(--text3);font-size:13px;padding:30px">Loading…</div>
+</div></div>
+
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.boot(async function(){
+  Pegasus.mountPublic('');
+  var esc=Pegasus.esc;
+  var card=document.getElementById('cl-card');
+  function show(html){ card.innerHTML=html; }
+  function state(title, body, cta){
+    show('<div class="cl-eyebrow">Claim a page</div><div class="cl-h1">'+esc(title)+'</div><div class="cl-sub">'+body+'</div>'+(cta||''));
+  }
+
+  var qs=new URLSearchParams(location.search);
+  var slug=(qs.get('presence')||qs.get('slug')||'').trim();
+  if(!slug){ state('Nothing to claim','No page was specified. Browse the directory and open a business page to claim it.','<a class="btn btn-ghost" href="/businesses">Browse businesses</a>'); return; }
+
+  var c=null; try{ c=await window.PegSB.ready; }catch(e){ c=null; }
+  // Require sign-in; come back here afterward.
+  var uid=null; if(c){ try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){} }
+  if(!uid){
+    try{ localStorage.setItem('pegasus.redirectAfterAuth','/claim?presence='+encodeURIComponent(slug)); }catch(_){}
+    state('Sign in to claim this page','Claiming connects this page to your Pegasus account. Sign in or create a free profile, and we’ll bring you right back.',
+      '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-pri" href="/signin.html">Sign In</a><a class="btn btn-ghost" href="/signup.html">Create Free Profile</a></div>');
+    return;
+  }
+
+  // Resolve the presence.
+  var data=null;
+  try{ var r=await c.rpc('get_presence_page_by_slug',{p_slug:slug}); if(r && !r.error) data=r.data; }catch(e){}
+  var pr=data && data.presence;
+  if(!pr || !pr.id){ state('Page not found','We couldn’t find that page. It may have been removed or made private.','<a class="btn btn-ghost" href="/businesses">Browse businesses</a>'); return; }
+  if(pr.presence_type==='personal'){ state('Personal profiles can’t be claimed here','This page is a personal profile. Business, project, and event pages can be claimed.','<a class="btn btn-ghost" href="/">Return home</a>'); return; }
+  if(data.can_manage){ state('You already manage this page','You can edit '+esc(pr.name||'this page')+' from Business Pages.','<a class="btn btn-pri" href="/my-presences.html">Manage Businesses</a>'); return; }
+
+  // Claim form.
+  show(
+    '<div class="cl-eyebrow">Claim a page</div>'+
+    '<div class="cl-h1">Claim '+esc(pr.name||'this page')+'</div>'+
+    '<div class="cl-sub">Tell us how you’re connected to this '+esc(pr.presence_type==='event'?'event':'business')+'. A Pegasus admin reviews every claim; once approved, you’ll be able to edit the page.</div>'+
+    '<label class="cl-label">How are you connected? *</label>'+
+    '<textarea id="cl-evidence" class="cl-ta" placeholder="e.g. I’m the founder / owner / authorized representative. Company email, website, or role that shows this."></textarea>'+
+    '<label class="cl-label">Best way to reach you (optional)</label>'+
+    '<input id="cl-contact" class="cl-input" type="text" placeholder="Work email or phone — only used to verify your claim">'+
+    '<div class="cl-note">Your contact details are shared only with the reviewer, never shown publicly.</div>'+
+    '<div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-pri" id="cl-submit">Submit claim</button>'+
+    '<a class="btn btn-ghost" href="'+esc(Pegasus.presencePath?Pegasus.presencePath(pr.presence_type,pr.slug):('/business/'+encodeURIComponent(pr.slug)))+'">View page</a></div>'
+  );
+  document.getElementById('cl-submit').onclick=async function(){
+    var btn=this;
+    var ev=(document.getElementById('cl-evidence').value||'').trim();
+    var ct=(document.getElementById('cl-contact').value||'').trim();
+    if(!ev){ Pegasus.toast('!','var(--gold-dim)','Tell us how you’re connected','A short note helps us verify your claim.'); return; }
+    btn.disabled=true; btn.textContent='Submitting…';
+    try{
+      var rr=await c.rpc('create_entity_claim',{p_presence_id:pr.id,p_evidence:ev,p_contact_note:ct||null});
+      if(rr && rr.error) throw rr.error;
+      state('Claim submitted','Thanks — your claim for '+esc(pr.name||'this page')+' is with our review team. You’ll be notified once it’s approved, and the page will appear in your Business Pages.',
+        '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-pri" href="/dashboard.html">Go to Workspace</a><a class="btn btn-ghost" href="/businesses">Browse more</a></div>');
+    }catch(err){
+      console.error('[claim] submit failed:', err);
+      Pegasus.toast('!','var(--gold-dim)','Could not submit',(err&&err.message)||'Apply migration 080 and try again.');
+      btn.disabled=false; btn.textContent='Submit claim';
+    }
+  };
+});
+</script>
+</body></html>
