@@ -66,7 +66,7 @@ const v=Pegasus.mountApp({active:'Admin',title:'Admin Console',sub:'Platform ope
   })();
 // section tabs
 v.insertAdjacentHTML('beforeend','<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap" id="atabs"></div><div id="apanel"></div>');
-const sections=['Users','Claims','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
+const sections=['Users','Claims','Duplicates','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
 document.getElementById('atabs').innerHTML=sections.map((s,i)=>'<div class="toggle-opt '+(i===0?'on':'')+'" style="font-size:11px" onclick="aShow(\''+s+'\')">'+s+'</div>').join('');
 function tbl(cols,rows){return '<div class="card"><table class="tbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
 const chip=(t,c)=>'<span class="badge '+c+'">'+t+'</span>';
@@ -87,6 +87,54 @@ function adminEmpty(icon, title, body){
     '<div style="max-width:520px;margin:0 auto;line-height:1.55;color:var(--text3);font-size:12px">'+body+'</div>'+
   '</div>';
 }
+/* ── Duplicate protection (migration 081) — read-only detection of likely
+   duplicate business pages and profiles, so they can be reviewed/cleaned up
+   before scaling the network. Detection only; nothing is merged automatically. ── */
+async function loadDuplicates(p){
+  p.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Scanning for duplicates…</div>';
+  function e(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  var TSEG={company:'business',capital_program:'business',fund:'fund',project:'project',showcase:'showcase',event:'event',property:'property'};
+  try{
+    var c=await window.PegSB.ready;
+    var pr=await c.rpc('get_duplicate_presence_clusters');
+    var pf=await c.rpc('get_duplicate_profile_clusters');
+    if(pr.error) throw pr.error;
+    var pres=(pr.data&&Array.isArray(pr.data))?pr.data:[];
+    var profs=(pf&&!pf.error&&Array.isArray(pf.data))?pf.data:[];
+    if(!pres.length && !profs.length){ p.innerHTML=adminEmpty('✓','No duplicates found','No business pages or profiles share a normalized name or email. The directory is clean.'); return; }
+    function clusterCard(title, badge, items){
+      return '<div class="card" style="margin-bottom:12px"><div class="card-body">'+
+        '<div style="font-size:13.5px;font-weight:600;color:var(--text)">'+title+' <span class="badge b-none" style="font-weight:400">'+badge+'</span></div>'+
+        '<div style="margin-top:8px">'+items+'</div></div></div>';
+    }
+    var presHtml=pres.map(function(cl){
+      var items=(cl.items||[]).map(function(it){
+        var seg=TSEG[it.presence_type]||'business';
+        return '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:5px 0;border-top:1px solid var(--border)">'+
+          '<a href="/'+seg+'/'+encodeURIComponent(it.slug)+'" target="_blank" style="font-size:12.5px;font-weight:600;color:var(--text)">'+e(it.name)+'</a>'+
+          '<span style="font-size:10px;color:var(--text3);font-family:var(--mono)">'+e(it.presence_type)+' · '+e(it.status)+' · '+e(it.visibility)+'</span></div>';
+      }).join('');
+      return clusterCard('Business: '+e(cl.key), (cl.count||0)+' pages', items);
+    }).join('');
+    var profHtml=profs.map(function(cl){
+      var items=(cl.items||[]).map(function(it){
+        var link=it.slug?('/u/'+encodeURIComponent(it.slug)):'';
+        return '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:5px 0;border-top:1px solid var(--border)">'+
+          (link?'<a href="'+link+'" target="_blank" style="font-size:12.5px;font-weight:600;color:var(--text)">'+e(it.name||'(no name)')+'</a>':'<span style="font-size:12.5px;font-weight:600;color:var(--text)">'+e(it.name||'(no name)')+'</span>')+
+          '<span style="font-size:10px;color:var(--text3);font-family:var(--mono)">'+e(it.email||'—')+(it.role?(' · '+e(it.role)):'')+'</span></div>';
+      }).join('');
+      return clusterCard('Profile: '+e(cl.key), (cl.count||0)+' · '+e(cl.reason||''), items);
+    }).join('');
+    p.innerHTML=
+      '<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">'+pres.length+' business cluster(s) · '+profs.length+' profile cluster(s)</div>'+
+      '<div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5">Review-only. Same-name profiles may be genuine namesakes — the email helps you judge. To remove a duplicate business page, archive it from its page; profile merges are handled manually for now.</div>'+
+      (pres.length?'<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:4px 0 8px">Business pages</div>'+presHtml:'')+
+      (profs.length?'<div style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:12px 0 8px">Profiles</div>'+profHtml:'');
+  }catch(err){
+    p.innerHTML='<div class="banner bn-cancel"><div class="banner-msg">🔴 <span>Could not scan duplicates — apply migration 081 in Supabase. ('+((err&&err.message)||err)+')</span></div></div>';
+  }
+}
+
 /* ── Entity claims review (migration 080) — approve/reject "claim this page"
    requests. Approving adds the claimant as a manager of the presence. ── */
 async function loadClaims(p){
@@ -434,6 +482,7 @@ var HEALTH_MANUAL_HTML =
 window.aShow=function(s){[...document.querySelectorAll('#atabs .toggle-opt')].forEach(e=>e.classList.toggle('on',e.textContent===s));const p=document.getElementById('apanel');
   if(s==='Users'){ loadUsers(p); return; }
   if(s==='Claims'){ loadClaims(p); return; }
+  if(s==='Duplicates'){ loadDuplicates(p); return; }
   if(s==='Subscriptions'){ loadSubscriptions(p); return; }
   if(s==='Deal Rooms')p.innerHTML=tbl(['Deal Room','Sponsor','Amount','Stage','Alignment','Lenders'],PEG_DATA.dealRooms.map(d=>[d.name,d.participants[0].n,Pegasus.fmt(d.amount),chip(['Draft','Submitted','Reviewing','Matched','Docs Req','Term Sheet','Funded','Closed'][d.stage],'b-trial'),d.alignment,d.lenders.length]).concat([['Lakeside Industrial','Tom A.','.5M',chip('Draft','b-none'),'—','0']]));
   if(s==='Lender Profiles'){ loadLenders(p); return; }
