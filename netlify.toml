@@ -222,6 +222,19 @@
   to = "/claim.html"
   status = 200
 
+# Invite consent (concierge onboarding): tokenized links from the invite email.
+[[redirects]]
+  from = "/yes"
+  to = "/.netlify/functions/invite-consent"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/unsubscribe"
+  to = "/.netlify/functions/invite-consent?action=unsubscribe"
+  status = 200
+  force = true
+
 # ── Retired destinations — Deal Feeder + Get Started are no longer user-facing.
 #    force=true so these fire even though the .html files still exist on disk. ──
 [[redirects]]
