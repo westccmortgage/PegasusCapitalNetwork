@@ -1,6 +1,8 @@
 // Pegasus SEO — dynamic sitemap index + entity sitemaps.
 // Public data only; uses the publishable Supabase key and public read surfaces.
 
+import { classifyPerson, sectionOf } from "./lib/person-roles.js";
+
 const ORIGIN = "https://pegasuscapitalnetwork.com";
 const PAGE_SIZE = 1000;
 const MAX_URLS = 49000;
@@ -64,13 +66,16 @@ function urlNode(loc, lastmod, priority="0.8") {
 }
 async function peopleSitemap() {
   const rows = await restRows("profiles", {
-    select: "profile_slug,updated_at,full_name",
+    select: "profile_slug,updated_at,full_name,role,professional_title,headline,additional_roles",
     profile_slug: "not.is.null",
     full_name: "not.is.null",
     order: "updated_at.desc",
   });
   const seen = new Set();
   const urls = [];
+  const sectionSeen = new Set();
+  const roleSeen = new Set();
+  const landing = [];
   for (const row of rows) {
     const slug = cleanSlug(row.profile_slug);
     if (!slug || seen.has(slug) || !String(row.full_name || "").trim()) continue;
@@ -78,8 +83,18 @@ async function peopleSitemap() {
     const lastmod = row.updated_at && /^\d{4}-\d{2}-\d{2}/.test(row.updated_at)
       ? String(row.updated_at).slice(0, 10) : "";
     urls.push(urlNode(ORIGIN + "/u/" + encodeURIComponent(slug), lastmod, "0.9"));
+    // Accumulate non-empty role/section landing pages for discovery.
+    const roleSlug = classifyPerson(row);
+    if (roleSlug && roleSlug !== "other") {
+      const section = sectionOf(roleSlug);
+      if (section && section !== "other") {
+        if (!sectionSeen.has(section)) { sectionSeen.add(section); landing.push(urlNode(ORIGIN + "/people/" + encodeURIComponent(section), "", "0.7")); }
+        const key = section + "/" + roleSlug;
+        if (!roleSeen.has(key)) { roleSeen.add(key); landing.push(urlNode(ORIGIN + "/people/" + encodeURIComponent(section) + "/" + encodeURIComponent(roleSlug), "", "0.6")); }
+      }
+    }
   }
-  return urlset(urls);
+  return urlset(landing.concat(urls));
 }
 // Business section + category landing pages (from the taxonomy facets). Included
 // in the businesses sitemap so the capital-stack directory is crawlable.
