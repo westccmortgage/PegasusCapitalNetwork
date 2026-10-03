@@ -1,10 +1,13 @@
 // Pegasus SEO — public, crawlable People / Businesses / Events directories.
-// Businesses are organized into capital-stack SECTIONS (Capital & Lenders,
-// Advisors & Brokers, Real Estate, Transaction & Services) with category chips
-// and dedicated landing pages (/businesses/<section>[/<category>]) for SEO.
+// Businesses AND People are organized into capital-stack SECTIONS with sub
+// (category / role) chips and dedicated landing pages for SEO. People are REAL,
+// consented members only — grouped by their own public fields, never fabricated.
+
+import { classifyPerson, buildPeopleSections, roleLabel, sectionOf } from "./lib/person-roles.js";
 
 const ORIGIN="https://pegasuscapitalnetwork.com";
 const PAGE_SIZE=48;
+const PEOPLE_MAX=1000;
 function env(name){return globalThis.Netlify?.env?.get(name)||"";}
 function cfg(){
   const url=env("SUPABASE_URL"),key=env("SUPABASE_PUBLISHABLE_KEY");
@@ -28,8 +31,8 @@ async function fetchRows(path,params,page){
   if(!res.ok){const body=await res.text().catch(()=> "");throw new Error(path+" directory query failed: "+res.status+" "+body.slice(0,300));}
   return {rows:await res.json(),total:parseTotal(res.headers.get("content-range"))};
 }
-// Facet counts (small table) drive the section tabs + category chips.
-async function loadFacets(){
+// Business facet counts (small table) → section tabs + category chips.
+async function loadBusinessFacets(){
   try{
     const {url,key}=cfg();
     const qs=new URLSearchParams({select:"section_slug,section_label,section_sort,cat_slug,cat_label,cat_sort,n",order:"section_sort.asc,cat_sort.asc"});
@@ -41,52 +44,80 @@ async function loadFacets(){
     return Array.isArray(rows)?rows:[];
   }catch(_){return [];}
 }
-// Build an ordered section model from the flat facet rows.
-function buildSections(facets){
+function buildBusinessSections(facets){
   const map=new Map();
   for(const f of facets){
     const ss=cleanSlug(f.section_slug)||"other";
-    if(!map.has(ss)) map.set(ss,{slug:ss,label:txt(f.section_label)||"Other",sort:f.section_sort??99,total:0,cats:[]});
+    if(!map.has(ss)) map.set(ss,{slug:ss,label:txt(f.section_label)||"Other",sort:f.section_sort??99,total:0,subs:[]});
     const s=map.get(ss);
     const cs=cleanSlug(f.cat_slug)||"other";
-    s.cats.push({slug:cs,label:txt(f.cat_label)||"Other",sort:f.cat_sort??99,n:f.n||0});
+    s.subs.push({slug:cs,label:txt(f.cat_label)||"Other",sort:f.cat_sort??99,n:f.n||0});
     s.total+=(f.n||0);
   }
   const sections=[...map.values()].sort((a,b)=>a.sort-b.sort||a.label.localeCompare(b.label));
-  for(const s of sections) s.cats.sort((a,b)=>a.sort-b.sort||a.label.localeCompare(b.label));
+  for(const s of sections) s.subs.sort((a,b)=>a.sort-b.sort||a.label.localeCompare(b.label));
   return sections;
 }
-async function load(kind,page,section,category){
-  if(kind==="people"){
-    return fetchRows("profiles",{
-      select:"profile_slug,full_name,role,professional_title,company_name,location,avatar_url,headline,updated_at",
-      profile_slug:"not.is.null",full_name:"not.is.null",order:"updated_at.desc"
+// All listable public profiles (safe columns only — never email/phone), each
+// tagged with its inferred role for section grouping + filtering.
+async function loadPeopleAll(){
+  const {url,key}=cfg();
+  const qs=new URLSearchParams({
+    select:"profile_slug,full_name,role,professional_title,company_name,location,avatar_url,headline,additional_roles,updated_at",
+    profile_slug:"not.is.null",full_name:"not.is.null",order:"updated_at.desc"
+  });
+  const res=await fetch(url+"/rest/v1/profiles?"+qs.toString(),{
+    headers:{apikey:key,Authorization:"Bearer "+key,Range:"0-"+(PEOPLE_MAX-1),"Range-Unit":"items"}
+  });
+  if(!res.ok){const body=await res.text().catch(()=> "");throw new Error("people query failed: "+res.status+" "+body.slice(0,200));}
+  const rows=await res.json();
+  if(!Array.isArray(rows)) return [];
+  for(const r of rows) r._role=classifyPerson(r);
+  return rows;
+}
+async function loadBusinesses(section,category,page){
+  const params={
+    select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status,section_slug,cat_slug",
+    order:"name.asc"
+  };
+  if(section&&section!=="all") params.section_slug="eq."+section;
+  if(category) params.cat_slug="eq."+category;
+  try{
+    return await fetchRows("public_business_directory",params,page);
+  }catch(err){
+    console.warn("[public-directory] taxonomy view unavailable, flat fallback:",err&&err.message);
+    return await fetchRows("public_presence_previews",{
+      select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status",
+      presence_type:"eq.company",status:"eq.active",order:"name.asc"
     },page);
   }
-  if(kind==="businesses"){
-    const params={
-      select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status,section_slug,cat_slug",
-      order:"name.asc"
-    };
-    if(section&&section!=="all") params.section_slug="eq."+section;
-    if(category) params.cat_slug="eq."+category;
-    try{
-      return await fetchRows("public_business_directory",params,page);
-    }catch(err){
-      // Deployment-safe fallback if the taxonomy view/migration is not live yet:
-      // serve the flat business list (no sections) rather than erroring.
-      console.warn("[public-directory] taxonomy view unavailable, flat fallback:",err&&err.message);
-      return await fetchRows("public_presence_previews",{
-        select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status",
-        presence_type:"eq.company",status:"eq.active",order:"name.asc"
-      },page);
+}
+function dirPath(kind,section,sub){
+  const base=kind==="people"?"/people":kind==="businesses"?"/businesses":"/"+kind;
+  if(section&&section!=="all"){let p=base+"/"+section;if(sub)p+="/"+sub;return p;}
+  return base;
+}
+// Shared section tabs + sub-chips for sectioned directories (businesses, people).
+function sectionNav(kind,sections,activeSection,activeSub){
+  if(!sections.length) return "";
+  const grand=sections.reduce((a,s)=>a+s.total,0);
+  let secRow='<div class="biz-sections"><a href="'+esc(dirPath(kind))+'" class="'+(activeSection==="all"?"on":"")+'">All <span>'+grand+'</span></a>';
+  for(const s of sections){
+    secRow+='<a href="'+esc(dirPath(kind,s.slug))+'" class="'+(activeSection===s.slug?"on":"")+'">'+esc(s.label)+' <span>'+s.total+'</span></a>';
+  }
+  secRow+='</div>';
+  let subRow="";
+  if(activeSection!=="all"){
+    const sec=sections.find(s=>s.slug===activeSection);
+    if(sec&&sec.subs.length){
+      subRow='<div class="biz-cats"><a href="'+esc(dirPath(kind,sec.slug))+'" class="'+(!activeSub?"on":"")+'">All '+esc(sec.label)+'</a>';
+      for(const c of sec.subs){
+        subRow+='<a href="'+esc(dirPath(kind,sec.slug,c.slug))+'" class="'+(activeSub===c.slug?"on":"")+'">'+esc(c.label)+' <span>'+c.n+'</span></a>';
+      }
+      subRow+='</div>';
     }
   }
-  // events
-  return fetchRows("public_presence_previews",{
-    select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status",
-    presence_type:"eq.event",status:"eq.active",order:"name.asc"
-  },page);
+  return secRow+subRow;
 }
 function card(item,kind){
   if(kind==="people"){
@@ -107,74 +138,52 @@ function card(item,kind){
     '<div><h2>'+esc(item.name||"Pegasus "+(kind==="events"?"Event":"Business"))+'</h2>'+(meta?'<p class="dir-meta">'+esc(meta)+'</p>':'')+
     (desc?'<p class="dir-desc">'+esc(desc)+'</p>':'')+'<span class="dir-open">View '+(kind==="events"?"event":"business")+' →</span></div></a></article>';
 }
-function bizPath(section,category){
-  let p="/businesses";
-  if(section&&section!=="all"){p+="/"+section;if(category)p+="/"+category;}
-  return p;
-}
-// Section tabs + (within an active section) category chips.
-function businessNav(sections,activeSection,activeCategory){
-  if(!sections.length) return "";
-  const grand=sections.reduce((a,s)=>a+s.total,0);
-  let secRow='<div class="biz-sections"><a href="/businesses" class="'+(activeSection==="all"?"on":"")+'">All <span>'+grand+'</span></a>';
-  for(const s of sections){
-    secRow+='<a href="'+esc(bizPath(s.slug))+'" class="'+(activeSection===s.slug?"on":"")+'">'+esc(s.label)+' <span>'+s.total+'</span></a>';
-  }
-  secRow+='</div>';
-  let catRow="";
-  if(activeSection!=="all"){
-    const sec=sections.find(s=>s.slug===activeSection);
-    if(sec&&sec.cats.length){
-      catRow='<div class="biz-cats"><a href="'+esc(bizPath(sec.slug))+'" class="'+(!activeCategory?"on":"")+'">All '+esc(sec.label)+'</a>';
-      for(const c of sec.cats){
-        catRow+='<a href="'+esc(bizPath(sec.slug,c.slug))+'" class="'+(activeCategory===c.slug?"on":"")+'">'+esc(c.label)+' <span>'+c.n+'</span></a>';
-      }
-      catRow+='</div>';
-    }
-  }
-  return secRow+catRow;
-}
 function render(ctx){
-  const {kind,page,rows,total,sections=[],activeSection="all",activeCategory=null}=ctx;
+  const {kind,page,rows,total,sections=[],activeSection="all",activeSub=null}=ctx;
+  const sectioned=(kind==="businesses"||kind==="people");
   const label=kind==="people"?"People":kind==="events"?"Events":"Businesses";
   const singular=kind==="people"?"professionals":kind==="events"?"capital and industry events":"companies";
 
-  // Resolve active section/category labels for business headings + SEO.
-  let secObj=null,catObj=null;
-  if(kind==="businesses"&&activeSection!=="all"){
+  let secObj=null,subObj=null;
+  if(sectioned&&activeSection!=="all"){
     secObj=sections.find(s=>s.slug===activeSection)||null;
-    if(secObj&&activeCategory) catObj=secObj.cats.find(c=>c.slug===activeCategory)||null;
+    if(secObj&&activeSub) subObj=secObj.subs.find(c=>c.slug===activeSub)||null;
   }
-  const path=kind==="businesses"?bizPath(activeSection,activeCategory):("/"+kind);
+  const path=sectioned?dirPath(kind,activeSection,activeSub):("/"+kind);
   const canonical=ORIGIN+path+(page>1?"?page="+page:"");
+  const h1=subObj?subObj.label:secObj?secObj.label:label;
+  const title=(subObj?subObj.label+" — "+label:secObj?secObj.label+" — "+label:label)+" — Pegasus Capital Network"+(page>1?" | Page "+page:"");
 
-  const headingBase=catObj?catObj.label:secObj?secObj.label:label;
-  const h1=kind==="businesses"&&(secObj||catObj)?headingBase:label;
-  const title=(catObj?catObj.label+" — Businesses":secObj?secObj.label+" — Businesses":label)+" — Pegasus Capital Network"+(page>1?" | Page "+page:"");
-  const desc=kind==="businesses"
-    ? (catObj?"Browse "+catObj.label.toLowerCase()+" on Pegasus Capital Network — claimable company pages across private capital, lending, real estate and investment."
-       :secObj?"Browse "+secObj.label.toLowerCase()+" on Pegasus Capital Network — companies across private capital, lending, real estate and investment."
-       :"Discover companies on Pegasus Capital Network — lenders, private capital, brokers, real estate and transaction services. Public, claimable business pages.")
-    : "Discover "+singular+" on Pegasus Capital Network. Public profiles connect people, businesses and events across private capital, lending, real estate and investment.";
+  let desc;
+  if(kind==="businesses"){
+    desc=subObj?"Browse "+subObj.label.toLowerCase()+" on Pegasus Capital Network — claimable company pages across private capital, lending, real estate and investment."
+      :secObj?"Browse "+secObj.label.toLowerCase()+" on Pegasus Capital Network — companies across private capital, lending, real estate and investment."
+      :"Discover companies on Pegasus Capital Network — lenders, private capital, brokers, real estate and transaction services. Public, claimable business pages.";
+  }else if(kind==="people"){
+    desc=subObj?"Find "+subObj.label.toLowerCase()+" on Pegasus Capital Network — professionals across private capital, lending, real estate and investment."
+      :secObj?"Find "+secObj.label.toLowerCase()+" on Pegasus Capital Network — professionals across private capital, lending, real estate and investment."
+      :"Discover professionals on Pegasus Capital Network — loan officers, brokers, advisors, agents, developers and investors across private capital and real estate.";
+  }else{
+    desc="Discover "+singular+" on Pegasus Capital Network. Public profiles connect people, businesses and events across private capital, lending, real estate and investment.";
+  }
 
   const pages=total==null?null:Math.max(1,Math.ceil(total/PAGE_SIZE));
   const hasPrev=page>1,hasNext=pages? page<pages : rows.length===PAGE_SIZE;
-  const pagerBase=path;
   const itemList={"@context":"https://schema.org","@type":"ItemList","name":title,"itemListElement":rows.map((x,i)=>({
     "@type":"ListItem",position:(page-1)*PAGE_SIZE+i+1,
     url:ORIGIN+(kind==="people"?"/u/"+encodeURIComponent(x.profile_slug||""):kind==="events"?"/event/"+encodeURIComponent(x.slug||""):"/business/"+encodeURIComponent(x.slug||""))
   }))};
 
-  const subnav=kind==="businesses"?businessNav(sections,activeSection,activeCategory):"";
-  const emptyMsg=kind==="businesses"&&(secObj||catObj)
-    ? 'No companies are listed in this category yet.'
+  const subnav=sectioned?sectionNav(kind,sections,activeSection,activeSub):"";
+  const emptyMsg=sectioned&&(secObj||subObj)
+    ? (kind==="people"?'No members are listed in this category yet. Be the first — create your free profile.':'No companies are listed in this category yet.')
     : 'No public '+label.toLowerCase()+' are listed yet.';
 
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
     '<title>'+esc(title)+'</title><meta name="description" content="'+esc(desc)+'"><meta name="robots" content="index,follow,max-image-preview:large">'+
     '<link rel="canonical" href="'+esc(canonical)+'">'+
-    (hasPrev?'<link rel="prev" href="'+esc(ORIGIN+pagerBase+(page===2?"":"?page="+(page-1)))+'">':'')+
-    (hasNext?'<link rel="next" href="'+esc(ORIGIN+pagerBase+"?page="+(page+1))+'">':'')+
+    (hasPrev?'<link rel="prev" href="'+esc(ORIGIN+path+(page===2?"":"?page="+(page-1)))+'">':'')+
+    (hasNext?'<link rel="next" href="'+esc(ORIGIN+path+"?page="+(page+1))+'">':'')+
     '<link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico">'+
     '<script type="application/ld+json">'+JSON.stringify(itemList).replace(/</g,"\\u003c")+'</script>'+
     '<style>.dir-wrap{max-width:1120px;margin:auto;padding:48px 40px 72px}.dir-head{text-align:center;max-width:760px;margin:0 auto 20px}.dir-head h1{font-family:var(--serif);font-size:clamp(34px,5vw,54px);font-weight:400;margin:8px 0 12px}.dir-head p{color:var(--text2);line-height:1.65}.dir-tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:22px 0 0}.dir-tabs a{padding:8px 14px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--text2);font-size:12px}.dir-tabs a.on{background:var(--text);color:var(--bg);border-color:var(--text)}'+
@@ -185,7 +194,7 @@ function render(ctx){
     '<main class="dir-wrap"><header class="dir-head"><div class="eyebrow" style="justify-content:center">Public Network</div><h1>'+esc(h1)+'</h1><p>'+esc(desc)+'</p><div class="dir-tabs">'+
     '<a href="/people" class="'+(kind==="people"?"on":"")+'">People</a><a href="/businesses" class="'+(kind==="businesses"?"on":"")+'">Businesses</a><a href="/events" class="'+(kind==="events"?"on":"")+'">Events</a></div>'+subnav+'</header>'+
     (rows.length?'<section class="dir-grid">'+rows.map(x=>card(x,kind)).join("")+'</section>':'<div class="dir-empty">'+esc(emptyMsg)+'</div>')+
-    '<nav class="dir-pager" aria-label="Pagination">'+(hasPrev?'<a href="'+esc(pagerBase+(page===2?"":"?page="+(page-1)))+'">← Previous</a>':'')+(hasNext?'<a href="'+esc(pagerBase+"?page="+(page+1))+'">Next →</a>':'')+'</nav></main>'+
+    '<nav class="dir-pager" aria-label="Pagination">'+(hasPrev?'<a href="'+esc(path+(page===2?"":"?page="+(page-1)))+'">← Previous</a>':'')+(hasNext?'<a href="'+esc(path+"?page="+(page+1))+'">Next →</a>':'')+'</nav></main>'+
     '<footer style="text-align:center;padding:28px;color:var(--text3);border-top:1px solid var(--border)"><a href="/" style="color:inherit">Pegasus Capital Network</a> · Public professional discovery network</footer></body></html>';
 }
 function errPage(status,title){
@@ -200,23 +209,37 @@ export default async (request)=>{
   const page=pageNum(u.searchParams.get("page"));
   try{
     if(kind==="businesses"){
-      const facets=await loadFacets();
-      const sections=buildSections(facets);
+      const facets=await loadBusinessFacets();
+      const sections=buildBusinessSections(facets);
       let activeSection=cleanSlug(u.searchParams.get("section"))||"all";
-      let activeCategory=cleanSlug(u.searchParams.get("category"))||null;
-      // Validate against real facets; unknown section/category falls back cleanly.
-      if(activeSection!=="all" && !sections.some(s=>s.slug===activeSection)){activeSection="all";activeCategory=null;}
-      if(activeCategory){
-        const sec=sections.find(s=>s.slug===activeSection);
-        if(!sec||!sec.cats.some(c=>c.slug===activeCategory)) activeCategory=null;
-      }
-      const {rows,total}=await load(kind,page,activeSection,activeCategory);
+      let activeSub=cleanSlug(u.searchParams.get("category"))||null;
+      if(activeSection!=="all" && !sections.some(s=>s.slug===activeSection)){activeSection="all";activeSub=null;}
+      if(activeSub){const sec=sections.find(s=>s.slug===activeSection);if(!sec||!sec.subs.some(c=>c.slug===activeSub)) activeSub=null;}
+      const {rows,total}=await loadBusinesses(activeSection,activeSub,page);
       if(page>1&&!rows.length) return errPage(404,"Directory page not found");
-      return new Response(render({kind,page,rows,total,sections,activeSection,activeCategory}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|category","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+      return new Response(render({kind,page,rows,total,sections,activeSection,activeSub}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|category","X-Robots-Tag":"index,follow,max-image-preview:large"}});
     }
-    const {rows,total}=await load(kind,page);
+    if(kind==="people"){
+      const all=await loadPeopleAll();
+      const sections=buildPeopleSections(all);
+      let activeSection=cleanSlug(u.searchParams.get("section"))||"all";
+      let activeSub=cleanSlug(u.searchParams.get("role"))||null;
+      if(activeSection!=="all" && !sections.some(s=>s.slug===activeSection)){activeSection="all";activeSub=null;}
+      if(activeSub){const sec=sections.find(s=>s.slug===activeSection);if(!sec||!sec.subs.some(c=>c.slug===activeSub)) activeSub=null;}
+      let rows=all;
+      if(activeSection!=="all") rows=rows.filter(r=>sectionOf(r._role)===activeSection);
+      if(activeSub) rows=rows.filter(r=>r._role===activeSub);
+      const total=rows.length;
+      const pageRows=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+      if(page>1&&!pageRows.length) return errPage(404,"Directory page not found");
+      return new Response(render({kind,page,rows:pageRows,total,sections,activeSection,activeSub}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|role","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+    }
+    const {rows,total}=await fetchRows("public_presence_previews",{
+      select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status",
+      presence_type:"eq.event",status:"eq.active",order:"name.asc"
+    },page);
     if(page>1&&!rows.length) return errPage(404,"Directory page not found");
-    return new Response(render({kind,page,rows,total}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+    return new Response(render({kind:"events",page,rows,total}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page","X-Robots-Tag":"index,follow,max-image-preview:large"}});
   }catch(err){
     console.error("[public-directory]",err);
     return errPage(503,"Directory temporarily unavailable");

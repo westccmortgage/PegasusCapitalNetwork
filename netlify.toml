@@ -89,6 +89,20 @@
   status = 200
   force = true
 
+# People role section + role landing pages (SEO). :section/:role resolved to the
+# people taxonomy server-side.
+[[redirects]]
+  from = "/people/:section"
+  to = "/.netlify/functions/public-directory?kind=people&section=:section"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/people/:section/:role"
+  to = "/.netlify/functions/public-directory?kind=people&section=:section&role=:role"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/businesses"
   to = "/.netlify/functions/public-directory?kind=businesses"
