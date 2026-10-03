@@ -81,6 +81,33 @@ async function peopleSitemap() {
   }
   return urlset(urls);
 }
+// Business section + category landing pages (from the taxonomy facets). Included
+// in the businesses sitemap so the capital-stack directory is crawlable.
+async function businessFacetUrls() {
+  try {
+    const rows = await restRows("public_business_facets", {
+      select: "section_slug,cat_slug,n",
+    });
+    const sectionSeen = new Set();
+    const urls = [];
+    for (const row of rows) {
+      const section = cleanSlug(row.section_slug);
+      const cat = cleanSlug(row.cat_slug);
+      if (!section || section === "other") continue;
+      if (!sectionSeen.has(section)) {
+        sectionSeen.add(section);
+        urls.push(urlNode(ORIGIN + "/businesses/" + encodeURIComponent(section), "", "0.7"));
+      }
+      if (cat && cat !== "other") {
+        urls.push(urlNode(ORIGIN + "/businesses/" + encodeURIComponent(section) + "/" + encodeURIComponent(cat), "", "0.6"));
+      }
+    }
+    return urls;
+  } catch (err) {
+    console.warn("[entity-sitemap] facet urls unavailable:", err && err.message);
+    return [];
+  }
+}
 async function presenceSitemap(kind) {
   const type = kind === "events" ? "event" : "company";
   const segment = kind === "events" ? "event" : "business";
@@ -92,6 +119,7 @@ async function presenceSitemap(kind) {
   });
   const seen = new Set();
   const urls = [];
+  if (kind === "businesses") urls.push(...(await businessFacetUrls()));
   for (const row of rows) {
     const slug = cleanSlug(row.slug);
     if (!slug || seen.has(slug) || !String(row.name || "").trim()) continue;
