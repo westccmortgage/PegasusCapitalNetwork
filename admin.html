@@ -66,7 +66,7 @@ const v=Pegasus.mountApp({active:'Admin',title:'Admin Console',sub:'Platform ope
   })();
 // section tabs
 v.insertAdjacentHTML('beforeend','<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap" id="atabs"></div><div id="apanel"></div>');
-const sections=['Users','Claims','Duplicates','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
+const sections=['Users','Claims','Duplicates','Directory','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Manual Review','Platform Health','Schema & Repair'];
 document.getElementById('atabs').innerHTML=sections.map((s,i)=>'<div class="toggle-opt '+(i===0?'on':'')+'" style="font-size:11px" onclick="aShow(\''+s+'\')">'+s+'</div>').join('');
 function tbl(cols,rows){return '<div class="card"><table class="tbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
 const chip=(t,c)=>'<span class="badge '+c+'">'+t+'</span>';
@@ -87,6 +87,46 @@ function adminEmpty(icon, title, body){
     '<div style="max-width:520px;margin:0 auto;line-height:1.55;color:var(--text3);font-size:12px">'+body+'</div>'+
   '</div>';
 }
+/* ── Directory seeding (migration 082) — publish imported companies as public,
+   claimable "unclaimed" business pages (Yelp-style). Admin-run, de-duplicated. ── */
+async function loadDirectory(p){
+  p.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Loading directory tools…</div>';
+  try{
+    var c=await window.PegSB.ready;
+    var cnt=await c.rpc('count_publishable_company_stubs');
+    var n=(cnt&&!cnt.error&&typeof cnt.data==='number')?cnt.data:0;
+    var live=await c.from('presences').select('id',{count:'exact',head:true}).eq('visibility','public_preview').eq('status','active').neq('presence_type','personal');
+    var liveN=(live&&typeof live.count==='number')?live.count:null;
+    p.innerHTML=
+      '<div class="card"><div class="card-body">'+
+        '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Directory seeding</div>'+
+        '<div style="font-size:12.5px;color:var(--text2);line-height:1.55;margin-bottom:14px">Publish imported companies (from Partner Network data) as public, claimable business pages. Only public business fields are shown (name, type, city, website) — never phone or email. Each page is marked <b>unclaimed</b> with a “Claim this page” call-to-action, and duplicates are skipped automatically.</div>'+
+        '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:16px">'+
+          '<div class="stat" style="--accent:var(--teal)"><div class="stat-v">'+n+'</div><div class="stat-l">Ready to publish</div></div>'+
+          (liveN!=null?'<div class="stat" style="--accent:var(--blue)"><div class="stat-v">'+liveN+'</div><div class="stat-l">Live public pages</div></div>':'')+
+        '</div>'+
+        (n>0
+          ? '<button class="btn btn-pri" id="dir-publish">Publish '+Math.min(n,100)+' unclaimed company page'+(n===1?'':'s')+'</button>'
+          : '<div style="font-size:12.5px;color:var(--text3)">Nothing new to publish. Import more companies into Partner Network, then return here.</div>')+
+        '<div id="dir-status" style="font-size:12px;color:var(--text3);margin-top:12px"></div>'+
+      '</div></div>';
+    var btn=document.getElementById('dir-publish');
+    if(btn) btn.onclick=async function(){
+      if(!confirm('Publish up to '+Math.min(n,100)+' companies as public unclaimed business pages? They become visible in the directory and to Google, each with a “claim” prompt.')) return;
+      btn.disabled=true; btn.textContent='Publishing…';
+      try{
+        var r=await c.rpc('publish_unclaimed_company_stubs',{p_limit:100});
+        if(r.error) throw r.error;
+        var st=document.getElementById('dir-status');
+        if(st) st.innerHTML='<span style="color:var(--green)">Published '+(r.data||0)+' new page(s).</span>';
+        setTimeout(function(){ loadDirectory(p); }, 1200);
+      }catch(err){ btn.disabled=false; btn.textContent='Publish'; var st=document.getElementById('dir-status'); if(st) st.innerHTML='<span style="color:var(--red)">'+((err&&err.message)||err)+'</span>'; }
+    };
+  }catch(err){
+    p.innerHTML='<div class="banner bn-cancel"><div class="banner-msg">🔴 <span>Could not load directory tools — apply migration 082 in Supabase. ('+((err&&err.message)||err)+')</span></div></div>';
+  }
+}
+
 /* ── Duplicate protection (migration 081) — read-only detection of likely
    duplicate business pages and profiles, so they can be reviewed/cleaned up
    before scaling the network. Detection only; nothing is merged automatically. ── */
@@ -483,6 +523,7 @@ window.aShow=function(s){[...document.querySelectorAll('#atabs .toggle-opt')].fo
   if(s==='Users'){ loadUsers(p); return; }
   if(s==='Claims'){ loadClaims(p); return; }
   if(s==='Duplicates'){ loadDuplicates(p); return; }
+  if(s==='Directory'){ loadDirectory(p); return; }
   if(s==='Subscriptions'){ loadSubscriptions(p); return; }
   if(s==='Deal Rooms')p.innerHTML=tbl(['Deal Room','Sponsor','Amount','Stage','Alignment','Lenders'],PEG_DATA.dealRooms.map(d=>[d.name,d.participants[0].n,Pegasus.fmt(d.amount),chip(['Draft','Submitted','Reviewing','Matched','Docs Req','Term Sheet','Funded','Closed'][d.stage],'b-trial'),d.alignment,d.lenders.length]).concat([['Lakeside Industrial','Tom A.','.5M',chip('Draft','b-none'),'—','0']]));
   if(s==='Lender Profiles'){ loadLenders(p); return; }
