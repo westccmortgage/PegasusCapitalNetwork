@@ -95,6 +95,20 @@
   status = 200
   force = true
 
+# Business section + category landing pages (SEO). :section/:category are single
+# path segments resolved to the directory's taxonomy facets server-side.
+[[redirects]]
+  from = "/businesses/:section"
+  to = "/.netlify/functions/public-directory?kind=businesses&section=:section"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/businesses/:section/:category"
+  to = "/.netlify/functions/public-directory?kind=businesses&section=:section&category=:category"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/events"
   to = "/.netlify/functions/public-directory?kind=events"
