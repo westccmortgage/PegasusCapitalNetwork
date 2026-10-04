@@ -326,10 +326,10 @@
 <section class="home-section" style="text-align:center;max-width:900px;margin:0 auto;padding:34px 40px 66px">
   <h2 class="why-h2">Build your presence inside Pegasus.</h2>
   <p class="why-intro">Create your free profile, present your business, and become visible to the right people.</p>
-  <div class="why-cta" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+  <div class="why-cta" id="finalCta" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
     <a class="btn btn-pri btn-lg hero-cta-pri" href="/signup.html">Create Free Profile</a>
     <a class="btn btn-ghost btn-lg" href="/signin.html">Sign In</a>
-    <a class="btn btn-ghost btn-lg" href="/explore.html">How It Works</a>
+    <a class="btn btn-ghost btn-lg" href="/how-it-works.html">How It Works</a>
   </div>
 </section>
 <div id="footer"></div>
@@ -377,6 +377,12 @@ Pegasus.mountPublic('');
       '<a class="eh-btn eh-btn-out" href="'+profileHref+'">My Profile</a>'+
       '<a class="eh-btn-link" href="/dashboard.html">Workspace →</a>';
     if(cta) cta.innerHTML=memberActions;
+    /* Signed-in members never see the anonymous "Create Free Profile / Sign In" close. */
+    var finalCta=document.getElementById('finalCta');
+    if(finalCta) finalCta.innerHTML=''+
+      '<a class="btn btn-pri btn-lg" href="'+profileHref+'">My Profile</a>'+
+      '<a class="btn btn-ghost btn-lg" href="/members.html">Members Network</a>'+
+      '<a class="btn btn-ghost btn-lg" href="/my-presences.html">Business Pages</a>';
     if(panelsCta) panelsCta.innerHTML=''+
       '<a class="btn btn-pri btn-lg" href="/members.html">Continue to Members Network</a>'+
       '<a class="btn btn-ghost btn-lg" href="/dashboard.html">Open Workspace</a>';
@@ -387,7 +393,7 @@ Pegasus.mountPublic('');
       business:     ['/my-presences.html','Manage business pages →'],
       presentation: ['/showcase.html','Present something →'],
       share:        ['/share-studio.html','Open Share Studio →'],
-      requests:     ['/dashboard.html#requests','Open Requests →']
+      requests:     ['/network-requests.html','Open Requests →']
     };
     try{ document.querySelectorAll('.lpanel-link[data-cta]').forEach(function(a){
       var m=LOGGED[a.getAttribute('data-cta')]; if(m){ a.setAttribute('href',m[0]); a.textContent=m[1]; }
@@ -453,7 +459,8 @@ Pegasus.mountPublic('');
     var items=[];
     if(d.members) items.push([nf(d.members),'Members']);
     if(d.markets) items.push([nf(d.markets),'Markets']);
-    if(d.verified_pct!=null) items.push([d.verified_pct+'%','Verified']);
+    /* A 0% figure reads as "nobody here is real" — show it only once it means something. */
+    if(d.verified_pct!=null && Number(d.verified_pct)>0) items.push([d.verified_pct+'%','Verified']);
     if(!items.length) return;
     ih.innerHTML=items.map(function(it){return '<div class="it"><div class="n">'+esc(String(it[0]))+'</div><div class="l">'+esc(it[1])+'</div></div>';}).join('');
     ih.style.display='';

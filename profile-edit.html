@@ -478,7 +478,11 @@ Pegasus.boot(async function(st){
         if(_sc && _tid){
           function _norm(net,v){ v=(v||'').trim(); if(!v) return null;
             if(/^https?:\/\//i.test(v)) return v;
-            v=v.replace(/^@/,'');
+            /* Pasted without https:// ("www.linkedin.com/in/x", "youtube.com/@x") —
+               it is already a full address, so never glue the base URL in front
+               (that produced linkedin.com/in/www.linkedin.com/in/x). */
+            if(/^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(v)) return 'https://'+v;
+            if(net!=='youtube') v=v.replace(/^@/,''); /* YouTube handles keep their @ */
             var base={linkedin:'https://linkedin.com/in/',x:'https://x.com/',instagram:'https://instagram.com/',facebook:'https://facebook.com/',youtube:'https://youtube.com/',tiktok:'https://tiktok.com/@'}[net];
             return base ? base+v : ('https://'+v);
           }

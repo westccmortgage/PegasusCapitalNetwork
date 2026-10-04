@@ -38,10 +38,10 @@
 <script src="/js/profile/profile-system.js"></script>
 <script src="/js/access/access-system.js?v=postlogin"></script>
 <script src="/js/access/access-redeem-widget.js?v=postlogin"></script>
-<script src="/js/activation.js"></script>
+
 <script>
 Pegasus.boot(async ()=>{ await (async function(){
-  await PegActivation.mount();
+  if (window.PegActivation) await PegActivation.mount(); /* activation.js is not in the repo — do not crash the page */
   var v=document.getElementById('pegView');
   if(v && !v.querySelector('[data-pegasus-redeem]')){
     // Post-signup access-code field: lets Google OAuth users (who

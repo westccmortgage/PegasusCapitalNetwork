@@ -41,7 +41,11 @@ Pegasus.mountPublic();
     var _ref = document.referrer;
     if (_ref && _ref.indexOf(location.hostname) >= 0) {
       var _rPath = new URL(_ref).pathname;
-      if (!_rPath.startsWith('/signin') && !_rPath.startsWith('/signup') && !_rPath.startsWith('/auth-callback')) {
+      /* Only remember real destinations (a profile, business, opportunity or a
+         member page). Marketing pages — above all the homepage — are not a
+         destination: sending a member back to "/" after login is a dead end. */
+      var _public = /^\/(index\.html)?$|^\/(signin|signup|auth-callback|forgot-password|reset-password|explore|how-it-works|about|faq|contact|terms|privacy|disclosures|trust-and-safety|borrowers|mortgage-brokers|real-estate-agents|rwa-|category-|founder-network|business-capital-funding|capital-sessions)/;
+      if (!_public.test(_rPath)) {
         localStorage.setItem('pegasus.redirectAfterAuth', _rPath + new URL(_ref).search);
       }
     }
@@ -51,10 +55,10 @@ Pegasus.mountPublic();
     if (s && s.user) {
       await Pegasus.store.hydrate();
       var p = Pegasus.store.get().profile;
-      /* Cache slug for instant member-nav links, then go to the signed-in
-         home — the Members Network — not workspace/profile/get-started. */
+      /* Signed-in home is the member's OWN profile page: a member lands on
+         their page first and moves into the network from there. */
       if (p && p.profile_slug) { try { localStorage.setItem('peg_slug', p.profile_slug); } catch(e){} }
-      location.replace('/members.html');
+      location.replace(p && p.profile_slug ? '/u/' + encodeURIComponent(p.profile_slug) : '/profile-edit.html');
     }
   } catch(_) {}
 })();
@@ -70,13 +74,14 @@ async function doSignin(){
     await PegAuth.signIn({email,password});
     await Pegasus.store.hydrate();
     /* Routing law: never default to admin console or workspace. Return to the
-       protected route the member was heading to, otherwise the signed-in home
-       (Members Network). */
+       page the member was heading to, otherwise their OWN profile page (or
+       the profile editor when no profile page exists yet). */
     var _p=Pegasus.store.get().profile||{};
     if(_p.profile_slug){ try{ localStorage.setItem('peg_slug',_p.profile_slug); }catch(e){} }
     var _dl=''; try{ _dl=localStorage.getItem('pegasus.redirectAfterAuth')||''; if(_dl) localStorage.removeItem('pegasus.redirectAfterAuth'); }catch(_){}
-    var _valid=_dl && _dl.charAt(0)==='/' && !_dl.startsWith('/signin') && !_dl.startsWith('/signup') && !_dl.startsWith('/auth-callback');
-    location.href = _valid ? _dl : '/members.html';
+    var _valid=_dl && _dl.charAt(0)==='/' && _dl!=='/' && _dl!=='/index.html' && !_dl.startsWith('/signin') && !_dl.startsWith('/signup') && !_dl.startsWith('/auth-callback');
+    var _home=_p.profile_slug ? '/u/'+encodeURIComponent(_p.profile_slug) : '/profile-edit.html';
+    location.href = _valid ? _dl : _home;
   }catch(e){
     btn.disabled=false; btn.textContent='Access Workspace →';
     var raw=(e&&e.message)||'';
