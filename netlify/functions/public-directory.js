@@ -300,6 +300,22 @@ export default async (request)=>{
     return new Response(render({kind:"events",page,rows,total}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page","X-Robots-Tag":"index,follow,max-image-preview:large"}});
   }catch(err){
     console.error("[public-directory]",err);
-    return errPage(503,"Directory temporarily unavailable");
+    // Never 503 the directory — fall back to a flat, un-sectioned list.
+    try{
+      if(kind==="people"){
+        const all=await loadPeopleAll();
+        const pageRows=all.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+        return new Response(render({kind:"people",page,rows:pageRows,total:all.length}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+      }
+      const type=kind==="events"?"event":"company";
+      const {rows,total}=await fetchRows("public_presence_previews",{
+        select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status",
+        presence_type:"eq."+type,status:"eq.active",order:"name.asc"
+      },page);
+      return new Response(render({kind,page,rows,total}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+    }catch(err2){
+      console.error("[public-directory:fallback]",err2);
+      return errPage(503,"Directory temporarily unavailable");
+    }
   }
 };
