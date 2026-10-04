@@ -31,7 +31,7 @@ async function getPresence(slug){
   // Deployment-safe fallback when the latest RPC migration/schema cache is not
   // live yet. public_presence_previews is already the anonymous-safe surface.
   const params=new URLSearchParams({
-    select:"id,presence_type,name,slug,tagline,short_description,category,industry,location,market,public_cta_label,public_cta_url,status",
+    select:"id,presence_type,name,slug,tagline,short_description,category,industry,location,market,public_cta_label,public_cta_url,status,is_claimable",
     slug:"eq."+slug,
     limit:"1"
   });
@@ -45,6 +45,19 @@ async function getPresence(slug){
   const rows=await fallback.json();
   if(!Array.isArray(rows)||!rows.length) return null;
   return {access:"full",presence:{...rows[0],visibility:"public_preview"},can_manage:false};
+}
+// Claim strip eligibility: imported company stub that nobody has claimed yet.
+// The page RPC does not carry this flag, so read it from the anon-safe view.
+async function getClaimable(slug){
+  try{
+    const {url,key}=cfg();
+    const r=await fetch(url+"/rest/v1/public_presence_previews?select=is_claimable&slug=eq."+encodeURIComponent(slug)+"&limit=1",{
+      headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}
+    });
+    if(!r.ok) return false;
+    const rows=await r.json();
+    return !!(Array.isArray(rows)&&rows[0]&&rows[0].is_claimable===true);
+  }catch(_){ return false; }
 }
 async function getTemplate(request){
   const u=new URL(request.url);
@@ -90,7 +103,9 @@ function joinCta(kind){
     '<a href="/signin.html" style="border:1px solid rgba(255,255,255,.3);color:#f4f8fc;text-decoration:none;font-size:14px;padding:11px 18px;border-radius:10px">Sign in</a></div>'+
     '<script>try{if(localStorage.getItem("pegasus.auth")){var e=document.getElementById("peg-seo-join");if(e)e.style.display="none";}}catch(_){}</script></aside>';
 }
-// "Is this your business?" claim strip — always visible (claiming is relevant to
+// "Is this your business?" claim strip — only on imported, still-unclaimed pages
+// (is_claimable from public_presence_previews); never on member-built pages.
+// Previously: always visible (claiming is relevant to
 // signed-in members too). Routes to the claim flow with the presence slug.
 function claimCta(kind,slug){
   var noun=kind==="event"?"event":"business";
@@ -144,7 +159,7 @@ function render(html,p,kind){
   }
   const jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
-  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+claimCta(kind,slug)+"\n"+joinCta(kind));
+  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+(p.is_claimable===true?claimCta(kind,slug)+"\n":"")+joinCta(kind));
   return html;
 }
 function simple(status,title,message){
@@ -160,13 +175,13 @@ export default async (request) => {
   const kind=publicPath ? publicPath[1] : (u.searchParams.get("kind")==="event"?"event":"business");
   if(!slug) return simple(404,"Page not found","This page does not exist.");
   try{
-    const [data,template]=await Promise.all([getPresence(slug),getTemplate(request)]);
+    const [data,template,claimable]=await Promise.all([getPresence(slug),getTemplate(request),getClaimable(slug)]);
     if(!data||data.access==="unavailable") return simple(404,"Page not found","This page is not available.");
     if(data.access!=="full"||!data.presence){
       // Member-only/private public requests stay non-indexable.
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
     }
-    const p=data.presence;
+    const p={...data.presence,is_claimable:claimable};
     if(!typeAllowed(kind,p.presence_type)) return simple(404,"Page not found","This page does not exist.");
     if(p.visibility!=="public_preview"||p.status!=="active") {
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
