@@ -157,7 +157,7 @@
       trial_end:new Date(Date.now()+5*864e5).toISOString(), cancel_at_period_end:false, stripe_customer_id:'cus_demo' };
     const D = window.PEG_DATA||{dealRooms:[],activity:[]};
     state.dealRooms = (D.dealRooms||[]).map(d=>({ ...d, workflow_state:['draft','submitted','reviewing','matched','docs_requested','underwriting','term_sheet','funded','closed'][d.stage]||'submitted' }));
-    state.usage = { aiUsed: state.tier==='starter'?17:47, rooms: state.dealRooms.filter(r=>r.status!=='archived').length };
+    state.usage = { aiUsed: 0 /* no AI usage tracking yet — never show invented numbers */, rooms: state.dealRooms.filter(r=>r.status!=='archived').length };
     state.notifications = [
       {id:'n1',kind:'lender_interest',title:'Network update',body:'A capital partner expressed interest in your workspace',link:'/deal-room.html?id=dr_1',read:false,created_at:new Date(Date.now()-12*6e4).toISOString()},
       {id:'n2',kind:'match_found',title:'Match Engine update',body:'Your capital request has a new alignment result',link:'/match-engine.html',read:false,created_at:new Date(Date.now()-36e5).toISOString()},
