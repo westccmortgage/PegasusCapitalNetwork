@@ -133,6 +133,7 @@
       <div class="sb-nav">
         <div class="sb-sec">Network</div>
         ${item('⬡','Members Network','/members.html',{act:'Members'})}
+        ${item('▤','Business Directory','/businesses')}
         <div class="sb-sec">My Work</div>
         ${item('▦','Workspace','/dashboard.html',{act:'Dashboard'})}
         ${item('◇','Requests','/network-requests.html',{act:'Network Requests'})}
@@ -773,6 +774,7 @@
     var p=st.profile||{}; var name=p.full_name||'My Account';
     var rows=[
       ['\u25C8','Members Network','/members.html'],
+      ['\u229E','Business Directory','/businesses'],
       ['\u25C9','My Profile',ownProfilePath()],
       ['\u270E','Manage Profile','/profile-edit.html'],
       ['\u25EB','Business Pages','/my-presences.html'],
@@ -893,6 +895,7 @@
       var on = function(p){ return location.pathname.indexOf(p) === 0 ? ' on' : ''; };
       links.innerHTML =
         '<a class="member'+on('/members')+'" href="/members.html">Members Network</a>'+
+        '<a class="member'+on('/businesses')+'" href="/businesses">Directory</a>'+
         '<a class="member'+(slug?on('/u/'):'')+'" href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
         '<a class="member'+on('/my-presences')+'" href="/my-presences.html">Business Pages</a>'+
         '<a class="member'+on('/showcase')+'" href="/showcase.html">Opportunities</a>'+
@@ -904,6 +907,7 @@
       mdn.setAttribute('data-member', '1');
       mdn.innerHTML =
         '<a href="/members.html">Members Network</a>'+
+        '<a href="/businesses">Directory</a>'+
         '<a href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
         '<a href="/my-presences.html">Business Pages</a>'+
         '<a href="/showcase.html">Opportunities</a>'+
