@@ -159,7 +159,7 @@
   <div class="cb-head">
     <div>
       <h1>Pegasus Members Network</h1>
-      <p>On the left, discover people inside Pegasus. On the right, build your connection board — select members, expand their cards, and send a request to connect.</p>
+      <p>Discover people inside Pegasus and build your connection board: select members, compare their cards, and send a request to connect.</p>
     </div>
   </div>
 
@@ -382,10 +382,21 @@ Pegasus.boot(async function(){
     ['ecosystem_member','Ecosystem Members']
   ];
   var activeRole='', activeQuery='';
+  /* Chips are role GROUPS, not exact enum values — otherwise a private_lender
+     never shows under Lenders and a business_owner / founder under nothing. */
+  var ROLE_GROUP={private_lender:'lender',hard_money_lender:'lender',bank:'lender',loan_officer:'lender',
+    mortgage_broker:'broker',business_owner:'borrower',entrepreneur:'borrower',startup_founder:'borrower',founder:'borrower',
+    real_estate_agent:'agent',realtor:'agent',fund_manager:'investor',family_office:'investor',capital_partner:'investor'};
+  function roleGroup(r){ r=String(r||'').toLowerCase(); return ROLE_GROUP[r]||r; }
   function renderPills(){
     var host=document.getElementById('cbPills');
-    host.innerHTML=ROLES.map(function(r){
-      return '<button class="cb-pill'+(activeRole===r[0]?' on':'')+'" data-role="'+r[0]+'">'+esc(r[1])+'</button>';
+    /* Only show chips that have members (plus All and the active one), with counts. */
+    var list=(typeof ALL!=='undefined'&&ALL&&ALL.length)?ALL:null;
+    host.innerHTML=ROLES.filter(function(r){
+      return !list || !r[0] || r[0]===activeRole || list.some(function(p){return roleGroup(p.role)===r[0];});
+    }).map(function(r){
+      var n=list?(r[0]?list.filter(function(p){return roleGroup(p.role)===r[0];}).length:list.length):null;
+      return '<button class="cb-pill'+(activeRole===r[0]?' on':'')+'" data-role="'+r[0]+'">'+esc(r[1])+(n!=null?' <span style="opacity:.6">'+n+'</span>':'')+'</button>';
     }).join('');
     host.querySelectorAll('.cb-pill').forEach(function(b){
       b.onclick=function(){ activeRole=b.getAttribute('data-role'); renderPills(); applyFilter(); };
@@ -417,7 +428,7 @@ Pegasus.boot(async function(){
   function applyFilter(){
     var q=(activeQuery||'').trim().toLowerCase();
     var rows=ALL.filter(function(p){
-      if(activeRole && (p.role||'').toLowerCase()!==activeRole) return false;
+      if(activeRole && roleGroup(p.role)!==activeRole) return false;
       if(!q) return true;
       var hay=[p.full_name,p.role,p.headline,p.professional_title,p.company_name,(p.markets||[]).join(' '),(p.specialties||[]).join(' '),p.location].join(' ').toLowerCase();
       return hay.indexOf(q)>=0;

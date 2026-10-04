@@ -148,7 +148,7 @@ Pegasus.mountPublic('');
     try {
       var sbHub = await window.PegSB.ready;
       var hubRes = await sbHub.from('profiles')
-        .select('id, profile_slug, full_name, onboarding_intent')
+        .select('id, profile_slug, full_name')
         .eq('id', u.id)
         .maybeSingle();
       var hp = hubRes.data;
@@ -170,11 +170,10 @@ Pegasus.mountPublic('');
         /* Cache slug so member nav / My Profile links resolve instantly */
         if (slug) { try { localStorage.setItem('peg_slug', slug); } catch(_) {} }
 
-        /* Signed-in home is the Members Network — never workspace/admin/get-started.
-           The Members Network shows the member inside the network and carries a
-           Launch Checklist while their profile is still incomplete. */
-        hubDest = '/members.html';
-        welcomeBody = 'Your network is ready.';
+        /* Signed-in home is the member's OWN profile page — they land on
+           their page first, then move into the network from there. */
+        hubDest = slug ? '/u/' + encodeURIComponent(slug) : '/profile-edit.html';
+        welcomeBody = 'Opening your profile…';
       } else {
         /* No profile row — brand new user sets up their profile first */
         hubDest = '/profile-edit.html';
@@ -195,7 +194,7 @@ Pegasus.mountPublic('');
     /* Only honor deep links to protected app pages, not auth pages */
     var isValidDeep = deepLink && deepLink.startsWith('/') &&
       !deepLink.startsWith('/signin') && !deepLink.startsWith('/signup') &&
-      !deepLink.startsWith('/auth-callback');
+      !deepLink.startsWith('/auth-callback') && deepLink !== '/' && deepLink !== '/index.html';
 
     if (redeemed && redeemed.ok) {
       var w = (window.PegAccessOnboarding

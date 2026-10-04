@@ -23,7 +23,8 @@
 <script src="/js/pegasus-billing.js?v=dealroom-entitlements-20260524-1529"></script>
 <script src="/js/pegasus-pages.js?v=dealroom-entitlements-20260524-1529"></script>
 <script src="/js/profile/profile-system.js"></script>
-<script src="/js/activation.js"></script>
+<script>/* Human role labels — backend role values stay unchanged. */
+window.__RL={borrower:'Growth Partner',agent:'Real Estate Professional',investor:'Capital Partner',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider'};window.__roleLbl=function(r){r=String(r||'').toLowerCase();return __RL[r]||(r||'member').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});};</script>
 <script>
 Pegasus.boot((st)=>{
   const v=Pegasus.mountApp({active:'Dashboard',title:'My Work',sub:'Requests, conversations & deal activity — your private work area'});
@@ -121,7 +122,7 @@ Pegasus.boot((st)=>{
         var seg=TYPE_SEG[pr.presence_type]||'business';
         var ctx = op ? ('On opportunity '+e(op.title)) : ('On '+e(pr.name||'your page'));
         var ctxLink = op && op.slug ? ('/opportunity/'+encodeURIComponent(op.slug)) : (pr.slug?('/'+seg+'/'+encodeURIComponent(pr.slug)):'');
-        var sub=[INTENT[q.intent]||'Interested', m.role, m.location].filter(Boolean).map(e).join(' · ');
+        var sub=[INTENT[q.intent]||'Interested', m.role?__roleLbl(m.role):'', m.location].filter(Boolean).map(e).join(' · ');
         var statusPill='<span style="font-size:8.5px;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text4);border:1px solid var(--border2);border-radius:10px;padding:2px 7px">'+e(STATUS[q.status]||q.status)+'</span>';
         var actions = (q.status==='accepted'||q.status==='declined')
           ? '<button class="btn btn-ghost btn-sm" onclick="wsReq(\''+e(q.id)+'\',\'archived\')">Dismiss</button>'
@@ -371,7 +372,7 @@ Pegasus.boot((st)=>{
       var cards=people.map(function(p){
         var ini=(p.full_name||'?').split(' ').map(function(w){return w[0];}).slice(0,2).join('');
         var link=p.profile_slug?'/u/'+p.profile_slug:'/public-profile.html?id='+p.id;
-        var rl=(p.role||'member').replace(/_/g,' ');
+        var rl=__roleLbl(p.role);
         var isConn=connected[p.id];
         var connBtn=isConn
           ? '<a href="/messages.html" class="btn btn-ghost btn-sm" style="font-size:11px;padding:5px 10px;color:var(--green);border-color:rgba(46,160,67,0.4)" title="Go to Messages">✓ Connected</a>'
@@ -436,7 +437,7 @@ Pegasus.boot((st)=>{
     if(pp<50||dsj<7) return '';
     return '<div class="card" style="border-color:rgba(170,137,38,0.2)"><div class="card-body" style="display:flex;flex-direction:column;justify-content:center;height:100%"><div style="font-size:14px;font-weight:600;margin-bottom:6px">Ready to go further?</div><div style="font-size:12px;color:var(--text2);margin-bottom:14px">'+(t==='starter'?'Unlock Deal Rooms, Match Engine, and advanced tools.':'Upgrade to Gold for unlimited workspaces.')+'</div><a class="btn btn-ghost btn-sm" href="/membership.html">See what’s included →</a></div></div>';
   }());
-  v.insertAdjacentHTML('beforeend','<div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div class="card-title">Profile Status</div><span class="link" onclick="location.href=\'profile-edit.html\'">Edit →</span></div><div class="card-body"><div class="kv"><span class="kv-k">Profile completeness</span><span class="kv-v" style="color:var(--green)">'+(p.profile_completion||0)+'%</span></div><div class="kv"><span class="kv-k">Verification</span><span class="kv-v" style="text-transform:capitalize">'+(p.verification_status||'unverified')+'</span></div><div class="kv"><span class="kv-k">Role</span><span class="kv-v" style="text-transform:capitalize">'+(p.role||'—')+'</span></div></div></div>'+upgradeCard+'</div>');
+  v.insertAdjacentHTML('beforeend','<div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div class="card-title">Profile Status</div><span class="link" onclick="location.href=\'profile-edit.html\'">Edit →</span></div><div class="card-body"><div class="kv"><span class="kv-k">Profile completeness</span><span class="kv-v" style="color:var(--green)">'+(p.profile_completion||0)+'%</span></div><div class="kv"><span class="kv-k">Verification</span><span class="kv-v" style="text-transform:capitalize">'+(p.verification_status||'unverified')+'</span></div><div class="kv"><span class="kv-k">Role</span><span class="kv-v" style="text-transform:capitalize">'+(p.role?__roleLbl(p.role):'—')+'</span></div></div></div>'+upgradeCard+'</div>');
 
   /* ── Your Connections ─────────────────────────────────────────────
      People you've reached out to (distinct recipients of your messages),
@@ -459,7 +460,7 @@ Pegasus.boot((st)=>{
       var rows=ids.slice(0,12).map(function(id){
         var p=byId[id]; if(!p)return'';
         var ini=(p.full_name||'?').split(' ').map(function(w){return w[0];}).slice(0,2).join('');
-        var rl=(p.role||'member').replace(/_/g,' ');
+        var rl=__roleLbl(p.role);
         return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px">'+
           '<div style="width:34px;height:34px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(58,143,232,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue-lt);flex-shrink:0">'+ini+'</div>'+
           '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+Pegasus.esc(p.full_name||'Member')+'</div>'+

@@ -207,7 +207,7 @@
 </div>
 
 <!-- Closing CTA -->
-<section class="xp-cta-band">
+<section class="xp-cta-band" id="xpCtaBand">
   <h2>Ready to be part of it?</h2>
   <p>Your profile is how you become visible inside Pegasus. Without it you can explore — with it, you can participate.</p>
   <div class="xp-cta-row">
@@ -218,6 +218,13 @@
 </section>
 
 <div id="footer"></div>
+<script>/* Signed-in members get their next steps, not a signup pitch. */
+(function(){try{var raw=localStorage.getItem('pegasus.auth');if(!raw)return;var pj=JSON.parse(raw);if(!(pj&&(pj.access_token||(pj.currentSession&&pj.currentSession.access_token))))return;
+var b=document.getElementById('xpCtaBand');if(!b)return;var slug='';try{slug=localStorage.getItem('peg_slug')||'';}catch(_){}
+b.innerHTML='<h2>Keep building your presence.</h2><p>Your profile, business pages and presentations are how the right people find you.</p><div class="xp-cta-row">'+
+'<a class="btn btn-pri btn-lg" href="'+(slug?'/u/'+encodeURIComponent(slug):'/profile-edit.html')+'">My Profile</a>'+
+'<a class="btn btn-ghost btn-lg" href="/members.html">Members Network</a>'+
+'<a class="btn btn-ghost btn-lg" href="/showcase.html">Present something</a></div>';}catch(_){}})();</script>
 <script src="/js/pegasus-config.js"></script>
 <script src="/js/pegasus-supabase.js"></script>
 <script src="/js/pegasus-entitlements.js"></script>
@@ -251,10 +258,11 @@ document.getElementById('footer').outerHTML=Pegasus.footer();
   try{
     var sb=await window.PegSB.ready;
     try{
-      var pp=await sb.from('profiles').select('profile_slug,full_name,role,professional_title,company_name,location,avatar_url,headline').not('profile_slug','is',null).not('full_name','is',null).limit(48);
+      var __RL={borrower:'Growth Partner',agent:'Real Estate Professional',investor:'Capital Partner',rwa_partner:'RWA Partner',business_funding_provider:'Business Funding Provider'};function __roleLbl(r){r=String(r||'').toLowerCase();return __RL[r]||(r||'member').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+      var pp=await sb.from('profiles').select('profile_slug,full_name,role,professional_title,company_name,location,avatar_url,headline,profile_completion').not('profile_slug','is',null).not('full_name','is',null).gte('profile_completion',50).order('profile_completion',{ascending:false}).limit(48);
       if(pp && !pp.error && Array.isArray(pp.data)) pp.data.forEach(function(p){
         items.push({cat:'member',label:'Member',href:'/u/'+encodeURIComponent(p.profile_slug),name:p.full_name||'Pegasus Member',
-          sub:[p.professional_title||(p.role||'').replace(/_/g,' '),p.company_name,p.location].filter(Boolean).join(' · '),
+          sub:[p.professional_title||__roleLbl(p.role),p.company_name,p.location].filter(Boolean).join(' · '),
           action:'View profile →',owner:('person:'+p.profile_slug).toLowerCase()});
       });
     }catch(_){ }
@@ -343,12 +351,12 @@ document.getElementById('footer').outerHTML=Pegasus.footer();
 /* 8 ecosystem areas */
 var AREAS=[
   ['◈','Capital Network','Where capital and opportunity meet. Lenders, funds, and capital partners aligned with real deals.','Unlocks: requests, matching, introductions','/category-capital-providers.html'],
-  ['◎','Deal Rooms','Private institutional workspaces to coordinate a financing — documents, workflow, and alignment in one place.','Unlocks after you join','/how-it-works.html'],
+  ['◎','Deal Rooms','Private institutional workspaces to coordinate a financing — documents, workflow, and alignment in one place.','Unlocks after you join','/deal-rooms.html'],
   ['⬡','Member Network','A private network of verified professionals across capital, real estate, and growth.','Members only — explore categories now','/members.html'],
   ['◆','Capital Sessions','Closed-door educational sessions on capital, structure, and strategy.','Public sessions visible · member access','/capital-sessions.html'],
-  ['★','Showcase Opportunities','A curated place to present what you offer and what you\u2019re looking for to aligned participants.','Unlocks after you join','/category-capital-seekers.html'],
+  ['★','Showcase Opportunities','A curated place to present what you offer and what you\u2019re looking for to aligned participants.','Unlocks after you join','/showcase.html'],
   ['⬢','RWA / Tokenization','A compliance-first network for real-world assets and tokenized real estate.','Explore the category now','/category-rwa.html'],
-  ['◷','Professional Services','Attorneys, CPAs, advisors, insurance, title & escrow — the people who make deals real.','Explore who participates','/explore.html'],
+  ['◷','Professional Services','Attorneys, CPAs, advisors, insurance, title & escrow — the people who make deals real.','Explore who participates','/businesses/services'],
   ['→','Business Capital','Working capital and commercial financing for operating businesses — separate from real estate lending.','Explore the category now','/business-capital-funding.html'],
 ];
 document.getElementById('areas').innerHTML=AREAS.map(function(a){
