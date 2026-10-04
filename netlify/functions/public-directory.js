@@ -3,9 +3,67 @@
 // (category / role) chips and dedicated landing pages for SEO. People are REAL,
 // consented members only — grouped by their own public fields, never fabricated.
 
-import { classifyPerson, buildPeopleSections, roleLabel, sectionOf } from "./lib/person-roles.js";
-
 const ORIGIN="https://pegasuscapitalnetwork.com";
+
+// ── People taxonomy (inlined; Netlify functions do not reliably bundle a
+//    cross-file ESM import, so keep each function self-contained). ──
+const PERSON_SECTIONS = [
+  { slug:"lenders",    label:"Lenders & Loan Officers" },
+  { slug:"advisors",   label:"Brokers & Advisors" },
+  { slug:"realestate", label:"Real Estate" },
+  { slug:"investors",  label:"Investors & Capital" },
+  { slug:"services",   label:"Services & Operators" },
+  { slug:"other",      label:"Other" },
+];
+const PERSON_ROLES = [
+  { slug:"loan-officers",       label:"Loan Officers",                 section:"lenders",    match:["loan officer","loan originator","mlo","mortgage loan originator"] },
+  { slug:"real-estate-agents",  label:"Real Estate Agents & Brokers",  section:"realestate", match:["real estate agent","realtor","real estate broker","real estate salesperson"] },
+  { slug:"mortgage-brokers",    label:"Mortgage Brokers",              section:"advisors",   match:["mortgage broker","broker"] },
+  { slug:"developers",          label:"Developers",                    section:"realestate", match:["real estate developer","developer","homebuilder","builder"] },
+  { slug:"property-managers",   label:"Property Managers",             section:"realestate", match:["property manager","property management"] },
+  { slug:"private-lenders",     label:"Private & Hard Money Lenders",  section:"lenders",    match:["private lender","hard money","bridge lender"] },
+  { slug:"financial-advisors",  label:"Financial Advisors & Planners", section:"advisors",   match:["financial advisor","financial planner","wealth manager","wealth advisor","wealth management","financial advisory"] },
+  { slug:"capital-advisors",    label:"Capital Advisors",              section:"advisors",   match:["capital strategist","capital advisor","capital placement","investment banker","capital markets"] },
+  { slug:"fund-managers",       label:"Fund Managers",                 section:"investors",  match:["fund manager","general partner","portfolio manager"] },
+  { slug:"family-offices",      label:"Family Offices",                section:"investors",  match:["family office"] },
+  { slug:"investors",           label:"Investors & LPs",               section:"investors",  match:["investor","limited partner","syndicator","syndication"] },
+  { slug:"appraisers",          label:"Appraisers",                    section:"services",   match:["appraiser","appraisal"] },
+  { slug:"attorneys",           label:"Attorneys",                     section:"services",   match:["attorney","lawyer","legal counsel"] },
+  { slug:"accountants",         label:"Accountants & CPAs",            section:"services",   match:["cpa","accountant","accounting"] },
+  { slug:"title-escrow",        label:"Title & Escrow Officers",       section:"services",   match:["escrow","title officer"] },
+  { slug:"proptech",            label:"Proptech / Fintech",            section:"services",   match:["proptech","fintech","tokenization","rwa"] },
+  { slug:"bankers",             label:"Bankers",                       section:"lenders",    match:["banker"] },
+  { slug:"lenders",             label:"Lenders",                       section:"lenders",    match:["lender","lending"] },
+  { slug:"capital-seekers",     label:"Capital Seekers",               section:"investors",  match:["borrower","seeking capital","capital seeker"] },
+  { slug:"founders",            label:"Founders & Operators",          section:"services",   match:["founder","ceo","entrepreneur","startup","intrapreneur","operator","owner","principal"] },
+];
+const PR_BY_SLUG = Object.fromEntries(PERSON_ROLES.map(r => [r.slug, r]));
+function personHaystack(p){
+  const extra = Array.isArray(p && p.additional_roles) ? p.additional_roles.join(" ") : "";
+  return [p && p.role, p && p.professional_title, p && p.headline, extra].filter(Boolean).join(" ").toLowerCase().replace(/_/g," ");
+}
+function classifyPerson(p){
+  const h = personHaystack(p);
+  if (h.trim()) { for (const r of PERSON_ROLES) { for (const kw of r.match) { if (h.includes(kw)) return r.slug; } } }
+  return "other";
+}
+function sectionOf(roleSlug){ return (PR_BY_SLUG[roleSlug] && PR_BY_SLUG[roleSlug].section) || "other"; }
+function buildPeopleSections(rows){
+  const counts = {};
+  for (const row of rows) {
+    const role = row._role || classifyPerson(row);
+    const sec = sectionOf(role);
+    (counts[sec] = counts[sec] || {})[role] = (counts[sec][role] || 0) + 1;
+  }
+  const out = [];
+  for (const s of PERSON_SECTIONS) {
+    const rc = counts[s.slug]; if (!rc) continue;
+    const subs = PERSON_ROLES.filter(r => r.section === s.slug && rc[r.slug]).map(r => ({ slug:r.slug, label:r.label, n:rc[r.slug] }));
+    const total = subs.reduce((a,x)=>a+x.n,0);
+    if (total > 0) out.push({ slug:s.slug, label:s.label, total, subs });
+  }
+  return out;
+}
 const PAGE_SIZE=48;
 const PEOPLE_MAX=1000;
 function env(name){return globalThis.Netlify?.env?.get(name)||"";}
