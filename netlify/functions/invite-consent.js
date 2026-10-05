@@ -11,12 +11,13 @@ function cfg(){
 }
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 function cleanToken(v){const s=String(v||"").trim();return /^[A-Za-z0-9_-]{10,128}$/.test(s)?s:"";}
-async function rpc(fn,token){
+function cleanEmail(v){const s=String(v||"").trim().toLowerCase();return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s)?s:"";}
+async function rpc(fn,body){
   const {url,key}=cfg();
   const res=await fetch(url+"/rest/v1/rpc/"+fn,{
     method:"POST",
     headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Accept:"application/json"},
-    body:JSON.stringify({p_token:token})
+    body:JSON.stringify(body)
   });
   if(!res.ok) return {ok:false};
   try{return await res.json();}catch(_){return {ok:false};}
@@ -39,18 +40,22 @@ export default async (request)=>{
   const u=new URL(request.url);
   const isOptOut=/\/(unsubscribe|no)\b/.test(u.pathname) || u.searchParams.get("action")==="unsubscribe";
   const token=cleanToken(u.searchParams.get("t")||u.searchParams.get("token"));
-  if(!token){
+  const email=cleanEmail(u.searchParams.get("e")||u.searchParams.get("email"));
+  if(!token && !email){
     return resp(page("Link not valid","This link isn’t valid",
       '<p>The link may be incomplete. Please use the button from your invitation email, or just create your profile directly.</p>'+
       '<a class="btn" href="/signup.html">Create my free profile</a>'),400);
   }
+  const consentFn=token?"record_invite_consent":"record_invite_consent_by_email";
+  const optoutFn=token?"record_invite_optout":"record_invite_optout_by_email";
+  const arg=token?{p_token:token}:{p_email:email};
   try{
     if(isOptOut){
-      await rpc("record_invite_optout",token);
+      await rpc(optoutFn,arg);
       return resp(page("Unsubscribed","You’re unsubscribed",
         '<p>You won’t receive further invitations from Pegasus Capital Network. No profile will be created for you.</p>'));
     }
-    const r=await rpc("record_invite_consent",token);
+    const r=await rpc(consentFn,arg);
     if(!r||r.ok!==true){
       return resp(page("Link not valid","We couldn’t confirm that link",
         '<p>The link may have expired or already been used. You can still create your profile directly — it only takes two minutes.</p>'+
