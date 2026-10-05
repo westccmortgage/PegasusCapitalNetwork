@@ -391,5 +391,7 @@
 
 # Concierge profile builder — provisions accounts + sends activation links to
 # invitees who clicked "Yes" (consented). Idempotent; guarded by provisioned_at.
-[functions."concierge-build"]
-  schedule = "*/15 * * * *"
+# Schedule PAUSED until the activation-email sender (RESEND_API_KEY account /
+# sending domain) is confirmed working. Re-add `schedule = "*/15 * * * *"` to resume.
+# [functions."concierge-build"]
+#   schedule = "*/15 * * * *"
