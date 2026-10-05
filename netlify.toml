@@ -388,3 +388,8 @@
 # ════════════════════════════════════════════════════════════════════════════
 [functions."scheduled-health-check"]
   schedule = "0 15 * * 1"
+
+# Concierge profile builder — provisions accounts + sends activation links to
+# invitees who clicked "Yes" (consented). Idempotent; guarded by provisioned_at.
+[functions."concierge-build"]
+  schedule = "*/15 * * * *"
