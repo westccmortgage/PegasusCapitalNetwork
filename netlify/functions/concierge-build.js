@@ -72,7 +72,9 @@ function emailText(link, unsub){
 }
 
 async function sendEmail(email, link){
-  const key = need("RESEND_API_KEY");
+  // Dedicated key for the verified sending account (falls back to the shared one).
+  const key = process.env.PEGASUS_RESEND_API_KEY || process.env.RESEND_API_KEY;
+  if(!key) throw new Error("Missing PEGASUS_RESEND_API_KEY");
   const unsub = ORIGIN+"/unsubscribe?e="+encodeURIComponent(email);
   const res = await fetch("https://api.resend.com/emails", {
     method:"POST",
