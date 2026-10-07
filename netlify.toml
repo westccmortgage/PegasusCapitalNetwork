@@ -286,6 +286,12 @@
   to = "/members.html"
   status = 200
 
+# Network feed (public, indexable). /feed?post=<id> is a post permalink.
+[[redirects]]
+  from = "/feed"
+  to = "/feed.html"
+  status = 200
+
 # No "/* -> /index.html" catch-all: multi-page static site, not an SPA.
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -331,6 +337,11 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
     X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/feed.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/build-info.json"

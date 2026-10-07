@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Network Feed — Pegasus Capital Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/feed">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Network Feed — Pegasus Capital Network"><meta property="og:description" content="What lenders, brokers, advisors, and real estate professionals across the Pegasus network are working on, offering, and hosting."><meta property="og:url" content="https://pegasuscapitalnetwork.com/feed"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Network Feed — Pegasus Capital Network"><meta name="twitter:description" content="What lenders, brokers, advisors, and real estate professionals across the Pegasus network are working on, offering, and hosting."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="The Pegasus Capital Network feed: updates, deals, market views, and upcoming events from lenders, brokers, advisors, and real estate professionals.">
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+<style>
+/* ─── Feed layout ───────────────────────────────────────────────────────── */
+.fd-shell{max-width:1120px;margin:0 auto;padding:var(--sp-lg) var(--sp-lg) var(--sp-3xl)}
+.fd-head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-lg);margin:var(--sp-xs) 0 var(--sp-md);flex-wrap:wrap}
+.fd-head h1{font-family:var(--serif);font-weight:400;font-size:clamp(24px,2.6vw,32px);color:var(--text);margin:0;letter-spacing:-.015em}
+.fd-head p{font-size:13px;color:var(--text3);margin:4px 0 0;max-width:640px;line-height:1.6}
+.fd-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--sp-lg);align-items:start}
+@media(max-width:980px){.fd-grid{grid-template-columns:1fr}.fd-rail{order:-1}}
+.fd-main{display:flex;flex-direction:column;gap:var(--sp-md);min-width:0}
+.fd-rail{display:flex;flex-direction:column;gap:var(--sp-md);position:sticky;top:84px}
+@media(max-width:980px){.fd-rail{position:static}}
+
+/* ─── Filters ───────────────────────────────────────────────────────────── */
+.fd-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:var(--sp-sm)}
+.fd-pill{background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all var(--dur-fast);font-family:inherit}
+.fd-pill:hover{border-color:var(--border2);color:var(--text)}
+.fd-pill.on{background:var(--blue-dim);border-color:rgba(29,90,158,.30);color:var(--blue)}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────── */
+.fd-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:var(--sh-card)}
+.fd-card-b{padding:16px 18px}
+.fd-av{width:42px;height:42px;border-radius:50%;flex:none;background:linear-gradient(135deg,#162E52,#1D5A9E);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:600;overflow:hidden;text-decoration:none}
+.fd-av img{width:100%;height:100%;object-fit:cover}
+.fd-av.sm{width:34px;height:34px;font-size:12px}
+
+/* composer */
+.fd-comp-top{display:flex;gap:12px;align-items:flex-start}
+.fd-comp-t{font-family:var(--serif);font-size:17px;color:var(--text);margin:0 0 2px}
+.fd-comp-sub{font-size:11.5px;color:var(--text3);line-height:1.5}
+.fd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 10px}
+.fd-chip{font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all var(--dur-fast)}
+.fd-chip:hover{border-color:var(--border2);color:var(--text2)}
+.fd-chip.on{background:var(--blue-dim);border-color:rgba(29,90,158,.3);color:var(--blue)}
+.fd-in{width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.5;outline:none;transition:border-color var(--dur-fast)}
+.fd-in:focus{border-color:var(--blue)}
+.fd-in.title{font-weight:600;margin-bottom:8px}
+.fd-ta{min-height:92px;resize:vertical}
+.fd-row{display:flex;gap:8px;margin-top:8px}
+.fd-row .fd-in{font-family:var(--mono);font-size:12px}
+@media(max-width:560px){.fd-row{flex-direction:column}}
+.fd-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px;flex-wrap:wrap}
+.fd-attach{border:none;background:none;color:var(--blue);font-size:11.5px;font-weight:500;cursor:pointer;padding:0;margin-right:auto;font-family:inherit}
+.fd-attach:hover{color:var(--blue-lt)}
+.fd-count{font-size:10px;font-family:var(--mono);color:var(--text4)}
+.fd-err{font-size:11.5px;color:var(--gold);margin-top:8px;min-height:13px}
+.fd-ev-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+
+/* guest card */
+.fd-guest{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.fd-guest-t{font-family:var(--serif);font-size:18px;color:var(--text);margin:0 0 3px}
+.fd-guest-s{font-size:12.5px;color:var(--text3);line-height:1.55}
+.fd-guest-a{display:flex;gap:8px;margin-left:auto}
+
+/* post */
+.fd-post-h{display:flex;gap:12px;align-items:flex-start}
+.fd-post-who{flex:1;min-width:0}
+.fd-post-name{font-size:14px;font-weight:600;color:var(--text);text-decoration:none}
+.fd-post-name:hover{color:var(--blue)}
+.fd-post-role{font-size:11.5px;color:var(--text3);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd-post-meta{font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fd-type{display:inline-block;font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:12px;background:var(--bg3);color:var(--text2)}
+.fd-type.event{background:rgba(142,112,32,.14);color:var(--gold)}
+.fd-type.deal,.fd-type.offering{background:rgba(12,143,92,.10);color:var(--green)}
+.fd-type.market_view{background:var(--blue-dim);color:var(--blue)}
+.fd-post-title{font-family:var(--serif);font-size:19px;font-weight:500;color:var(--text);margin:12px 0 4px;line-height:1.3;letter-spacing:-.01em}
+.fd-post-txt{font-size:14px;color:var(--text);line-height:1.65;margin-top:10px;white-space:pre-wrap;word-break:break-word}
+.fd-post-txt a{color:var(--blue);text-decoration:none}
+.fd-post-txt a:hover{text-decoration:underline}
+.fd-post-txt.clamp{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.fd-more{border:none;background:none;color:var(--blue);font-size:12px;cursor:pointer;padding:4px 0;font-family:inherit}
+.fd-img{display:block;margin-top:12px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--border)}
+.fd-img img{width:100%;max-height:420px;object-fit:cover;display:block}
+.fd-linkcard{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);text-decoration:none;color:var(--text2);font-size:12.5px;transition:border-color var(--dur-fast)}
+.fd-linkcard:hover{border-color:var(--blue);color:var(--text)}
+.fd-linkcard .dom{font-family:var(--mono);font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.fd-event{display:flex;gap:14px;align-items:center;margin-top:12px;padding:12px 14px;border:1px solid rgba(142,112,32,.28);border-radius:var(--r2);background:rgba(142,112,32,.06)}
+.fd-evdate{flex:none;width:52px;text-align:center;border-radius:var(--r1);background:var(--bg1);border:1px solid var(--border);padding:5px 0}
+.fd-evdate .m{font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.fd-evdate .d{font-family:var(--serif);font-size:22px;line-height:1;color:var(--text);margin-top:2px}
+.fd-evinfo{flex:1;min-width:0}
+.fd-evinfo .w{font-size:13px;color:var(--text);font-weight:500}
+.fd-evinfo .l{font-size:11.5px;color:var(--text3);margin-top:2px}
+.fd-evbtn{flex:none}
+.fd-post-f{display:flex;align-items:center;gap:6px;margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}
+.fd-act{border:1px solid transparent;background:none;color:var(--text3);font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r1);font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all var(--dur-fast)}
+.fd-act:hover{background:var(--bg2);color:var(--text)}
+.fd-act.liked{color:#c0392b}
+.fd-act.del{margin-left:auto;color:var(--text4)}
+.fd-act.del:hover{color:var(--gold)}
+.fd-empty{padding:var(--sp-xl);text-align:center;color:var(--text3);font-size:13px;line-height:1.6}
+.fd-loadmore{align-self:center}
+
+/* rail */
+.fd-rail-t{font-size:9px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.fd-ev-item{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none}
+.fd-ev-item:last-child{border-bottom:none}
+.fd-ev-item .fd-evdate{width:44px;padding:4px 0}
+.fd-ev-item .fd-evdate .d{font-size:18px}
+.fd-ev-item .t{font-size:13px;color:var(--text);font-weight:500;line-height:1.35}
+.fd-ev-item .h{font-size:11px;color:var(--text3);margin-top:2px}
+.fd-ev-item:hover .t{color:var(--blue)}
+.fd-rail-cta{font-size:12.5px;color:var(--text2);line-height:1.6}
+.fd-rail-cta ul{margin:8px 0 12px;padding-left:18px}
+.fd-rail-cta li{margin:3px 0}
+.fd-back{font-size:12px;color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div id="nav"></div>
+
+<div class="fd-shell">
+  <div class="fd-head">
+    <div>
+      <h1>Network Feed</h1>
+      <p>What lenders, brokers, advisors, and real estate professionals across Pegasus are working on, offering, and hosting. Post to be seen by the whole network.</p>
+    </div>
+  </div>
+
+  <div class="fd-grid">
+    <div class="fd-main">
+      <div id="fdComposer"></div>
+      <div class="fd-filters" id="fdFilters"></div>
+      <div id="fdList" style="display:flex;flex-direction:column;gap:var(--sp-md)"><div class="fd-card"><div class="fd-empty">Loading the network…</div></div></div>
+      <button class="btn btn-ghost btn-sm fd-loadmore" id="fdMore" style="display:none">Load more</button>
+    </div>
+    <aside class="fd-rail">
+      <div class="fd-card"><div class="fd-card-b" id="fdEvents"><div class="fd-rail-t">Upcoming events</div><div class="fd-empty" style="padding:8px 0">Loading…</div></div></div>
+      <div class="fd-card"><div class="fd-card-b fd-rail-cta" id="fdCta"></div></div>
+    </aside>
+  </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.boot(async function(){
+  Pegasus.mountPublic('Feed');
+  document.getElementById('footer').outerHTML = Pegasus.footer();
+
+  var esc=Pegasus.esc;
+  var ORIGIN='https://pegasuscapitalnetwork.com';
+  var PAGE=20;
+
+  /* ── Post types ─────────────────────────────────────────────────────────── */
+  var TYPES=[
+    ['update','Update'],['event','Event / Webinar'],['deal','Deal / Offer'],['market_view','Market view'],
+    ['project','Project'],['story','Story'],['referral','Referral request'],['working_on','Working on']
+  ];
+  var LBL={update:'Update',event:'Event',deal:'Deal / Offer',offering:'Offer',market_view:'Market view',project:'Project',story:'Story',referral:'Referral request',working_on:'Working on',showcase:'Showcase',seeking_intro:'Seeking intro'};
+  var FILTERS=[['','All'],['event','Events'],['deal','Deals & Offers'],['market_view','Market views'],['project','Projects'],['story','Stories'],['referral','Referrals']];
+  var PLACEHOLDER={
+    update:'Share what you’re working on, a win, or something worth seeing.',
+    event:'What is the event about, who should attend, and how to join.',
+    deal:'Describe the deal or offer: asset type, size, terms, market, what you’re looking for.',
+    market_view:'Your read on rates, capital markets, or a local market.',
+    project:'Tell the network about a project you’re building or financing.',
+    story:'A story from a recent transaction or client.',
+    referral:'Who are you looking to be introduced to, and why?',
+    working_on:'What are you focused on this week?'
+  };
+
+  /* ── Helpers ────────────────────────────────────────────────────────────── */
+  function initials(n){ var w=(n||'?').trim().split(/\s+/); return ((w[0]?w[0][0]:'')+(w[1]?w[1][0]:'')).toUpperCase()||'•'; }
+  function avHTML(av,name,color,cls){
+    var style=color?' style="background:'+esc(color)+'"':'';
+    return '<span class="fd-av '+(cls||'')+'"'+style+'>'+(av?'<img src="'+esc(av)+'" alt="" loading="lazy">':esc(initials(name)))+'</span>';
+  }
+  function profileHref(p){ return p.author_slug ? '/u/'+encodeURIComponent(p.author_slug) : '/public-profile.html?id='+encodeURIComponent(p.user_id); }
+  function ago(ts){ try{ var d=Math.max(0,(Date.now()-new Date(ts).getTime())/1000); if(d<60)return 'just now'; if(d<3600)return Math.floor(d/60)+'m ago'; if(d<86400)return Math.floor(d/3600)+'h ago'; if(d<86400*14)return Math.floor(d/86400)+'d ago'; return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }catch(e){ return ''; } }
+  function safeUrl(u){ u=(u||'').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u='https://'+u.replace(/^\/+/,''); return Pegasus.safeUrl?Pegasus.safeUrl(u):esc(u); }
+  function domainOf(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return (u||'').replace(/^https?:\/\//,'').split('/')[0]; } }
+  /* Escape text, then turn bare URLs into links (escaped before wrapping). */
+  function linkify(t){
+    var re=/(https?:\/\/[^\s<>"']+)/g, out='', last=0, m;
+    while((m=re.exec(t))){ out+=esc(t.slice(last,m.index)); out+='<a href="'+safeUrl(m[1])+'" target="_blank" rel="noopener noreferrer nofollow">'+esc(m[1].replace(/^https?:\/\//,'').slice(0,60))+'</a>'; last=m.index+m[1].length; }
+    return out+esc(t.slice(last));
+  }
+  function evParts(ts){ var d=new Date(ts); return { m:d.toLocaleDateString('en-US',{month:'short'}), d:d.getDate(), when:d.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) }; }
+  function rpcMissing(err){ var c=err&&(err.code||''); var m=(((err&&err.message)||'')+' '+((err&&err.details)||'')).toLowerCase(); return c==='PGRST202'||c==='404'||/does not exist|could not find the function|schema cache|not found/.test(m); }
+
+  /* ── Session ────────────────────────────────────────────────────────────── */
+  var sb=null; try{ sb=await window.PegSB.ready; }catch(e){}
+  var session=null; try{ var sres=sb?await sb.auth.getSession():null; session=sres&&sres.data&&sres.data.session; }catch(e){}
+  var MY_UID=session&&session.user&&session.user.id||null;
+  var ME=(typeof Store!=='undefined'&&Store.get&&Store.get().profile)||{};
+  var IS_ADMIN=false; try{ IS_ADMIN=!!(typeof Store!=='undefined'&&Store.isAdmin&&Store.isAdmin()); }catch(e){}
+
+  /* ── State from URL ─────────────────────────────────────────────────────── */
+  var qs=new URLSearchParams(location.search);
+  var filter=(qs.get('type')||'').replace(/[^a-z_]/g,'');
+  var permalink=(qs.get('post')||'').replace(/[^0-9a-f-]/gi,'');
+  var postType='update', mediaOpen=false, before=null, exhausted=false, loading=false;
+
+  /* ── Composer ───────────────────────────────────────────────────────────── */
+  function renderComposer(){
+    var host=document.getElementById('fdComposer');
+    if(!MY_UID){
+      host.innerHTML='<div class="fd-card"><div class="fd-card-b fd-guest">'+
+        '<div><div class="fd-guest-t">Be seen by the whole network</div><div class="fd-guest-s">Members post deals, market views, projects, and events here — and on their public profile. Free to join.</div></div>'+
+        '<div class="fd-guest-a"><a class="btn btn-ghost btn-sm" href="/signin.html?next=%2Ffeed">Sign In</a><a class="btn btn-pri btn-sm" href="/signup.html">Create Free Profile</a></div>'+
+        '</div></div>';
+      return;
+    }
+    var chips=TYPES.map(function(t){ return '<button type="button" class="fd-chip'+(t[0]===postType?' on':'')+'" data-t="'+t[0]+'">'+esc(t[1])+'</button>'; }).join('');
+    var isEv=postType==='event';
+    var evFields=isEv?'<div class="fd-row"><input class="fd-in" id="fdEvAt" type="datetime-local" aria-label="Event date and time"><input class="fd-in" id="fdEvLoc" type="text" maxlength="160" placeholder="Location or “Online”"></div><div class="fd-ev-note">Events appear in the feed and in the Upcoming Events calendar. Add a registration link below.</div>':'';
+    var media=(mediaOpen||isEv)?'<div class="fd-row"><input class="fd-in" id="fdImg" type="url" placeholder="Image URL (optional)"><input class="fd-in" id="fdLink" type="url" placeholder="'+(isEv?'Registration / details link':'Link or video URL (optional)')+'"></div>':'';
+    host.innerHTML='<div class="fd-card"><div class="fd-card-b">'+
+      '<div class="fd-comp-top">'+avHTML(ME.avatar_url,ME.full_name||'Me',ME.avatar_color,'')+
+      '<div><div class="fd-comp-t">Share with the network</div><div class="fd-comp-sub">Posts are public: shown here, on your profile, and to search engines. Keep it professional — this is your advertising.</div></div></div>'+
+      '<div class="fd-chips">'+chips+'</div>'+
+      '<input class="fd-in title" id="fdTitle" type="text" maxlength="140" placeholder="'+(isEv?'Event title':'Headline (optional)')+'">'+
+      '<textarea class="fd-in fd-ta" id="fdTa" maxlength="1000" placeholder="'+esc(PLACEHOLDER[postType]||PLACEHOLDER.update)+'"></textarea>'+
+      evFields+media+
+      '<div class="fd-foot"><button class="fd-attach" id="fdAttach" type="button">'+(isEv?'':(mediaOpen?'– Hide photo / link':'+ Add photo / link'))+'</button><span class="fd-count" id="fdCount">0 / 1000</span><button class="btn btn-pri btn-sm" id="fdPost">'+(isEv?'Post Event':'Post to Feed')+'</button></div>'+
+      '<div class="fd-err" id="fdErr"></div>'+
+      '</div></div>';
+    host.querySelectorAll('.fd-chip').forEach(function(b){ b.onclick=function(){ var keep=val('fdTa'), kt=val('fdTitle'); postType=b.getAttribute('data-t'); renderComposer(); setVal('fdTa',keep); setVal('fdTitle',kt); upd(); }; });
+    var ta=document.getElementById('fdTa'); if(ta) ta.addEventListener('input',upd);
+    var at=document.getElementById('fdAttach'); if(at) at.onclick=function(){ var keep=val('fdTa'), kt=val('fdTitle'); mediaOpen=!mediaOpen; renderComposer(); setVal('fdTa',keep); setVal('fdTitle',kt); upd(); var t2=document.getElementById('fdTa'); if(t2) t2.focus(); };
+    var btn=document.getElementById('fdPost'); if(btn) btn.onclick=submit;
+  }
+  function val(id){ var e=document.getElementById(id); return e?e.value:''; }
+  function setVal(id,v){ var e=document.getElementById(id); if(e) e.value=v||''; }
+  function upd(){ var c=document.getElementById('fdCount'); if(c) c.textContent=val('fdTa').length+' / 1000'; }
+
+  async function submit(){
+    var btn=document.getElementById('fdPost'), err=document.getElementById('fdErr');
+    var txt=val('fdTa').trim(), title=val('fdTitle').trim(), img=val('fdImg').trim(), lnk=val('fdLink').trim();
+    var evAt=null, evLoc=null;
+    if(!txt){ err.textContent='Write something first.'; return; }
+    if(postType==='event'){
+      var raw=val('fdEvAt'); if(!raw){ err.textContent='Add the event date and time.'; return; }
+      var d=new Date(raw); if(isNaN(d.getTime())){ err.textContent='That date doesn’t look right.'; return; }
+      evAt=d.toISOString(); evLoc=val('fdEvLoc').trim()||null;
+      if(!title){ err.textContent='Give the event a title.'; return; }
+    }
+    btn.disabled=true; btn.textContent='Posting…'; err.textContent='';
+    try{
+      var rr=await sb.rpc('post_feed_item',{p_type:postType,p_content:txt,p_image:img||null,p_link:lnk||null,p_title:title||null,p_event_at:evAt,p_event_location:evLoc});
+      if(rr.error) throw rr.error;
+      var resp=rr.data||{};
+      if(!resp.ok){ err.textContent=resp.message||'Could not post right now.'; btn.disabled=false; btn.textContent='Post to Feed'; return; }
+      Pegasus.toast('✓','var(--green-dim)','Posted to the network','It’s live in the feed and on your profile.');
+      mediaOpen=false; postType='update'; renderComposer();
+      before=null; exhausted=false; await loadFeed(true); loadEvents();
+    }catch(e){ err.textContent='Could not post right now. Please try again.'; btn.disabled=false; btn.textContent='Post to Feed'; }
+  }
+
+  /* ── Filters ────────────────────────────────────────────────────────────── */
+  function renderFilters(){
+    var host=document.getElementById('fdFilters');
+    if(permalink){ host.innerHTML='<a class="fd-back" href="/feed">← Back to the full feed</a>'; return; }
+    host.innerHTML=FILTERS.map(function(f){ return '<button type="button" class="fd-pill'+(f[0]===filter?' on':'')+'" data-f="'+f[0]+'">'+esc(f[1])+'</button>'; }).join('');
+    host.querySelectorAll('.fd-pill').forEach(function(b){ b.onclick=function(){ filter=b.getAttribute('data-f'); var u=new URL(location.href); if(filter) u.searchParams.set('type',filter); else u.searchParams.delete('type'); u.searchParams.delete('post'); history.replaceState(null,'',u.pathname+u.search); renderFilters(); before=null; exhausted=false; loadFeed(true); }; });
+  }
+
+  /* ── Posts ──────────────────────────────────────────────────────────────── */
+  function postHTML(p){
+    var href=profileHref(p);
+    var role=[p.author_title,p.author_company].filter(Boolean).join(' · ');
+    var type=p.signal_type||'update';
+    var img=p.image_url?'<a class="fd-img" href="'+safeUrl(p.image_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+safeUrl(p.image_url)+'" alt="" loading="lazy"></a>':'';
+    var link=(p.link_url&&type!=='event')?'<a class="fd-linkcard" href="'+safeUrl(p.link_url)+'" target="_blank" rel="noopener noreferrer nofollow"><span>↗</span><span class="dom">'+esc(domainOf(p.link_url))+'</span></a>':'';
+    var ev='';
+    if(type==='event'&&p.event_at){
+      var e=evParts(p.event_at);
+      ev='<div class="fd-event"><div class="fd-evdate"><div class="m">'+esc(e.m)+'</div><div class="d">'+e.d+'</div></div>'+
+        '<div class="fd-evinfo"><div class="w">'+esc(e.when)+'</div>'+(p.event_location?'<div class="l">'+esc(p.event_location)+'</div>':'')+'</div>'+
+        (p.link_url?'<a class="btn btn-pri btn-sm fd-evbtn" href="'+safeUrl(p.link_url)+'" target="_blank" rel="noopener noreferrer nofollow">Register</a>':'')+'</div>';
+    }
+    var long=(p.content||'').length>420||((p.content||'').split('\n').length>7);
+    var canDel=MY_UID&&(p.user_id===MY_UID||IS_ADMIN);
+    return '<article class="fd-card" id="post-'+esc(p.id)+'"><div class="fd-card-b">'+
+      '<div class="fd-post-h"><a href="'+href+'" aria-label="'+esc(p.author_name)+'">'+avHTML(p.author_avatar,p.author_name,p.author_color,'')+'</a>'+
+      '<div class="fd-post-who"><a class="fd-post-name" href="'+href+'">'+esc(p.author_name)+'</a>'+(role?'<div class="fd-post-role">'+esc(role)+'</div>':'')+
+      '<div class="fd-post-meta"><span class="fd-type '+esc(type)+'">'+esc(LBL[type]||'Update')+'</span><span>'+esc(ago(p.created_at))+'</span>'+(p.author_location?'<span>· '+esc(p.author_location)+'</span>':'')+'</div></div></div>'+
+      (p.title?'<h3 class="fd-post-title">'+esc(p.title)+'</h3>':'')+
+      '<div class="fd-post-txt'+(long?' clamp':'')+'">'+linkify(p.content||'')+'</div>'+(long?'<button class="fd-more" type="button">Show more</button>':'')+
+      ev+img+link+
+      '<div class="fd-post-f">'+
+      '<button class="fd-act like'+(p.liked_by_me?' liked':'')+'" type="button" data-id="'+esc(p.id)+'"><span class="ic">'+(p.liked_by_me?'♥':'♡')+'</span><span class="n">'+(p.like_count||0)+'</span></button>'+
+      '<button class="fd-act share" type="button" data-id="'+esc(p.id)+'">↗ Share</button>'+
+      (canDel?'<button class="fd-act del" type="button" data-id="'+esc(p.id)+'" title="Delete post">✕ Delete</button>':'')+
+      '</div></div></article>';
+  }
+  function wire(root){
+    root.querySelectorAll('.fd-more').forEach(function(b){ b.onclick=function(){ var t=b.previousElementSibling; if(t) t.classList.remove('clamp'); b.remove(); }; });
+    root.querySelectorAll('.fd-act.like').forEach(function(b){ b.onclick=async function(){
+      if(!MY_UID){ location.href='/signin.html?next=%2Ffeed'; return; }
+      b.disabled=true;
+      try{ var r=await sb.rpc('toggle_signal_like',{p_id:b.getAttribute('data-id')}); var d=r&&r.data||{}; if(d.ok){ b.classList.toggle('liked',!!d.liked); b.querySelector('.ic').textContent=d.liked?'♥':'♡'; b.querySelector('.n').textContent=d.count||0; } }catch(e){}
+      b.disabled=false;
+    }; });
+    root.querySelectorAll('.fd-act.share').forEach(function(b){ b.onclick=async function(){
+      var url=ORIGIN+'/feed?post='+b.getAttribute('data-id');
+      try{ if(navigator.share){ await navigator.share({url:url}); return; } }catch(e){ return; }
+      try{ await navigator.clipboard.writeText(url); Pegasus.toast('✓','var(--green-dim)','Link copied','Share it anywhere — it opens this post.'); }catch(e){ prompt('Copy this link:',url); }
+    }; });
+    root.querySelectorAll('.fd-act.del').forEach(function(b){ b.onclick=async function(){
+      if(!confirm('Delete this post? This cannot be undone.')) return;
+      b.disabled=true;
+      try{ var r=await sb.rpc('delete_signal',{p_id:b.getAttribute('data-id')}); if(r&&r.data&&r.data.ok){ var a=b.closest('article'); if(a) a.remove(); loadEvents(); } else b.disabled=false; }catch(e){ b.disabled=false; }
+    }; });
+  }
+
+  async function loadFeed(reset){
+    if(loading) return; loading=true;
+    var list=document.getElementById('fdList'), more=document.getElementById('fdMore');
+    if(reset){ list.innerHTML='<div class="fd-card"><div class="fd-empty">Loading the network…</div></div>'; more.style.display='none'; }
+    var rows=[];
+    try{
+      var args=permalink?{p_limit:1,p_id:permalink}:{p_limit:PAGE,p_before:before,p_type:filter||null};
+      var r=sb?await sb.rpc('get_network_feed',args):null;
+      if(r&&r.error) throw r.error;
+      rows=(r&&Array.isArray(r.data))?r.data:[];
+    }catch(e){
+      if(reset) list.innerHTML='<div class="fd-card"><div class="fd-empty">The feed is unavailable right now. Please try again shortly.</div></div>';
+      loading=false; return;
+    }
+    if(reset) list.innerHTML='';
+    if(!rows.length&&reset){
+      list.innerHTML='<div class="fd-card"><div class="fd-empty">'+(permalink?'That post is no longer available. <a class="fd-back" href="/feed">See the full feed →</a>':(filter?'No '+esc((FILTERS.filter(function(f){return f[0]===filter;})[0]||['',''])[1].toLowerCase())+' yet — be the first to post one.':'Nothing here yet — be the first to post.'))+'</div></div>';
+    }else{
+      var frag=document.createElement('div'); frag.innerHTML=rows.map(postHTML).join('');
+      wire(frag);
+      while(frag.firstChild) list.appendChild(frag.firstChild);
+    }
+    if(rows.length){ before=rows[rows.length-1].created_at; }
+    exhausted=permalink||rows.length<PAGE;
+    more.style.display=exhausted?'none':'';
+    loading=false;
+  }
+  document.getElementById('fdMore').onclick=function(){ loadFeed(false); };
+
+  /* ── Upcoming events rail ───────────────────────────────────────────────── */
+  async function loadEvents(){
+    var host=document.getElementById('fdEvents');
+    var rows=[];
+    try{ var r=sb?await sb.rpc('get_upcoming_events',{p_limit:6}):null; rows=(r&&Array.isArray(r.data))?r.data:[]; }catch(e){}
+    var items=rows.map(function(e){
+      var d=evParts(e.event_at);
+      return '<a class="fd-ev-item" href="/feed?post='+esc(e.id)+'"><div class="fd-evdate"><div class="m">'+esc(d.m)+'</div><div class="d">'+d.d+'</div></div>'+
+        '<div><div class="t">'+esc(e.title||'Event')+'</div><div class="h">'+esc(d.when)+(e.event_location?' · '+esc(e.event_location):'')+'<br>'+esc(e.author_name)+(e.author_company?' · '+esc(e.author_company):'')+'</div></div></a>';
+    }).join('');
+    host.innerHTML='<div class="fd-rail-t">Upcoming events</div>'+(items||'<div class="fd-empty" style="padding:6px 0 10px;text-align:left">No events scheduled yet.</div>')+
+      '<div style="margin-top:12px">'+(MY_UID?'<button class="btn btn-ghost btn-sm" type="button" id="fdPostEv">+ Post an event</button>':'<a class="btn btn-ghost btn-sm" href="/signup.html">Post your event</a>')+'<a href="/events" style="display:inline-block;margin-left:10px;font-size:12px;color:var(--text3);text-decoration:none">Event pages →</a></div>';
+    var pe=document.getElementById('fdPostEv'); if(pe) pe.onclick=function(){ postType='event'; renderComposer(); window.scrollTo({top:0,behavior:'smooth'}); var t=document.getElementById('fdTitle'); if(t) t.focus(); };
+  }
+
+  /* ── Rail CTA ───────────────────────────────────────────────────────────── */
+  document.getElementById('fdCta').innerHTML=MY_UID
+    ? '<div class="fd-rail-t">Get more from your posts</div><ul><li>Lead with a headline — it’s what people scan.</li><li>Deals &amp; offers: asset, size, market, terms.</li><li>Events: title, date, and a registration link.</li><li>Add a link or image — posts with media get more attention.</li></ul><a class="btn btn-ghost btn-sm" href="'+(ME.profile_slug?'/u/'+esc(ME.profile_slug):'/profile.html')+'">View my public profile</a>'
+    : '<div class="fd-rail-t">Why post here</div><ul><li>Your posts show up on your public profile and in search.</li><li>Reach lenders, brokers, advisors, and agents in one place.</li><li>Post deals, market views, projects, and events — free.</li></ul><a class="btn btn-pri btn-sm" href="/signup.html">Create Free Profile</a>';
+
+  /* ── Go ─────────────────────────────────────────────────────────────────── */
+  renderComposer();
+  renderFilters();
+  loadFeed(true);
+  loadEvents();
+  if(permalink){ setTimeout(function(){ var a=document.getElementById('post-'+permalink); if(a) a.scrollIntoView({block:'start',behavior:'smooth'}); },400); }
+});
+</script>
+</body>
+</html>

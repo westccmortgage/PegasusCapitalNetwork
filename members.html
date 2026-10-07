@@ -635,8 +635,8 @@ Pegasus.boot(async function(){
       : '';
     var list=recent.length?'<div class="cb-sig-listhead">Latest updates</div><div class="cb-sig-list">'+recent.map(sigItem).join('')+'</div>':'';
     host.innerHTML='<div class="cb-sig">'+
-      '<div class="cb-sig-h"><div class="cb-sig-t">Share an update</div><div class="cb-sig-sub">Visible on your profile</div></div>'+
-      '<div class="cb-sig-hint">Post a short update, market view, story, project, photo, or referral request — show the network what you’re about.</div>'+
+      '<div class="cb-sig-h"><div class="cb-sig-t">Share an update</div><div class="cb-sig-sub">Profile + network feed</div></div>'+
+      '<div class="cb-sig-hint">Post a short update, market view, story, project, photo, or referral request — it appears on your profile and in the <a href="/feed" style="color:var(--blue);text-decoration:none">Network Feed</a>. Posting an event or a longer piece? <a href="/feed" style="color:var(--blue);text-decoration:none">Use the feed composer →</a></div>'+
       '<div class="cb-sig-chips">'+chips+'</div>'+
       '<textarea class="cb-sig-ta" id="cbSigTa" maxlength="280" placeholder="Share what you’re working on, a project update, a market insight, or something worth seeing."></textarea>'+
       media+
@@ -665,7 +665,7 @@ Pegasus.boot(async function(){
         if(rr.error) throw rr.error;
         var resp=rr.data||{};
         if(!resp.ok){ err.textContent=resp.message||'Could not post your update.'; post.disabled=false; post.textContent='Post Update'; return; }
-        Pegasus.toast('✓','var(--green-dim)','Update posted','It now appears on your profile.');
+        Pegasus.toast('✓','var(--green-dim)','Update posted','It now appears on your profile and in the network feed.');
         sigMediaOpen=false;
         await renderSignal();
       }catch(e){ err.textContent='Could not post your update right now.'; post.disabled=false; post.textContent='Post Update'; }
