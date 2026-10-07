@@ -102,6 +102,7 @@ async function peopleSitemap() {
     select: "profile_slug,updated_at,full_name,role,professional_title,headline,additional_roles",
     profile_slug: "not.is.null",
     full_name: "not.is.null",
+    status: "eq.active", // concierge-built profiles stay 'pending' until activated
     order: "updated_at.desc",
   });
   const seen = new Set();

@@ -257,6 +257,14 @@
   status = 200
   force = true
 
+# Concierge activation: GET shows a button, POST mints a fresh magic link
+# (one-time links in emails get consumed by mail security scanners).
+[[redirects]]
+  from = "/activate"
+  to = "/.netlify/functions/activate"
+  status = 200
+  force = true
+
 # ── Retired destinations — Deal Feeder + Get Started are no longer user-facing.
 #    force=true so these fire even though the .html files still exist on disk. ──
 [[redirects]]

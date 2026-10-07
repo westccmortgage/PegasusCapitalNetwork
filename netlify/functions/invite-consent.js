@@ -28,7 +28,7 @@ function page(title,heading,body){
     '<link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico">'+
     '<style>body{font-family:Arial,sans-serif;background:#0b1626;color:#f4f8fc;margin:0}.wrap{max-width:560px;margin:0 auto;padding:72px 24px;text-align:center}'+
     '.card{background:#101f36;border:1px solid #22344f;border-radius:18px;padding:40px 32px}h1{font-size:26px;margin:0 0 14px}p{color:#adbdd0;line-height:1.6;font-size:15px;margin:10px 0}'+
-    'a.btn{display:inline-block;margin-top:18px;background:#3a8fe8;color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:10px}'+
+    'a.btn,button.btn{display:inline-block;margin-top:18px;background:#3a8fe8;color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:10px;border:0;cursor:pointer;font-size:15px;font-family:inherit}'+
     '.mark{width:46px;height:46px;margin:0 auto 18px;display:block}</style></head><body><div class="wrap"><div class="card">'+
     '<img class="mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus">'+
     '<h1>'+esc(heading)+'</h1>'+body+
@@ -36,14 +36,30 @@ function page(title,heading,body){
 }
 function resp(html,status){return new Response(html,{status:status||200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store","X-Robots-Tag":"noindex, nofollow"}});}
 
+// Mail security scanners (Safe Links, Proofpoint, Mimecast…) open every link in
+// an email within seconds of delivery. A GET must therefore never change state:
+// GET renders a confirmation page; only the POST from its button (or an RFC 8058
+// one-click List-Unsubscribe POST) records consent / opt-out.
+function confirmForm(action,label,note){
+  return '<form method="post" action="'+esc(action)+'" style="margin:0">'+
+    '<button class="btn" type="submit">'+esc(label)+'</button></form>'+(note||'');
+}
+
 export default async (request)=>{
   const u=new URL(request.url);
+  const isPost=request.method==="POST";
   const isOptOut=/\/(unsubscribe|no)\b/.test(u.pathname) || u.searchParams.get("action")==="unsubscribe";
   const token=cleanToken(u.searchParams.get("t")||u.searchParams.get("token"));
   const email=cleanEmail(u.searchParams.get("e")||u.searchParams.get("email"));
   const isDigest=u.searchParams.get("digest")==="1";
+  const self=u.pathname+u.search;
   // Weekly digest opt-out (members): flag the profile; also stop invitations.
   if(isDigest && email){
+    if(!isPost){
+      return resp(page("Unsubscribe","Unsubscribe from the weekly digest?",
+        '<p>You’ll stop receiving the weekly network digest. Your profile and account stay as they are.</p>'+
+        confirmForm(self,"Unsubscribe")));
+    }
     try{ await rpc("record_digest_optout_by_email",{p_email:email}); await rpc("record_invite_optout_by_email",{p_email:email}); }catch(_){}
     return resp(page("Unsubscribed","You’re unsubscribed from the weekly digest",
       '<p>You won’t receive the weekly network digest any more. Your profile and account are unchanged — you can still sign in and use the network as usual.</p>'+
@@ -54,17 +70,28 @@ export default async (request)=>{
       '<p>The link may be incomplete. Please use the button from your invitation email, or just create your profile directly.</p>'+
       '<a class="btn" href="/signup.html">Create my free profile</a>'),400);
   }
-  const consentFn=token?"record_invite_consent":"record_invite_consent_by_email";
   const optoutFn=token?"record_invite_optout":"record_invite_optout_by_email";
   const arg=token?{p_token:token}:{p_email:email};
   try{
     if(isOptOut){
+      if(!isPost){
+        return resp(page("Unsubscribe","Unsubscribe from Pegasus invitations?",
+          '<p>We won’t send you further invitations, and no profile will be created for you.</p>'+
+          confirmForm(self,"Unsubscribe")));
+      }
       await rpc(optoutFn,arg);
       if(email){ try{ await rpc("record_digest_optout_by_email",{p_email:email}); }catch(_){} }
       return resp(page("Unsubscribed","You’re unsubscribed",
         '<p>You won’t receive further invitations from Pegasus Capital Network. No profile will be created for you.</p>'));
     }
-    const r=await rpc(consentFn,arg);
+    if(!isPost){
+      const unsub="/unsubscribe"+u.search;
+      return resp(page("Build my profile","Build my free Pegasus profile?",
+        '<p>Confirm and we’ll start a free Pegasus Capital Network profile for you, then email you a private link to review, complete, and publish it. Nothing is public until you activate it.</p>'+
+        confirmForm(self,"Yes, build my profile",
+          '<p style="margin-top:18px;font-size:13px">Not interested? <a href="'+esc(unsub)+'" style="color:#adbdd0">Unsubscribe</a></p>')));
+    }
+    const r=await rpc("confirm_invite_consent",token?{p_token:token}:{p_email:email});
     if(!r||r.ok!==true){
       return resp(page("Link not valid","We couldn’t confirm that link",
         '<p>The link may have expired or already been used. You can still create your profile directly — it only takes two minutes.</p>'+
@@ -72,7 +99,7 @@ export default async (request)=>{
     }
     const name=String(r.name||"").trim();
     return resp(page("Thanks","Thanks"+(name?", "+esc(name.split(/\s+/)[0]):"")+"!",
-      '<p>We’re setting up your free Pegasus Capital Network profile. You’ll get an email with a link to review, complete, and publish it — nothing goes live until you confirm.</p>'+
+      '<p>We’re setting up your free Pegasus Capital Network profile. Within about 15 minutes you’ll get an email with a private link to review, complete, and publish it — nothing goes live until you activate it.</p>'+
       '<p>Prefer to do it now?</p>'+
       '<a class="btn" href="/signup.html">Set it up myself</a>'));
   }catch(err){
