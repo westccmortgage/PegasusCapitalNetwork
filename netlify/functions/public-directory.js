@@ -77,6 +77,20 @@ function txt(v){return String(v||"").replace(/\s+/g," ").trim();}
 function role(v){return txt(v).replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());}
 function pageNum(v){const n=parseInt(v||"1",10);return Number.isFinite(n)&&n>0?Math.min(n,1000):1;}
 function cleanSlug(v){const s=String(v||"").trim();return /^[a-z0-9][a-z0-9-]*$/i.test(s)?s:"";}
+// US states + DC + PR. A state code is only ever used (URL, PostgREST filter,
+// H1) after it has been validated against this map via cleanState().
+const STATE_NAMES={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+function cleanState(v){const s=String(v||"").trim().toUpperCase();return Object.prototype.hasOwnProperty.call(STATE_NAMES,s)?s:"";}
+// "$1.2B" / "$504M" / "$9.8M" / "$900K" — compact USD for the HMDA badge.
+function fmtUsd(n){
+  const v=Number(n);if(!Number.isFinite(v)||v<=0) return "";
+  if(v>=1e9) return "$"+(v/1e9).toFixed(1)+"B";
+  if(v>=1e7) return "$"+Math.round(v/1e6)+"M";
+  if(v>=1e6) return "$"+(v/1e6).toFixed(1)+"M";
+  if(v>=1e3) return "$"+Math.round(v/1e3)+"K";
+  return "$"+Math.round(v);
+}
+function fmtInt(n){const v=Number(n);return Number.isFinite(v)?Math.round(v).toLocaleString("en-US"):"";}
 function parseTotal(cr){const m=String(cr||"").match(/\/(\d+)$/);return m?parseInt(m[1],10):null;}
 async function fetchRows(path,params,page){
   const {url,key}=cfg();
@@ -101,6 +115,31 @@ async function loadBusinessFacets(){
     const rows=await res.json();
     return Array.isArray(rows)?rows:[];
   }catch(_){return [];}
+}
+// State × section × category counts (small table) → "Browse by state" chips,
+// state-page counts. Rows only carry valid 2-letter states.
+async function loadStateFacets(){
+  try{
+    const {url,key}=cfg();
+    const qs=new URLSearchParams({select:"state_code,section_slug,cat_slug,n"});
+    const res=await fetch(url+"/rest/v1/public_business_state_facets?"+qs.toString(),{
+      headers:{apikey:key,Authorization:"Bearer "+key,Range:"0-9999","Range-Unit":"items"}
+    });
+    if(!res.ok) return [];
+    const rows=await res.json();
+    return Array.isArray(rows)?rows:[];
+  }catch(_){return [];}
+}
+// Per-state totals for the current section/category scope, largest first.
+function stateCounts(stateFacets,activeSection,activeSub){
+  const counts=new Map();
+  for(const f of stateFacets){
+    const st=cleanState(f.state_code);if(!st) continue;
+    if(activeSection!=="all"&&(cleanSlug(f.section_slug)||"other")!==activeSection) continue;
+    if(activeSub&&(cleanSlug(f.cat_slug)||"other")!==activeSub) continue;
+    counts.set(st,(counts.get(st)||0)+(Number(f.n)||0));
+  }
+  return counts;
 }
 function buildBusinessSections(facets){
   const map=new Map();
@@ -133,13 +172,15 @@ async function loadPeopleAll(){
   for(const r of rows) r._role=classifyPerson(r);
   return rows;
 }
-async function loadBusinesses(section,category,page){
+async function loadBusinesses(section,category,state,page){
   const params={
-    select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status,section_slug,cat_slug",
-    order:"name.asc"
+    select:"presence_type,name,slug,tagline,short_description,category,industry,location,market,status,section_slug,cat_slug,state_code,hmda_rank,hmda_volume_usd,hmda_count,unclaimed",
+    // Category/state landing pages lead with the largest lenders (HMDA 2025).
+    order:(state||category)?"hmda_rank.asc.nullslast,name.asc":"name.asc"
   };
   if(section&&section!=="all") params.section_slug="eq."+section;
   if(category) params.cat_slug="eq."+category;
+  if(state) params.state_code="eq."+state;
   try{
     return await fetchRows("public_business_directory",params,page);
   }catch(err){
@@ -150,32 +191,61 @@ async function loadBusinesses(section,category,page){
     },page);
   }
 }
-function dirPath(kind,section,sub){
+// state (validated 2-letter code) appends the pretty "/in/:st" suffix (lowercase).
+function dirPath(kind,section,sub,state){
   const base=kind==="people"?"/people":kind==="businesses"?"/businesses":"/"+kind;
-  if(section&&section!=="all"){let p=base+"/"+section;if(sub)p+="/"+sub;return p;}
-  return base;
+  let p=base;
+  if(section&&section!=="all"){p+="/"+section;if(sub)p+="/"+sub;}
+  if(state) p+="/in/"+state.toLowerCase();
+  return p;
 }
 // Shared section tabs + sub-chips for sectioned directories (businesses, people).
-function sectionNav(kind,sections,activeSection,activeSub){
+// When a state is active (businesses only) every tab/chip keeps the state so
+// navigating between sections/categories stays within that state.
+function sectionNav(kind,sections,activeSection,activeSub,state){
   if(!sections.length) return "";
   const grand=sections.reduce((a,s)=>a+s.total,0);
-  let secRow='<div class="biz-sections"><a href="'+esc(dirPath(kind))+'" class="'+(activeSection==="all"?"on":"")+'">All <span>'+grand+'</span></a>';
+  let secRow='<div class="biz-sections"><a href="'+esc(dirPath(kind,null,null,state))+'" class="'+(activeSection==="all"?"on":"")+'">All <span>'+grand+'</span></a>';
   for(const s of sections){
-    secRow+='<a href="'+esc(dirPath(kind,s.slug))+'" class="'+(activeSection===s.slug?"on":"")+'">'+esc(s.label)+' <span>'+s.total+'</span></a>';
+    secRow+='<a href="'+esc(dirPath(kind,s.slug,null,state))+'" class="'+(activeSection===s.slug?"on":"")+'">'+esc(s.label)+' <span>'+s.total+'</span></a>';
   }
   secRow+='</div>';
   let subRow="";
   if(activeSection!=="all"){
     const sec=sections.find(s=>s.slug===activeSection);
     if(sec&&sec.subs.length){
-      subRow='<div class="biz-cats"><a href="'+esc(dirPath(kind,sec.slug))+'" class="'+(!activeSub?"on":"")+'">All '+esc(sec.label)+'</a>';
+      subRow='<div class="biz-cats"><a href="'+esc(dirPath(kind,sec.slug,null,state))+'" class="'+(!activeSub?"on":"")+'">All '+esc(sec.label)+'</a>';
       for(const c of sec.subs){
-        subRow+='<a href="'+esc(dirPath(kind,sec.slug,c.slug))+'" class="'+(activeSub===c.slug?"on":"")+'">'+esc(c.label)+' <span>'+c.n+'</span></a>';
+        subRow+='<a href="'+esc(dirPath(kind,sec.slug,c.slug,state))+'" class="'+(activeSub===c.slug?"on":"")+'">'+esc(c.label)+' <span>'+c.n+'</span></a>';
       }
       subRow+='</div>';
     }
   }
   return secRow+subRow;
+}
+// "Browse by state" chip row: top 12 states (by count) within the current
+// section/category scope, plus an "All states" chip that drops the state.
+function stateNav(kind,stateFacets,activeSection,activeSub,activeState){
+  const counts=stateCounts(stateFacets,activeSection,activeSub);
+  const top=[...counts.entries()].filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,12);
+  if(activeState&&!top.some(([s])=>s===activeState)) top.push([activeState,counts.get(activeState)||0]);
+  if(!top.length) return "";
+  let row='<div class="biz-states"><span class="biz-states-label">Browse by state</span><a href="'+esc(dirPath(kind,activeSection,activeSub))+'" class="'+(!activeState?"on":"")+'">All states</a>';
+  for(const [st,n] of top){
+    row+='<a href="'+esc(dirPath(kind,activeSection,activeSub,st))+'" class="'+(activeState===st?"on":"")+'">'+esc(STATE_NAMES[st])+' <span>'+n+'</span></a>';
+  }
+  return row+'</div>';
+}
+// HMDA 2025 badge line for company cards (rank 1 = largest originator).
+function hmdaBadge(item){
+  const rank=Number(item.hmda_rank);
+  if(!Number.isFinite(rank)||rank<1) return "";
+  const parts=[];
+  if(rank<=100) parts.push("Top 100 U.S. lender");else if(rank<=1000) parts.push("Top 1000 U.S. lender");
+  parts.push("#"+fmtInt(rank)+" nationwide");
+  const vol=fmtUsd(item.hmda_volume_usd);if(vol) parts.push(vol+" 2025 originations");
+  const cnt=Number(item.hmda_count);if(Number.isFinite(cnt)&&cnt>0) parts.push(fmtInt(cnt)+" loans");
+  return '<span class="dir-badge">'+esc(parts.join(" · "))+'</span>';
 }
 function card(item,kind){
   if(kind==="people"){
@@ -194,11 +264,14 @@ function card(item,kind){
   return '<article class="dir-card"><a class="dir-link" href="/'+seg+'/'+encodeURIComponent(item.slug||"")+'">'+
     '<div class="dir-avatar dir-initial">'+esc((txt(item.name)[0]||"P").toUpperCase())+'</div>'+
     '<div><h2>'+esc(item.name||"Pegasus "+(kind==="events"?"Event":"Business"))+'</h2>'+(meta?'<p class="dir-meta">'+esc(meta)+'</p>':'')+
+    (kind==="events"?'':hmdaBadge(item))+
     (desc?'<p class="dir-desc">'+esc(desc)+'</p>':'')+'<span class="dir-open">View '+(kind==="events"?"event":"business")+' →</span></div></a></article>';
 }
 function render(ctx){
-  const {kind,page,rows,total,sections=[],activeSection="all",activeSub=null}=ctx;
+  const {kind,page,rows,total,sections=[],activeSection="all",activeSub=null,stateFacets=[]}=ctx;
   const sectioned=(kind==="businesses"||kind==="people");
+  const activeState=kind==="businesses"?(cleanState(ctx.activeState)||null):null;
+  const stateName=activeState?STATE_NAMES[activeState]:"";
   const label=kind==="people"?"People":kind==="events"?"Events":"Businesses";
   const singular=kind==="people"?"professionals":kind==="events"?"capital and industry events":"companies";
 
@@ -207,13 +280,19 @@ function render(ctx){
     secObj=sections.find(s=>s.slug===activeSection)||null;
     if(secObj&&activeSub) subObj=secObj.subs.find(c=>c.slug===activeSub)||null;
   }
-  const path=sectioned?dirPath(kind,activeSection,activeSub):("/"+kind);
+  const path=sectioned?dirPath(kind,activeSection,activeSub,activeState):("/"+kind);
   const canonical=ORIGIN+path+(page>1?"?page="+page:"");
-  const h1=subObj?subObj.label:secObj?secObj.label:label;
-  const title=(subObj?subObj.label+" — "+label:secObj?secObj.label+" — "+label:label)+" — Pegasus Capital Network"+(page>1?" | Page "+page:"");
+  const scopeLabel=subObj?subObj.label:secObj?secObj.label:"Companies";
+  const h1=activeState?scopeLabel+" in "+stateName:subObj?subObj.label:secObj?secObj.label:label;
+  const title=(activeState?h1:subObj?subObj.label+" — "+label:secObj?secObj.label+" — "+label:label)+" — Pegasus Capital Network"+(page>1?" | Page "+page:"");
 
   let desc;
-  if(kind==="businesses"){
+  if(activeState){
+    const n=total!=null?total:(stateCounts(stateFacets,activeSection,activeSub).get(activeState)||0);
+    // The HMDA ranking only means something for lenders (Capital & Lenders section).
+    const ranked=(activeSection==="capital"||activeSection==="all")?", ranked by 2025 mortgage origination volume (HMDA)":"";
+    desc=(n>0?n+" "+scopeLabel.toLowerCase():scopeLabel)+" in "+stateName+" on Pegasus Capital Network"+ranked+". Public, claimable company pages.";
+  }else if(kind==="businesses"){
     desc=subObj?"Browse "+subObj.label.toLowerCase()+" on Pegasus Capital Network — claimable company pages across private capital, lending, real estate and investment."
       :secObj?"Browse "+secObj.label.toLowerCase()+" on Pegasus Capital Network — companies across private capital, lending, real estate and investment."
       :"Discover companies on Pegasus Capital Network — lenders, private capital, brokers, real estate and transaction services. Public, claimable business pages.";
@@ -232,8 +311,23 @@ function render(ctx){
     url:ORIGIN+(kind==="people"?"/u/"+encodeURIComponent(x.profile_slug||""):kind==="events"?"/event/"+encodeURIComponent(x.slug||""):"/business/"+encodeURIComponent(x.slug||""))
   }))};
 
-  const subnav=sectioned?sectionNav(kind,sections,activeSection,activeSub):"";
-  const emptyMsg=sectioned&&(secObj||subObj)
+  // Breadcrumbs (businesses only): Businesses › Section › Category › State.
+  let breadcrumbLd="";
+  if(kind==="businesses"){
+    const crumbs=[{name:"Businesses",item:ORIGIN+"/businesses"}];
+    if(secObj) crumbs.push({name:secObj.label,item:ORIGIN+dirPath(kind,secObj.slug)});
+    if(secObj&&subObj) crumbs.push({name:subObj.label,item:ORIGIN+dirPath(kind,secObj.slug,subObj.slug)});
+    if(activeState) crumbs.push({name:stateName,item:ORIGIN+dirPath(kind,activeSection,activeSub,activeState)});
+    if(crumbs.length>1){
+      const bl={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":crumbs.map((c,i)=>({"@type":"ListItem",position:i+1,name:c.name,item:c.item}))};
+      breadcrumbLd='<script type="application/ld+json">'+JSON.stringify(bl).replace(/</g,"\\u003c")+'</script>';
+    }
+  }
+
+  const subnav=(sectioned?sectionNav(kind,sections,activeSection,activeSub,activeState):"")+(kind==="businesses"?stateNav(kind,stateFacets,activeSection,activeSub,activeState):"");
+  const emptyMsg=activeState
+    ? 'No '+scopeLabel.toLowerCase()+' are listed in '+stateName+' yet.'
+    : sectioned&&(secObj||subObj)
     ? (kind==="people"?'No members are listed in this category yet. Be the first — create your free profile.':'No companies are listed in this category yet.')
     : 'No public '+label.toLowerCase()+' are listed yet.';
 
@@ -243,10 +337,12 @@ function render(ctx){
     (hasPrev?'<link rel="prev" href="'+esc(ORIGIN+path+(page===2?"":"?page="+(page-1)))+'">':'')+
     (hasNext?'<link rel="next" href="'+esc(ORIGIN+path+"?page="+(page+1))+'">':'')+
     '<link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico">'+
-    '<script type="application/ld+json">'+JSON.stringify(itemList).replace(/</g,"\\u003c")+'</script>'+
+    '<script type="application/ld+json">'+JSON.stringify(itemList).replace(/</g,"\\u003c")+'</script>'+breadcrumbLd+
     '<style>.dir-wrap{max-width:1120px;margin:auto;padding:48px 40px 72px}.dir-head{text-align:center;max-width:760px;margin:0 auto 20px}.dir-head h1{font-family:var(--serif);font-size:clamp(34px,5vw,54px);font-weight:400;margin:8px 0 12px}.dir-head p{color:var(--text2);line-height:1.65}.dir-tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:22px 0 0}.dir-tabs a{padding:8px 14px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--text2);font-size:12px}.dir-tabs a.on{background:var(--text);color:var(--bg);border-color:var(--text)}'+
     '.biz-sections{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:18px auto 0;max-width:960px}.biz-sections a{padding:8px 14px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text2);font-size:12.5px;font-weight:600}.biz-sections a span{color:var(--text3);font-weight:400}.biz-sections a.on{background:var(--blue);color:#fff;border-color:var(--blue)}.biz-sections a.on span{color:rgba(255,255,255,.75)}'+
     '.biz-cats{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:12px auto 0;max-width:960px}.biz-cats a{padding:6px 12px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--text2);font-size:11.5px}.biz-cats a span{color:var(--text3)}.biz-cats a.on{background:var(--text);color:var(--bg);border-color:var(--text)}.biz-cats a.on span{color:rgba(255,255,255,.7)}'+
+    '.biz-states{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;margin:14px auto 0;max-width:960px}.biz-states-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-right:4px}.biz-states a{padding:6px 12px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--text2);font-size:11.5px}.biz-states a span{color:var(--text3)}.biz-states a.on{background:var(--blue);color:#fff;border-color:var(--blue)}.biz-states a.on span{color:rgba(255,255,255,.75)}'+
+    '.dir-badge{display:inline-block;margin-top:6px;font-size:10.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--blue);background:var(--blue-dim);border-radius:999px;padding:3px 9px}'+
     '.dir-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}.dir-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-card)}.dir-link{display:flex;gap:16px;padding:20px;text-decoration:none}.dir-avatar{width:68px;height:68px;border-radius:50%;object-fit:cover;flex:none}.dir-initial{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#17315A,#0E1E36);color:#fff;font-family:var(--serif);font-size:28px}.dir-card h2{font-size:16px;margin:2px 0 5px;color:var(--text)}.dir-meta{font-size:12px;color:var(--text3);margin:0}.dir-desc{font-size:12.5px;line-height:1.5;color:var(--text2);margin:8px 0 0}.dir-open{display:inline-block;margin-top:10px;font-size:11.5px;color:var(--blue)}.dir-pager{display:flex;justify-content:center;gap:10px;margin-top:30px}.dir-pager a{padding:9px 14px;border:1px solid var(--border);border-radius:9px;text-decoration:none;color:var(--text2)}.dir-empty{text-align:center;padding:50px;color:var(--text3)}@media(max-width:760px){.dir-wrap{padding:32px 20px 54px}.dir-grid{grid-template-columns:1fr}}</style></head><body>'+
     '<nav class="pub-nav"><a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a><div class="pub-links"><a href="/feed">Feed</a><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html">Explore</a></div><div class="nav-cta" id="dirNavCta"><a class="btn btn-ghost" href="/signin.html">Sign In</a><a class="btn btn-pri" href="/signup.html">Create Free Profile</a></div></nav>'+
     // Page is CDN-cached for everyone, so swap the guest CTA client-side for signed-in members.
@@ -267,7 +363,10 @@ export default async (request)=>{
   // function the ORIGINAL request URL, so the rewrite's query params are not
   // in u.searchParams. Derive kind/section/sub from the pretty path first and
   // only fall back to query params (direct /.netlify/functions/… calls).
-  const publicPath=u.pathname.match(/^\/(people|businesses|events)(?:\/([^\/]+))?(?:\/([^\/]+))?\/?$/);
+  // Business state pages add a trailing "/in/:state" segment pair:
+  //   /businesses/in/ca · /businesses/:section/in/ca · /businesses/:section/:category/in/ca
+  // ("in" is never a section/category; the negative lookaheads keep it out).
+  const publicPath=u.pathname.match(/^\/(people|businesses|events)(?:\/(?!in(?:\/|$))([^\/]+))?(?:\/(?!in(?:\/|$))([^\/]+))?(?:\/in(?:\/([^\/]+))?)?\/?$/);
   const requested=publicPath ? publicPath[1] : u.searchParams.get("kind");
   const kind=requested==="businesses"?"businesses":requested==="events"?"events":"people";
   if(publicPath && publicPath[2] && !u.searchParams.get("section")) u.searchParams.set("section",publicPath[2]);
@@ -275,18 +374,21 @@ export default async (request)=>{
     const subKey=kind==="people"?"role":"category";
     if(!u.searchParams.get(subKey)) u.searchParams.set(subKey,publicPath[3]);
   }
+  if(publicPath && publicPath[4] && !u.searchParams.get("state")) u.searchParams.set("state",publicPath[4]);
   const page=pageNum(u.searchParams.get("page"));
   try{
     if(kind==="businesses"){
-      const facets=await loadBusinessFacets();
+      const [facets,stateFacets]=await Promise.all([loadBusinessFacets(),loadStateFacets()]);
       const sections=buildBusinessSections(facets);
       let activeSection=cleanSlug(u.searchParams.get("section"))||"all";
       let activeSub=cleanSlug(u.searchParams.get("category"))||null;
+      // Unknown state → plain (non-state) page, never a 404.
+      const activeState=cleanState(u.searchParams.get("state"))||null;
       if(activeSection!=="all" && !sections.some(s=>s.slug===activeSection)){activeSection="all";activeSub=null;}
       if(activeSub){const sec=sections.find(s=>s.slug===activeSection);if(!sec||!sec.subs.some(c=>c.slug===activeSub)) activeSub=null;}
-      const {rows,total}=await loadBusinesses(activeSection,activeSub,page);
+      const {rows,total}=await loadBusinesses(activeSection,activeSub,activeState,page);
       if(page>1&&!rows.length) return errPage(404,"Directory page not found");
-      return new Response(render({kind,page,rows,total,sections,activeSection,activeSub}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|category","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+      return new Response(render({kind,page,rows,total,sections,activeSection,activeSub,activeState,stateFacets}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|category|state","X-Robots-Tag":"index,follow,max-image-preview:large"}});
     }
     if(kind==="people"){
       const all=await loadPeopleAll();

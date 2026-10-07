@@ -109,6 +109,28 @@
   status = 200
   force = true
 
+# Business STATE landing pages (SEO): /businesses/in/:state, /businesses/:section/in/:state,
+# /businesses/:section/:category/in/:state. ORDER MATTERS — Netlify uses the first
+# matching rule, so these must sit BEFORE the generic /businesses/:section and
+# /businesses/:section/:category rules (which would otherwise swallow "in" as a section).
+[[redirects]]
+  from = "/businesses/in/:state"
+  to = "/.netlify/functions/public-directory?kind=businesses&state=:state"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/businesses/:section/in/:state"
+  to = "/.netlify/functions/public-directory?kind=businesses&section=:section&state=:state"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/businesses/:section/:category/in/:state"
+  to = "/.netlify/functions/public-directory?kind=businesses&section=:section&category=:category&state=:state"
+  status = 200
+  force = true
+
 # Business section + category landing pages (SEO). :section/:category are single
 # path segments resolved to the directory's taxonomy facets server-side.
 [[redirects]]
@@ -286,7 +308,14 @@
   to = "/members.html"
   status = 200
 
-# Network feed (public, indexable). /feed?post=<id> is a post permalink.
+# Network feed (public, indexable). /feed/post/<id> is a server-rendered post
+# permalink (OG tags + JSON-LD for sharing/indexing); /feed?post=<id> still works.
+[[redirects]]
+  from = "/feed/post/:id"
+  to = "/.netlify/functions/feed-post-seo-page?id=:id"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/feed"
   to = "/feed.html"
@@ -405,3 +434,8 @@
 # Sends via PEGASUS_RESEND_API_KEY (verified crdpartners2020 sending key).
 [functions."concierge-build"]
   schedule = "*/15 * * * *"
+
+# Weekly "This week in the network" digest to members (Tuesdays 16:00 UTC =
+# 9am PT). Skips itself when nothing happened. Opt-out via /unsubscribe?digest=1.
+[functions."weekly-digest"]
+  schedule = "0 16 * * 2"

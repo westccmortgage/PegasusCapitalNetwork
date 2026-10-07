@@ -12,6 +12,34 @@ function txt(v){return String(v||"").replace(/\s+/g," ").trim();}
 function trunc(v,n){const s=txt(v);return s.length<=n?s:s.slice(0,n-1).replace(/\s+\S*$/,"")+"…";}
 function safeHttp(v){const s=txt(v);return /^https?:\/\//i.test(s)?s:"";}
 function cleanSlug(v){const s=String(v||"").trim();return /^[a-z0-9][a-z0-9-]*$/i.test(s)?s:"";}
+// US states + DC + PR (inlined; functions stay self-contained). A state code is
+// only used after validation via cleanState().
+const STATE_NAMES={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",PR:"Puerto Rico",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+function cleanState(v){const s=String(v||"").trim().toUpperCase();return Object.prototype.hasOwnProperty.call(STATE_NAMES,s)?s:"";}
+function fmtInt(n){const v=Number(n);return Number.isFinite(v)?Math.round(v).toLocaleString("en-US"):"";}
+// "$1.2B" / "$503.7M" / "$900K" — company-page HMDA volume (1 decimal for B/M).
+function fmtUsd(n){
+  const v=Number(n);if(!Number.isFinite(v)||v<=0) return "";
+  if(v>=1e9) return "$"+(v/1e9).toFixed(1)+"B";
+  if(v>=1e6) return "$"+(v/1e6).toFixed(1)+"M";
+  if(v>=1e3) return "$"+Math.round(v/1e3)+"K";
+  return "$"+Math.round(v);
+}
+// Directory breadcrumb trail for a company: Businesses › Section › Category › State.
+// Built from the taxonomy row (p._dir); levels are only added when present.
+function dirCrumbs(p){
+  const d=(p&&p._dir)||{};
+  const out=[{name:"Businesses",href:"/businesses"}];
+  const sec=cleanSlug(d.section_slug),cat=cleanSlug(d.cat_slug),st=cleanState(d.state_code);
+  if(sec&&txt(d.section_label)){
+    out.push({name:txt(d.section_label),href:"/businesses/"+sec});
+    if(cat&&txt(d.cat_label)){
+      out.push({name:txt(d.cat_label),href:"/businesses/"+sec+"/"+cat});
+      if(st) out.push({name:STATE_NAMES[st],href:"/businesses/"+sec+"/"+cat+"/in/"+st.toLowerCase()});
+    }
+  }
+  return out;
+}
 function replaceOrInsert(html,regex,replacement,before="</head>"){return regex.test(html)?html.replace(regex,replacement):html.replace(before,replacement+"\n"+before);}
 async function getPresence(slug){
   const {url,key}=cfg();
@@ -46,18 +74,25 @@ async function getPresence(slug){
   if(!Array.isArray(rows)||!rows.length) return null;
   return {access:"full",presence:{...rows[0],visibility:"public_preview"},can_manage:false};
 }
-// Claim strip eligibility: imported company stub that nobody has claimed yet.
-// The page RPC does not carry this flag, so read it from the anon-safe view.
-async function getClaimable(slug){
+// Claim strip eligibility (is_claimable from the anon-safe previews view — the
+// page RPC does not carry it) + the directory taxonomy/HMDA row for the company
+// (section/category, state, city, 2025 HMDA rank/volume/count). Both fetched in
+// parallel; any failure degrades to {is_claimable:false, dir:null} — never throws.
+async function getDirectoryRow(slug){
+  const out={is_claimable:false,dir:null};
   try{
     const {url,key}=cfg();
-    const r=await fetch(url+"/rest/v1/public_presence_previews?select=is_claimable&slug=eq."+encodeURIComponent(slug)+"&limit=1",{
-      headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}
-    });
-    if(!r.ok) return false;
-    const rows=await r.json();
-    return !!(Array.isArray(rows)&&rows[0]&&rows[0].is_claimable===true);
-  }catch(_){ return false; }
+    const headers={apikey:key,Authorization:"Bearer "+key,Accept:"application/json"};
+    const s=encodeURIComponent(slug);
+    const get=path=>fetch(url+"/rest/v1/"+path,{headers}).then(r=>r.ok?r.json():null).catch(()=>null);
+    const [cr,dr]=await Promise.all([
+      get("public_presence_previews?select=is_claimable&slug=eq."+s+"&limit=1"),
+      get("public_business_directory?select=cat_slug,cat_label,section_slug,section_label,state_code,city,hmda_rank,hmda_volume_usd,hmda_count,unclaimed&slug=eq."+s+"&limit=1")
+    ]);
+    out.is_claimable=!!(Array.isArray(cr)&&cr[0]&&cr[0].is_claimable===true);
+    if(Array.isArray(dr)&&dr[0]&&typeof dr[0]==="object") out.dir=dr[0];
+  }catch(_){}
+  return out;
 }
 async function getTemplate(request){
   const u=new URL(request.url);
@@ -74,13 +109,30 @@ function snapshot(p,kind,canonical){
   const logo=safeHttp(p.logo_url),website=safeHttp(p.website_url);
   const meta=[txt(p.category),txt(p.industry),txt(p.location),txt(p.market)].filter(Boolean);
   const label=kind==="event"?"Event":"Business";
+  // Directory breadcrumb (above H1) + HMDA 2025 rank block (after meta) — businesses only.
+  const d=(kind==="business"&&p._dir)||null;
+  let crumbLine="",hmda="";
+  if(d){
+    const crumbs=dirCrumbs(p);
+    if(crumbs.length>1) crumbLine='<nav aria-label="Breadcrumb" style="font-size:12.5px;color:#697386;margin-bottom:10px">'+crumbs.map(c=>'<a href="'+esc(c.href)+'" style="color:#1d5a9e;text-decoration:none">'+esc(c.name)+'</a>').join(' <span aria-hidden="true">›</span> ')+'</nav>';
+    const rank=Number(d.hmda_rank);
+    if(Number.isFinite(rank)&&rank>=1){
+      const vol=fmtUsd(d.hmda_volume_usd),cnt=Number(d.hmda_count);
+      const lead=rank<=100?"Top 100 U.S. mortgage lender — #"+fmtInt(rank)+" by 2025 origination volume (HMDA)":"Ranked #"+fmtInt(rank)+" of U.S. mortgage lenders by 2025 origination volume (HMDA)";
+      const tail=[vol,Number.isFinite(cnt)&&cnt>0?"across "+fmtInt(cnt)+" loans":""].filter(Boolean).join(" ");
+      hmda='<div style="margin-top:12px;display:inline-block;padding:8px 12px;border:1px solid #d6e4f5;background:#eef4fb;border-radius:12px;font-size:13.5px;color:#1d5a9e">'+esc(lead+(tail?" · "+tail:""))+'</div>'+
+        '<div style="font-size:12px;color:#697386;margin-top:6px">Source: Home Mortgage Disclosure Act (HMDA) 2025 public data.</div>';
+    }
+  }
   return '<article id="peg-seo-snapshot" style="max-width:1000px;margin:30px auto 20px;padding:28px 40px;border:1px solid #e4e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;color:#172033">'+
+    crumbLine+
     '<div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#697386">'+esc(label)+'</div>'+
     '<div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:10px">'+
     (logo?'<img src="'+esc(logo)+'" alt="'+esc(name)+' logo" width="96" height="96" style="width:96px;height:96px;border-radius:16px;object-fit:contain;border:1px solid #e4e7eb">':'')+
     '<div style="flex:1;min-width:240px"><h1 style="margin:0 0 8px;font-size:36px;line-height:1.08">'+esc(name)+'</h1>'+
     (tagline?'<p style="font-size:17px;line-height:1.5;margin:8px 0">'+esc(tagline)+'</p>':'')+
     (meta.length?'<div style="color:#5b6573">'+esc(meta.join(" · "))+'</div>':'')+
+    hmda+
     '</div></div>'+
     (desc?'<p style="font-size:15px;line-height:1.65;margin:22px 0 0">'+esc(desc)+'</p>':'')+
     (txt(p.offers)?'<section><h2 style="font-size:18px;margin:22px 0 6px">What we offer</h2><p style="line-height:1.6">'+esc(trunc(p.offers,700))+'</p></section>':'')+
@@ -120,7 +172,13 @@ function render(html,p,kind){
   const label=kind==="event"?"Event":"Business";
   const rawDesc=txt(p.short_description)||txt(p.tagline)||[txt(p.category),txt(p.industry),txt(p.location),txt(p.market)].filter(Boolean).join(" · ");
   const desc=trunc(rawDesc||(txt(p.name)+" on Pegasus Capital Network"),160);
-  const title=txt(p.name)+" — "+label+" | Pegasus Capital Network";
+  // Companies with a directory row get "<Name> — <Category> in <City, ST>"; otherwise the generic title.
+  const d=(kind==="business"&&p._dir)||{};
+  const catLabel=txt(d.cat_label),st=cleanState(d.state_code),city=txt(d.city);
+  const place=[city,st].filter(Boolean).join(", ");
+  const title=catLabel
+    ? txt(p.name)+" — "+catLabel+(place?" in "+place:"")+" | Pegasus Capital Network"
+    : txt(p.name)+" — "+label+" | Pegasus Capital Network";
   const image=safeHttp(p.logo_url);
 
   html=replaceOrInsert(html,/<title>[\s\S]*?<\/title>/i,'<title>'+esc(title)+'</title>');
@@ -148,16 +206,31 @@ function render(html,p,kind){
     if(txt(p.location)) eventEntity.location=txt(p.location);
     schema={"@context":"https://schema.org","@type":"WebPage",url:canonical,name:title,description:desc,about:eventEntity,mainEntity:eventEntity};
   }else if(p.presence_type==="company"){
-    const mainEntity={"@type":"Organization",name:txt(p.name),url:canonical,description:desc};
+    // Lenders/banks (capital section) are also a FinancialService.
+    const mainEntity={"@type":cleanSlug(d.section_slug)==="capital"?["Organization","FinancialService"]:"Organization",name:txt(p.name),url:canonical,description:desc};
     if(image) mainEntity.logo=image;
     if(safeHttp(p.website_url)) mainEntity.sameAs=[safeHttp(p.website_url)];
     if(txt(p.location)) mainEntity.location=txt(p.location);
+    if(city||st){
+      const address={"@type":"PostalAddress"};
+      if(city) address.addressLocality=city;
+      if(st) address.addressRegion=st;
+      address.addressCountry="US";
+      mainEntity.address=address;
+    }
     schema={"@context":"https://schema.org","@type":"ProfilePage",url:canonical,name:title,description:desc,mainEntity};
   }else{
     const mainEntity={"@type":"Service",name:txt(p.name),url:canonical,description:desc};
     schema={"@context":"https://schema.org","@type":"WebPage",url:canonical,name:title,description:desc,about:mainEntity,mainEntity};
   }
-  const jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
+  let jsonLd='<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>';
+  if(kind==="business"&&p._dir){
+    const crumbs=dirCrumbs(p);
+    if(crumbs.length>1){
+      const bl={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":crumbs.map((c,i)=>({"@type":"ListItem",position:i+1,name:c.name,item:ORIGIN+c.href}))};
+      jsonLd+='\n<script type="application/ld+json">'+JSON.stringify(bl).replace(/</g,"\\u003c")+'</script>';
+    }
+  }
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
   html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+(p.is_claimable===true?claimCta(kind,slug)+"\n":"")+joinCta(kind));
   return html;
@@ -175,13 +248,13 @@ export default async (request) => {
   const kind=publicPath ? publicPath[1] : (u.searchParams.get("kind")==="event"?"event":"business");
   if(!slug) return simple(404,"Page not found","This page does not exist.");
   try{
-    const [data,template,claimable]=await Promise.all([getPresence(slug),getTemplate(request),getClaimable(slug)]);
+    const [data,template,dirRow]=await Promise.all([getPresence(slug),getTemplate(request),getDirectoryRow(slug)]);
     if(!data||data.access==="unavailable") return simple(404,"Page not found","This page is not available.");
     if(data.access!=="full"||!data.presence){
       // Member-only/private public requests stay non-indexable.
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
     }
-    const p={...data.presence,is_claimable:claimable};
+    const p={...data.presence,is_claimable:dirRow.is_claimable,_dir:dirRow.dir};
     if(!typeAllowed(kind,p.presence_type)) return simple(404,"Page not found","This page does not exist.");
     if(p.visibility!=="public_preview"||p.status!=="active") {
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});

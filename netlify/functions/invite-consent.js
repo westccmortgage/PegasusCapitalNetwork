@@ -41,6 +41,14 @@ export default async (request)=>{
   const isOptOut=/\/(unsubscribe|no)\b/.test(u.pathname) || u.searchParams.get("action")==="unsubscribe";
   const token=cleanToken(u.searchParams.get("t")||u.searchParams.get("token"));
   const email=cleanEmail(u.searchParams.get("e")||u.searchParams.get("email"));
+  const isDigest=u.searchParams.get("digest")==="1";
+  // Weekly digest opt-out (members): flag the profile; also stop invitations.
+  if(isDigest && email){
+    try{ await rpc("record_digest_optout_by_email",{p_email:email}); await rpc("record_invite_optout_by_email",{p_email:email}); }catch(_){}
+    return resp(page("Unsubscribed","You’re unsubscribed from the weekly digest",
+      '<p>You won’t receive the weekly network digest any more. Your profile and account are unchanged — you can still sign in and use the network as usual.</p>'+
+      '<a class="btn" href="/feed">Back to the Network Feed</a>'));
+  }
   if(!token && !email){
     return resp(page("Link not valid","This link isn’t valid",
       '<p>The link may be incomplete. Please use the button from your invitation email, or just create your profile directly.</p>'+
@@ -52,6 +60,7 @@ export default async (request)=>{
   try{
     if(isOptOut){
       await rpc(optoutFn,arg);
+      if(email){ try{ await rpc("record_digest_optout_by_email",{p_email:email}); }catch(_){} }
       return resp(page("Unsubscribed","You’re unsubscribed",
         '<p>You won’t receive further invitations from Pegasus Capital Network. No profile will be created for you.</p>'));
     }

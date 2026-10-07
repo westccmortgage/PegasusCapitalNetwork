@@ -35,6 +35,8 @@ function classifyPerson(p) {
   return "other";
 }
 function sectionOf(roleSlug) { return (PR_BY_SLUG[roleSlug] && PR_BY_SLUG[roleSlug].section) || "other"; }
+// Valid state codes for /businesses/…/in/:st landing pages (50 states + DC + PR).
+const STATE_CODES = new Set("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA PR RI SC SD TN TX UT VT VA WA WV WI WY".split(" "));
 const PAGE_SIZE = 1000;
 const MAX_URLS = 49000;
 
@@ -154,6 +156,37 @@ async function businessFacetUrls() {
     return [];
   }
 }
+// Business STATE landing pages: /businesses/in/:st (state total n ≥ 2) and
+// /businesses/:section/:cat/in/:st (n ≥ 3, no "other"). Never fails the sitemap.
+async function businessStateUrls() {
+  try {
+    const rows = await restRows("public_business_state_facets", {
+      select: "state_code,section_slug,cat_slug,n",
+    });
+    const stateTotals = new Map();
+    const catUrls = [];
+    for (const row of rows) {
+      const code = String(row.state_code || "").trim().toUpperCase();
+      if (!STATE_CODES.has(code)) continue;
+      const st = code.toLowerCase();
+      const n = Number(row.n) || 0;
+      stateTotals.set(st, (stateTotals.get(st) || 0) + n);
+      const section = cleanSlug(row.section_slug);
+      const cat = cleanSlug(row.cat_slug);
+      if (n >= 3 && section && section !== "other" && cat && cat !== "other") {
+        catUrls.push(urlNode(ORIGIN + "/businesses/" + encodeURIComponent(section) + "/" + encodeURIComponent(cat) + "/in/" + st, "", "0.5"));
+      }
+    }
+    const urls = [];
+    for (const [st, total] of [...stateTotals.entries()].sort()) {
+      if (total >= 2) urls.push(urlNode(ORIGIN + "/businesses/in/" + st, "", "0.6"));
+    }
+    return urls.concat(catUrls);
+  } catch (err) {
+    console.warn("[entity-sitemap] state urls unavailable:", err && err.message);
+    return [];
+  }
+}
 async function presenceSitemap(kind) {
   const type = kind === "events" ? "event" : "company";
   const segment = kind === "events" ? "event" : "business";
@@ -165,7 +198,7 @@ async function presenceSitemap(kind) {
   });
   const seen = new Set();
   const urls = [];
-  if (kind === "businesses") urls.push(...(await businessFacetUrls()));
+  if (kind === "businesses") urls.push(...(await businessFacetUrls()), ...(await businessStateUrls()));
   for (const row of rows) {
     const slug = cleanSlug(row.slug);
     if (!slug || seen.has(slug) || !String(row.name || "").trim()) continue;
