@@ -158,8 +158,9 @@
         ${item('⚑','Admin Console','/admin.html',{act:'Admin'})}
         ${item('◆','Capital Intelligence','/admin/intelligence',{act:'Capital Intelligence Admin'})}
         ${item('◆','Partner Network','/admin/partner-network',{act:'Partner Network Admin'})}
-        ${item('◇','Admin Requests','/admin-requests.html')}
-        ${item('◈','Admin Trust','/admin-trust-reviews.html',{act:'Admin · Trust'})}`:''}
+        ${item('◇','Admin Requests','/admin-requests.html',{act:'Admin Requests'})}
+        ${item('◈','Admin Trust','/admin-trust-reviews.html',{act:'Admin · Trust'})}
+        ${item('▣','Showcase Moderation','/showcase-admin.html',{act:'Showcase Moderation'})}`:''}
       </div>
       <div class="sb-foot">
         <div class="sb-tier"><div class="sb-tier-name"><span class="dot" style="background:${meta.dot}"></span>${meta.name}</div>
@@ -790,6 +791,7 @@
       adminRows.push(['\u25C6','Partner Network','/admin/partner-network']);
       adminRows.push(['\u25C7','Admin Requests','/admin-requests.html']);
       adminRows.push(['\u25C8','Admin Trust','/admin-trust-reviews.html']);
+      adminRows.push(['\u25A3','Showcase Moderation','/showcase-admin.html']);
     } else if(p && p.pci_role==='analyst'){
       /* Capital Intelligence analyst \u2014 read + manual property/lender editing. */
       adminRows.push(['\u25C6','Capital Intelligence','/admin/intelligence']);

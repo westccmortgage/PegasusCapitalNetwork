@@ -14,15 +14,41 @@
 
 'use strict';
 
+const { createClient } = require('@supabase/supabase-js');
+
+/* Verify the caller is a signed-in admin (same check as run-health-check).
+   Without this, anyone could POST arbitrary content and have it emailed to
+   HEALTH_REPORT_EMAIL from our domain. Returns null when authorized, or an
+   HTTP response to return otherwise. */
+async function requireAdmin(event, headers) {
+  const token = (event.headers['authorization'] || event.headers['Authorization'] || '').replace(/^Bearer\s+/, '');
+  if (!token) return { statusCode: 401, headers, body: JSON.stringify({ error: 'No auth token' }) };
+  const SUPA_URL = process.env.SUPABASE_URL, SUPA_SR = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!SUPA_URL || !SUPA_SR) return { statusCode: 503, headers, body: JSON.stringify({ error: 'Supabase not configured' }) };
+  const admin = createClient(SUPA_URL, SUPA_SR, { auth: { persistSession: false } });
+  const { data: { user }, error: authErr } = await admin.auth.getUser(token);
+  if (authErr || !user) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid or expired session' }) };
+  const { data: profile } = await admin.from('profiles').select('role,is_admin').eq('id', user.id).single();
+  if (!profile || (profile.role !== 'admin' && !profile.is_admin)) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Admin access required' }) };
+  }
+  return null;
+}
+
 exports.handler = async function (event) {
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
   };
 
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
+
+  const denied = await requireAdmin(event, headers);
+  if (denied) return denied;
 
   /* If not configured, silently succeed */
   const toEmail = process.env.HEALTH_REPORT_EMAIL;

@@ -19,8 +19,9 @@
 <script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
 <script>
-Pegasus.mountPublic('Platform');
-document.getElementById('footer').outerHTML = Pegasus.footer();
+/* Same app shell as the other admin pages (sidebar with the Admin section). */
+Pegasus.mountApp({active:'Admin Requests', title:'Requests', sub:'Pegasus request engine triage'});
+var _ft=document.getElementById('footer'); if(_ft) _ft.remove();
 var TYPE={property:'Property',business:'Business',rwa:'Real-world asset',other:'General'};
 var ROLE={agent:'Real estate',lender:'Financing',insurance:'Insurance',business_funding_provider:'Business funding',rwa_partner:'Real-world assets'};
 var STATUS={new:'Forming',routed:'Forming',active:'Forming',connected:'Connected',closed:'Closed',dismissed:'Closed'};
