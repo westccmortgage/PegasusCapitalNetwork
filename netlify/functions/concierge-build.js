@@ -61,6 +61,7 @@ function emailHtml(link, unsub){
   '<td align="center" bgcolor="#3a8fe8" style="background-color:#3a8fe8;border-radius:10px;">'+
   '<a href="'+esc(link)+'" style="display:inline-block;padding-top:13px;padding-bottom:13px;padding-left:26px;padding-right:26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;">Activate &amp; publish my profile</a>'+
   '</td></tr></table>'+
+  '<p style="margin-top:0;margin-bottom:16px;font-size:14px;line-height:1.6;color:#172033;">Once it’s live, introduce yourself in the <a href="'+ORIGIN+'/feed" style="color:#3a8fe8;">Network Feed</a> — what you do and which markets you cover. Your first post is the first thing lenders, brokers, and advisors on the network see.</p>'+
   '<p style="margin-top:0;margin-bottom:0;font-size:13px;line-height:1.5;color:#5b6573;">If the button doesn’t work, this activation link may have expired — just reply and we’ll send a fresh one.</p>'+
   '<p style="margin-top:24px;margin-bottom:0;font-size:15px;line-height:1.6;color:#172033;">— Pegasus Capital Network</p>'+
   '<hr style="border:none;border-top:1px solid #e4e7eb;margin-top:24px;margin-bottom:16px;">'+
@@ -68,7 +69,7 @@ function emailHtml(link, unsub){
   '</td></tr></table></td></tr></table></body></html>';
 }
 function emailText(link, unsub){
-  return "Hi there,\n\nThanks for confirming! We’ve started your free Pegasus Capital Network profile. Click to log in, review it, and publish — no password needed:\n\n"+link+"\n\nIf the link has expired, just reply and we’ll send a fresh one.\n\n— Pegasus Capital Network\n"+ADDRESS+"\nUnsubscribe: "+unsub;
+  return "Hi there,\n\nThanks for confirming! We’ve started your free Pegasus Capital Network profile. Click to log in, review it, and publish — no password needed:\n\n"+link+"\n\nOnce it’s live, introduce yourself in the Network Feed ("+ORIGIN+"/feed) — what you do and which markets you cover. Your first post is the first thing lenders, brokers, and advisors on the network see.\n\nIf the link has expired, just reply and we’ll send a fresh one.\n\n— Pegasus Capital Network\n"+ADDRESS+"\nUnsubscribe: "+unsub;
 }
 
 async function sendEmail(email, link){

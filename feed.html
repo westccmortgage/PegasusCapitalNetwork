@@ -135,6 +135,7 @@
 
   <div class="fd-grid">
     <div class="fd-main">
+      <div id="fdNudge"></div>
       <div id="fdComposer"></div>
       <div class="fd-filters" id="fdFilters"></div>
       <div id="fdList" style="display:flex;flex-direction:column;gap:var(--sp-md)"><div class="fd-card"><div class="fd-empty">Loading the network…</div></div></div>
@@ -221,6 +222,30 @@ Pegasus.boot(async function(){
   var permalink=(qs.get('post')||'').replace(/[^0-9a-f-]/gi,'');
   var postType='update', mediaOpen=false, before=null, exhausted=false, loading=false;
 
+  /* ── First-post nudge: signed-in members who haven't posted yet ──────────
+     Shown above the composer; "Write my intro" pre-fills a template. */
+  var INTRO_TPL='I’m {name}, {title}{company}{location}.\n\nI work with: \n\nMarkets I cover: \n\nHappy to connect with: ';
+  async function renderNudge(){
+    if(!MY_UID||!sb) return;
+    var host=document.getElementById('fdNudge'); if(!host) return;
+    try{
+      var r=await sb.rpc('get_my_recent_signals',{p_limit:1});
+      if(!r||r.error||(Array.isArray(r.data)&&r.data.length)) return;
+    }catch(e){ return; }
+    var first=(ME.full_name||'').split(/\s+/)[0]||'there';
+    host.innerHTML='<div class="fd-card" style="border-color:rgba(29,90,158,.35);background:var(--blue-dim)"><div class="fd-card-b fd-guest">'+
+      '<div><div class="fd-guest-t">Welcome, '+esc(first)+' — introduce yourself</div><div class="fd-guest-s">Tell the network what you do and which markets you cover. Members who post an intro get found first.</div></div>'+
+      '<div class="fd-guest-a"><button class="btn btn-pri btn-sm" type="button" id="fdIntro">Write my intro</button></div></div></div>';
+    var b=document.getElementById('fdIntro'); if(b) b.onclick=function(){
+      postType='update'; renderComposer();
+      var t=INTRO_TPL.replace('{name}',ME.full_name||'').replace('{title}',ME.professional_title||ME.headline||'a '+(ME.role||'member').replace(/_/g,' '))
+        .replace('{company}',ME.company_name?' at '+ME.company_name:'').replace('{location}',ME.location?', based in '+ME.location:'');
+      setVal('fdTitle','Hello, Pegasus network'); setVal('fdTa',t); upd();
+      var ta=document.getElementById('fdTa'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+  }
+
   /* ── Composer ───────────────────────────────────────────────────────────── */
   function renderComposer(){
     var host=document.getElementById('fdComposer');
@@ -273,6 +298,7 @@ Pegasus.boot(async function(){
       if(!resp.ok){ err.textContent=resp.message||'Could not post right now.'; btn.disabled=false; btn.textContent='Post to Feed'; return; }
       Pegasus.toast('✓','var(--green-dim)','Posted to the network','It’s live in the feed and on your profile.');
       mediaOpen=false; postType='update'; renderComposer();
+      var nd=document.getElementById('fdNudge'); if(nd) nd.innerHTML='';
       before=null; exhausted=false; await loadFeed(true); loadEvents();
     }catch(e){ err.textContent='Could not post right now. Please try again.'; btn.disabled=false; btn.textContent='Post to Feed'; }
   }
@@ -385,6 +411,7 @@ Pegasus.boot(async function(){
 
   /* ── Go ─────────────────────────────────────────────────────────────────── */
   renderComposer();
+  renderNudge();
   renderFilters();
   loadFeed(true);
   loadEvents();
