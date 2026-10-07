@@ -161,7 +161,8 @@ async function loadPeopleAll(){
   const {url,key}=cfg();
   const qs=new URLSearchParams({
     select:"profile_slug,full_name,role,professional_title,company_name,location,avatar_url,headline,additional_roles,updated_at",
-    profile_slug:"not.is.null",full_name:"not.is.null",order:"updated_at.desc"
+    // Only live profiles: concierge-built ones stay 'pending' until activated.
+    profile_slug:"not.is.null",full_name:"not.is.null",status:"eq.active",order:"updated_at.desc"
   });
   const res=await fetch(url+"/rest/v1/profiles?"+qs.toString(),{
     headers:{apikey:key,Authorization:"Bearer "+key,Range:"0-"+(PEOPLE_MAX-1),"Range-Unit":"items"}

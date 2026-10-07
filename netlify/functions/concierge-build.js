@@ -32,47 +32,50 @@ async function sbFetch(path, opts){
   return fetch(url+path, Object.assign({}, opts, { headers:h }));
 }
 
-// Create (or, if already registered, re-link) the auth user and return an
-// action link + user id. The trigger on auth.users creates the profiles row.
-async function generateActionLink(email){
+// Create the auth user (or find the existing one) and return its id. The
+// trigger on auth.users creates the profiles row. The link Supabase returns is
+// NOT emailed: one-time links get consumed by mail security scanners, so the
+// email points to /activate?t=<token>, which mints a fresh link on a human click.
+async function ensureUser(email){
   const body = { type:"invite", email, redirect_to: ORIGIN+"/auth-callback.html" };
+  let existing = false;
   let res = await sbFetch("/auth/v1/admin/generate_link", { method:"POST", body:JSON.stringify(body) });
-  if(res.status===422 || res.status===409){ // already registered -> magic link
+  if(res.status===422 || res.status===409){ // already registered
+    existing = true;
     res = await sbFetch("/auth/v1/admin/generate_link", { method:"POST", body:JSON.stringify({ type:"magiclink", email, redirect_to: ORIGIN+"/auth-callback.html" }) });
   }
   if(!res.ok){ const t=await res.text().catch(()=> ""); throw new Error("generate_link "+res.status+" "+t.slice(0,160)); }
   const j = await res.json();
-  const props = j.properties || j;
-  const action_link = props.action_link || j.action_link;
   const uid = (j.user && j.user.id) || j.id || j.user_id || null;
-  if(!action_link) throw new Error("no action_link in response");
-  return { action_link, uid };
+  if(!uid) throw new Error("no user id in response");
+  return { uid, existing };
 }
 
-function emailHtml(link, unsub){
+function greet(name){ var f=String(name||'').trim().split(/\s+/)[0]; return f?('Hi '+f+','):'Hi there,'; }
+function emailHtml(link, unsub, name){
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"></head>'+
   '<body style="margin:0;padding:0;background-color:#f4f6f8;">'+
   '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f6f8"><tr><td align="center" style="padding:24px 12px;">'+
   '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e4e7eb;border-radius:12px;">'+
   '<tr><td style="padding:32px 36px;font-family:Arial,Helvetica,sans-serif;color:#172033;">'+
-  '<p style="margin-top:0;margin-bottom:16px;font-size:15px;line-height:1.6;color:#172033;">Hi there,</p>'+
-  '<p style="margin-top:0;margin-bottom:16px;font-size:15px;line-height:1.6;color:#172033;">Thanks for confirming! We’ve started your free <strong>Pegasus Capital Network</strong> profile. Click below to log in, review it, and publish — no password needed.</p>'+
+  '<p style="margin-top:0;margin-bottom:16px;font-size:15px;line-height:1.6;color:#172033;">'+esc(greet(name))+'</p>'+
+  '<p style="margin-top:0;margin-bottom:16px;font-size:15px;line-height:1.6;color:#172033;">Thanks for confirming! We’ve started your free <strong>Pegasus Capital Network</strong> profile. Click below to activate it, review the details, and publish — no password needed. It stays private until you do.</p>'+
   '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin-top:0;margin-bottom:20px;"><tr>'+
   '<td align="center" bgcolor="#3a8fe8" style="background-color:#3a8fe8;border-radius:10px;">'+
   '<a href="'+esc(link)+'" style="display:inline-block;padding-top:13px;padding-bottom:13px;padding-left:26px;padding-right:26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;">Activate &amp; publish my profile</a>'+
   '</td></tr></table>'+
   '<p style="margin-top:0;margin-bottom:16px;font-size:14px;line-height:1.6;color:#172033;">Once it’s live, introduce yourself in the <a href="'+ORIGIN+'/feed" style="color:#3a8fe8;">Network Feed</a> — what you do and which markets you cover. Your first post is the first thing lenders, brokers, and advisors on the network see.</p>'+
-  '<p style="margin-top:0;margin-bottom:0;font-size:13px;line-height:1.5;color:#5b6573;">If the button doesn’t work, this activation link may have expired — just reply and we’ll send a fresh one.</p>'+
+  '<p style="margin-top:0;margin-bottom:0;font-size:13px;line-height:1.5;color:#5b6573;">This private link works for 30 days. If it doesn’t open, just reply and we’ll send a fresh one.</p>'+
   '<p style="margin-top:24px;margin-bottom:0;font-size:15px;line-height:1.6;color:#172033;">— Pegasus Capital Network</p>'+
   '<hr style="border:none;border-top:1px solid #e4e7eb;margin-top:24px;margin-bottom:16px;">'+
   '<p style="margin:0;font-size:11px;line-height:1.5;color:#8a97a8;">'+esc(ADDRESS)+'<br><a href="'+esc(unsub)+'" style="color:#8a97a8;">Unsubscribe</a></p>'+
   '</td></tr></table></td></tr></table></body></html>';
 }
-function emailText(link, unsub){
-  return "Hi there,\n\nThanks for confirming! We’ve started your free Pegasus Capital Network profile. Click to log in, review it, and publish — no password needed:\n\n"+link+"\n\nOnce it’s live, introduce yourself in the Network Feed ("+ORIGIN+"/feed) — what you do and which markets you cover. Your first post is the first thing lenders, brokers, and advisors on the network see.\n\nIf the link has expired, just reply and we’ll send a fresh one.\n\n— Pegasus Capital Network\n"+ADDRESS+"\nUnsubscribe: "+unsub;
+function emailText(link, unsub, name){
+  return greet(name)+"\n\nThanks for confirming! We’ve started your free Pegasus Capital Network profile. Click to activate it, review the details, and publish — no password needed. It stays private until you do:\n\n"+link+"\n\nOnce it’s live, introduce yourself in the Network Feed ("+ORIGIN+"/feed) — what you do and which markets you cover. Your first post is the first thing lenders, brokers, and advisors on the network see.\n\nThis private link works for 30 days. If it doesn’t open, just reply and we’ll send a fresh one.\n\n— Pegasus Capital Network\n"+ADDRESS+"\nUnsubscribe: "+unsub;
 }
 
-async function sendEmail(email, link){
+async function sendEmail(email, link, name){
   // Dedicated key for the verified sending account (falls back to the shared one).
   const key = process.env.PEGASUS_RESEND_API_KEY || process.env.RESEND_API_KEY;
   if(!key) throw new Error("Missing PEGASUS_RESEND_API_KEY");
@@ -83,8 +86,8 @@ async function sendEmail(email, link){
     body: JSON.stringify({
       from: FROM, to:[email], reply_to: REPLY_TO,
       subject: "Your Pegasus Capital Network profile is ready — activate it",
-      html: emailHtml(link, unsub),
-      text: emailText(link, unsub),
+      html: emailHtml(link, unsub, name),
+      text: emailText(link, unsub, name),
       headers: { "List-Unsubscribe": "<"+unsub+">", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" }
     })
   });
@@ -95,7 +98,9 @@ async function sendEmail(email, link){
 exports.handler = async () => {
   const out = { picked:0, provisioned:0, failed:0, errors:[] };
   try{
-    const res = await sbFetch("/rest/v1/pn_invite_consent?select=id,email,full_name&status=eq.consented&provisioned_at=is.null&limit="+BATCH, { headers:{ Accept:"application/json" } });
+    // Only consents confirmed by a human click on the /yes confirmation page
+    // (consent_method='confirmed'); link-prefetch "consents" are never provisioned.
+    const res = await sbFetch("/rest/v1/pn_invite_consent?select=id,email,full_name,company,token&status=eq.consented&provisioned_at=is.null&metadata->>consent_method=eq.confirmed&limit="+BATCH, { headers:{ Accept:"application/json" } });
     if(!res.ok){ const t=await res.text().catch(()=> ""); throw new Error("select "+res.status+" "+t.slice(0,160)); }
     const rows = await res.json();
     out.picked = Array.isArray(rows) ? rows.length : 0;
@@ -103,12 +108,21 @@ exports.handler = async () => {
       const email = String(row.email||"").trim().toLowerCase();
       if(!email || email.indexOf("@")<0){ out.failed++; continue; }
       try{
-        const { action_link, uid } = await generateActionLink(email);
-        // Prefill the auto-created profile (best-effort).
-        if(uid){
-          await sbFetch("/rest/v1/profiles?id=eq."+uid, { method:"PATCH", headers:{ Prefer:"return=minimal" }, body: JSON.stringify({ signup_source:"concierge_invite" }) }).catch(()=>{});
+        const { uid, existing } = await ensureUser(email);
+        // Prefill the auto-created profile (best-effort) and keep it hidden
+        // ('pending') until the person activates it. Never touch an existing
+        // member's profile beyond filling an empty/auto-generated name.
+        if(!existing){
+          await sbFetch("/rest/v1/profiles?id=eq."+uid, { method:"PATCH", headers:{ Prefer:"return=minimal" }, body: JSON.stringify({ signup_source:"concierge_invite", status:"pending" }) }).catch(()=>{});
         }
-        await sendEmail(email, action_link);
+        const prefix = email.split("@")[0];
+        if(row.full_name){
+          await sbFetch("/rest/v1/profiles?id=eq."+uid+"&or=(full_name.is.null,full_name.eq."+encodeURIComponent(prefix)+")", { method:"PATCH", headers:{ Prefer:"return=minimal" }, body: JSON.stringify({ full_name: String(row.full_name).trim() }) }).catch(()=>{});
+        }
+        if(row.company){
+          await sbFetch("/rest/v1/profiles?id=eq."+uid+"&company_name=is.null", { method:"PATCH", headers:{ Prefer:"return=minimal" }, body: JSON.stringify({ company_name: String(row.company).trim() }) }).catch(()=>{});
+        }
+        await sendEmail(email, ORIGIN+"/activate?t="+encodeURIComponent(row.token), row.full_name);
         await sbFetch("/rest/v1/pn_invite_consent?id=eq."+row.id, { method:"PATCH", headers:{ Prefer:"return=minimal" }, body: JSON.stringify({ provisioned_at: new Date().toISOString(), profile_id: uid }) });
         out.provisioned++;
         await sleep(150); // stay under Resend 10 req/s

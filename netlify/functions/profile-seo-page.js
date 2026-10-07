@@ -30,7 +30,8 @@ function replaceOrInsert(html,regex,replacement,before="</head>"){
 }
 async function getProfile(slug){
   const {url,key}=cfg();
-  const params=new URLSearchParams({select:PUBLIC_PROFILE_FIELDS,profile_slug:"eq."+slug,limit:"1"});
+  // Only live profiles are public; 'pending' (not yet activated) → not found.
+  const params=new URLSearchParams({select:PUBLIC_PROFILE_FIELDS,profile_slug:"eq."+slug,status:"eq.active",limit:"1"});
   const res=await fetch(url+"/rest/v1/profiles?"+params.toString(),{
     headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}
   });
