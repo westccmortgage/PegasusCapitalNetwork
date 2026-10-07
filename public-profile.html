@@ -785,15 +785,23 @@ Pegasus.boot(async function () {
       var uid = p && p.id; if(!uid) return;
       try{
         var sb=await window.PegSB.ready;
-        var r=await sb.rpc('get_member_signals',{p_user_id:uid, p_limit:6});
+        /* Prefer the feed-aware reader (migration 086: title/event/likes); fall
+           back to the 064 reader so the section still renders before 086. */
+        var r=await sb.rpc('get_member_posts',{p_user_id:uid, p_limit:6});
+        if(!r || r.error) r=await sb.rpc('get_member_signals',{p_user_id:uid, p_limit:6});
         if(!r || r.error || !Array.isArray(r.data) || !r.data.length) return;
-        var LBL={working_on:'Working on',seeking_intro:'Seeking intro',offering:'Offering',showcase:'Showcase',referral:'Referral',update:'Update'};
+        var LBL={working_on:'Working on',seeking_intro:'Seeking intro',offering:'Offer',deal:'Deal / Offer',showcase:'Showcase',referral:'Referral request',update:'Update',market_view:'Market view',story:'Story',project:'Project',event:'Event'};
         function ago(ts){ try{ var d=Math.max(0,(Date.now()-new Date(ts).getTime())/1000); if(d<3600)return Math.floor(d/60)+'m ago'; if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago'; }catch(e){ return ''; } }
+        function su(u){ return Pegasus.safeUrl?Pegasus.safeUrl(u):esc(u); }
         var rows=r.data.map(function(s){
+          var ev=(s.signal_type==='event'&&s.event_at)?'<div style="font-size:12px;color:var(--gold);margin-top:4px">📅 '+esc(new Date(s.event_at).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))+(s.event_location?' · '+esc(s.event_location):'')+'</div>':'';
+          var img=s.image_url?'<a href="'+su(s.image_url)+'" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px"><img src="'+su(s.image_url)+'" alt="" loading="lazy" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"></a>':'';
+          var lnk=s.link_url?'<a href="'+su(s.link_url)+'" target="_blank" rel="noopener noreferrer nofollow" style="display:inline-block;margin-top:6px;font-size:11.5px;font-family:var(--mono);color:var(--blue);text-decoration:none">↗ '+esc((s.link_url||'').replace(/^https?:\/\//,'').slice(0,52))+'</a>':'';
           return '<div style="display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)">'+
             '<span style="width:7px;height:7px;border-radius:50%;background:var(--blue);margin-top:6px;flex:none"></span>'+
-            '<div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--text);line-height:1.55">'+esc(s.content)+'</div>'+
-            '<div style="font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:3px">'+esc(LBL[s.signal_type]||'Update')+' · '+esc(ago(s.created_at))+'</div></div></div>';
+            '<div style="flex:1;min-width:0">'+(s.title?'<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">'+esc(s.title)+'</div>':'')+
+            '<div style="font-size:13.5px;color:var(--text);line-height:1.55;white-space:pre-wrap;word-break:break-word">'+esc(s.content)+'</div>'+ev+img+lnk+
+            '<div style="font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:4px">'+esc(LBL[s.signal_type]||'Update')+' · '+esc(ago(s.created_at))+(s.like_count?' · ♥ '+s.like_count:'')+' · <a href="/feed?post='+esc(s.id)+'" style="color:var(--text3);text-decoration:none">View in feed</a></div></div></div>';
         }).join('');
         sec.innerHTML='<div class="pp-sec-label">Latest Updates</div><div class="pp-card"><div class="pp-card-body" style="padding-top:4px;padding-bottom:4px">'+rows+'</div></div>';
         sec.style.display='';

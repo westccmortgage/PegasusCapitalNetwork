@@ -94,7 +94,7 @@
     const learn=G('Learn',[['How Pegasus Works','/how-it-works.html','The system explained'],['Growth Capital','/growth-capital.html','Financing & programs'],['Capital Sessions','/capital-sessions.html','Live institutional briefings'],['Capital Academy','/capital-academy.html','Finance fundamentals'],['Network Badge','/network-badge.html','Show your Pegasus connection'],['FAQ','/faq.html','Common questions']]);
     return `<a href="#maincontent" class="skip-link" onclick="var m=document.getElementById('maincontent')||document.querySelector('main,section,.section,.auth-wrap,.ar-wrap,.view');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</a><nav class="pub-nav">
       <a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a>
-      <div class="pub-links"><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html" class="${active==='Inside Pegasus'||active==='Explore'?'on':''}">Inside Pegasus</a>${who}${learn}</div>
+      <div class="pub-links"><a href="/feed" class="${active==='Feed'?'on':''}">Feed</a><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html" class="${active==='Inside Pegasus'||active==='Explore'?'on':''}">Inside Pegasus</a>${who}${learn}</div>
       <div class="nav-cta" id="pub-nav-cta"><a class="btn btn-ghost" id="nav-signin-btn" href="/signin.html">Sign In</a><a class="btn btn-pri nav-create" id="nav-create-btn" href="/signup.html">Create Free Profile</a></div>
       <button class="mob-menu-btn" id="mobMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
     </nav>
@@ -102,7 +102,7 @@
     <div class="mob-drawer" id="mobDrawer">
       <div class="mob-drawer-head"><img src="/assets/brand/pegasus-wordmark.png" style="height:24px"><button class="mob-drawer-close" id="mobClose" aria-label="Close menu">✕</button></div>
       <div class="mob-drawer-nav" id="mobDrawerNav">
-        <a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html">Inside Pegasus</a>
+        <a href="/feed">Feed</a><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html">Inside Pegasus</a>
         <div class="mob-sec">Who It’s For</div>
         <a href="/category-capital-providers.html">Capital Providers</a><a href="/category-capital-seekers.html">Capital Seekers</a><a href="/category-real-estate-agents.html">Real Estate Agents</a><a href="/category-rwa.html">RWA Partners</a><a href="/people">Browse People</a><a href="/businesses">Browse Businesses</a><a href="/events">Browse Events</a>
         <div class="mob-sec">Learn</div>
@@ -132,6 +132,7 @@
       <div class="sb-head"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><div><div class="sb-logo">Pegasus</div><div class="sb-ws">Workspace</div></div></div>
       <div class="sb-nav">
         <div class="sb-sec">Network</div>
+        ${item('◎','Network Feed','/feed',{act:'Feed'})}
         ${item('⬡','Members Network','/members.html',{act:'Members'})}
         ${item('▤','Business Directory','/businesses')}
         <div class="sb-sec">My Work</div>
@@ -310,7 +311,7 @@
     return `<footer class="footer">
       <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:30px;margin-bottom:32px">
         <div><div class="brand" style="margin-bottom:12px"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></div><div style="font-size:12px;color:var(--text3);line-height:1.6;max-width:240px">The operating system for structured real estate capital.</div></div>
-        ${col('Members',[['Browse Directory','/members.html'],['Growth Partners','/borrowers.html'],['Lenders','/members.html?role=lender'],['Brokers','/mortgage-brokers.html'],['Agents','/real-estate-agents.html']])}
+        ${col('Members',[['Network Feed','/feed'],['Browse Directory','/members.html'],['Growth Partners','/borrowers.html'],['Lenders','/members.html?role=lender'],['Brokers','/mortgage-brokers.html'],['Agents','/real-estate-agents.html']])}
         ${col('Platform',[['Deal Rooms','/deal-rooms.html'],['Match Engine','/match-engine.html'],['Pricing','/membership.html'],['How It Works','/how-it-works.html']])}
         ${col('RWA',[['RWA Network','/rwa-network.html'],['Tokenization','/rwa-tokenization.html'],['RWA Education','/rwa-education.html']])}
         ${col('Company',[['About','/about.html'],['Contact','/contact.html'],['FAQ','/faq.html'],['Trust & Safety','/trust-and-safety.html']])}
@@ -773,6 +774,7 @@
     var st=Store.get(); var isAdm = (typeof Store.isAdmin==='function') ? Store.isAdmin() : false;
     var p=st.profile||{}; var name=p.full_name||'My Account';
     var rows=[
+      ['\u25CE','Network Feed','/feed'],
       ['\u25C8','Members Network','/members.html'],
       ['\u229E','Business Directory','/businesses'],
       ['\u25C9','My Profile',ownProfilePath()],
@@ -894,6 +896,7 @@
       links.setAttribute('data-member', '1');
       var on = function(p){ return location.pathname.indexOf(p) === 0 ? ' on' : ''; };
       links.innerHTML =
+        '<a class="member'+on('/feed')+'" href="/feed">Feed</a>'+
         '<a class="member'+on('/members')+'" href="/members.html">Members Network</a>'+
         '<a class="member'+on('/businesses')+'" href="/businesses">Directory</a>'+
         '<a class="member'+(slug?on('/u/'):'')+'" href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
@@ -906,6 +909,7 @@
     if (mdn && mdn.getAttribute('data-member') !== '1') {
       mdn.setAttribute('data-member', '1');
       mdn.innerHTML =
+        '<a href="/feed">Feed</a>'+
         '<a href="/members.html">Members Network</a>'+
         '<a href="/businesses">Directory</a>'+
         '<a href="'+(slug?'/u/'+slug:'/profile.html')+'">My Profile</a>'+
