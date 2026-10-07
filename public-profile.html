@@ -801,7 +801,7 @@ Pegasus.boot(async function () {
             '<span style="width:7px;height:7px;border-radius:50%;background:var(--blue);margin-top:6px;flex:none"></span>'+
             '<div style="flex:1;min-width:0">'+(s.title?'<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">'+esc(s.title)+'</div>':'')+
             '<div style="font-size:13.5px;color:var(--text);line-height:1.55;white-space:pre-wrap;word-break:break-word">'+esc(s.content)+'</div>'+ev+img+lnk+
-            '<div style="font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:4px">'+esc(LBL[s.signal_type]||'Update')+' · '+esc(ago(s.created_at))+(s.like_count?' · ♥ '+s.like_count:'')+' · <a href="/feed?post='+esc(s.id)+'" style="color:var(--text3);text-decoration:none">View in feed</a></div></div></div>';
+            '<div style="font-size:9.5px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--text4);margin-top:4px">'+esc(LBL[s.signal_type]||'Update')+' · '+esc(ago(s.created_at))+(s.like_count?' · ♥ '+s.like_count:'')+' · <a href="/feed/post/'+esc(s.id)+'" style="color:var(--text3);text-decoration:none">View in feed</a></div></div></div>';
         }).join('');
         sec.innerHTML='<div class="pp-sec-label">Latest Updates</div><div class="pp-card"><div class="pp-card-body" style="padding-top:4px;padding-bottom:4px">'+rows+'</div></div>';
         sec.style.display='';

@@ -105,6 +105,22 @@
 .fd-act.del{margin-left:auto;color:var(--text4)}
 .fd-act.del:hover{color:var(--gold)}
 .fd-empty{padding:var(--sp-xl);text-align:center;color:var(--text3);font-size:13px;line-height:1.6}
+/* comments */
+.fd-comments{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.fd-cm{display:flex;gap:10px;align-items:flex-start}
+.fd-cm-b{flex:1;min-width:0;background:var(--bg2);border-radius:var(--r2);padding:8px 12px}
+.fd-cm-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.fd-cm-name{font-size:12.5px;font-weight:600;color:var(--text);text-decoration:none}
+.fd-cm-name:hover{color:var(--blue)}
+.fd-cm-role{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.fd-cm-time{font-size:10px;font-family:var(--mono);color:var(--text4);margin-left:auto}
+.fd-cm-x{border:none;background:none;color:var(--text4);cursor:pointer;font-size:11px;padding:0 4px}
+.fd-cm-x:hover{color:var(--gold)}
+.fd-cm-txt{font-size:13px;color:var(--text);line-height:1.55;margin-top:3px;white-space:pre-wrap;word-break:break-word}
+.fd-cm-txt a{color:var(--blue);text-decoration:none}
+.fd-cm-form{display:flex;gap:10px;align-items:flex-start}
+.fd-cm-ta{flex:1;min-height:38px;resize:none;font-size:13px;padding:8px 11px}
+.fd-cm-empty{font-size:12.5px;color:var(--text3);padding:4px 0}
 .fd-loadmore{align-self:center}
 
 /* rail */
@@ -219,7 +235,10 @@ Pegasus.boot(async function(){
   /* ── State from URL ─────────────────────────────────────────────────────── */
   var qs=new URLSearchParams(location.search);
   var filter=(qs.get('type')||'').replace(/[^a-z_]/g,'');
-  var permalink=(qs.get('post')||'').replace(/[^0-9a-f-]/gi,'');
+  /* Permalinks: /feed/post/<id> (server-rendered OG tags) or legacy /feed?post=<id>. */
+  var pathPost=(location.pathname.match(/^\/feed\/post\/([0-9a-f-]{36})/i)||[])[1]||'';
+  var permalink=(pathPost||qs.get('post')||'').replace(/[^0-9a-f-]/gi,'');
+  var snap=document.getElementById('peg-seo-snapshot'); if(snap) snap.remove();
   var postType='update', mediaOpen=false, before=null, exhausted=false, loading=false;
 
   /* ── First-post nudge: signed-in members who haven't posted yet ──────────
@@ -327,7 +346,7 @@ Pegasus.boot(async function(){
     }
     var long=(p.content||'').length>420||((p.content||'').split('\n').length>7);
     var canDel=MY_UID&&(p.user_id===MY_UID||IS_ADMIN);
-    return '<article class="fd-card" id="post-'+esc(p.id)+'"><div class="fd-card-b">'+
+    return '<article class="fd-card" id="post-'+esc(p.id)+'" data-owner="'+esc(p.user_id)+'"><div class="fd-card-b">'+
       '<div class="fd-post-h"><a href="'+href+'" aria-label="'+esc(p.author_name)+'">'+avHTML(p.author_avatar,p.author_name,p.author_color,'')+'</a>'+
       '<div class="fd-post-who"><a class="fd-post-name" href="'+href+'">'+esc(p.author_name)+'</a>'+(role?'<div class="fd-post-role">'+esc(role)+'</div>':'')+
       '<div class="fd-post-meta"><span class="fd-type '+esc(type)+'">'+esc(LBL[type]||'Update')+'</span><span>'+esc(ago(p.created_at))+'</span>'+(p.author_location?'<span>· '+esc(p.author_location)+'</span>':'')+'</div></div></div>'+
@@ -336,9 +355,60 @@ Pegasus.boot(async function(){
       ev+img+link+
       '<div class="fd-post-f">'+
       '<button class="fd-act like'+(p.liked_by_me?' liked':'')+'" type="button" data-id="'+esc(p.id)+'"><span class="ic">'+(p.liked_by_me?'♥':'♡')+'</span><span class="n">'+(p.like_count||0)+'</span></button>'+
+      '<button class="fd-act cmt" type="button" data-id="'+esc(p.id)+'"><span class="ic">💬</span><span class="n">'+(p.comment_count||0)+'</span></button>'+
       '<button class="fd-act share" type="button" data-id="'+esc(p.id)+'">↗ Share</button>'+
       (canDel?'<button class="fd-act del" type="button" data-id="'+esc(p.id)+'" title="Delete post">✕ Delete</button>':'')+
-      '</div></div></article>';
+      '</div><div class="fd-comments" id="cm-'+esc(p.id)+'" hidden></div></div></article>';
+  }
+  /* ── Comments ───────────────────────────────────────────────────────────── */
+  function commentHTML(c, postOwner){
+    var href=c.author_slug?'/u/'+encodeURIComponent(c.author_slug):'/public-profile.html?id='+encodeURIComponent(c.user_id);
+    var canDel=MY_UID&&(c.user_id===MY_UID||IS_ADMIN||postOwner===MY_UID);
+    return '<div class="fd-cm" id="cmt-'+esc(c.id)+'"><a href="'+href+'">'+avHTML(c.author_avatar,c.author_name,c.author_color,'sm')+'</a>'+
+      '<div class="fd-cm-b"><div class="fd-cm-h"><a class="fd-cm-name" href="'+href+'">'+esc(c.author_name)+'</a>'+(c.author_title?'<span class="fd-cm-role">'+esc(c.author_title)+'</span>':'')+'<span class="fd-cm-time">'+esc(ago(c.created_at))+'</span>'+
+      (canDel?'<button class="fd-cm-x" type="button" data-id="'+esc(c.id)+'" title="Delete comment">✕</button>':'')+'</div>'+
+      '<div class="fd-cm-txt">'+linkify(c.content||'')+'</div></div></div>';
+  }
+  async function loadComments(postId, postOwner){
+    var host=document.getElementById('cm-'+postId); if(!host) return;
+    host.hidden=false; host.innerHTML='<div class="fd-cm-empty">Loading…</div>';
+    var rows=[];
+    try{ var r=await sb.rpc('get_signal_comments',{p_id:postId,p_limit:100}); rows=(r&&Array.isArray(r.data))?r.data:[]; }catch(e){}
+    var form=MY_UID
+      ? '<form class="fd-cm-form" data-id="'+esc(postId)+'">'+avHTML(ME.avatar_url,ME.full_name||'Me',ME.avatar_color,'sm')+'<textarea class="fd-in fd-cm-ta" maxlength="600" rows="1" placeholder="Write a comment…"></textarea><button class="btn btn-pri btn-sm" type="submit">Comment</button></form><div class="fd-err fd-cm-err"></div>'
+      : '<div class="fd-cm-empty"><a href="/signin.html?next=%2Ffeed" style="color:var(--blue)">Sign in</a> to comment.</div>';
+    host.innerHTML=(rows.length?rows.map(function(c){return commentHTML(c,postOwner);}).join(''):'<div class="fd-cm-empty">No comments yet — start the conversation.</div>')+form;
+    wireComments(host, postId, postOwner);
+  }
+  function wireComments(host, postId, postOwner){
+    var f=host.querySelector('.fd-cm-form');
+    if(f){
+      var ta=f.querySelector('textarea'); ta.addEventListener('input',function(){ ta.style.height='auto'; ta.style.height=Math.min(160,ta.scrollHeight)+'px'; });
+      ta.addEventListener('keydown',function(e){ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){ e.preventDefault(); f.requestSubmit(); } });
+      f.onsubmit=async function(e){
+        e.preventDefault(); var txt=ta.value.trim(), err=host.querySelector('.fd-cm-err'), btn=f.querySelector('button');
+        if(!txt){ err.textContent='Write a comment first.'; return; }
+        btn.disabled=true; err.textContent='';
+        try{
+          var r=await sb.rpc('add_signal_comment',{p_id:postId,p_content:txt}); var d=r&&r.data||{};
+          if(r.error) throw r.error;
+          if(!d.ok){ err.textContent=d.message||'Could not post the comment.'; btn.disabled=false; return; }
+          await loadComments(postId, postOwner);
+          var n=document.querySelector('.fd-act.cmt[data-id="'+postId+'"] .n'); if(n) n.textContent=(parseInt(n.textContent||'0',10)||0)+1;
+        }catch(ex){ err.textContent='Could not post the comment right now.'; btn.disabled=false; }
+      };
+    }
+    host.querySelectorAll('.fd-cm-x').forEach(function(b){ b.onclick=async function(){
+      if(!confirm('Delete this comment?')) return; b.disabled=true;
+      try{ var r=await sb.rpc('remove_signal_comment',{p_id:b.getAttribute('data-id')}); if(r&&r.data&&r.data.ok){ var el=b.closest('.fd-cm'); if(el) el.remove(); var n=document.querySelector('.fd-act.cmt[data-id="'+postId+'"] .n'); if(n) n.textContent=Math.max(0,(parseInt(n.textContent||'0',10)||0)-1); } else b.disabled=false; }catch(e){ b.disabled=false; }
+    }; });
+  }
+  async function fillCommentCounts(rows){
+    if(!sb||!rows.length) return;
+    try{
+      var r=await sb.rpc('get_signal_comment_counts',{p_ids:rows.map(function(p){return p.id;})});
+      (r&&Array.isArray(r.data)?r.data:[]).forEach(function(x){ var n=document.querySelector('.fd-act.cmt[data-id="'+x.signal_id+'"] .n'); if(n) n.textContent=x.n||0; });
+    }catch(e){}
   }
   function wire(root){
     root.querySelectorAll('.fd-more').forEach(function(b){ b.onclick=function(){ var t=b.previousElementSibling; if(t) t.classList.remove('clamp'); b.remove(); }; });
@@ -348,8 +418,14 @@ Pegasus.boot(async function(){
       try{ var r=await sb.rpc('toggle_signal_like',{p_id:b.getAttribute('data-id')}); var d=r&&r.data||{}; if(d.ok){ b.classList.toggle('liked',!!d.liked); b.querySelector('.ic').textContent=d.liked?'♥':'♡'; b.querySelector('.n').textContent=d.count||0; } }catch(e){}
       b.disabled=false;
     }; });
+    root.querySelectorAll('.fd-act.cmt').forEach(function(b){ b.onclick=function(){
+      var id=b.getAttribute('data-id'), host=document.getElementById('cm-'+id); if(!host) return;
+      if(!host.hidden){ host.hidden=true; host.innerHTML=''; return; }
+      var art=b.closest('article'); var owner=art?art.getAttribute('data-owner'):null;
+      loadComments(id, owner);
+    }; });
     root.querySelectorAll('.fd-act.share').forEach(function(b){ b.onclick=async function(){
-      var url=ORIGIN+'/feed?post='+b.getAttribute('data-id');
+      var url=ORIGIN+'/feed/post/'+b.getAttribute('data-id');
       try{ if(navigator.share){ await navigator.share({url:url}); return; } }catch(e){ return; }
       try{ await navigator.clipboard.writeText(url); Pegasus.toast('✓','var(--green-dim)','Link copied','Share it anywhere — it opens this post.'); }catch(e){ prompt('Copy this link:',url); }
     }; });
@@ -381,6 +457,8 @@ Pegasus.boot(async function(){
       var frag=document.createElement('div'); frag.innerHTML=rows.map(postHTML).join('');
       wire(frag);
       while(frag.firstChild) list.appendChild(frag.firstChild);
+      fillCommentCounts(rows);
+      if(permalink&&rows[0]) loadComments(rows[0].id, rows[0].user_id);
     }
     if(rows.length){ before=rows[rows.length-1].created_at; }
     exhausted=permalink||rows.length<PAGE;
