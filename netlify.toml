@@ -447,3 +447,9 @@
 # 9am PT). Skips itself when nothing happened. Opt-out via /unsubscribe?digest=1.
 [functions."weekly-digest"]
   schedule = "0 16 * * 2"
+
+# Global invitation outreach — hourly; the function itself enforces the send
+# window, ramped daily cap, and auto-pause on bounces/complaints
+# (pn_settings 'outreach_global'; pause/resume in Admin → Invites).
+[functions."outreach-sender"]
+  schedule = "10 * * * *"
