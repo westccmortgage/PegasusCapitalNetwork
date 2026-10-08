@@ -114,7 +114,7 @@ function buildEmail(r){
   const page = m.presence_slug ? ORIGIN+"/business/"+m.presence_slug : null;
   const unsub = ORIGIN+"/unsubscribe?t="+r.token;
   const domain = m.source_domain || String(r.email.split("@")[1]||"");
-  const intro = "I'm reaching out from Pegasus Capital Network (pegasuscapitalnetwork.com), a professional network for real estate developers, lenders, brokers, and capital partners. Our directory covers more than 1,200 companies, including the largest U.S. mortgage lenders, ranked by 2025 origination volume, and members share deals, projects, market views, and events in a shared network feed.";
+  const intro = "I'm reaching out from Pegasus Capital Network (pegasuscapitalnetwork.com), a professional network for real estate developers, lenders, brokers, and capital partners. Our directory covers nearly 2,400 companies in more than 80 countries, including the largest U.S. mortgage lenders, ranked by 2025 origination volume, and members share deals, projects, market views, and events in a shared network feed.";
   const pageLine = page ? "We've added a page for "+r.company+", based on the public information on your website: "+page+" — it's free to claim and manage." : "";
   const footer = "Best regards,\nPegasus Capital Network\n\nYou are receiving this one-time note because this address is published on "+domain+" as a business contact. We will not follow up unless you reply.\n"+ADDRESS+"\nUnsubscribe: "+unsub;
   let subject, text;
