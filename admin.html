@@ -665,17 +665,44 @@ async function loadInvites(p){
   try{
     var c = await window.PegSB.ready;
     var res = await c.from('pn_invite_consent')
-      .select('id,email,full_name,company,city,state,source,status,consented_at,opted_out_at,provisioned_at,profile_id,send_count,last_sent_at,created_at')
-      .order('created_at',{ascending:false}).limit(2000);
+      .select('id,email,full_name,company,city,state,source,status,consented_at,opted_out_at,provisioned_at,profile_id,send_count,last_sent_at,created_at,delivery_status')
+      .order('created_at',{ascending:false}).limit(6000);
     if (res.error) { p.innerHTML = adminErr(res.error.message); return; }
-    var rows = res.data || [];
+    var all = res.data || [];
+    window.__invAll = all;
+    // Rows queued for the global outreach but not yet emailed are not "invited" yet.
+    var rows = all.filter(function(r){ return !!r.last_sent_at || r.status!=='invited'; });
     window.__invRows = rows;
+    var queued = all.length - rows.length;
     var n=function(st){ return rows.filter(function(r){ return r.status===st; }).length; };
     var prov = rows.filter(function(r){ return !!r.provisioned_at; }).length;
     var lastSent = rows.reduce(function(m,r){ return (r.last_sent_at && (!m || r.last_sent_at>m)) ? r.last_sent_at : m; }, null);
     function stat(v,l,m,color){ return '<div class="stat" style="--accent:'+color+'"><div class="stat-v">'+v+'</div><div class="stat-l">'+l+'</div>'+(m?'<div class="stat-m" style="color:'+color+'">'+m+'</div>':'')+'</div>'; }
     var pills=[['all','All'],['consented','Said yes'],['invited','No response'],['opted_out','Opted out']].map(function(f){ return '<div class="toggle-opt '+(INV_FILTER===f[0]?'on':'')+'" style="font-size:11px" onclick="invFilter(\''+f[0]+'\')">'+f[1]+'</div>'; }).join('');
-    p.innerHTML =
+    /* Global outreach control (pn_settings 'outreach_global', run hourly by outreach-sender). */
+    var ctl='';
+    try{
+      var st=await c.from('pn_settings').select('value').eq('key','outreach_global').maybeSingle();
+      var s=st&&st.data&&st.data.value;
+      if(s){
+        window.__outreachSettings=s;
+        var src=all.filter(function(r){ return r.source===s.source; });
+        var sentN=src.filter(function(r){ return !!r.last_sent_at; }).length;
+        var bounced=src.filter(function(r){ return r.delivery_status==='bounced'; }).length;
+        var compl=src.filter(function(r){ return r.delivery_status==='complained'; }).length;
+        var today=new Date().toISOString().slice(0,10);
+        var sentToday=src.filter(function(r){ return r.last_sent_at && r.last_sent_at.slice(0,10)===today; }).length;
+        var day=Math.floor((Date.now()-new Date(s.start_date+'T00:00:00Z').getTime())/864e5), cap=0;
+        (s.ramp||[]).forEach(function(x){ if(day>=x.from_day) cap=x.cap; });
+        ctl='<div class="card" style="margin-bottom:16px"><div class="card-body" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">'+
+          '<div style="flex:1;min-width:260px"><div style="font-weight:600;color:var(--text)">Global outreach '+(s.paused?chip('Paused','b-cancel'):chip('Running','b-active'))+'</div>'+
+          '<div style="font-size:12px;color:var(--text3);margin-top:4px;line-height:1.5">'+(s.paused&&s.paused_reason?'Reason: '+aesc(s.paused_reason)+'<br>':'')+
+          'Starts '+aesc(s.start_date)+' · today’s cap '+(day<0?0:cap)+' · sent today '+sentToday+' · window '+aesc((s.send_hours_utc||[]).join('–'))+' UTC<br>'+
+          queued+' queued · '+sentN+' sent · '+bounced+' bounced'+(sentN?' ('+(100*bounced/sentN).toFixed(1)+'%)':'')+' · '+compl+' complaints · auto-pause at '+Math.round((s.max_bounce_rate||0.05)*100)+'% bounces</div></div>'+
+          '<button class="btn '+(s.paused?'btn-pri':'btn-ghost')+' btn-sm" onclick="outreachToggle()">'+(s.paused?'Resume outreach':'Pause outreach')+'</button></div></div>';
+      }
+    }catch(_){}
+    p.innerHTML = ctl+
       '<div class="grid g4" style="margin-bottom:16px">'+
         stat(rows.length,'Invited','Last send '+aDate(lastSent),'var(--text2)')+
         stat(n('consented'),'Said yes',(rows.length?Math.round(n('consented')/rows.length*100):0)+'% of invited','var(--green)')+
@@ -692,6 +719,18 @@ async function loadInvites(p){
     invRender();
   }catch(e){ p.innerHTML = adminErr((e&&e.message)||'Could not load invites. Apply supabase/087_admin_console.sql.'); }
 }
+window.outreachToggle=async function(){
+  var s=window.__outreachSettings; if(!s) return;
+  var next=!s.paused;
+  if(!confirm(next?'Pause the global outreach? No further invitations will be sent until you resume.':'Resume the global outreach? Sending continues at the ramped daily cap inside the send window.')) return;
+  s.paused=next; if(next){ s.paused_reason='paused by admin'; s.paused_at=new Date().toISOString(); } else { delete s.paused_reason; delete s.paused_at; }
+  try{
+    var c=await window.PegSB.ready;
+    var r=await c.from('pn_settings').update({value:s,updated_at:new Date().toISOString()}).eq('key','outreach_global');
+    if(r.error) throw r.error;
+    loadInvites(document.getElementById('apanel'));
+  }catch(e){ alert('Could not update: '+((e&&e.message)||e)); }
+};
 window.invFilter=function(f){ INV_FILTER=f; var host=document.getElementById('apanel'); [].forEach.call(host.querySelectorAll('.toggle-opt'),function(el){ el.classList.toggle('on', el.getAttribute('onclick')==="invFilter('"+f+"')"); }); invRender(); };
 window.invRender=function(){
   var host=document.getElementById('inv-tbl'); if(!host) return;
