@@ -176,8 +176,23 @@ exports.handler = async () => {
     const quota = Math.min(MAX_SENDS_PER_RUN, Math.ceil(remaining / runsLeft));
     if(!quota){ out.reason="daily cap reached"; return done(out); }
 
-    const rows = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(s.source)+
-      "&status=eq.invited&last_sent_at=is.null&order=priority.asc.nullslast,created_at.asc&limit="+quota);
+    // Never mail several colleagues at one company close together — it reads as
+    // a blast and invites complaints. At most one invitation per company per
+    // company_spacing_days (default 3); later colleagues wait their turn.
+    const spacingDays = s.company_spacing_days==null ? 3 : s.company_spacing_days;
+    const coKey = (r)=>String(r.company||r.email.split("@")[1]||"").trim().toLowerCase();
+    const recent = await sb("/rest/v1/pn_invite_consent?select=company,email&source=eq."+encodeURIComponent(s.source)+
+      "&last_sent_at=gte."+encodeURIComponent(new Date(Date.now()-spacingDays*864e5).toISOString())+"&limit=2000");
+    const busy = new Set((recent||[]).map(coKey));
+    const candidates = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(s.source)+
+      "&status=eq.invited&last_sent_at=is.null&order=priority.asc.nullslast,created_at.asc&limit=500");
+    const rows = [];
+    for(const r of (candidates||[])){
+      if(rows.length >= quota) break;
+      const k = coKey(r);
+      if(busy.has(k)) continue;
+      busy.add(k); rows.push(r);
+    }
     out.ran = true;
     for(const r of (rows||[])){
       try{
