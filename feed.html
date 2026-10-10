@@ -160,6 +160,7 @@
     <aside class="fd-rail">
       <div class="fd-card"><div class="fd-card-b" id="fdEvents"><div class="fd-rail-t">Upcoming events</div><div class="fd-empty" style="padding:8px 0">Loading…</div></div></div>
       <div class="fd-card"><div class="fd-card-b fd-rail-cta" id="fdCta"></div></div>
+      <div id="fdInvite"></div>
     </aside>
   </div>
 </div>
@@ -179,6 +180,7 @@
 <script src="/js/pegasus-core.js"></script>
 <script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
+<script src="/js/pegasus-invite.js"></script>
 <script>
 Pegasus.boot(async function(){
   Pegasus.mountPublic('Feed');
@@ -493,6 +495,7 @@ Pegasus.boot(async function(){
   renderFilters();
   loadFeed(true);
   loadEvents();
+  if(window.PegInvite) PegInvite.mount(document.getElementById('fdInvite'));
   if(permalink){ setTimeout(function(){ var a=document.getElementById('post-'+permalink); if(a) a.scrollIntoView({block:'start',behavior:'smooth'}); },400); }
 });
 </script>
