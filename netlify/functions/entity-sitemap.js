@@ -188,6 +188,31 @@ async function businessStateUrls() {
     return [];
   }
 }
+// HMDA 2025 lender ranking pages: /rankings, the national list (+ ?page=2..10)
+// and HQ-state lists with ≥3 ranked lenders. Never fails the sitemap.
+async function rankingUrls() {
+  const base = ORIGIN + "/rankings/top-mortgage-lenders-2025";
+  const urls = [urlNode(ORIGIN + "/rankings", "", "0.7"), urlNode(base, "", "0.7")];
+  try {
+    const rows = await restRows("public_business_directory", {
+      select: "state_code",
+      hmda_rank: "not.is.null",
+    });
+    const pages = Math.min(10, Math.ceil(rows.length / 100));
+    for (let p = 2; p <= pages; p++) urls.push(urlNode(base + "?page=" + p, "", "0.5"));
+    const counts = new Map();
+    for (const row of rows) {
+      const code = String(row.state_code || "").trim().toUpperCase();
+      if (STATE_CODES.has(code)) counts.set(code, (counts.get(code) || 0) + 1);
+    }
+    for (const [code, n] of [...counts.entries()].sort()) {
+      if (n >= 3) urls.push(urlNode(base + "/" + code.toLowerCase(), "", "0.6"));
+    }
+  } catch (err) {
+    console.warn("[entity-sitemap] ranking urls unavailable:", err && err.message);
+  }
+  return urls;
+}
 async function presenceSitemap(kind) {
   const type = kind === "events" ? "event" : "company";
   const segment = kind === "events" ? "event" : "business";
@@ -199,7 +224,7 @@ async function presenceSitemap(kind) {
   });
   const seen = new Set();
   const urls = [];
-  if (kind === "businesses") urls.push(...(await businessFacetUrls()), ...(await businessStateUrls()));
+  if (kind === "businesses") urls.push(...(await businessFacetUrls()), ...(await businessStateUrls()), ...(await rankingUrls()));
   for (const row of rows) {
     const slug = cleanSlug(row.slug);
     if (!slug || seen.has(slug) || !String(row.name || "").trim()) continue;

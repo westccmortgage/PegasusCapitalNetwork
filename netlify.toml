@@ -151,6 +151,39 @@
   status = 200
   force = true
 
+# HMDA 2025 lender rankings (SEO) + embeddable ranked-lender badge. The function
+# routes from the original path; the query params only serve direct calls.
+[[redirects]]
+  from = "/rankings"
+  to = "/.netlify/functions/hmda-rankings?view=index"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/rankings/top-mortgage-lenders-2025"
+  to = "/.netlify/functions/hmda-rankings?view=national"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/rankings/top-mortgage-lenders-2025/:st"
+  to = "/.netlify/functions/hmda-rankings?view=state&st=:st"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/rankings/badge/:slug"
+  to = "/.netlify/functions/hmda-rankings?view=badge&slug=:slug"
+  status = 200
+  force = true
+
+# /badge/<slug>.svg — the function parses the slug from the path (splat keeps ".svg").
+[[redirects]]
+  from = "/badge/*"
+  to = "/.netlify/functions/hmda-badge"
+  status = 200
+  force = true
+
 # PATH REWRITES (status 200 internal rewrites; none touch "/", apex, or www)
 # ════════════════════════════════════════════════════════════════════════════
 [[redirects]]
