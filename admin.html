@@ -75,7 +75,7 @@ v.insertAdjacentHTML('beforeend',
   '<a href="/showcase-admin.html" style="color:var(--blue)">Showcase Moderation</a> · <a href="/admin/intelligence" style="color:var(--blue)">Capital Intelligence</a> · '+
   '<a href="/admin/partner-network" style="color:var(--blue)">Partner Network</a></div>'+
   '<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap" id="atabs"></div><div id="apanel"></div>');
-const sections=['Users','Feed','Invites','Claims','Duplicates','Directory','Homepage Event','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Member Log','Manual Review','Platform Health','Schema & Repair'];
+const sections=['Users','Feed','Invites','Claims','Deal Requests','Duplicates','Directory','Homepage Event','Subscriptions','Access System','Deal Rooms','Lender Profiles','Growth Partner Submissions','Match Activity','Analytics','Member Log','Manual Review','Platform Health','Schema & Repair'];
 document.getElementById('atabs').innerHTML=sections.map((s,i)=>'<div class="toggle-opt '+(i===0?'on':'')+'" style="font-size:11px" onclick="aShow(\''+s+'\')">'+s+'</div>').join('');
 function tbl(cols,rows){return '<div class="card"><table class="tbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
 const chip=(t,c)=>'<span class="badge '+c+'">'+t+'</span>';
@@ -674,6 +674,39 @@ window.feedDelete=async function(id){
    085). Read-only funnel + list; consented rows are provisioned automatically
    by the concierge-build function every 15 minutes. ────────────────────────── */
 var INV_FILTER='all';
+/* ── Deal Requests — deals sent through the Lender Matcher (/find-a-lender).
+   admin_list_deal_requests is admin-only; every DB value is escaped. ── */
+var DR_TYPES={residential_purchase:'Home purchase (1–4 units)',residential_refi:'Refinance (1–4 units)',dscr_rental:'DSCR / rental property',fix_flip:'Fix & flip',bridge:'Bridge loan',construction:'Construction',multifamily:'Multifamily (5+ units)',commercial:'Commercial real estate',sba_business:'SBA / business loan'};
+function drDealSummary(d){
+  d=d||{};
+  var amt=Number(d.amount);
+  var head=[DR_TYPES[d.type]||d.type||'Deal', amt>0?'$'+Math.round(amt).toLocaleString('en-US'):'', d.state||''].filter(Boolean).map(aesc).join(' · ');
+  var more=[d.property,d.timeline].filter(Boolean).map(aesc).join(' · ');
+  return '<div style="font-weight:600;color:var(--text)">'+head+'</div>'+
+    (more?'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+more+'</div>':'')+
+    (d.notes?'<div style="font-size:11px;color:var(--text2);margin-top:4px;max-width:360px;white-space:pre-wrap;word-break:break-word">'+aesc(d.notes)+'</div>':'');
+}
+async function loadDealRequests(p){
+  p.innerHTML = adminLoading('Loading deal requests…');
+  try{
+    var c = await window.PegSB.ready;
+    var r = await c.rpc('admin_list_deal_requests',{p_limit:200});
+    if (r.error) { p.innerHTML = adminErr(aesc(r.error.message)); return; }
+    var rows = Array.isArray(r.data) ? r.data : [];
+    if (!rows.length) { p.innerHTML = adminEmpty('◇','No deal requests yet','Deals members send to lenders from the Lender Matcher (/find-a-lender) appear here, with the lenders each one was sent to.'); return; }
+    p.innerHTML = '<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">'+rows.length+' most recent</div>'+
+      tbl(['When','Requester','Deal','Shared?','Sent to'], rows.map(function(q){
+        var targets=Array.isArray(q.targets)?q.targets:[];
+        return [
+          '<span style="white-space:nowrap">'+aesc(aWhen(q.created_at))+'</span>',
+          '<div style="font-weight:600;color:var(--text)">'+aesc(q.requester||'Member')+'</div>'+(q.requester_email?'<div style="font-size:11px;color:var(--text3)">'+aesc(q.requester_email)+'</div>':''),
+          drDealSummary(q.deal),
+          q.share_contact?chip('Shared','b-active'):chip('Private','b-none'),
+          '<div style="font-size:11px;color:var(--text2);max-width:280px">'+(targets.length?targets.map(aesc).join(', '):'—')+'</div>'
+        ];
+      }));
+  }catch(e){ p.innerHTML = adminErr(aesc((e&&e.message)||'Could not load deal requests')); }
+}
 async function loadInvites(p){
   p.innerHTML = adminLoading('Loading invite campaign…');
   try{
@@ -888,6 +921,7 @@ var HEALTH_MANUAL_HTML =
 window.aShow=function(s){[...document.querySelectorAll('#atabs .toggle-opt')].forEach(e=>e.classList.toggle('on',e.textContent===s));const p=document.getElementById('apanel');
   if(s==='Users'){ loadUsers(p); return; }
   if(s==='Claims'){ loadClaims(p); return; }
+  if(s==='Deal Requests'){ loadDealRequests(p); return; }
   if(s==='Duplicates'){ loadDuplicates(p); return; }
   if(s==='Directory'){ loadDirectory(p); return; }
   if(s==='Subscriptions'){ loadSubscriptions(p); return; }

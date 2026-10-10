@@ -96,8 +96,11 @@ const CSS='.dir-wrap{max-width:1120px;margin:auto;padding:48px 40px 72px}.dir-he
   '.rk-embed{width:100%;min-height:110px;font-family:var(--mono);font-size:12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg1);color:var(--text);resize:vertical;box-sizing:border-box}.rk-copy{margin-top:10px;padding:9px 16px;border-radius:9px;border:0;background:var(--blue);color:#fff;font-weight:600;cursor:pointer}'+
   '.rk-claim{margin-top:30px;padding:20px 22px;border:1px solid var(--border);border-radius:16px;background:var(--bg1);box-shadow:var(--sh-card)}.rk-claim h2{font-size:18px;margin:0 0 6px;color:var(--text)}.rk-claim p{color:var(--text2);font-size:13.5px;line-height:1.6;margin:0}.rk-steps{margin:14px 0 4px;padding-left:22px;color:var(--text2);font-size:13.5px;line-height:1.8}.rk-steps strong{color:var(--text)}.rk-claim .rk-alt{margin-top:10px;font-size:13px}.rk-claim .rk-alt a{color:var(--blue);text-decoration:none;font-weight:600}'+
   '.rk-award{display:inline-block;margin:14px 0 0 8px;padding:10px 16px;border-radius:10px;border:1px solid var(--gold);color:var(--text);text-decoration:none;font-weight:600;font-size:14px}'+
+  '.rk-deal{text-align:center;margin:-10px auto 22px;font-size:13.5px}.rk-deal a{color:var(--blue);text-decoration:none;font-weight:600}'+
   '@media(max-width:760px){.dir-wrap{padding:32px 16px 54px}}';
 const AWARD="/awards/top-lenders-2025";
+// Lender Matcher CTA shown under the page header.
+const DEAL_CTA='<p class="rk-deal"><a href="/find-a-lender">Have a deal? Find a matching lender →</a></p>';
 // "Claim your page" box (unclaimed companies) or "Manage this page" (claimed).
 // Same markup as hmda-awards.js.
 function claimBox(slug,unclaimed){
@@ -161,7 +164,7 @@ async function indexPage(){
     shown.map(([st,n])=>'<a href="'+esc(BASE+"/"+st.toLowerCase())+'">'+esc(STATE_NAMES[st])+' <span>'+n+'</span></a>').join("")+'</div>':'';
   const body='<header class="dir-head">'+cr.html+'<div class="eyebrow" style="justify-content:center">Lender Rankings</div><h1>2025 U.S. Mortgage Lender Rankings</h1>'+
     '<p>Every ranked lender is ordered by its total 2025 U.S. mortgage origination volume as reported under the Home Mortgage Disclosure Act (HMDA). Rank #1 is the largest originator nationwide.</p>'+
-    '<a class="rk-cta" href="'+esc(BASE)+'">Top 100 U.S. Mortgage Lenders 2025 →</a><a class="rk-award" href="'+esc(AWARD)+'">Pegasus Top Lenders 2025 awards →</a></header>'+grid;
+    '<a class="rk-cta" href="'+esc(BASE)+'">Top 100 U.S. Mortgage Lenders 2025 →</a><a class="rk-award" href="'+esc(AWARD)+'">Pegasus Top Lenders 2025 awards →</a></header>'+DEAL_CTA+grid;
   return ok(shell({title,desc,canonical,ld:[itemList(title,items),cr.ld],body}));
 }
 
@@ -181,7 +184,7 @@ async function nationalPage(page){
   const cr=crumbsOf([{name:"Top Mortgage Lenders 2025",href:BASE}].concat(page>1?[{name:"Ranks "+fmtInt(lo)+"–"+fmtInt(hi),href:pathFor(page)}]:[]));
   const body='<header class="dir-head">'+cr.html+'<div class="eyebrow" style="justify-content:center">Lender Rankings</div><h1>'+esc(h1)+'</h1>'+
     '<p>U.S. mortgage lenders ranked by total 2025 origination volume reported under the Home Mortgage Disclosure Act (HMDA). Rank #1 is the largest originator nationwide.</p>'+
-    (page===1?'<a class="rk-award" style="margin-left:0" href="'+esc(AWARD)+'">See the Pegasus Top Lenders 2025 awards →</a>':'')+'</header>'+
+    (page===1?'<a class="rk-award" style="margin-left:0" href="'+esc(AWARD)+'">See the Pegasus Top Lenders 2025 awards →</a>':'')+'</header>'+DEAL_CTA+
     table(rows,false)+
     '<nav class="dir-pager" aria-label="Pagination">'+(hasPrev?'<a href="'+esc(pathFor(page-1))+'">← Previous</a>':'')+(hasNext?'<a href="'+esc(pathFor(page+1))+'">Next →</a>':'')+'</nav>'+
     '<p style="text-align:center;margin-top:18px;font-size:13px"><a href="/rankings" style="color:var(--blue);text-decoration:none">Rankings by headquarters state →</a></p>';
@@ -199,7 +202,7 @@ async function statePage(st){
   const desc=(rows.length?rows.length+" ":"")+"mortgage lenders headquartered in "+name+", ordered by their total 2025 U.S. origination volume reported under HMDA. Headquarters location, not where loans are made.";
   const cr=crumbsOf([{name:"Top Mortgage Lenders 2025",href:BASE},{name:name,href:path}]);
   const body='<header class="dir-head">'+cr.html+'<div class="eyebrow" style="justify-content:center">Lender Rankings</div><h1>'+esc(h1)+'</h1>'+
-    '<p>These lenders are headquartered in '+esc(name)+'. They are ranked by their total 2025 U.S. mortgage origination volume reported under the Home Mortgage Disclosure Act (HMDA) — nationwide, not only loans made in '+esc(name)+'. A lender’s headquarters is not necessarily where its loans are made.</p></header>'+
+    '<p>These lenders are headquartered in '+esc(name)+'. They are ranked by their total 2025 U.S. mortgage origination volume reported under the Home Mortgage Disclosure Act (HMDA) — nationwide, not only loans made in '+esc(name)+'. A lender’s headquarters is not necessarily where its loans are made.</p></header>'+DEAL_CTA+
     (rows.length?table(rows,true):'<p style="text-align:center;color:var(--text3);padding:30px">No ranked lenders are headquartered in '+esc(name)+' yet.</p>')+
     '<p style="text-align:center;margin-top:22px;font-size:13px"><a href="'+esc(BASE)+'" style="color:var(--blue);text-decoration:none">National Top 100 →</a> · <a href="/rankings" style="color:var(--blue);text-decoration:none">All states →</a></p>';
   const html=shell({title,desc,canonical,robots:rows.length>=STATE_MIN?"":"noindex,follow",ld:[itemList(h1,rowItems(rows,(r,i)=>i+1)),cr.ld],body});

@@ -221,8 +221,11 @@ function viewsScript(slug){
     'var k="pegv:"+s+":"+new Date().toISOString().slice(0,10),seen=false;try{seen=!!localStorage.getItem(k);}catch(_){}'+
     'var p=seen?Promise.resolve():fetch(u+"record_presence_view",{method:"POST",headers:h,body:JSON.stringify({p_slug:s})}).then(function(){try{localStorage.setItem(k,"1");}catch(_){}});'+
     'p.then(function(){var el=document.getElementById("peg-views");if(!el)return;'+
-    'return fetch(u+"get_presence_views",{method:"POST",headers:h,body:JSON.stringify({p_slug:s,p_days:30})}).then(function(r){return r.json();}).then(function(n){'+
-    'n=parseInt(n,10);if(n>=3){el.textContent=" This page was viewed "+n+" times in the last 30 days.";el.style.display="inline";}});}).catch(function(){});}'+
+    'function j(f,b){return fetch(u+f,{method:"POST",headers:h,body:JSON.stringify(b)}).then(function(r){return r.json();}).catch(function(){return null;});}'+
+    'return Promise.all([j("get_presence_views",{p_slug:s,p_days:30}),j("get_presence_request_count",{p_slug:s,p_days:30})]).then(function(a){'+
+    'var n=parseInt(a[0],10),q=parseInt(a[1],10),t="";if(n>=3)t=" This page was viewed "+n+" times in the last 30 days.";'+
+    'if(q>=1)t+=(t?" \\u00b7 ":" ")+q+" financing request"+(q===1?"":"s")+" matched this company \\u2014 claim the page to view them.";'+
+    'if(t){el.textContent=t;el.style.display="inline";}});}).catch(function(){});}'+
     'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();}catch(_){}})();</script>';
 }
 function render(html,p,kind){

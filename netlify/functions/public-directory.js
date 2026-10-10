@@ -349,8 +349,8 @@ function render(ctx){
     // Page is CDN-cached for everyone, so swap the guest CTA client-side for signed-in members.
     '<script>(function(){try{var raw=localStorage.getItem("pegasus.auth");if(!raw)return;var pj=JSON.parse(raw);if(!(pj&&(pj.access_token||(pj.currentSession&&pj.currentSession.access_token))))return;var c=document.getElementById("dirNavCta");if(!c)return;var s="";try{s=localStorage.getItem("peg_slug")||"";}catch(_){}c.innerHTML=\'<a class="btn btn-ghost" href="/members.html">Members Network</a><a class="btn btn-ghost" href="\'+(s?"/u/"+encodeURIComponent(s):"/profile-edit.html")+\'">My Profile</a><a class="btn btn-pri" href="/dashboard.html">My Workspace →</a>\';}catch(_){}})();</script>'+
     '<main class="dir-wrap"><header class="dir-head"><div class="eyebrow" style="justify-content:center">Public Network</div><h1>'+esc(h1)+'</h1><p>'+esc(desc)+'</p>'+
-    // Capital & Lenders section → HMDA 2025 lender rankings (/rankings).
-    (kind==="businesses"&&activeSection==="capital"?'<p style="margin:8px 0 0;font-size:13px"><a href="/rankings" style="color:var(--blue);text-decoration:none;font-weight:600">2025 lender rankings →</a></p>':'')+
+    // Capital & Lenders section → HMDA 2025 lender rankings (/rankings) + Lender Matcher (/find-a-lender).
+    (kind==="businesses"&&activeSection==="capital"?'<p style="margin:8px 0 0;font-size:13px"><a href="/rankings" style="color:var(--blue);text-decoration:none;font-weight:600">2025 lender rankings →</a> · <a href="/find-a-lender" style="color:var(--blue);text-decoration:none;font-weight:600">Find a lender for your deal →</a></p>':'')+
     '<div class="dir-tabs">'+
     '<a href="/people" class="'+(kind==="people"?"on":"")+'">People</a><a href="/businesses" class="'+(kind==="businesses"?"on":"")+'">Businesses</a><a href="/events" class="'+(kind==="events"?"on":"")+'">Events</a></div>'+subnav+'</header>'+
     (rows.length?'<section class="dir-grid">'+rows.map(x=>card(x,kind)).join("")+'</section>':'<div class="dir-empty">'+esc(emptyMsg)+'</div>')+
