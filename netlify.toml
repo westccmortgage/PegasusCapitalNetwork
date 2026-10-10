@@ -177,6 +177,27 @@
   status = 200
   force = true
 
+# Pegasus Top Lenders 2025 — award page + honoree pages, computed live from the
+# HMDA ranking (hmda-awards routes from the original path).
+[[redirects]]
+  from = "/awards/top-lenders-2025"
+  to = "/.netlify/functions/hmda-awards?view=index"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/awards/top-lenders-2025/:slug"
+  to = "/.netlify/functions/hmda-awards?view=honoree&slug=:slug"
+  status = 200
+  force = true
+
+# /badge/award/<slug>.svg — gold award badge. MUST stay before the /badge/* rule.
+[[redirects]]
+  from = "/badge/award/*"
+  to = "/.netlify/functions/hmda-badge?kind=award"
+  status = 200
+  force = true
+
 # /badge/<slug>.svg — the function parses the slug from the path (splat keeps ".svg").
 [[redirects]]
   from = "/badge/*"

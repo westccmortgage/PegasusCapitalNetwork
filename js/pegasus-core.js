@@ -106,7 +106,7 @@
         <div class="mob-sec">Who It’s For</div>
         <a href="/category-capital-providers.html">Capital Providers</a><a href="/category-capital-seekers.html">Capital Seekers</a><a href="/category-real-estate-agents.html">Real Estate Agents</a><a href="/category-rwa.html">RWA Partners</a><a href="/people">Browse People</a><a href="/businesses">Browse Businesses</a><a href="/events">Browse Events</a>
         <div class="mob-sec">Learn</div>
-        <a href="/how-it-works.html">How Pegasus Works</a><a href="/growth-capital.html">Growth Capital</a><a href="/capital-sessions.html">Capital Sessions</a><a href="/capital-academy.html">Capital Academy</a><a href="/network-badge.html">Network Badge</a><a href="/rankings">Lender Rankings</a><a href="/faq.html">FAQ</a>
+        <a href="/how-it-works.html">How Pegasus Works</a><a href="/growth-capital.html">Growth Capital</a><a href="/capital-sessions.html">Capital Sessions</a><a href="/capital-academy.html">Capital Academy</a><a href="/network-badge.html">Network Badge</a><a href="/rankings">Lender Rankings</a><a href="/awards/top-lenders-2025">Top Lenders 2025</a><a href="/faq.html">FAQ</a>
         <div class="mob-sec">Company</div>
         <a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/events">Events</a>
       </div>
@@ -313,7 +313,7 @@
       <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:30px;margin-bottom:32px">
         <div><div class="brand" style="margin-bottom:12px"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></div><div style="font-size:12px;color:var(--text3);line-height:1.6;max-width:240px">The operating system for structured real estate capital.</div></div>
         ${col('Members',[['Network Feed','/feed'],['Browse Directory','/members.html'],['Growth Partners','/borrowers.html'],['Lenders','/members.html?role=lender'],['Brokers','/mortgage-brokers.html'],['Agents','/real-estate-agents.html']])}
-        ${col('Platform',[['Deal Rooms','/deal-rooms.html'],['Match Engine','/match-engine.html'],['Pricing','/membership.html'],['How It Works','/how-it-works.html'],['Lender Rankings','/rankings']])}
+        ${col('Platform',[['Deal Rooms','/deal-rooms.html'],['Match Engine','/match-engine.html'],['Pricing','/membership.html'],['How It Works','/how-it-works.html'],['Lender Rankings','/rankings'],['Top Lenders 2025','/awards/top-lenders-2025']])}
         ${col('RWA',[['RWA Network','/rwa-network.html'],['Tokenization','/rwa-tokenization.html'],['RWA Education','/rwa-education.html']])}
         ${col('Company',[['About','/about.html'],['Contact','/contact.html'],['FAQ','/faq.html'],['Trust & Safety','/trust-and-safety.html']])}
       </div>

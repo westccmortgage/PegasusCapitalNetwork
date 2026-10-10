@@ -79,7 +79,7 @@ async function getPresence(slug){
 // (section/category, state, city, 2025 HMDA rank/volume/count). Both fetched in
 // parallel; any failure degrades to {is_claimable:false, dir:null} — never throws.
 async function getDirectoryRow(slug){
-  const out={is_claimable:false,dir:null};
+  const out={is_claimable:false,dir:null,award:false};
   try{
     const {url,key}=cfg();
     const headers={apikey:key,Authorization:"Bearer "+key,Accept:"application/json"};
@@ -91,8 +91,38 @@ async function getDirectoryRow(slug){
     ]);
     out.is_claimable=!!(Array.isArray(cr)&&cr[0]&&cr[0].is_claimable===true);
     if(Array.isArray(dr)&&dr[0]&&typeof dr[0]==="object") out.dir=dr[0];
+    if(out.dir) out.award=await isHonoree(slug,out.dir);
   }catch(_){}
   return out;
+}
+// Pegasus Top Lenders 2025 honoree? Same rules as hmda-awards.js: U.S. rank ≤100,
+// Top 25 within banks & CUs / independent mortgage companies, or State Leader
+// (best rank among ≥3 ranked lenders HQ'd in the state). Any failure → false.
+async function isHonoree(slug,d){
+  try{
+    const rank=Number(d.hmda_rank);
+    if(!Number.isFinite(rank)||rank<1) return false;
+    if(rank<=100) return true;
+    const cat=["financial-institutions","mortgage-companies"].includes(txt(d.cat_slug))?txt(d.cat_slug):"";
+    const st=cleanState(d.state_code);
+    if(!cat&&!st) return false;
+    // Exact counts via PostgREST: total in Content-Range of a 1-row ranged GET.
+    const {url,key}=cfg();
+    const count=async params=>{
+      const qs=new URLSearchParams({select:"slug",hmda_rank:"not.is.null",...params});
+      const res=await fetch(url+"/rest/v1/public_business_directory?"+qs.toString(),{headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json",Range:"0-0","Range-Unit":"items",Prefer:"count=exact"}});
+      const m=String(res.headers.get("content-range")||"").match(/\/(\d+)$/);
+      if((!res.ok&&res.status!==416)||!m) throw new Error("count failed: "+res.status);
+      return parseInt(m[1],10);
+    };
+    const ahead="(hmda_rank.lt."+rank+",and(hmda_rank.eq."+rank+",slug.lt."+slug+"))";
+    const [catAhead,stTotal,stAhead]=await Promise.all([
+      cat?count({cat_slug:"eq."+cat,or:ahead}):null,
+      st?count({state_code:"ilike."+st}):null,
+      st?count({state_code:"ilike."+st,or:ahead}):null
+    ]);
+    return !!((cat&&catAhead+1<=25)||(st&&stTotal>=3&&stAhead===0));
+  }catch(_){return false;}
 }
 async function getTemplate(request){
   const u=new URL(request.url);
@@ -129,6 +159,7 @@ function snapshot(p,kind,canonical){
       hmda+='<div style="font-size:12.5px;margin-top:6px">'+
         (slug?'<a href="/rankings/badge/'+esc(encodeURIComponent(slug))+'" style="color:#1d5a9e;text-decoration:none;font-weight:600">Show your ranking: get the badge →</a> <span aria-hidden="true" style="color:#c3ccd8">·</span> ':'')+
         '<a href="'+esc(rankHref)+'" style="color:#1d5a9e;text-decoration:none">'+esc(rankLabel)+'</a></div>';
+      if(p._award===true&&slug) hmda+='<div style="font-size:12.5px;margin-top:6px"><a href="/awards/top-lenders-2025/'+esc(encodeURIComponent(slug))+'" style="color:#8a6514;text-decoration:none;font-weight:600">Pegasus Top Lenders 2025 honoree — see the award →</a></div>';
     }
   }
   return '<article id="peg-seo-snapshot" style="max-width:1000px;margin:30px auto 20px;padding:28px 40px;border:1px solid #e4e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;color:#172033">'+
@@ -166,11 +197,16 @@ function joinCta(kind){
 // (is_claimable from public_presence_previews); never on member-built pages.
 // Previously: always visible (claiming is relevant to
 // signed-in members too). Routes to the claim flow with the presence slug.
-function claimCta(kind,slug){
+// Ranked lenders (hmda_rank present) get a more specific pitch.
+function claimCta(kind,slug,rank){
   var noun=kind==="event"?"event":"business";
   var href="/claim?presence="+encodeURIComponent(slug);
+  var r=Number(rank);
+  var lead=kind==="business"&&Number.isFinite(r)&&r>=1
+    ? "Ranked #"+fmtInt(r)+" by Pegasus. Claim this page to update your details, add your team, and display the official badge."
+    : "Is this your "+noun+" on Pegasus?";
   return '<aside style="max-width:1000px;margin:0 auto 34px;padding:14px 20px;border:1px dashed #cdd6e0;border-radius:14px;background:#f7f9fb;color:#51607a;font-family:Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13.5px">'+
-    '<span>Is this your '+noun+' on Pegasus?<span id="peg-views" style="display:none"></span></span>'+
+    '<span>'+esc(lead)+'<span id="peg-views" style="display:none"></span></span>'+
     '<a href="'+esc(href)+'" style="color:#235fa6;font-weight:600;text-decoration:none">Claim this page →</a></aside>';
 }
 // Page-view beacon (all public company/event pages) + "viewed N times" in the
@@ -255,7 +291,7 @@ function render(html,p,kind){
     }
   }
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
-  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+(p.is_claimable===true?claimCta(kind,slug)+"\n":"")+joinCta(kind));
+  html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+(p.is_claimable===true?claimCta(kind,slug,(p._dir||{}).hmda_rank)+"\n":"")+joinCta(kind));
   html=html.replace("</body>",viewsScript(slug)+"\n</body>");
   return html;
 }
@@ -278,7 +314,7 @@ export default async (request) => {
       // Member-only/private public requests stay non-indexable.
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
     }
-    const p={...data.presence,is_claimable:dirRow.is_claimable,_dir:dirRow.dir};
+    const p={...data.presence,is_claimable:dirRow.is_claimable,_dir:dirRow.dir,_award:dirRow.award===true};
     if(!typeAllowed(kind,p.presence_type)) return simple(404,"Page not found","This page does not exist.");
     if(p.visibility!=="public_preview"||p.status!=="active") {
       return new Response(template,{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=60","X-Robots-Tag":"noindex, nofollow"}});
