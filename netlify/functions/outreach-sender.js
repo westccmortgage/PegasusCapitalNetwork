@@ -16,9 +16,16 @@
 //   * Direct inboxes get a /yes?t= consent link (POST-confirmed, scanner-proof);
 //     shared/general inboxes never get a consent link (no account for info@).
 //
+//   * Rows carrying metadata.award (ranked lenders, written at queue time only
+//     when the inbox's domain matches the lender's own website) get the ranking
+//     / Top Lenders 2025 email with their place instead of the general invite.
+//
 // Settings (pn_settings.key='outreach_global', jsonb):
-//   { source, paused, start_date:'YYYY-MM-DD', ramp:[{from_day,cap}],
-//     send_hours_utc:[start,end), max_bounce_rate, max_complaints, min_sample }
+//   { source, priority_sources:[...], paused, start_date:'YYYY-MM-DD',
+//     ramp:[{from_day,cap}], send_hours_utc:[start,end), max_bounce_rate,
+//     max_complaints, min_sample, company_spacing_days }
+//   priority_sources are sent before source; the daily cap, health checks and
+//   company spacing cover all of them together.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PEGASUS_RESEND_API_KEY
 // ============================================================================
@@ -70,9 +77,10 @@ function capFor(s, now){
 }
 
 // ── Delivery feedback: record bounced/complained for recent sends ──────────
-async function checkDeliveries(source){
+function srcFilter(sources){ return "source=in.("+sources.map(encodeURIComponent).join(",")+")"; }
+async function checkDeliveries(sources){
   const since = new Date(Date.now()-72*3600e3).toISOString();
-  const rows = await sb("/rest/v1/pn_invite_consent?select=id,resend_id,delivery_status&source=eq."+encodeURIComponent(source)+
+  const rows = await sb("/rest/v1/pn_invite_consent?select=id,resend_id,delivery_status&"+srcFilter(sources)+
     "&resend_id=not.is.null&last_sent_at=gte."+encodeURIComponent(since)+
     "&or=(delivery_status.is.null,delivery_status.in.(queued,sent,delivery_delayed,scheduled))&order=delivery_checked_at.asc.nullsfirst&limit="+MAX_STATUS_CHECKS);
   let checked = 0;
@@ -90,7 +98,7 @@ async function checkDeliveries(source){
     }catch(_){}
     await sleep(120);
   }
-  const src = "source=eq."+encodeURIComponent(source);
+  const src = srcFilter(sources);
   const [sent, bounced, complained] = await Promise.all([
     count("/rest/v1/pn_invite_consent?select=id&"+src+"&resend_id=not.is.null"),
     count("/rest/v1/pn_invite_consent?select=id&"+src+"&delivery_status=eq.bounced"),
@@ -109,14 +117,51 @@ function whyLine(r){
   if(/invest/.test(cat)) return "Investment firms like "+co+" are exactly who our developers, lenders, and sponsors want to meet."+abroad;
   return "Developers like "+co+" are exactly who our lenders and capital partners want to meet."+abroad;
 }
+const fmtInt = (n)=>Math.round(Number(n)).toLocaleString("en-US");
+function fmtUsdLong(n){
+  const v = Number(n); if(!Number.isFinite(v) || v<=0) return "";
+  if(v>=1e9) return "$"+(v/1e9).toFixed(1)+" billion";
+  if(v>=1e6) return "$"+(v/1e6).toFixed(1)+" million";
+  return "$"+fmtInt(v);
+}
+// Ranked lender: tell them their place. metadata.award =
+//   { rank, volume_usd, count, labels:["Top 100 U.S. Mortgage Lenders 2025 (#46)", …],
+//     verify_domain } — labels empty when ranked but not an award honoree.
+function buildAwardEmail(r, footer, unsub){
+  const m = r.metadata||{}, a = m.award||{}, co = r.company||"your company";
+  const slug = m.presence_slug, rank = fmtInt(a.rank);
+  const labels = Array.isArray(a.labels) ? a.labels.filter(Boolean) : [];
+  const vol = fmtUsdLong(a.volume_usd), cnt = Number(a.count)>0 ? fmtInt(a.count) : "";
+  const greet = m.mailbox==="direct" && firstName(r) ? "Hi "+firstName(r)+"," : "Hello,";
+  const fact = "In 2025, "+co+" originated "+(vol||"its mortgage volume")+(cnt?" across "+cnt+" loans":"")+
+    ", according to public Home Mortgage Disclosure Act (HMDA) data. That places it #"+rank+" among U.S. mortgage lenders by origination volume.";
+  const claim = co+" also has a free page on Pegasus Capital Network: "+ORIGIN+"/business/"+slug+"\n"+
+    "Anyone on your team can claim it and keep the details current"+(a.verify_domain ? ". Sign in with an @"+a.verify_domain+" email address and the claim is verified instantly" : "")+":\n"+
+    ORIGIN+"/claim?presence="+encodeURIComponent(slug);
+  const about = "Pegasus Capital Network (pegasuscapitalnetwork.com) is a professional network for real estate developers, lenders, brokers, and capital partners. The ranking reflects 2025 origination volume reported under HMDA, aggregated by Pegasus; it is not a paid listing.";
+  let subject, body;
+  if(labels.length){
+    subject = co+" named to Pegasus Top Lenders 2025 (#"+rank+")";
+    body = greet+"\n\nCongratulations — "+co+" has been named to Pegasus Top Lenders 2025, our recognition of the largest U.S. mortgage lenders:\n"+
+      labels.map(l=>"  • "+l).join("\n")+"\n\n"+fact+"\n\n"+
+      "Your honoree page has the official award badge for your website and a ready-to-use press release:\n"+ORIGIN+"/awards/top-lenders-2025/"+encodeURIComponent(slug)+"\n"+
+      "The badge and press materials are free to use. No membership or payment is required.\n\n"+claim+"\n\n"+about+"\n\n"+footer;
+  } else {
+    subject = co+" ranked #"+rank+" among U.S. mortgage lenders (2025)";
+    body = greet+"\n\n"+fact+"\n\n"+
+      "The full ranking and a free \"Ranked by Pegasus\" badge for your website are here:\n"+ORIGIN+"/rankings/badge/"+encodeURIComponent(slug)+"\n\n"+claim+"\n\n"+about+"\n\n"+footer;
+  }
+  return { subject, text: body, unsub };
+}
 function buildEmail(r){
   const m = r.metadata||{};
   const page = m.presence_slug ? ORIGIN+"/business/"+m.presence_slug : null;
   const unsub = ORIGIN+"/unsubscribe?t="+r.token;
   const domain = m.source_domain || String(r.email.split("@")[1]||"");
-  const intro = "I'm reaching out from Pegasus Capital Network (pegasuscapitalnetwork.com), a professional network for real estate developers, lenders, brokers, and capital partners. Our directory covers nearly 2,400 companies in more than 80 countries, including the largest U.S. mortgage lenders, ranked by 2025 origination volume, and members share deals, projects, market views, and events in a shared network feed.";
+  const intro = "I'm reaching out from Pegasus Capital Network (pegasuscapitalnetwork.com), a professional network for real estate developers, lenders, brokers, and capital partners. Our directory covers more than 2,400 companies in more than 80 countries, including the largest U.S. mortgage lenders, ranked by 2025 origination volume, and members share deals, projects, market views, and events in a shared network feed.";
   const pageLine = page ? "We've added a page for "+r.company+", based on the public information on your website: "+page+" — it's free to claim and manage." : "";
   const footer = "Best regards,\nPegasus Capital Network\n\nYou are receiving this one-time note because this address is published on "+domain+" as a business contact. We will not follow up unless you reply.\n"+ADDRESS+"\nUnsubscribe: "+unsub;
+  if(m.award && Number(m.award.rank) >= 1 && m.presence_slug) return buildAwardEmail(r, footer, unsub);
   let subject, text;
   if(m.mailbox === "direct"){
     const f = firstName(r);
@@ -150,7 +195,8 @@ exports.handler = async () => {
   try{
     const s = await loadSettings();
     if(!s || !s.source){ out.reason="no settings"; return done(out); }
-    out.health = await checkDeliveries(s.source);
+    const sources = [...new Set([].concat(s.priority_sources||[], s.source).filter(x=>/^[a-z0-9_-]+$/i.test(String(x||""))))];
+    out.health = await checkDeliveries(sources);
     const h = out.health;
     const minSample = s.min_sample||40;
     if(!s.paused && h.sent >= minSample && h.bounced/h.sent > (s.max_bounce_rate||0.05)){
@@ -170,7 +216,7 @@ exports.handler = async () => {
     out.cap = capFor(s, now);
     if(!out.cap){ out.reason="not started"; return done(out); }
     const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
-    out.sent_today = await count("/rest/v1/pn_invite_consent?select=id&source=eq."+encodeURIComponent(s.source)+"&last_sent_at=gte."+encodeURIComponent(dayStart));
+    out.sent_today = await count("/rest/v1/pn_invite_consent?select=id&"+srcFilter(sources)+"&last_sent_at=gte."+encodeURIComponent(dayStart));
     const remaining = Math.max(0, out.cap - out.sent_today);
     const runsLeft = Math.max(1, hEnd - hr);
     const quota = Math.min(MAX_SENDS_PER_RUN, Math.ceil(remaining / runsLeft));
@@ -181,7 +227,7 @@ exports.handler = async () => {
     // company_spacing_days (default 3); later colleagues wait their turn.
     const spacingDays = s.company_spacing_days==null ? 3 : s.company_spacing_days;
     const coKey = (r)=>String(r.company||r.email.split("@")[1]||"").trim().toLowerCase();
-    const recent = await sb("/rest/v1/pn_invite_consent?select=company,email&source=eq."+encodeURIComponent(s.source)+
+    const recent = await sb("/rest/v1/pn_invite_consent?select=company,email&"+srcFilter(sources)+
       "&last_sent_at=gte."+encodeURIComponent(new Date(Date.now()-spacingDays*864e5).toISOString())+"&limit=2000");
     const busy = new Set((recent||[]).map(coKey));
     // Companies whose pages already get real visitors go first: they are the
@@ -198,10 +244,18 @@ exports.handler = async () => {
       }
     }catch(_){ viewedFirst = []; }
     out.viewed_candidates = viewedFirst.length;
+    // Priority campaigns (e.g. Top Lenders award notices) go before everything else.
+    let priority = [];
+    for(const ps of sources.filter(x=>x!==s.source)){
+      const got = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(ps)+
+        "&status=eq.invited&last_sent_at=is.null&order=priority.asc.nullslast,created_at.asc&limit=200");
+      priority = priority.concat(got||[]);
+    }
+    out.priority_candidates = priority.length;
     const regular = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(s.source)+
       "&status=eq.invited&last_sent_at=is.null&order=priority.asc.nullslast,created_at.asc&limit=500");
-    const seenIds = new Set(viewedFirst.map(r=>r.id));
-    const candidates = viewedFirst.concat((regular||[]).filter(r=>!seenIds.has(r.id)));
+    const seenIds = new Set(priority.concat(viewedFirst).map(r=>r.id));
+    const candidates = priority.concat(viewedFirst).concat((regular||[]).filter(r=>!seenIds.has(r.id)));
     const rows = [];
     for(const r of (candidates||[])){
       if(rows.length >= quota) break;
