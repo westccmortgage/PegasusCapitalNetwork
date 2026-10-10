@@ -181,6 +181,7 @@
     <div class="cb-board" id="cbBoard">
       <div id="cbMe"></div>
       <div id="cbSignal"></div>
+      <div id="cbInvite"></div>
       <div id="cbHint"></div>
       <div id="cbSelected"></div>
     </div>
@@ -202,6 +203,7 @@
 <script src="/js/pegasus-core.js"></script>
 <script src="/js/pegasus-billing.js"></script>
 <script src="/js/pegasus-pages.js"></script>
+<script src="/js/pegasus-invite.js"></script>
 <script>
 Pegasus.boot(async function(){
   Pegasus.mountPublic('Members');
@@ -680,6 +682,7 @@ Pegasus.boot(async function(){
   /* ── Initial render ─────────────────────────────────────────────────────── */
   await renderMe();
   renderSignal();
+  if(window.PegInvite) PegInvite.mount(document.getElementById('cbInvite'));
   renderSelected();
   applyFilter();
   /* Re-fetch when the page is restored from bfcache so state stays fresh. */

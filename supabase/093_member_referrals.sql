@@ -1,0 +1,14 @@
+-- ============================================================================
+-- PEGASUS Migration 093 — Member referral invitations ("Invite colleagues")
+--
+-- invite_colleagues(p_invites jsonb, p_note text): an ACTIVE member queues up
+-- to 5 invitees per call (≤10 per 24 h, ≤50 total). Skips members, anyone
+-- already invited/opted out, do-not-contact, and the member's own email.
+-- Rows go to pn_invite_consent (source 'member_referral', status 'invited',
+-- metadata: inviter id/name/title/company/slug + note). referral-sender emails
+-- them on the network's behalf naming the inviter; the consent link is the
+-- POST-confirmed /yes; concierge-build provisions and notifies the inviter
+-- ("<name> accepted your invitation").
+-- get_my_referrals(): the caller's invitations and their status.
+-- ADDITIVE. Applied to the live project on 2026-10-10.
+-- ============================================================================

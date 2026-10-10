@@ -453,3 +453,8 @@
 # (pn_settings 'outreach_global'; pause/resume in Admin → Invites).
 [functions."outreach-sender"]
   schedule = "10 * * * *"
+
+# Member referral invitations ("Invite colleagues") — sent within ~15 min of a
+# member queuing them; honours the global outreach pause.
+[functions."referral-sender"]
+  schedule = "*/15 * * * *"

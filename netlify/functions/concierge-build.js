@@ -100,7 +100,7 @@ exports.handler = async () => {
   try{
     // Only consents confirmed by a human click on the /yes confirmation page
     // (consent_method='confirmed'); link-prefetch "consents" are never provisioned.
-    const res = await sbFetch("/rest/v1/pn_invite_consent?select=id,email,full_name,company,token&status=eq.consented&provisioned_at=is.null&metadata->>consent_method=eq.confirmed&limit="+BATCH, { headers:{ Accept:"application/json" } });
+    const res = await sbFetch("/rest/v1/pn_invite_consent?select=id,email,full_name,company,token,source,metadata&status=eq.consented&provisioned_at=is.null&metadata->>consent_method=eq.confirmed&limit="+BATCH, { headers:{ Accept:"application/json" } });
     if(!res.ok){ const t=await res.text().catch(()=> ""); throw new Error("select "+res.status+" "+t.slice(0,160)); }
     const rows = await res.json();
     out.picked = Array.isArray(rows) ? rows.length : 0;
@@ -125,6 +125,14 @@ exports.handler = async () => {
         await sendEmail(email, ORIGIN+"/activate?t="+encodeURIComponent(row.token), row.full_name);
         await sbFetch("/rest/v1/pn_invite_consent?id=eq."+row.id, { method:"PATCH", headers:{ Prefer:"return=minimal" }, body: JSON.stringify({ provisioned_at: new Date().toISOString(), profile_id: uid }) });
         out.provisioned++;
+        // Member referral: tell the inviting member their colleague accepted.
+        const inviter = row.source==="member_referral" && row.metadata && row.metadata.inviter_id;
+        if(inviter){
+          const who = String(row.full_name||"").trim() || email.split("@")[0];
+          await sbFetch("/rest/v1/rpc/create_notification", { method:"POST", body: JSON.stringify({
+            p_user: inviter, p_kind:"referral_accepted", p_title: who+" accepted your invitation",
+            p_body:"Their Pegasus profile is being set up — they'll get a private link to activate it.", p_link:"/feed" }) }).catch(()=>{});
+        }
         await sleep(150); // stay under Resend 10 req/s
       }catch(e){ out.failed++; out.errors.push(email.replace(/(^.).*(@.*$)/,"$1***$2")+": "+(e&&e.message||String(e))); }
     }
