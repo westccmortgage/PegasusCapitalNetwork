@@ -1,0 +1,12 @@
+-- ============================================================================
+-- PEGASUS Migration 095 — Instant claim verification + outreach prioritisation
+--
+-- create_entity_claim(): a claim is APPROVED INSTANTLY (owner membership +
+--   "next steps" notification; admins get an FYI) when the claimant's VERIFIED
+--   auth email is on the page's own website domain (or a subdomain of it), the
+--   domain is not a free-mail provider, and nobody manages / has claimed the
+--   page yet. Every other claim waits for admin review as before.
+-- outreach_viewed_slugs(days, limit): most-viewed page slugs (service_role
+--   only) — outreach-sender invites companies with real visitors first.
+-- Applied to the live project on 2026-10-10 (function bodies as deployed).
+-- ============================================================================

@@ -184,8 +184,24 @@ exports.handler = async () => {
     const recent = await sb("/rest/v1/pn_invite_consent?select=company,email&source=eq."+encodeURIComponent(s.source)+
       "&last_sent_at=gte."+encodeURIComponent(new Date(Date.now()-spacingDays*864e5).toISOString())+"&limit=2000");
     const busy = new Set((recent||[]).map(coKey));
-    const candidates = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(s.source)+
+    // Companies whose pages already get real visitors go first: they are the
+    // warmest prospects (and see "viewed N times" on their page).
+    let viewedFirst = [];
+    try{
+      const viewed = await sb("/rest/v1/rpc/outreach_viewed_slugs", { method:"POST", body: JSON.stringify({ p_days:30, p_limit:150 }) });
+      const slugs = (viewed||[]).map(v=>String(v.slug||"")).filter(x=>/^[a-z0-9][a-z0-9-]*$/.test(x));
+      if(slugs.length){
+        viewedFirst = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(s.source)+
+          "&status=eq.invited&last_sent_at=is.null&metadata->>presence_slug=in.("+slugs.join(",")+")&order=priority.asc.nullslast,created_at.asc&limit=200") || [];
+        const rank = new Map(slugs.map((x,i)=>[x,i]));
+        viewedFirst.sort((a,b)=>(rank.get((a.metadata||{}).presence_slug)??999)-(rank.get((b.metadata||{}).presence_slug)??999));
+      }
+    }catch(_){ viewedFirst = []; }
+    out.viewed_candidates = viewedFirst.length;
+    const regular = await sb("/rest/v1/pn_invite_consent?select=id,token,email,full_name,company,state,source,metadata&source=eq."+encodeURIComponent(s.source)+
       "&status=eq.invited&last_sent_at=is.null&order=priority.asc.nullslast,created_at.asc&limit=500");
+    const seenIds = new Set(viewedFirst.map(r=>r.id));
+    const candidates = viewedFirst.concat((regular||[]).filter(r=>!seenIds.has(r.id)));
     const rows = [];
     for(const r of (candidates||[])){
       if(rows.length >= quota) break;
