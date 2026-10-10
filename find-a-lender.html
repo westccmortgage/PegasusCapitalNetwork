@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Find a Lender for Your Deal — Pegasus Capital Network</title>
+<link rel="canonical" href="https://pegasuscapitalnetwork.com/find-a-lender">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Pegasus Capital Network"><meta property="og:title" content="Find a Lender for Your Deal — Pegasus Capital Network"><meta property="og:description" content="Describe your deal — loan type, amount, and property state — and see the lenders that fit, ranked using public HMDA data and the programs lenders publish on Pegasus."><meta property="og:url" content="https://pegasuscapitalnetwork.com/find-a-lender"><meta property="og:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Find a Lender for Your Deal — Pegasus Capital Network"><meta name="twitter:description" content="Describe your deal — loan type, amount, and property state — and see the lenders that fit, ranked using public HMDA data and the programs lenders publish on Pegasus."><meta name="twitter:image" content="https://pegasuscapitalnetwork.com/assets/brand/og-default.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="Find a lender for your deal: home purchase, refinance, DSCR, fix & flip, bridge, construction, multifamily, commercial, or SBA. Free lender matching by loan type, amount, and state.">
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/pegasus.css">
+<link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#08111C">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Pegasus Lender Matcher","alternateName":"Find a Lender for Your Deal","url":"https://pegasuscapitalnetwork.com/find-a-lender","applicationCategory":"FinanceApplication","operatingSystem":"Web","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A free tool that matches a real estate or business financing request (loan type, amount, and property state) to lenders, using 2025 HMDA filings, company category and headquarters, and the programs lenders publish on Pegasus. Not an offer or commitment to lend.","featureList":["Home purchase and refinance (1–4 units)","DSCR / rental property loans","Fix & flip and bridge loans","Construction loans","Multifamily and commercial real estate loans","SBA and business loans","Send your deal to matched lenders"],"provider":{"@type":"Organization","name":"Pegasus Capital Network","url":"https://pegasuscapitalnetwork.com"}}</script>
+<style>
+/* ─── Lender Matcher layout ─────────────────────────────────────────────── */
+.fl-shell{max-width:1040px;margin:0 auto;padding:var(--sp-lg) var(--sp-lg) var(--sp-3xl)}
+.fl-head{margin:var(--sp-xs) 0 var(--sp-md)}
+.fl-head h1{font-family:var(--serif);font-weight:400;font-size:clamp(26px,3vw,36px);color:var(--text);margin:0;letter-spacing:-.015em}
+.fl-head p{font-size:13.5px;color:var(--text3);margin:6px 0 0;max-width:680px;line-height:1.6}
+.fl-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r3);box-shadow:var(--sh-card)}
+.fl-card-b{padding:18px 20px}
+.fl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fl-grid2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;margin-top:12px}
+@media(max-width:760px){.fl-grid,.fl-grid2{grid-template-columns:1fr}}
+.fl-lbl{display:block;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.fl-lbl small{text-transform:none;letter-spacing:0;font-family:var(--sans);color:var(--text4)}
+.fl-in{width:100%;background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.5;outline:none;transition:border-color var(--dur-fast)}
+.fl-in:focus{border-color:var(--blue)}
+.fl-money{position:relative}
+.fl-money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13.5px;pointer-events:none}
+.fl-money .fl-in{padding-left:24px;font-family:var(--mono);font-size:13px}
+.fl-ta{min-height:76px;resize:vertical;margin-top:12px}
+.fl-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
+.fl-count{font-size:10px;font-family:var(--mono);color:var(--text4)}
+.fl-err{font-size:12px;color:var(--gold);min-height:14px}
+.fl-disc{font-size:11.5px;color:var(--text3);line-height:1.6;margin:var(--sp-md) 0 10px;padding:10px 14px;border-left:3px solid var(--border2);background:var(--bg2);border-radius:var(--r1)}
+.fl-results{display:flex;flex-direction:column;gap:10px}
+.fl-res-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:var(--sp-lg)}
+.fl-res-h h2{font-family:var(--serif);font-weight:400;font-size:22px;color:var(--text);margin:0}
+.fl-res-h span{font-size:11px;font-family:var(--mono);color:var(--text3)}
+.fl-lender{display:flex;gap:14px;align-items:flex-start}
+.fl-pick{flex:none;margin-top:4px;width:18px;height:18px;accent-color:var(--blue);cursor:pointer}
+.fl-lender-b{flex:1;min-width:0}
+.fl-name{font-size:15px;font-weight:600;color:var(--text);text-decoration:none}
+.fl-name:hover{color:var(--blue)}
+.fl-meta{font-size:12px;color:var(--text3);margin-top:2px;line-height:1.45}
+.fl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fl-chip{font-size:9.5px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:12px;background:var(--bg3);color:var(--text2)}
+.fl-chip.ver{background:rgba(12,143,92,.10);color:var(--green)}
+.fl-chip.rank{background:var(--blue-dim);color:var(--blue)}
+.fl-reasons{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--text2);line-height:1.6}
+.fl-pos{flex:none;font-family:var(--mono);font-size:11px;color:var(--text4);margin-top:3px;width:22px;text-align:right}
+.fl-few{border-color:rgba(142,112,32,.28);background:rgba(142,112,32,.06)}
+.fl-few-t{font-family:var(--serif);font-size:18px;color:var(--text);margin:0 0 4px}
+.fl-few-s{font-size:12.5px;color:var(--text2);line-height:1.55}
+.fl-send{position:sticky;bottom:12px;z-index:5;margin-top:var(--sp-md);border-color:rgba(29,90,158,.30)}
+.fl-send-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fl-share{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--text2);line-height:1.5;flex:1;min-width:240px;cursor:pointer}
+.fl-share input{margin-top:3px;accent-color:var(--blue)}
+.fl-send-note{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5}
+.fl-done-t{font-family:var(--serif);font-size:20px;color:var(--text);margin:0 0 6px}
+.fl-done-s{font-size:13px;color:var(--text2);line-height:1.6}
+.fl-empty{padding:var(--sp-xl);text-align:center;color:var(--text3);font-size:13px;line-height:1.6}
+.fl-how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:var(--sp-xl)}
+@media(max-width:760px){.fl-how{grid-template-columns:1fr}}
+.fl-how h3{font-family:var(--serif);font-weight:500;font-size:17px;color:var(--text);margin:0 0 4px}
+.fl-how p{font-size:12.5px;color:var(--text3);line-height:1.6;margin:0}
+.fl-how .n{font-size:9px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.fl-link{color:var(--blue);text-decoration:none;font-weight:500}
+.fl-link:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="nav"></div>
+
+<div class="fl-shell">
+  <div class="fl-head">
+    <h1>Find a Lender for Your Deal</h1>
+    <p>Tell us what you’re financing. We match it against lenders’ 2025 HMDA filings, their category and headquarters, and the programs lenders publish on Pegasus — then you choose who receives your deal.</p>
+  </div>
+
+  <form class="fl-card" id="flForm" novalidate autocomplete="off"><div class="fl-card-b">
+    <div class="fl-grid">
+      <div>
+        <label class="fl-lbl" for="flType">Deal type</label>
+        <select class="fl-in" id="flType" required>
+          <option value="">Choose a deal type…</option>
+          <option value="residential_purchase">Home purchase (1–4 units)</option>
+          <option value="residential_refi">Refinance (1–4 units)</option>
+          <option value="dscr_rental">DSCR / rental property</option>
+          <option value="fix_flip">Fix &amp; flip</option>
+          <option value="bridge">Bridge loan</option>
+          <option value="construction">Construction</option>
+          <option value="multifamily">Multifamily (5+ units)</option>
+          <option value="commercial">Commercial real estate</option>
+          <option value="sba_business">SBA / business loan</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl-lbl" for="flAmount">Loan amount</label>
+        <div class="fl-money"><span>$</span><input class="fl-in" id="flAmount" type="text" inputmode="numeric" maxlength="16" placeholder="750,000" required></div>
+      </div>
+      <div>
+        <label class="fl-lbl" for="flState">Property state</label>
+        <select class="fl-in" id="flState" required><option value="">Choose a state…</option></select>
+      </div>
+    </div>
+    <div class="fl-grid2">
+      <div>
+        <label class="fl-lbl" for="flProperty">Property type <small>(optional)</small></label>
+        <input class="fl-in" id="flProperty" type="text" maxlength="80" placeholder="e.g. 4-unit duplex, mixed-use retail, owner-occupied office">
+      </div>
+      <div>
+        <label class="fl-lbl" for="flTimeline">Timeline <small>(optional)</small></label>
+        <select class="fl-in" id="flTimeline">
+          <option value="">Not sure</option>
+          <option value="ASAP">ASAP</option>
+          <option value="30 days">30 days</option>
+          <option value="60–90 days">60–90 days</option>
+          <option value="Exploring">Exploring</option>
+        </select>
+      </div>
+    </div>
+    <label class="fl-lbl" for="flNotes" style="margin-top:12px">Notes for lenders <small>(optional — included only if you send your deal)</small></label>
+    <textarea class="fl-in fl-ta" id="flNotes" maxlength="600" placeholder="Purchase price, credit/experience, exit strategy, anything a lender should know." style="margin-top:0"></textarea>
+    <div class="fl-foot">
+      <div class="fl-err" id="flErr" role="alert"></div>
+      <span class="fl-count" id="flCount">0 / 600</span>
+      <button class="btn btn-pri" type="submit" id="flGo">Find lenders</button>
+    </div>
+  </div></form>
+
+  <div id="flOut"></div>
+
+  <section class="fl-how" aria-label="How the Lender Matcher works">
+    <div class="fl-card"><div class="fl-card-b"><div class="n">Step 1</div><h3>Describe the deal</h3><p>Loan type, amount, and the property’s state. Add the property type, timeline, and notes if you plan to send it.</p></div></div>
+    <div class="fl-card"><div class="fl-card-b"><div class="n">Step 2</div><h3>See who fits</h3><p>Lenders are ranked using public 2025 HMDA filings, company category and headquarters, plus programs lenders publish on Pegasus.</p></div></div>
+    <div class="fl-card"><div class="fl-card-b"><div class="n">Step 3</div><h3>Send it — you choose</h3><p>Pick up to 10 lenders and decide whether to share your name and email. Lenders who manage their page on Pegasus are notified right away.</p></div></div>
+  </section>
+</div>
+
+<div id="footer"></div>
+
+<script src="/js/pegasus-config.js"></script>
+<script src="/js/pegasus-supabase.js"></script>
+<script src="/js/pegasus-entitlements.js"></script>
+<script src="/js/pegasus-data.js"></script>
+<script src="/js/pegasus-content.js"></script>
+<script src="/js/pegasus-match.js"></script>
+<script src="/js/pegasus-store.js"></script>
+<script src="/js/pegasus-api.js"></script>
+<script src="/js/pegasus-forms.js"></script>
+<script src="/js/pegasus-auth.js"></script>
+<script src="/js/pegasus-core.js"></script>
+<script src="/js/pegasus-billing.js"></script>
+<script src="/js/pegasus-pages.js"></script>
+<script>
+Pegasus.boot(async function(){
+  Pegasus.mountPublic('Find a Lender');
+  document.getElementById('footer').outerHTML = Pegasus.footer();
+
+  var esc=Pegasus.esc;
+  var SAVE_KEY='pegasus.lenderMatcher';
+  var MAX_SEND=10, PRECHECK=5;
+
+  /* ── Reference data ─────────────────────────────────────────────────────── */
+  var TYPES={residential_purchase:'Home purchase (1–4 units)',residential_refi:'Refinance (1–4 units)',dscr_rental:'DSCR / rental property',fix_flip:'Fix & flip',bridge:'Bridge loan',construction:'Construction',multifamily:'Multifamily (5+ units)',commercial:'Commercial real estate',sba_business:'SBA / business loan'};
+  var STATES=[['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']];
+  var STATE_NAME={}; STATES.forEach(function(s){ STATE_NAME[s[0]]=s[1]; });
+  var TIMELINES=['ASAP','30 days','60–90 days','Exploring'];
+  document.getElementById('flState').insertAdjacentHTML('beforeend',STATES.map(function(s){ return '<option value="'+s[0]+'">'+esc(s[1])+'</option>'; }).join(''));
+
+  /* ── Helpers ────────────────────────────────────────────────────────────── */
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var e=$(id); return e?String(e.value||''):''; }
+  function setVal(id,v){ var e=$(id); if(e) e.value=v==null?'':v; }
+  function parseAmount(s){ var n=parseFloat(String(s||'').replace(/[^0-9.]/g,'')); return isFinite(n)&&n>0?Math.round(n):0; }
+  function fmtAmount(n){ return n?Number(n).toLocaleString('en-US'):''; }
+  function money(n){ n=Number(n)||0; if(n>=1e9) return '$'+(n/1e9).toFixed(1).replace(/\.0$/,'')+'B'; if(n>=1e6) return '$'+(n/1e6).toFixed(1).replace(/\.0$/,'')+'M'; if(n>=1e3) return '$'+Math.round(n/1e3)+'K'; return '$'+n; }
+  function upd(){ $('flCount').textContent=val('flNotes').length+' / 600'; }
+  $('flNotes').addEventListener('input',upd);
+  $('flAmount').addEventListener('blur',function(){ var n=parseAmount(this.value); if(n) this.value=fmtAmount(n); });
+
+  /* Deal from the form; returns null (with an error shown) when incomplete. */
+  function readDeal(){
+    var err=$('flErr'); err.textContent='';
+    var d={type:val('flType'), amount:parseAmount(val('flAmount')), state:val('flState')};
+    if(!TYPES[d.type]){ err.textContent='Choose a deal type.'; $('flType').focus(); return null; }
+    if(!d.amount){ err.textContent='Enter the loan amount.'; $('flAmount').focus(); return null; }
+    if(!STATE_NAME[d.state]){ err.textContent='Choose the property state.'; $('flState').focus(); return null; }
+    return d;
+  }
+  function extras(){
+    var x={}, p=val('flProperty').trim(), t=val('flTimeline'), n=val('flNotes').trim().slice(0,600);
+    if(p) x.property=p.slice(0,80);
+    if(TIMELINES.indexOf(t)>=0) x.timeline=t;
+    if(n) x.notes=n;
+    return x;
+  }
+  function fillForm(f){
+    f=f||{};
+    if(TYPES[f.type]) setVal('flType',f.type);
+    if(f.amount) setVal('flAmount',fmtAmount(parseAmount(f.amount)));
+    if(STATE_NAME[f.state]) setVal('flState',f.state);
+    if(f.property!=null) setVal('flProperty',String(f.property).slice(0,80));
+    if(TIMELINES.indexOf(f.timeline)>=0) setVal('flTimeline',f.timeline);
+    if(f.notes!=null) setVal('flNotes',String(f.notes).slice(0,600));
+    upd();
+  }
+  function syncUrl(d){
+    try{ var u=new URL(location.href); u.searchParams.set('type',d.type); u.searchParams.set('amount',String(d.amount)); u.searchParams.set('state',d.state); history.replaceState(null,'',u.pathname+u.search); }catch(e){}
+  }
+
+  /* ── Session ────────────────────────────────────────────────────────────── */
+  var sb=null; try{ sb=await window.PegSB.ready; }catch(e){}
+  var session=null; try{ var sres=sb?await sb.auth.getSession():null; session=sres&&sres.data&&sres.data.session; }catch(e){}
+  var MY_UID=session&&session.user&&session.user.id||null;
+
+  /* ── State ──────────────────────────────────────────────────────────────── */
+  var lastDeal=null, rows=[], picked={}, share=true, sending=false;
+
+  /* ── Results ────────────────────────────────────────────────────────────── */
+  function lenderHTML(r,i){
+    var slug=String(r.slug||'');
+    var href='/business/'+encodeURIComponent(slug);
+    var meta=[r.cat_label,r.location].filter(Boolean).map(esc).join(' · ');
+    var rank=parseInt(r.hmda_rank,10);
+    var chips=(r.verified?'<span class="fl-chip ver">Verified program</span>':'')+
+      (rank>0?'<span class="fl-chip rank">Ranked #'+esc(rank.toLocaleString('en-US'))+'</span>':'')+
+      (Number(r.hmda_volume_usd)>0?'<span class="fl-chip">'+esc(money(r.hmda_volume_usd))+' 2025 volume</span>':'');
+    var reasons=(Array.isArray(r.reasons)?r.reasons:[]).filter(Boolean);
+    return '<div class="fl-card"><div class="fl-card-b fl-lender">'+
+      '<input type="checkbox" class="fl-pick" data-slug="'+esc(slug)+'" id="flPick'+i+'"'+(picked[slug]?' checked':'')+' aria-label="Include '+esc(r.name||'this lender')+' when I send my deal">'+
+      '<span class="fl-pos">'+(i+1)+'</span>'+
+      '<div class="fl-lender-b"><a class="fl-name" href="'+esc(href)+'">'+esc(r.name||'Lender')+'</a>'+
+      (meta?'<div class="fl-meta">'+meta+'</div>':'')+
+      (chips?'<div class="fl-chips">'+chips+'</div>':'')+
+      (reasons.length?'<ul class="fl-reasons">'+reasons.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ul>':'')+
+      '</div></div></div>';
+  }
+  function pickedSlugs(){ return rows.map(function(r){ return String(r.slug||''); }).filter(function(s){ return s&&picked[s]; }).slice(0,MAX_SEND); }
+  function renderResults(scrollTo){
+    var out=$('flOut'), d=lastDeal;
+    if(!d){ out.innerHTML=''; return; }
+    var summary=esc(TYPES[d.type])+' · '+esc(money(d.amount))+' · '+esc(STATE_NAME[d.state]||d.state);
+    var html='<div class="fl-res-h"><h2>'+(rows.length?'Lenders that fit this deal':'No matching lenders yet')+'</h2><span>'+summary+'</span></div>'+
+      '<div class="fl-disc">Matches use public data (2025 HMDA filings, company category and headquarters) plus programs lenders publish on Pegasus. This is not an offer or commitment to lend.</div>';
+    if(rows.length) html+='<div class="fl-results">'+rows.map(lenderHTML).join('')+'</div>';
+    if(rows.length<3){
+      html+='<div class="fl-card fl-few" style="margin-top:10px"><div class="fl-card-b">'+
+        '<div class="fl-few-t">Few lenders match this deal yet</div>'+
+        '<div class="fl-few-s">Post it to the Network Feed so lenders on Pegasus can respond.</div>'+
+        '<div style="margin-top:10px"><a class="btn btn-ghost btn-sm" href="/feed?type=deal">Post to the Network Feed →</a></div></div></div>';
+    }
+    if(rows.length) html+='<div class="fl-card fl-send" id="flSend"></div>';
+    out.innerHTML=html;
+    out.querySelectorAll('.fl-pick').forEach(function(cb){ cb.onchange=function(){
+      var s=cb.getAttribute('data-slug');
+      if(cb.checked && pickedSlugs().length>=MAX_SEND){ cb.checked=false; Pegasus.toast('!','var(--gold-dim)','Up to '+MAX_SEND+' lenders','Uncheck one to add another.'); return; }
+      picked[s]=cb.checked; renderSend();
+    }; });
+    renderSend();
+    if(scrollTo){ var t=scrollTo==='send'?$('flSend'):out; if(t) setTimeout(function(){ t.scrollIntoView({block:scrollTo==='send'?'end':'start',behavior:'smooth'}); },60); }
+  }
+  function renderSend(){
+    var host=$('flSend'); if(!host) return;
+    var n=pickedSlugs().length;
+    var noun=n===1?'lender':'lenders';
+    var shareBox='<label class="fl-share"><input type="checkbox" id="flShare"'+(share?' checked':'')+'><span>Share my name and email with the selected lenders</span></label>';
+    var action=MY_UID
+      ? '<button class="btn btn-pri" type="button" id="flSendBtn"'+(n&&!sending?'':' disabled')+'>'+(sending?'Sending…':(n?'Send my deal to '+n+' '+noun:'Select lenders to send'))+'</button>'
+      : '<a class="btn btn-pri" href="/signin.html" id="flSignin">Sign in to send</a>';
+    host.innerHTML='<div class="fl-card-b"><div class="fl-send-row">'+shareBox+action+'</div>'+
+      '<div class="fl-send-note" id="flSendNote">'+(MY_UID
+        ? (share?'Selected lenders see your deal and your name and email so they can reach you.':'Selected lenders see your deal only. They can’t contact you directly — you’ll follow up through Pegasus.')
+        : 'Free to join. We’ll bring you back here with your deal and matches saved. <a class="fl-link" href="/signup.html" id="flSignup">Create a free profile</a>')+
+      '</div><div class="fl-err" id="flSendErr" role="alert" style="margin-top:6px"></div></div>';
+    var sh=$('flShare'); if(sh) sh.onchange=function(){ share=sh.checked; renderSend(); };
+    var sbtn=$('flSendBtn'); if(sbtn) sbtn.onclick=send;
+    [$('flSignin'),$('flSignup')].forEach(function(a){ if(a) a.addEventListener('click',saveForAuth); });
+  }
+
+  /* ── Sign-in round trip: save form + results, come back here afterwards ── */
+  function saveForAuth(){
+    try{
+      var f={type:val('flType'),amount:parseAmount(val('flAmount')),state:val('flState'),property:val('flProperty'),timeline:val('flTimeline'),notes:val('flNotes')};
+      sessionStorage.setItem(SAVE_KEY,JSON.stringify({form:f,deal:lastDeal,rows:rows,picked:pickedSlugs(),share:share,at:Date.now()}));
+    }catch(_){}
+    try{ localStorage.setItem('pegasus.redirectAfterAuth','/find-a-lender'); }catch(_){}
+  }
+  function restoreSaved(){
+    var s=null; try{ s=JSON.parse(sessionStorage.getItem(SAVE_KEY)||'null'); }catch(_){ s=null; }
+    if(!s||!s.form) return false;
+    if(s.at && Date.now()-s.at>6*3600*1000){ try{ sessionStorage.removeItem(SAVE_KEY); }catch(_){} return false; }
+    // An explicit, different search in the URL wins over the saved one.
+    var qs=new URLSearchParams(location.search), qt=qs.get('type'), ref=s.deal||s.form;
+    if(qt && (qt!==ref.type || parseAmount(qs.get('amount'))!==parseAmount(ref.amount) || (qs.get('state')||'').toUpperCase()!==ref.state)) return false;
+    fillForm(s.form);
+    var d=s.deal;
+    if(d && TYPES[d.type] && parseAmount(d.amount) && STATE_NAME[d.state] && Array.isArray(s.rows)){
+      lastDeal={type:d.type,amount:parseAmount(d.amount),state:d.state};
+      rows=s.rows.slice(0,10); picked={};
+      (Array.isArray(s.picked)?s.picked:[]).slice(0,MAX_SEND).forEach(function(x){ picked[String(x)]=true; });
+      share=s.share!==false;
+      syncUrl(lastDeal);
+      renderResults(MY_UID?'send':null);
+    }
+    if(MY_UID){ try{ sessionStorage.removeItem(SAVE_KEY); }catch(_){} }
+    return true;
+  }
+
+  /* ── Search ─────────────────────────────────────────────────────────────── */
+  async function search(d){
+    var btn=$('flGo'), out=$('flOut');
+    if(!sb){ $('flErr').textContent='Lender matching is unavailable right now. Please try again shortly.'; return; }
+    btn.disabled=true; btn.textContent='Matching…';
+    out.innerHTML='<div class="fl-card" style="margin-top:var(--sp-lg)"><div class="fl-empty">Finding lenders for this deal…</div></div>';
+    try{
+      var r=await sb.rpc('match_lenders',{p_deal:d,p_limit:10});
+      if(r&&r.error) throw r.error;
+      lastDeal=d; rows=(r&&Array.isArray(r.data)?r.data:[]).slice(0,10); picked={};
+      rows.forEach(function(x,i){ if(i<PRECHECK&&x.slug) picked[String(x.slug)]=true; });
+      syncUrl(d);
+      renderResults('results');
+    }catch(e){
+      console.error('[find-a-lender] match failed:',e);
+      out.innerHTML='<div class="fl-card" style="margin-top:var(--sp-lg)"><div class="fl-empty">We couldn’t run the match right now. Please try again shortly.</div></div>';
+    }
+    btn.disabled=false; btn.textContent='Find lenders';
+  }
+  $('flForm').addEventListener('submit',function(e){ e.preventDefault(); var d=readDeal(); if(d) search(d); });
+
+  /* ── Send ───────────────────────────────────────────────────────────────── */
+  async function send(){
+    var err=$('flSendErr'); if(err) err.textContent='';
+    var slugs=pickedSlugs();
+    if(!MY_UID||!sb||!lastDeal||!slugs.length||sending) return;
+    // The deal that was matched, plus the optional details as they are now.
+    var deal=Object.assign({type:lastDeal.type,amount:lastDeal.amount,state:lastDeal.state},extras());
+    sending=true; renderSend();
+    try{
+      var r=await sb.rpc('submit_deal_request',{p_deal:deal,p_slugs:slugs,p_share_contact:!!share});
+      if(r&&r.error) throw r.error;
+      var resp=r&&r.data||{};
+      if(!resp.ok){ sending=false; renderSend(); var e2=$('flSendErr'); if(e2) e2.textContent=resp.message||'Could not send your deal right now.'; return; }
+      try{ sessionStorage.removeItem(SAVE_KEY); }catch(_){}
+      var n=parseInt(resp.sent,10); if(!(n>=0)) n=slugs.length;
+      var host=$('flSend');
+      if(host){
+        host.classList.remove('fl-send');
+        host.innerHTML='<div class="fl-card-b"><div class="fl-done-t">Sent to '+n+' '+(n===1?'lender':'lenders')+'.</div>'+
+          '<div class="fl-done-s">Lenders who manage their page on Pegasus are notified now; we’ll keep the request on file for the others.</div>'+
+          '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><a class="btn btn-pri btn-sm" href="/feed?type=deal">Post it to the Network Feed too →</a><button class="btn btn-ghost btn-sm" type="button" id="flAgain">Match another deal</button></div></div>';
+        var ag=$('flAgain'); if(ag) ag.onclick=function(){ window.scrollTo({top:0,behavior:'smooth'}); $('flType').focus(); };
+      }
+      document.querySelectorAll('.fl-pick').forEach(function(cb){ cb.disabled=true; });
+      sending=false;
+      Pegasus.toast('✓','var(--green-dim)','Deal sent','Sent to '+n+' '+(n===1?'lender':'lenders')+'.');
+    }catch(e){
+      console.error('[find-a-lender] send failed:',e);
+      sending=false; renderSend();
+      var e3=$('flSendErr'); if(e3) e3.textContent='Could not send your deal right now. Please try again.';
+    }
+  }
+
+  /* ── Go: restore a saved round trip, else run a shared/bookmarked query ── */
+  if(!restoreSaved()){
+    var qs=new URLSearchParams(location.search);
+    var q={type:(qs.get('type')||'').replace(/[^a-z_]/g,''), amount:parseAmount(qs.get('amount')), state:(qs.get('state')||'').toUpperCase().replace(/[^A-Z]/g,'')};
+    if(q.type||q.amount||q.state) fillForm(q);
+    if(TYPES[q.type]&&q.amount&&STATE_NAME[q.state]) search(q);
+  }
+});
+</script>
+</body>
+</html>

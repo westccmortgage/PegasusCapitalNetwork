@@ -192,7 +192,10 @@ const CSS='.dir-wrap{max-width:1120px;margin:auto;padding:48px 40px 72px}.dir-he
   '.aw-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:18px}.aw-stats div{padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg1)}.aw-stats span{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}.aw-stats b{display:block;margin-top:4px;font-family:var(--mono);font-size:15px;color:var(--text);font-weight:600}'+
   '.aw-share{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}.aw-share a{padding:9px 14px;border:1px solid var(--border);border-radius:9px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600;background:var(--bg1)}'+
   '.aw-pr{min-height:340px;font-family:var(--sans);font-size:13px;line-height:1.55}.aw-links{text-align:center;margin-top:22px;font-size:13px}.aw-links a{color:var(--blue);text-decoration:none}'+
+  '.rk-deal{text-align:center;margin:-10px auto 22px;font-size:13.5px}.rk-deal a{color:var(--blue);text-decoration:none;font-weight:600}'+
   '@media(max-width:760px){.dir-wrap{padding:32px 16px 54px}}';
+// Lender Matcher CTA shown under the page header.
+const DEAL_CTA='<p class="rk-deal"><a href="/find-a-lender">Have a deal? Find a matching lender →</a></p>';
 // Page shell — same nav/footer as the ranking pages.
 function shell(o){
   const robots=o.robots||"index,follow,max-image-preview:large";
@@ -243,7 +246,7 @@ async function awardPage(){
   const empty='<p style="text-align:center;color:var(--text3);padding:24px">No lenders in this category yet.</p>';
   const body='<header class="dir-head">'+cr.html+'<div class="eyebrow aw-eyebrow">Awards · 2025</div><h1>'+esc(PROGRAM)+'</h1>'+
     '<p>The largest U.S. mortgage lenders by 2025 origination volume — nationwide, among banks &amp; credit unions, among independent mortgage companies, and in each headquarters state.</p>'+
-    '<nav class="aw-toc" aria-label="Award categories">'+toc.map(([id,l])=>'<a href="#'+esc(id)+'">'+esc(l)+'</a>').join("")+'</nav></header>'+
+    '<nav class="aw-toc" aria-label="Award categories">'+toc.map(([id,l])=>'<a href="#'+esc(id)+'">'+esc(l)+'</a>').join("")+'</nav></header>'+DEAL_CTA+
     '<div class="aw-method"><strong>Methodology.</strong> '+esc(METHOD)+' Each lender’s national tier is the smallest bucket it fits (Top 10, Top 25 or Top 100). Category ranks order banks &amp; credit unions and independent mortgage companies by their U.S. rank. A State Leader is the highest-ranked lender headquartered in a state with at least '+STATE_MIN+' ranked headquartered lenders. <a href="/rankings">See the full 2025 rankings →</a><br><span style="font-size:12px;color:var(--text3)">'+esc(SOURCE)+'</span></div>'+
     sec("top-10","Top 10 U.S. Mortgage Lenders 2025","U.S. ranks 1–10.",top10.length?nationalTable(top10):empty)+
     sec("top-25","Top 25 U.S. Mortgage Lenders 2025","U.S. ranks 11–25 (the Top 10 above complete the Top 25).",top25.length?nationalTable(top25):empty)+

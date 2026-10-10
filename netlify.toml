@@ -383,6 +383,17 @@
   to = "/feed.html"
   status = 200
 
+# Lender Matcher (public, indexable) and the lender-side inbox (members, noindex).
+[[redirects]]
+  from = "/find-a-lender"
+  to = "/find-a-lender.html"
+  status = 200
+
+[[redirects]]
+  from = "/deal-requests"
+  to = "/deal-requests.html"
+  status = 200
+
 # No "/* -> /index.html" catch-all: multi-page static site, not an SPA.
 
 # ════════════════════════════════════════════════════════════════════════════
