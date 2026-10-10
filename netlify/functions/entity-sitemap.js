@@ -188,16 +188,45 @@ async function businessStateUrls() {
     return [];
   }
 }
+// Pegasus Top Lenders 2025 honoree slugs (same rules as hmda-awards.js): U.S.
+// rank ≤100, Top 25 within banks & CUs / independent mortgage companies, and the
+// best-ranked lender HQ'd in each state with ≥3 ranked HQ lenders. `rows` must
+// be ordered by hmda_rank, slug.
+function honoreeSlugs(rows) {
+  const out = new Set();
+  const catSeen = { "financial-institutions": 0, "mortgage-companies": 0 };
+  const states = new Map();
+  for (const row of rows) {
+    const rank = Number(row.hmda_rank);
+    if (!Number.isFinite(rank) || rank < 1) continue;
+    const slug = cleanSlug(row.slug);
+    const cat = String(row.cat_slug || "").trim();
+    let win = rank <= 100;
+    if (Object.prototype.hasOwnProperty.call(catSeen, cat) && ++catSeen[cat] <= 25) win = true;
+    if (win && slug) out.add(slug);
+    const code = String(row.state_code || "").trim().toUpperCase();
+    if (STATE_CODES.has(code)) {
+      const e = states.get(code);
+      if (e) e.n++; else states.set(code, { n: 1, slug });
+    }
+  }
+  for (const e of states.values()) if (e.n >= 3 && e.slug) out.add(e.slug);
+  return [...out];
+}
 // HMDA 2025 lender ranking pages: /rankings, the national list (+ ?page=2..10)
-// and HQ-state lists with ≥3 ranked lenders. Never fails the sitemap.
+// and HQ-state lists with ≥3 ranked lenders, plus the Pegasus Top Lenders 2025
+// award page and honoree pages. Never fails the sitemap.
 async function rankingUrls() {
   const base = ORIGIN + "/rankings/top-mortgage-lenders-2025";
-  const urls = [urlNode(ORIGIN + "/rankings", "", "0.7"), urlNode(base, "", "0.7")];
+  const award = ORIGIN + "/awards/top-lenders-2025";
+  const urls = [urlNode(ORIGIN + "/rankings", "", "0.7"), urlNode(base, "", "0.7"), urlNode(award, "", "0.7")];
   try {
     const rows = await restRows("public_business_directory", {
-      select: "state_code",
+      select: "slug,cat_slug,state_code,hmda_rank",
       hmda_rank: "not.is.null",
+      order: "hmda_rank.asc,slug.asc",
     });
+    for (const slug of honoreeSlugs(rows)) urls.push(urlNode(award + "/" + encodeURIComponent(slug), "", "0.6"));
     const pages = Math.min(10, Math.ceil(rows.length / 100));
     for (let p = 2; p <= pages; p++) urls.push(urlNode(base + "?page=" + p, "", "0.5"));
     const counts = new Map();

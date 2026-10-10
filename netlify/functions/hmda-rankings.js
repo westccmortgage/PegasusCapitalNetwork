@@ -94,7 +94,23 @@ const CSS='.dir-wrap{max-width:1120px;margin:auto;padding:48px 40px 72px}.dir-he
   '.rk-states{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:18px}.rk-states a{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg1);text-decoration:none;color:var(--text);font-size:13.5px}.rk-states a span{color:var(--text3);font-family:var(--mono);font-size:12px}'+
   '.rk-h2{font-size:18px;margin:34px 0 4px;color:var(--text)}.rk-note{font-size:12px;color:var(--text3);margin-top:18px;line-height:1.6;text-align:center}.dir-pager{display:flex;justify-content:center;gap:10px;margin-top:26px}.dir-pager a{padding:9px 14px;border:1px solid var(--border);border-radius:9px;text-decoration:none;color:var(--text2)}'+
   '.rk-embed{width:100%;min-height:110px;font-family:var(--mono);font-size:12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg1);color:var(--text);resize:vertical;box-sizing:border-box}.rk-copy{margin-top:10px;padding:9px 16px;border-radius:9px;border:0;background:var(--blue);color:#fff;font-weight:600;cursor:pointer}'+
+  '.rk-claim{margin-top:30px;padding:20px 22px;border:1px solid var(--border);border-radius:16px;background:var(--bg1);box-shadow:var(--sh-card)}.rk-claim h2{font-size:18px;margin:0 0 6px;color:var(--text)}.rk-claim p{color:var(--text2);font-size:13.5px;line-height:1.6;margin:0}.rk-steps{margin:14px 0 4px;padding-left:22px;color:var(--text2);font-size:13.5px;line-height:1.8}.rk-steps strong{color:var(--text)}.rk-claim .rk-alt{margin-top:10px;font-size:13px}.rk-claim .rk-alt a{color:var(--blue);text-decoration:none;font-weight:600}'+
+  '.rk-award{display:inline-block;margin:14px 0 0 8px;padding:10px 16px;border-radius:10px;border:1px solid var(--gold);color:var(--text);text-decoration:none;font-weight:600;font-size:14px}'+
   '@media(max-width:760px){.dir-wrap{padding:32px 16px 54px}}';
+const AWARD="/awards/top-lenders-2025";
+// "Claim your page" box (unclaimed companies) or "Manage this page" (claimed).
+// Same markup as hmda-awards.js.
+function claimBox(slug,unclaimed){
+  const enc=encodeURIComponent(slug);
+  if(unclaimed!==true){
+    return '<section class="rk-claim"><h2>Manage this page</h2><p>This company page has been claimed on Pegasus Capital Network. Members who manage it can update the details, add the team and display the official badge.</p>'+
+      '<a class="rk-cta" href="/my-presences.html">Manage this page →</a></section>';
+  }
+  return '<section class="rk-claim"><h2>Is this your company? Claim your page</h2><p>Take ownership of the company page on Pegasus Capital Network.</p>'+
+    '<ol class="rk-steps"><li><strong>Claim your page</strong> (free)</li><li><strong>Verify</strong> — instant with a work email on your company’s domain, otherwise a quick manual review</li><li><strong>Complete your profile</strong></li><li><strong>Add your team</strong></li></ol>'+
+    '<a class="rk-cta" href="/claim?presence='+esc(enc)+'">Claim your page — free →</a>'+
+    '<p class="rk-alt">Already claimed? <a href="/my-presences.html">Manage your page →</a></p></section>';
+}
 // Page shell — same nav/footer as the public directory.
 function shell(o){
   const robots=o.robots||"index,follow,max-image-preview:large";
@@ -145,7 +161,7 @@ async function indexPage(){
     shown.map(([st,n])=>'<a href="'+esc(BASE+"/"+st.toLowerCase())+'">'+esc(STATE_NAMES[st])+' <span>'+n+'</span></a>').join("")+'</div>':'';
   const body='<header class="dir-head">'+cr.html+'<div class="eyebrow" style="justify-content:center">Lender Rankings</div><h1>2025 U.S. Mortgage Lender Rankings</h1>'+
     '<p>Every ranked lender is ordered by its total 2025 U.S. mortgage origination volume as reported under the Home Mortgage Disclosure Act (HMDA). Rank #1 is the largest originator nationwide.</p>'+
-    '<a class="rk-cta" href="'+esc(BASE)+'">Top 100 U.S. Mortgage Lenders 2025 →</a></header>'+grid;
+    '<a class="rk-cta" href="'+esc(BASE)+'">Top 100 U.S. Mortgage Lenders 2025 →</a><a class="rk-award" href="'+esc(AWARD)+'">Pegasus Top Lenders 2025 awards →</a></header>'+grid;
   return ok(shell({title,desc,canonical,ld:[itemList(title,items),cr.ld],body}));
 }
 
@@ -164,7 +180,8 @@ async function nationalPage(page){
   const hasPrev=page>1,hasNext=page<pages;
   const cr=crumbsOf([{name:"Top Mortgage Lenders 2025",href:BASE}].concat(page>1?[{name:"Ranks "+fmtInt(lo)+"–"+fmtInt(hi),href:pathFor(page)}]:[]));
   const body='<header class="dir-head">'+cr.html+'<div class="eyebrow" style="justify-content:center">Lender Rankings</div><h1>'+esc(h1)+'</h1>'+
-    '<p>U.S. mortgage lenders ranked by total 2025 origination volume reported under the Home Mortgage Disclosure Act (HMDA). Rank #1 is the largest originator nationwide.</p></header>'+
+    '<p>U.S. mortgage lenders ranked by total 2025 origination volume reported under the Home Mortgage Disclosure Act (HMDA). Rank #1 is the largest originator nationwide.</p>'+
+    (page===1?'<a class="rk-award" style="margin-left:0" href="'+esc(AWARD)+'">See the Pegasus Top Lenders 2025 awards →</a>':'')+'</header>'+
     table(rows,false)+
     '<nav class="dir-pager" aria-label="Pagination">'+(hasPrev?'<a href="'+esc(pathFor(page-1))+'">← Previous</a>':'')+(hasNext?'<a href="'+esc(pathFor(page+1))+'">Next →</a>':'')+'</nav>'+
     '<p style="text-align:center;margin-top:18px;font-size:13px"><a href="/rankings" style="color:var(--blue);text-decoration:none">Rankings by headquarters state →</a></p>';
@@ -192,7 +209,7 @@ async function statePage(st){
 
 async function badgePage(slug){
   const {url,key}=cfg();
-  const qs=new URLSearchParams({select:"name,slug,hmda_rank,hmda_volume_usd,hmda_count",slug:"eq."+slug,limit:"1"});
+  const qs=new URLSearchParams({select:"name,slug,hmda_rank,hmda_volume_usd,hmda_count,unclaimed",slug:"eq."+slug,limit:"1"});
   const res=await fetch(url+"/rest/v1/public_business_directory?"+qs.toString(),{headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"}});
   if(!res.ok) throw new Error("badge lookup failed: "+res.status);
   const rows=await res.json();
@@ -219,7 +236,11 @@ async function badgePage(slug){
     '<textarea id="rkEmbed" class="rk-embed" readonly onclick="this.select()">'+esc(snippet)+'</textarea>'+
     '<button type="button" class="rk-copy" id="rkCopy">Copy</button>'+
     '<script>(function(){var b=document.getElementById("rkCopy"),t=document.getElementById("rkEmbed");if(!b||!t)return;b.addEventListener("click",function(){function done(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy";},1800);}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(done,function(){t.select();try{document.execCommand("copy");done();}catch(_){}});}else{t.select();try{document.execCommand("copy");done();}catch(_){}}});})();</script>'+
-    '<p style="margin-top:22px;font-size:13.5px"><a href="/business/'+esc(enc)+'" style="color:var(--blue);text-decoration:none">View company page</a> · Is this your company? <a href="/claim?presence='+esc(enc)+'" style="color:var(--blue);text-decoration:none;font-weight:600">Claim the page →</a></p>'+
+    // Top 100 lenders are always Pegasus Top Lenders 2025 honorees (category/state
+    // honorees are linked from the award page itself).
+    (rank&&rank<=100?'<p style="margin-top:22px;font-size:13.5px">'+esc(name)+' is a Pegasus Top Lenders 2025 honoree. <a href="'+esc(AWARD+"/"+enc)+'" style="color:var(--blue);text-decoration:none;font-weight:600">See the award, press kit and award badge →</a></p>':'')+
+    '<p style="margin-top:22px;font-size:13.5px"><a href="/business/'+esc(enc)+'" style="color:var(--blue);text-decoration:none">View company page</a></p>'+
+    claimBox(slug,r.unclaimed)+
     '</section>';
   return ok(shell({title,desc:rank?name+" is ranked "+rankTxt+" among U.S. mortgage lenders (2025, HMDA). Embed the Pegasus ranking badge.":name+" on Pegasus Capital Network — embeddable directory badge.",canonical:ORIGIN+"/rankings/badge/"+enc,robots:"noindex,follow",ld:[cr.ld],body}),"","noindex,follow");
 }
