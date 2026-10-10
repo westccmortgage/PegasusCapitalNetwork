@@ -122,6 +122,13 @@ function snapshot(p,kind,canonical){
       const tail=[vol,Number.isFinite(cnt)&&cnt>0?"across "+fmtInt(cnt)+" loans":""].filter(Boolean).join(" ");
       hmda='<div style="margin-top:12px;display:inline-block;padding:8px 12px;border:1px solid #d6e4f5;background:#eef4fb;border-radius:12px;font-size:13.5px;color:#1d5a9e">'+esc(lead+(tail?" · "+tail:""))+'</div>'+
         '<div style="font-size:12px;color:#697386;margin-top:6px">Source: Home Mortgage Disclosure Act (HMDA) 2025 public data.</div>';
+      // Ranking links: embeddable badge + the full ranking (HQ-state page when known).
+      const slug=cleanSlug(p.slug),st=cleanState(d.state_code);
+      const rankHref="/rankings/top-mortgage-lenders-2025"+(st?"/"+st.toLowerCase():"");
+      const rankLabel=st?"See the 2025 ranking of lenders headquartered in "+STATE_NAMES[st]:"See the full 2025 ranking";
+      hmda+='<div style="font-size:12.5px;margin-top:6px">'+
+        (slug?'<a href="/rankings/badge/'+esc(encodeURIComponent(slug))+'" style="color:#1d5a9e;text-decoration:none;font-weight:600">Show your ranking: get the badge →</a> <span aria-hidden="true" style="color:#c3ccd8">·</span> ':'')+
+        '<a href="'+esc(rankHref)+'" style="color:#1d5a9e;text-decoration:none">'+esc(rankLabel)+'</a></div>';
     }
   }
   return '<article id="peg-seo-snapshot" style="max-width:1000px;margin:30px auto 20px;padding:28px 40px;border:1px solid #e4e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;color:#172033">'+
