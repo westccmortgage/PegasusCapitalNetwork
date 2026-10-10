@@ -170,8 +170,24 @@ function claimCta(kind,slug){
   var noun=kind==="event"?"event":"business";
   var href="/claim?presence="+encodeURIComponent(slug);
   return '<aside style="max-width:1000px;margin:0 auto 34px;padding:14px 20px;border:1px dashed #cdd6e0;border-radius:14px;background:#f7f9fb;color:#51607a;font-family:Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13.5px">'+
-    '<span>Is this your '+noun+' on Pegasus?</span>'+
+    '<span>Is this your '+noun+' on Pegasus?<span id="peg-views" style="display:none"></span></span>'+
     '<a href="'+esc(href)+'" style="color:#235fa6;font-weight:600;text-decoration:none">Claim this page →</a></aside>';
+}
+// Page-view beacon (all public company/event pages) + "viewed N times" in the
+// claim strip. The HTML is CDN-cached, so counting happens client-side: one
+// view per browser per page per day, obvious bots skipped. Uses the anon
+// config already loaded by the page (window.PEG_CONFIG).
+function viewsScript(slug){
+  return '<script>(function(){try{var s='+JSON.stringify(slug)+';'+
+    'if(navigator.webdriver||/bot|crawl|spider|slurp|preview|headless|lighthouse/i.test(navigator.userAgent))return;'+
+    'function go(){var c=window.PEG_CONFIG;if(!c||!c.SUPABASE_URL||!c.SUPABASE_ANON)return;'+
+    'var h={apikey:c.SUPABASE_ANON,Authorization:"Bearer "+c.SUPABASE_ANON,"Content-Type":"application/json"},u=c.SUPABASE_URL.replace(/\\/$/,"")+"/rest/v1/rpc/";'+
+    'var k="pegv:"+s+":"+new Date().toISOString().slice(0,10),seen=false;try{seen=!!localStorage.getItem(k);}catch(_){}'+
+    'var p=seen?Promise.resolve():fetch(u+"record_presence_view",{method:"POST",headers:h,body:JSON.stringify({p_slug:s})}).then(function(){try{localStorage.setItem(k,"1");}catch(_){}});'+
+    'p.then(function(){var el=document.getElementById("peg-views");if(!el)return;'+
+    'return fetch(u+"get_presence_views",{method:"POST",headers:h,body:JSON.stringify({p_slug:s,p_days:30})}).then(function(r){return r.json();}).then(function(n){'+
+    'n=parseInt(n,10);if(n>=3){el.textContent=" This page was viewed "+n+" times in the last 30 days.";el.style.display="inline";}});}).catch(function(){});}'+
+    'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();}catch(_){}})();</script>';
 }
 function render(html,p,kind){
   const slug=cleanSlug(p.slug),seg=segment(kind);
@@ -240,6 +256,7 @@ function render(html,p,kind){
   }
   html=html.replace("</head>",og+"\n"+jsonLd+"\n</head>");
   html=html.replace("<body>","<body>\n"+snapshot(p,kind,canonical)+"\n"+(p.is_claimable===true?claimCta(kind,slug)+"\n":"")+joinCta(kind));
+  html=html.replace("</body>",viewsScript(slug)+"\n</body>");
   return html;
 }
 function simple(status,title,message){
