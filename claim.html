@@ -17,6 +17,14 @@
 .cl-input,.cl-ta{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13.5px;font-family:var(--sans);margin-bottom:16px;resize:vertical}
 .cl-ta{min-height:96px;line-height:1.55}
 .cl-note{font-size:11.5px;color:var(--text4);line-height:1.5;margin-top:4px}
+.cl-steps{display:flex;gap:6px;margin:0 0 18px;flex-wrap:wrap}
+.cl-step{flex:1;min-width:110px;font-size:10.5px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--text4);border-top:3px solid var(--border);padding-top:6px}
+.cl-step.on{color:var(--blue);border-top-color:var(--blue)}.cl-step.done{color:var(--green);border-top-color:var(--green)}
+.cl-hint{font-size:12.5px;line-height:1.55;padding:10px 12px;border-radius:9px;margin-bottom:16px;background:var(--bg2);color:var(--text2)}
+.cl-hint.ok{background:rgba(12,143,92,.08);color:var(--green)}
+.cl-rank{display:inline-block;font-size:10.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--blue);background:var(--blue-dim);border-radius:999px;padding:3px 10px;margin-bottom:10px}
+.cl-next{list-style:none;padding:0;margin:4px 0 18px}.cl-next li{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--text2)}
+.cl-next li b{color:var(--text);font-weight:600}.cl-next a{color:var(--blue);text-decoration:none;margin-left:auto;white-space:nowrap}
 </style>
 </head><body>
 <div id="nav"></div>
@@ -36,15 +44,19 @@
 <script src="/js/pegasus-auth.js"></script>
 <script src="/js/pegasus-core.js"></script>
 <script src="/js/pegasus-pages.js"></script>
+<script src="/js/pegasus-invite.js"></script>
 <script>
 Pegasus.boot(async function(){
   Pegasus.mountPublic('');
   var esc=Pegasus.esc;
   var card=document.getElementById('cl-card');
   function show(html){ card.innerHTML=html; }
-  function state(title, body, cta){
-    show('<div class="cl-eyebrow">Claim a page</div><div class="cl-h1">'+esc(title)+'</div><div class="cl-sub">'+body+'</div>'+(cta||''));
+  var STEPS=['Claim','Verify','Complete profile','Add your team'];
+  function steps(cur){ return '<div class="cl-steps">'+STEPS.map(function(t,i){ return '<div class="cl-step '+(i<cur?'done':(i===cur?'on':''))+'">'+(i+1)+' · '+esc(t)+'</div>'; }).join('')+'</div>'; }
+  function state(title, body, cta, cur){
+    show((cur==null?'':steps(cur))+'<div class="cl-eyebrow">Claim a page</div><div class="cl-h1">'+esc(title)+'</div><div class="cl-sub">'+body+'</div>'+(cta||''));
   }
+  function domainOf(u){ try{ return new URL(/^https?:/i.test(u)?u:'https://'+u).hostname.replace(/^www\./,'').toLowerCase(); }catch(_){ return ''; } }
 
   var qs=new URLSearchParams(location.search);
   var slug=(qs.get('presence')||qs.get('slug')||'').trim();
@@ -52,11 +64,11 @@ Pegasus.boot(async function(){
 
   var c=null; try{ c=await window.PegSB.ready; }catch(e){ c=null; }
   // Require sign-in; come back here afterward.
-  var uid=null; if(c){ try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; }catch(e){} }
+  var uid=null, uemail=''; if(c){ try{ var u=await c.auth.getUser(); uid=u&&u.data&&u.data.user&&u.data.user.id; uemail=(u&&u.data&&u.data.user&&u.data.user.email)||''; }catch(e){} }
   if(!uid){
     try{ localStorage.setItem('pegasus.redirectAfterAuth','/claim?presence='+encodeURIComponent(slug)); }catch(_){}
-    state('Sign in to claim this page','Claiming connects this page to your Pegasus account. Sign in or create a free profile, and we’ll bring you right back.',
-      '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-pri" href="/signin.html">Sign In</a><a class="btn btn-ghost" href="/signup.html">Create Free Profile</a></div>');
+    state('Sign in to claim this page','Claiming connects this page to your Pegasus account. Sign in or create a free profile, and we’ll bring you right back.<br><br><b>Tip:</b> use your work email on the company’s own domain (e.g. you@yourcompany.com) — claims from a verified work email are approved instantly.',
+      '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-pri" href="/signin.html">Sign In</a><a class="btn btn-ghost" href="/signup.html">Create Free Profile</a></div>', 0);
     return;
   }
 
@@ -66,14 +78,32 @@ Pegasus.boot(async function(){
   var pr=data && data.presence;
   if(!pr || !pr.id){ state('Page not found','We couldn’t find that page. It may have been removed or made private.','<a class="btn btn-ghost" href="/businesses">Browse businesses</a>'); return; }
   if(pr.presence_type==='personal'){ state('Personal profiles can’t be claimed here','This page is a personal profile. Business, project, and event pages can be claimed.','<a class="btn btn-ghost" href="/">Return home</a>'); return; }
-  if(data.can_manage){ state('You already manage this page','You can edit '+esc(pr.name||'this page')+' from Business Pages.','<a class="btn btn-pri" href="/my-presences.html">Manage Businesses</a>'); return; }
+  // Ranking context (HMDA) for the page, if any.
+  var rank=null; try{ var dr=await c.from('public_business_directory').select('hmda_rank').eq('slug',pr.slug).maybeSingle(); rank=dr&&dr.data&&dr.data.hmda_rank; }catch(_){}
+  function nextSteps(intro){
+    state('You now manage '+(pr.name||'this page'), intro,
+      '<ul class="cl-next">'+
+        '<li><b>Complete your profile</b> — logo, description, programs, contact.<a href="/my-presences.html">Edit page →</a></li>'+
+        (rank?'<li><b>Display your badge</b> — ranked #'+esc(rank)+' U.S. mortgage lender 2025.<a href="/rankings/badge/'+encodeURIComponent(pr.slug)+'">Get badge →</a></li>':'')+
+        '<li><b>Add your team</b> — invite colleagues below.<a href="#cl-invite">Invite →</a></li>'+
+      '</ul><div id="cl-invite"></div>', 3);
+    if(window.PegInvite) PegInvite.mount(document.getElementById('cl-invite'));
+  }
+  if(data.can_manage){ nextSteps('You can edit '+esc(pr.name||'this page')+' anytime from Business Pages.'); return; }
+  var site=domainOf(pr.website_url||pr.public_cta_url||''), edom=(uemail.split('@')[1]||'').toLowerCase();
+  var instant = !!site && !!edom && (edom===site || edom.slice(-(site.length+1))==='.'+site);
 
   // Claim form.
   show(
+    steps(0)+
     '<div class="cl-eyebrow">Claim a page</div>'+
+    (rank?'<div class="cl-rank">Ranked #'+esc(rank)+' U.S. mortgage lender 2025 by Pegasus</div>':'')+
     '<div class="cl-h1">Claim '+esc(pr.name||'this page')+'</div>'+
-    '<div class="cl-sub">Tell us how you’re connected to this '+esc(pr.presence_type==='event'?'event':'business')+'. A Pegasus admin reviews every claim; once approved, you’ll be able to edit the page.</div>'+
-    '<label class="cl-label">How are you connected? *</label>'+
+    '<div class="cl-sub">Claiming is free. Once verified you can update the page, add your team, and display your official badge.</div>'+
+    (instant
+      ? '<div class="cl-hint ok">✓ Your account email is on <b>'+esc(site)+'</b> — your claim will be verified instantly.</div>'
+      : '<div class="cl-hint">Verification: claims from a verified work email on '+(site?'<b>'+esc(site)+'</b>':'the company’s own domain')+' are approved instantly. Otherwise a Pegasus admin reviews your claim, usually within one business day.</div>')+
+    '<label class="cl-label">How are you connected?'+(instant?' (optional)':' *')+'</label>'+
     '<textarea id="cl-evidence" class="cl-ta" placeholder="e.g. I’m the founder / owner / authorized representative. Company email, website, or role that shows this."></textarea>'+
     '<label class="cl-label">Best way to reach you (optional)</label>'+
     '<input id="cl-contact" class="cl-input" type="text" placeholder="Work email or phone — only used to verify your claim">'+
@@ -85,13 +115,15 @@ Pegasus.boot(async function(){
     var btn=this;
     var ev=(document.getElementById('cl-evidence').value||'').trim();
     var ct=(document.getElementById('cl-contact').value||'').trim();
-    if(!ev){ Pegasus.toast('!','var(--gold-dim)','Tell us how you’re connected','A short note helps us verify your claim.'); return; }
+    if(!ev && !instant){ Pegasus.toast('!','var(--gold-dim)','Tell us how you’re connected','A short note helps us verify your claim.'); return; }
     btn.disabled=true; btn.textContent='Submitting…';
     try{
       var rr=await c.rpc('create_entity_claim',{p_presence_id:pr.id,p_evidence:ev,p_contact_note:ct||null});
       if(rr && rr.error) throw rr.error;
-      state('Claim submitted','Thanks — your claim for '+esc(pr.name||'this page')+' is with our review team. You’ll be notified once it’s approved, and the page will appear in your Business Pages.',
-        '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-pri" href="/dashboard.html">Go to Workspace</a><a class="btn btn-ghost" href="/businesses">Browse more</a></div>');
+      var managed=false; try{ var r2=await c.rpc('get_presence_page_by_slug',{p_slug:slug}); managed=!!(r2&&r2.data&&r2.data.can_manage); }catch(_){}
+      if(managed){ nextSteps('Verified with your work email on '+esc(site)+'. Here’s how to get the most from your page:'); return; }
+      state('Claim submitted','Thanks — your claim for '+esc(pr.name||'this page')+' is with our review team, usually within one business day. You’ll get a notification once it’s approved, and the page will appear in your Business Pages.',
+        '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-pri" href="/dashboard.html">Go to Workspace</a><a class="btn btn-ghost" href="/businesses">Browse more</a></div>', 1);
     }catch(err){
       console.error('[claim] submit failed:', err);
       Pegasus.toast('!','var(--gold-dim)','Could not submit',(err&&err.message)||'Apply migration 080 and try again.');
