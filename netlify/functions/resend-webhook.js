@@ -41,10 +41,15 @@ export default async (request)=>{
   if(request.method!=="POST") return new Response("Method not allowed",{status:405});
   const body = await request.text();
   const h = request.headers;
-  const ok = verify(env("RESEND_WEBHOOK_SECRET"),
-    h.get("svix-id")||h.get("webhook-id"), h.get("svix-timestamp")||h.get("webhook-timestamp"),
-    body, h.get("svix-signature")||h.get("webhook-signature")||"");
-  if(!ok) return new Response("invalid signature",{status:401});
+  const secret = String(env("RESEND_WEBHOOK_SECRET")||"").trim();
+  const id = h.get("svix-id")||h.get("webhook-id");
+  const ts = h.get("svix-timestamp")||h.get("webhook-timestamp");
+  const sig = h.get("svix-signature")||h.get("webhook-signature")||"";
+  // Distinct, non-secret reasons so delivery logs show what to fix.
+  if(!secret) return new Response("webhook secret not configured",{status:503});
+  if(!/^whsec_[A-Za-z0-9+/=]+$/.test(secret)) return new Response("webhook secret malformed",{status:503});
+  if(!id || !ts || !sig) return new Response("missing signature headers",{status:400});
+  if(!verify(secret, id, ts, body, sig)) return new Response("invalid signature",{status:401});
   let evt; try{ evt = JSON.parse(body); }catch(_){ return new Response("bad json",{status:400}); }
   const type = String(evt && evt.type || "");
   const emailId = evt && evt.data && (evt.data.email_id || evt.data.id);
