@@ -119,7 +119,19 @@ async function loadDirectory(p){
           : '<div style="font-size:12.5px;color:var(--text3)">Nothing new to publish. Import more companies into Partner Network, then return here.</div>')+
         '<div id="dir-status" style="font-size:12px;color:var(--text3);margin-top:12px"></div>'+
       '</div></div>'+
-      '<div class="card" style="margin-top:14px"><div class="card-head"><div class="card-title">Most viewed pages · last 30 days</div></div><div class="card-body" id="dir-views" style="font-size:12px;color:var(--text3)">Loading…</div></div>';
+      '<div class="card" style="margin-top:14px"><div class="card-head"><div class="card-title">Most viewed pages · last 30 days</div></div><div class="card-body" id="dir-views" style="font-size:12px;color:var(--text3)">Loading…</div></div>'+
+      '<div class="card" style="margin-top:14px"><div class="card-head"><div class="card-title">Placements · Featured &amp; Sponsored</div></div><div class="card-body">'+
+        '<div style="font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:10px"><b>Featured</b> (house companies) show first on every directory page, in search and in the Lender Matcher. <b>Sponsored</b> (paid) show first where relevant — matching section/category/state in the directory, matching deal type in the matcher — until the end date. Both are labelled for visitors. HMDA rankings and awards are never affected.</div>'+
+        '<div id="pl-list" style="font-size:12px;color:var(--text3)">Loading…</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;font-size:12px">'+
+          '<label>Page slug<br><input id="pl-slug" class="input" style="width:230px" placeholder="company-slug-abc12"></label>'+
+          '<label>Type<br><select id="pl-kind" class="input"><option value="sponsored">Sponsored (paid)</option><option value="featured">Featured (house)</option></select></label>'+
+          '<label>Ends<br><input id="pl-end" class="input" type="date"></label>'+
+          '<label>Deal types (matcher, optional)<br><input id="pl-deals" class="input" style="width:220px" placeholder="residential_purchase, bridge"></label>'+
+          '<label><input type="checkbox" id="pl-s-dir" checked> Directory</label><label><input type="checkbox" id="pl-s-search" checked> Search</label><label><input type="checkbox" id="pl-s-match" checked> Matcher</label>'+
+          '<button class="btn btn-pri btn-sm" id="pl-add">Add placement</button></div>'+
+        '<div id="pl-status" style="font-size:12px;margin-top:8px"></div>'+
+      '</div></div>';
     /* Page views (presence_views_daily via admin_top_viewed_pages) — shows which
        companies attract visitors: the best candidates to nudge toward a claim. */
     (async function(){
@@ -133,6 +145,47 @@ async function loadDirectory(p){
         })) : 'No page views recorded yet. Views are counted from real visitors (bots excluded), one per browser per day.';
       }catch(e){ hv.textContent='Page views unavailable.'; }
     })();
+    /* Placements (migration 097): presence_placements is admin-only via RLS. */
+    async function loadPlacements(){
+      var hl=document.getElementById('pl-list'); if(!hl) return;
+      try{
+        var r=await c.from('presence_placements').select('id,kind,weight,surfaces,deal_types,starts_at,ends_at,note,presences(name,slug)').order('created_at',{ascending:false}).limit(100);
+        if(r.error) throw r.error;
+        var now=Date.now();
+        var rows=(r.data||[]).filter(function(x){ return !x.ends_at || new Date(x.ends_at).getTime()>now; });
+        hl.innerHTML=rows.length ? tbl(['Company','Type','Shows in','Deal types','Ends',''], rows.map(function(x){
+          var pr=x.presences||{};
+          return ['<a href="/business/'+aesc(pr.slug||'')+'" target="_blank" style="color:var(--text);font-weight:600">'+aesc(pr.name||'—')+'</a>',
+            x.kind==='featured'?chip('featured','b-active'):chip('sponsored','b-trial'),
+            aesc((x.surfaces||[]).join(', ')), aesc((x.deal_types||[]).join(', ')||'all'),
+            x.ends_at?aesc(new Date(x.ends_at).toLocaleDateString()):'no end',
+            '<button class="btn btn-ghost btn-sm" data-pl-end="'+aesc(x.id)+'">End now</button>'];
+        })) : 'No active placements.';
+        hl.querySelectorAll('[data-pl-end]').forEach(function(b){ b.onclick=async function(){
+          if(!confirm('End this placement now?')) return;
+          var u=await c.from('presence_placements').update({ends_at:new Date().toISOString()}).eq('id',b.getAttribute('data-pl-end'));
+          if(u.error){ alert(u.error.message); return; } loadPlacements();
+        }; });
+      }catch(e){ hl.textContent='Placements unavailable — apply migration 097. ('+((e&&e.message)||e)+')'; }
+    }
+    loadPlacements();
+    var plAdd=document.getElementById('pl-add');
+    if(plAdd) plAdd.onclick=async function(){
+      var st=document.getElementById('pl-status'), slug=(document.getElementById('pl-slug').value||'').trim().toLowerCase();
+      var kind=document.getElementById('pl-kind').value, end=document.getElementById('pl-end').value;
+      var surf=[]; if(document.getElementById('pl-s-dir').checked) surf.push('directory'); if(document.getElementById('pl-s-search').checked) surf.push('search'); if(document.getElementById('pl-s-match').checked) surf.push('matcher');
+      var deals=(document.getElementById('pl-deals').value||'').split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+      if(!slug){ st.innerHTML='<span style="color:var(--red)">Enter the page slug (from /business/&lt;slug&gt;).</span>'; return; }
+      if(kind==='sponsored' && !end){ st.innerHTML='<span style="color:var(--red)">Sponsored placements need an end date.</span>'; return; }
+      if(!surf.length){ st.innerHTML='<span style="color:var(--red)">Pick at least one place to show it.</span>'; return; }
+      try{
+        var pr=await c.from('presences').select('id,name').eq('slug',slug).maybeSingle();
+        if(pr.error) throw pr.error; if(!pr.data) throw new Error('No page with slug '+slug);
+        var ins=await c.from('presence_placements').insert({presence_id:pr.data.id,kind:kind,weight:kind==='featured'?80:50,surfaces:surf,deal_types:deals.length?deals:null,ends_at:end?new Date(end+'T23:59:59').toISOString():null,note:'Added in admin'});
+        if(ins.error) throw ins.error;
+        st.innerHTML='<span style="color:var(--green)">Added: '+aesc(pr.data.name)+'</span>'; loadPlacements();
+      }catch(e){ st.innerHTML='<span style="color:var(--red)">'+aesc((e&&e.message)||e)+'</span>'; }
+    };
     var btn=document.getElementById('dir-publish');
     if(btn) btn.onclick=async function(){
       if(!confirm('Publish up to '+Math.min(n,100)+' companies as public unclaimed business pages? They become visible in the directory and to Google, each with a “claim” prompt.')) return;

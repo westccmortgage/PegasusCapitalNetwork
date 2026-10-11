@@ -103,6 +103,13 @@
   status = 200
   force = true
 
+# Business type-ahead (JSON) for the directory search box.
+[[redirects]]
+  from = "/api/business-search"
+  to = "/.netlify/functions/business-search"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/businesses"
   to = "/.netlify/functions/public-directory?kind=businesses"

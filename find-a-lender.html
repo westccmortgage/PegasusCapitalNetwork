@@ -53,6 +53,8 @@
 .fl-chip{font-size:9.5px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:12px;background:var(--bg3);color:var(--text2)}
 .fl-chip.ver{background:rgba(12,143,92,.10);color:var(--green)}
 .fl-chip.rank{background:var(--blue-dim);color:var(--blue)}
+.fl-chip.feat{background:#f6e7b8;color:#7a5a00}
+.fl-card.fl-placed{border-color:#e3c76d}
 .fl-reasons{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--text2);line-height:1.6}
 .fl-pos{flex:none;font-family:var(--mono);font-size:11px;color:var(--text4);margin-top:3px;width:22px;text-align:right}
 .fl-few{border-color:rgba(142,112,32,.28);background:rgba(142,112,32,.06)}
@@ -230,11 +232,13 @@ Pegasus.boot(async function(){
     var href='/business/'+encodeURIComponent(slug);
     var meta=[r.cat_label,r.location].filter(Boolean).map(esc).join(' · ');
     var rank=parseInt(r.hmda_rank,10);
-    var chips=(r.verified?'<span class="fl-chip ver">Verified program</span>':'')+
+    var placed=r.placement==='featured'||r.placement==='sponsored';
+    var chips=(r.placement==='featured'?'<span class="fl-chip feat">Featured</span>':r.placement==='sponsored'?'<span class="fl-chip feat">Sponsored</span>':'')+
+      (r.verified?'<span class="fl-chip ver">Verified program</span>':'')+
       (rank>0?'<span class="fl-chip rank">Ranked #'+esc(rank.toLocaleString('en-US'))+'</span>':'')+
       (Number(r.hmda_volume_usd)>0?'<span class="fl-chip">'+esc(money(r.hmda_volume_usd))+' 2025 volume</span>':'');
-    var reasons=(Array.isArray(r.reasons)?r.reasons:[]).filter(Boolean);
-    return '<div class="fl-card"><div class="fl-card-b fl-lender">'+
+    var reasons=(Array.isArray(r.reasons)?r.reasons:[]).filter(function(t){ return t && t!=='Featured on Pegasus' && t!=='Sponsored placement'; });
+    return '<div class="fl-card'+(placed?' fl-placed':'')+'"><div class="fl-card-b fl-lender">'+
       '<input type="checkbox" class="fl-pick" data-slug="'+esc(slug)+'" id="flPick'+i+'"'+(picked[slug]?' checked':'')+' aria-label="Include '+esc(r.name||'this lender')+' when I send my deal">'+
       '<span class="fl-pos">'+(i+1)+'</span>'+
       '<div class="fl-lender-b"><a class="fl-name" href="'+esc(href)+'">'+esc(r.name||'Lender')+'</a>'+
@@ -249,7 +253,7 @@ Pegasus.boot(async function(){
     if(!d){ out.innerHTML=''; return; }
     var summary=esc(TYPES[d.type])+' · '+esc(money(d.amount))+' · '+esc(STATE_NAME[d.state]||d.state);
     var html='<div class="fl-res-h"><h2>'+(rows.length?'Lenders that fit this deal':'No matching lenders yet')+'</h2><span>'+summary+'</span></div>'+
-      '<div class="fl-disc">Matches use public data (2025 HMDA filings, company category and headquarters) plus programs lenders publish on Pegasus. This is not an offer or commitment to lend.</div>';
+      '<div class="fl-disc">Matches use public data (2025 HMDA filings, company category and headquarters) plus programs lenders publish on Pegasus. Listings marked Featured or Sponsored are placed by Pegasus and appear first. This is not an offer or commitment to lend.</div>';
     if(rows.length) html+='<div class="fl-results">'+rows.map(lenderHTML).join('')+'</div>';
     if(rows.length<3){
       html+='<div class="fl-card fl-few" style="margin-top:10px"><div class="fl-card-b">'+
