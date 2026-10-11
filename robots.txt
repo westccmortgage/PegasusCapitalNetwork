@@ -1,41 +1,76 @@
 # Pegasus Capital Network — robots.txt
-# Generated 2026-05-29
+# Updated 2026-10-11. The site serves clean URLs (/crm) and .html URLs (/crm.html):
+# each private page is listed both ways. "$" anchors the clean URL so it does not
+# also block public pages that share a prefix (e.g. /crm must not block /crm-overview).
+# Every page listed here also carries <meta name="robots" content="noindex">.
 
 User-agent: *
 
 # Public pages — all allowed
 Allow: /
 
-# Block private / authenticated pages from indexing
+# Private / authenticated pages
+Disallow: /admin$
 Disallow: /admin.html
+Disallow: /admin-requests$
 Disallow: /admin-requests.html
+Disallow: /admin-trust-reviews$
 Disallow: /admin-trust-reviews.html
+Disallow: /admin-partner-network$
+Disallow: /admin-partner-network.html
+Disallow: /admin-intelligence$
+Disallow: /admin-intelligence.html
+Disallow: /apply-review$
 Disallow: /apply-review.html
+Disallow: /auth-callback$
 Disallow: /auth-callback.html
+Disallow: /crm$
 Disallow: /crm.html
+Disallow: /dashboard$
 Disallow: /dashboard.html
+Disallow: /deal-room$
 Disallow: /deal-room.html
+Disallow: /deal-rooms$
 Disallow: /deal-rooms.html
+Disallow: /get-started$
 Disallow: /get-started.html
+Disallow: /intelligence$
 Disallow: /intelligence.html
+Disallow: /messages$
 Disallow: /messages.html
+Disallow: /my-requests$
 Disallow: /my-requests.html
+Disallow: /network-requests$
 Disallow: /network-requests.html
+Disallow: /profile-edit$
 Disallow: /profile-edit.html
+Disallow: /profile$
 Disallow: /profile.html
+Disallow: /showcase-admin$
 Disallow: /showcase-admin.html
+Disallow: /saved-scenario$
 Disallow: /saved-scenario.html
+Disallow: /submit-deal$
 Disallow: /submit-deal.html
+Disallow: /rwa-project-intake$
 Disallow: /rwa-project-intake.html
+Disallow: /rwa-project-workspace$
 Disallow: /rwa-project-workspace.html
+Disallow: /badge-proof-submit$
 Disallow: /badge-proof-submit.html
+Disallow: /lead-finder$
 Disallow: /lead-finder.html
+Disallow: /deal-analyzer$
 Disallow: /deal-analyzer.html
+Disallow: /capital-strategy-simulator$
 Disallow: /capital-strategy-simulator.html
+Disallow: /deal-feed$
 Disallow: /deal-feed.html
+Disallow: /rwa-readiness-check$
 Disallow: /rwa-readiness-check.html
-Disallow: /rwa-project-intake.html
+Disallow: /reset-password$
 Disallow: /reset-password.html
+Disallow: /request$
 Disallow: /request.html
 
 # Sitemap location
