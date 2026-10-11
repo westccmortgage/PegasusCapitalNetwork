@@ -192,6 +192,63 @@ async function loadBusinesses(section,category,state,page){
     },page);
   }
 }
+// Active Featured (house) / Sponsored (paid) placements — a handful of rows.
+async function loadPlacements(){
+  try{
+    const {url,key}=cfg();
+    const qs=new URLSearchParams({select:"slug,name,category,cat_slug,cat_label,section_slug,location,state_code,tagline,short_description,hmda_rank,kind,weight,surfaces,states",order:"weight.desc,name.asc"});
+    const res=await fetch(url+"/rest/v1/public_business_placements?"+qs.toString(),{headers:{apikey:key,Authorization:"Bearer "+key,Range:"0-49","Range-Unit":"items"}});
+    if(!res.ok) return [];
+    const rows=await res.json();
+    return Array.isArray(rows)?rows.filter(r=>r&&Array.isArray(r.surfaces)&&r.surfaces.includes("directory")):[];
+  }catch(_){return [];}
+}
+// Featured placements show on every business page; Sponsored ones only where
+// relevant (matching section / category / state).
+function placementsFor(list,activeSection,activeSub,activeState){
+  const out=list.filter(p=>{
+    if(p.kind==="featured") return true;
+    if(activeSection!=="all"&&p.section_slug!==activeSection) return false;
+    if(activeSub&&p.cat_slug!==activeSub) return false;
+    if(activeState){const sts=Array.isArray(p.states)?p.states:[];if(!(sts.includes(activeState)||p.state_code===activeState)) return false;}
+    return true;
+  });
+  out.sort((a,b)=>(a.kind==="featured"?0:1)-(b.kind==="featured"?0:1)||(b.weight||0)-(a.weight||0));
+  return out.slice(0,4);
+}
+async function searchBusinesses(q){
+  const {url,key}=cfg();
+  const res=await fetch(url+"/rest/v1/rpc/search_businesses",{method:"POST",
+    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Accept:"application/json"},
+    body:JSON.stringify({p_q:q,p_limit:50})});
+  if(!res.ok){const body=await res.text().catch(()=> "");throw new Error("search failed: "+res.status+" "+body.slice(0,200));}
+  const rows=await res.json();
+  return Array.isArray(rows)?rows:[];
+}
+function placementTag(kind){
+  return kind==="featured"?'<span class="dir-tag">Featured</span>':kind==="sponsored"?'<span class="dir-tag dir-tag-sp">Sponsored</span>':"";
+}
+// Client type-ahead for the search box (plain ES5, no template literals).
+const SEARCH_JS=String.raw`<script>(function(){var i=document.getElementById("dirQ"),box=document.getElementById("dirSug");if(!i||!box)return;var t=null,seq=0,act=-1;
+function e(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function hide(){box.hidden=true;box.innerHTML="";act=-1;}
+function tag(p){return p==="featured"?'<span class="dir-tag">Featured</span>':p==="sponsored"?'<span class="dir-tag dir-tag-sp">Sponsored</span>':"";}
+function draw(rows){act=-1;if(!rows.length){box.innerHTML='<div class="dir-sug-empty">No companies match</div>';box.hidden=false;return;}
+box.innerHTML=rows.map(function(r,k){var m=[r.cat_label,r.location].filter(Boolean).join(" · ");return '<a role="option" id="dirSug'+k+'" href="/business/'+encodeURIComponent(r.slug)+'"><span class="dir-sug-n">'+e(r.name)+'</span>'+tag(r.placement)+(m?'<span class="dir-sug-m">'+e(m)+'</span>':'')+'</a>';}).join("")+
+'<a class="dir-sug-all" href="/businesses/search?q='+encodeURIComponent(i.value.trim())+'">See all results →</a>';box.hidden=false;}
+i.addEventListener("input",function(){clearTimeout(t);var q=i.value.trim();if(!q){hide();return;}t=setTimeout(function(){var my=++seq;fetch("/api/business-search?q="+encodeURIComponent(q)+"&limit=8").then(function(r){return r.ok?r.json():[];}).then(function(rows){if(my===seq&&i.value.trim())draw(Array.isArray(rows)?rows:[]);}).catch(function(){});},160);});
+i.addEventListener("keydown",function(ev){var as=box.querySelectorAll("a[role=option]");if(box.hidden||!as.length)return;if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){ev.preventDefault();act=(act+(ev.key==="ArrowDown"?1:-1)+as.length)%as.length;for(var k=0;k<as.length;k++)as[k].classList.toggle("on",k===act);i.setAttribute("aria-activedescendant","dirSug"+act);}else if(ev.key==="Enter"&&act>=0){ev.preventDefault();location.href=as[act].getAttribute("href");}else if(ev.key==="Escape"){hide();}});
+document.addEventListener("click",function(ev){if(!ev.target.closest||!ev.target.closest(".dir-search"))hide();});})();</script>`;
+// Search box (GET /businesses/search?q=) with a type-ahead dropdown fed by /api/business-search.
+function searchBox(q){
+  return '<form class="dir-search" action="/businesses/search" method="get" role="search" autocomplete="off">'+
+    '<input id="dirQ" name="q" type="search" value="'+esc(q||"")+'" placeholder="Search companies by name…" aria-label="Search companies" aria-autocomplete="list" aria-controls="dirSug" maxlength="80">'+
+    '<button type="submit">Search</button><div id="dirSug" class="dir-sug" role="listbox" hidden></div></form>'+SEARCH_JS;
+}
+const SEARCH_CSS='.dir-search{position:relative;display:flex;gap:8px;max-width:620px;margin:20px auto 0}.dir-search input{flex:1;min-width:0;padding:12px 16px;border:1px solid var(--border);border-radius:12px;background:var(--bg1);color:var(--text);font-size:14px}.dir-search button{padding:0 18px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer}'+
+  '.dir-sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;background:var(--bg1);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-card);text-align:left;overflow:hidden}.dir-sug a{display:block;padding:10px 14px;text-decoration:none;color:var(--text);border-bottom:1px solid var(--border)}.dir-sug a.on,.dir-sug a:hover{background:var(--blue-dim)}.dir-sug-n{font-weight:600;font-size:13.5px}.dir-sug-m{display:block;font-size:11.5px;color:var(--text3);margin-top:2px}.dir-sug-all{font-size:12px;color:var(--blue)!important}.dir-sug-empty{padding:12px 14px;font-size:12.5px;color:var(--text3)}'+
+  '.dir-tag{display:inline-block;vertical-align:middle;margin-left:6px;font-size:9.5px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#7a5a00;background:#f6e7b8;border-radius:999px;padding:2px 7px}.dir-tag-sp{color:var(--text2);background:var(--bg2,#eef0f3)}'+
+  '.dir-feat{margin-top:22px}.dir-feat .dir-grid{margin-top:8px}.dir-feat .dir-card{border-color:#e3c76d}.dir-feat-h{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}';
 // state (validated 2-letter code) appends the pretty "/in/:st" suffix (lowercase).
 function dirPath(kind,section,sub,state){
   const base=kind==="people"?"/people":kind==="businesses"?"/businesses":"/"+kind;
@@ -264,12 +321,13 @@ function card(item,kind){
   const desc=txt(item.tagline)||txt(item.short_description);
   return '<article class="dir-card"><a class="dir-link" href="/'+seg+'/'+encodeURIComponent(item.slug||"")+'">'+
     '<div class="dir-avatar dir-initial">'+esc((txt(item.name)[0]||"P").toUpperCase())+'</div>'+
-    '<div><h2>'+esc(item.name||"Pegasus "+(kind==="events"?"Event":"Business"))+'</h2>'+(meta?'<p class="dir-meta">'+esc(meta)+'</p>':'')+
+    '<div><h2>'+esc(item.name||"Pegasus "+(kind==="events"?"Event":"Business"))+(item.placement?" "+placementTag(item.placement):"")+'</h2>'+(meta?'<p class="dir-meta">'+esc(meta)+'</p>':'')+
     (kind==="events"?'':hmdaBadge(item))+
     (desc?'<p class="dir-desc">'+esc(desc)+'</p>':'')+'<span class="dir-open">View '+(kind==="events"?"event":"business")+' →</span></div></a></article>';
 }
 function render(ctx){
-  const {kind,page,rows,total,sections=[],activeSection="all",activeSub=null,stateFacets=[]}=ctx;
+  const {kind,page,rows,total,sections=[],activeSection="all",activeSub=null,stateFacets=[],featured=[],search=null}=ctx;
+  if(search!==null) return renderSearch(ctx);
   const sectioned=(kind==="businesses"||kind==="people");
   const activeState=kind==="businesses"?(cleanState(ctx.activeState)||null):null;
   const stateName=activeState?STATE_NAMES[activeState]:"";
@@ -344,7 +402,7 @@ function render(ctx){
     '.biz-cats{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:12px auto 0;max-width:960px}.biz-cats a{padding:6px 12px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--text2);font-size:11.5px}.biz-cats a span{color:var(--text3)}.biz-cats a.on{background:var(--text);color:var(--bg);border-color:var(--text)}.biz-cats a.on span{color:rgba(255,255,255,.7)}'+
     '.biz-states{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;margin:14px auto 0;max-width:960px}.biz-states-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-right:4px}.biz-states a{padding:6px 12px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--text2);font-size:11.5px}.biz-states a span{color:var(--text3)}.biz-states a.on{background:var(--blue);color:#fff;border-color:var(--blue)}.biz-states a.on span{color:rgba(255,255,255,.75)}'+
     '.dir-badge{display:inline-block;margin-top:6px;font-size:10.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--blue);background:var(--blue-dim);border-radius:999px;padding:3px 9px}'+
-    '.dir-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}.dir-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-card)}.dir-link{display:flex;gap:16px;padding:20px;text-decoration:none}.dir-avatar{width:68px;height:68px;border-radius:50%;object-fit:cover;flex:none}.dir-initial{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#17315A,#0E1E36);color:#fff;font-family:var(--serif);font-size:28px}.dir-card h2{font-size:16px;margin:2px 0 5px;color:var(--text)}.dir-meta{font-size:12px;color:var(--text3);margin:0}.dir-desc{font-size:12.5px;line-height:1.5;color:var(--text2);margin:8px 0 0}.dir-open{display:inline-block;margin-top:10px;font-size:11.5px;color:var(--blue)}.dir-pager{display:flex;justify-content:center;gap:10px;margin-top:30px}.dir-pager a{padding:9px 14px;border:1px solid var(--border);border-radius:9px;text-decoration:none;color:var(--text2)}.dir-empty{text-align:center;padding:50px;color:var(--text3)}@media(max-width:760px){.dir-wrap{padding:32px 20px 54px}.dir-grid{grid-template-columns:1fr}}</style></head><body>'+
+    '.dir-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}.dir-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-card)}.dir-link{display:flex;gap:16px;padding:20px;text-decoration:none}.dir-avatar{width:68px;height:68px;border-radius:50%;object-fit:cover;flex:none}.dir-initial{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#17315A,#0E1E36);color:#fff;font-family:var(--serif);font-size:28px}.dir-card h2{font-size:16px;margin:2px 0 5px;color:var(--text)}.dir-meta{font-size:12px;color:var(--text3);margin:0}.dir-desc{font-size:12.5px;line-height:1.5;color:var(--text2);margin:8px 0 0}.dir-open{display:inline-block;margin-top:10px;font-size:11.5px;color:var(--blue)}.dir-pager{display:flex;justify-content:center;gap:10px;margin-top:30px}.dir-pager a{padding:9px 14px;border:1px solid var(--border);border-radius:9px;text-decoration:none;color:var(--text2)}.dir-empty{text-align:center;padding:50px;color:var(--text3)}'+SEARCH_CSS+'@media(max-width:760px){.dir-wrap{padding:32px 20px 54px}.dir-grid{grid-template-columns:1fr}}</style></head><body>'+
     '<nav class="pub-nav"><a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a><div class="pub-links"><a href="/feed">Feed</a><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html">Explore</a></div><div class="nav-cta" id="dirNavCta"><a class="btn btn-ghost" href="/signin.html">Sign In</a><a class="btn btn-pri" href="/signup.html">Create Free Profile</a></div></nav>'+
     // Page is CDN-cached for everyone, so swap the guest CTA client-side for signed-in members.
     '<script>(function(){try{var raw=localStorage.getItem("pegasus.auth");if(!raw)return;var pj=JSON.parse(raw);if(!(pj&&(pj.access_token||(pj.currentSession&&pj.currentSession.access_token))))return;var c=document.getElementById("dirNavCta");if(!c)return;var s="";try{s=localStorage.getItem("peg_slug")||"";}catch(_){}c.innerHTML=\'<a class="btn btn-ghost" href="/members.html">Members Network</a><a class="btn btn-ghost" href="\'+(s?"/u/"+encodeURIComponent(s):"/profile-edit.html")+\'">My Profile</a><a class="btn btn-pri" href="/dashboard.html">My Workspace →</a>\';}catch(_){}})();</script>'+
@@ -352,10 +410,28 @@ function render(ctx){
     // Capital & Lenders section → HMDA 2025 lender rankings (/rankings) + Lender Matcher (/find-a-lender).
     (kind==="businesses"&&activeSection==="capital"?'<p style="margin:8px 0 0;font-size:13px"><a href="/rankings" style="color:var(--blue);text-decoration:none;font-weight:600">2025 lender rankings →</a> · <a href="/find-a-lender" style="color:var(--blue);text-decoration:none;font-weight:600">Find a lender for your deal →</a></p>':'')+
     '<div class="dir-tabs">'+
-    '<a href="/people" class="'+(kind==="people"?"on":"")+'">People</a><a href="/businesses" class="'+(kind==="businesses"?"on":"")+'">Businesses</a><a href="/events" class="'+(kind==="events"?"on":"")+'">Events</a></div>'+subnav+'</header>'+
+    '<a href="/people" class="'+(kind==="people"?"on":"")+'">People</a><a href="/businesses" class="'+(kind==="businesses"?"on":"")+'">Businesses</a><a href="/events" class="'+(kind==="events"?"on":"")+'">Events</a></div>'+(kind==="businesses"?searchBox(""):"")+subnav+'</header>'+
+    (featured.length?'<section class="dir-feat" aria-label="Featured companies"><div class="dir-feat-h">Featured</div><div class="dir-grid">'+featured.map(x=>card(Object.assign({},x,{placement:x.kind}),kind)).join("")+'</div></section>':'')+
     (rows.length?'<section class="dir-grid">'+rows.map(x=>card(x,kind)).join("")+'</section>':'<div class="dir-empty">'+esc(emptyMsg)+'</div>')+
     '<nav class="dir-pager" aria-label="Pagination">'+(hasPrev?'<a href="'+esc(path+(page===2?"":"?page="+(page-1)))+'">← Previous</a>':'')+(hasNext?'<a href="'+esc(path+"?page="+(page+1))+'">Next →</a>':'')+'</nav></main>'+
     '<footer style="text-align:center;padding:28px;color:var(--text3);border-top:1px solid var(--border)"><a href="/" style="color:inherit">Pegasus Capital Network</a> · Public professional discovery network</footer></body></html>';
+}
+function renderSearch(ctx){
+  const {rows,search}=ctx;
+  const q=search||"";
+  const title=(q?'Search: "'+q+'"':"Search companies")+" — Pegasus Capital Network";
+  const head=q?(rows.length?rows.length+(rows.length===50?"+":"")+' compan'+(rows.length===1?'y matches':'ies match')+' "'+q+'"':'No companies match "'+q+'"'):"Search companies";
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>'+esc(title)+'</title><meta name="robots" content="noindex,follow"><link rel="canonical" href="'+ORIGIN+'/businesses">'+
+    '<link rel="stylesheet" href="/css/pegasus.css"><link rel="icon" href="/assets/brand/favicon.ico">'+
+    '<style>.dir-wrap{max-width:1120px;margin:auto;padding:48px 40px 72px}.dir-head{text-align:center;max-width:760px;margin:0 auto 20px}.dir-head h1{font-family:var(--serif);font-size:clamp(28px,4.2vw,44px);font-weight:400;margin:8px 0 12px}'+
+    '.dir-badge{display:inline-block;margin-top:6px;font-size:10.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--blue);background:var(--blue-dim);border-radius:999px;padding:3px 9px}'+
+    '.dir-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}.dir-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-card)}.dir-link{display:flex;gap:16px;padding:20px;text-decoration:none}.dir-avatar{width:68px;height:68px;border-radius:50%;flex:none}.dir-initial{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#17315A,#0E1E36);color:#fff;font-family:var(--serif);font-size:28px}.dir-card h2{font-size:16px;margin:2px 0 5px;color:var(--text)}.dir-meta{font-size:12px;color:var(--text3);margin:0}.dir-desc{font-size:12.5px;line-height:1.5;color:var(--text2);margin:8px 0 0}.dir-open{display:inline-block;margin-top:10px;font-size:11.5px;color:var(--blue)}.dir-empty{text-align:center;padding:50px;color:var(--text3)}'+
+    SEARCH_CSS+'@media(max-width:760px){.dir-wrap{padding:32px 16px 54px}.dir-grid{grid-template-columns:1fr}}</style></head><body>'+
+    '<nav class="pub-nav"><a class="brand" href="/"><img class="brand-mark" src="/assets/brand/pegasus-symbol.svg" alt="Pegasus"><span>Pegasus Network</span></a><div class="pub-links"><a href="/feed">Feed</a><a href="/people">People</a><a href="/businesses">Businesses</a><a href="/events">Events</a><a href="/explore.html">Explore</a></div><div class="nav-cta"><a class="btn btn-ghost" href="/signin.html">Sign In</a><a class="btn btn-pri" href="/signup.html">Create Free Profile</a></div></nav>'+
+    '<main class="dir-wrap"><header class="dir-head"><div class="eyebrow" style="justify-content:center"><a href="/businesses" style="color:inherit;text-decoration:none">← All businesses</a></div><h1>'+esc(head)+'</h1>'+searchBox(q)+'</header>'+
+    (rows.length?'<section class="dir-grid">'+rows.map(x=>card(x,"businesses")).join("")+'</section>':(q?'<div class="dir-empty">Try fewer letters, or browse <a href="/businesses">all businesses</a>.</div>':''))+
+    '</main><footer style="text-align:center;padding:28px;color:var(--text3);border-top:1px solid var(--border)"><a href="/" style="color:inherit">Pegasus Capital Network</a> · Public professional discovery network</footer></body></html>';
 }
 function errPage(status,title){
   return new Response('<!doctype html><html><head><meta name="robots" content="noindex,nofollow"><title>'+esc(title)+'</title></head><body><h1>'+esc(title)+'</h1><a href="/">Pegasus Capital Network</a></body></html>',{status,headers:{"Content-Type":"text/html; charset=utf-8","X-Robots-Tag":"noindex,nofollow","Cache-Control":"no-store"}});
@@ -381,8 +457,13 @@ export default async (request)=>{
   if(publicPath && publicPath[4] && !u.searchParams.get("state")) u.searchParams.set("state",publicPath[4]);
   const page=pageNum(u.searchParams.get("page"));
   try{
+    if(kind==="businesses"&&u.searchParams.get("section")==="search"){
+      const q=String(u.searchParams.get("q")||"").replace(/\s+/g," ").trim().slice(0,80);
+      const rows=q?await searchBusinesses(q):[];
+      return new Response(render({kind,page:1,rows,total:rows.length,search:q}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=120, stale-while-revalidate=600","Netlify-Vary":"query=q","X-Robots-Tag":"noindex,follow"}});
+    }
     if(kind==="businesses"){
-      const [facets,stateFacets]=await Promise.all([loadBusinessFacets(),loadStateFacets()]);
+      const [facets,stateFacets,placements]=await Promise.all([loadBusinessFacets(),loadStateFacets(),loadPlacements()]);
       const sections=buildBusinessSections(facets);
       let activeSection=cleanSlug(u.searchParams.get("section"))||"all";
       let activeSub=cleanSlug(u.searchParams.get("category"))||null;
@@ -392,7 +473,8 @@ export default async (request)=>{
       if(activeSub){const sec=sections.find(s=>s.slug===activeSection);if(!sec||!sec.subs.some(c=>c.slug===activeSub)) activeSub=null;}
       const {rows,total}=await loadBusinesses(activeSection,activeSub,activeState,page);
       if(page>1&&!rows.length) return errPage(404,"Directory page not found");
-      return new Response(render({kind,page,rows,total,sections,activeSection,activeSub,activeState,stateFacets}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|category|state","X-Robots-Tag":"index,follow,max-image-preview:large"}});
+      const featured=placementsFor(placements,activeSection,activeSub,activeState);
+      return new Response(render({kind,page,rows,total,sections,activeSection,activeSub,activeState,stateFacets,featured}),{status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=0, s-maxage=300, stale-while-revalidate=600","Netlify-Vary":"query=page|section|category|state","X-Robots-Tag":"index,follow,max-image-preview:large"}});
     }
     if(kind==="people"){
       const all=await loadPeopleAll();
